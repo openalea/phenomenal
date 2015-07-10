@@ -1,5 +1,5 @@
-./local
-./share/CHESSBOARD
-./share/data
-./share/refs
-./my_workspace
+/local
+/share/CHESSBOARD/*
+/share/data/*
+/share/refs/*
+/my_workspace/*
