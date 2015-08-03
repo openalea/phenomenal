@@ -39,7 +39,7 @@ def strptime(dateseq, format='%Y-%m-%d'):
     return map(lambda x: datetime.datetime.strptime(x, format), dateseq)
 
 
-def plant_area(pixel_counts, a = 3.261011e-06, b = 0.04240879):
+def plant_area(pixel_counts, a=3.261011e-06, b=0.04240879):
     """
     Plant area estimation from pixels counts
 

@@ -53,7 +53,7 @@ def check_side_binarization_hsv(data_directory,
     images = tools_test.load_images(images_path)
 
     config = configuration.getconfig(
-        '../../src/alinea/phenomenal/share/data/config.cfg')
+        '../../share/data/config.cfg')
 
     obj = configuration.sidebinarisation_configuration(config)
 

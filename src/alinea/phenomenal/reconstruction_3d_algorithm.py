@@ -49,7 +49,7 @@ class Cube(object):
         self.radius = radius
 
 
-# =======================================================================
+#       =======================================================================
 #       ROTATION
 def side_rotation(cubes, theta, calibration):
     """
@@ -79,7 +79,7 @@ def side_rotation(cubes, theta, calibration):
 
 #       =======================================================================
 #       PROJECTION
-def side_projection(cube, rvec, mtx, tvec):
+def side_projection(cube, calibration):
     """
 
     :param cube:
@@ -89,46 +89,21 @@ def side_projection(cube, rvec, mtx, tvec):
     :return:
     """
 
+    mtx, rvec, tvec, dist_coeff = calibration
+
     object_points = np.ndarray(
         shape=(1, 3),
-        buffer=np.array([[cube.center.x - mtx[0][2],
-                          cube.center.y - mtx[0][2],
-                          cube.center.z - mtx[1][2]]]))
+        buffer=np.array([[cube.center.x,
+                          cube.center.y,
+                          cube.center.z]]))
 
     projs, jac = cv2.projectPoints(object_points,
                                    rvec,
                                    tvec,
                                    mtx,
-                                   None)
+                                   dist_coeff)
 
     return projs[0][0][0], projs[0][0][1]
-
-
-def bbox_projection(cube, rvec, mtx, tvec):
-    """
-
-    :param cube:
-    :param rvec:
-    :param mtx:
-    :param tvec:
-    :return:
-    """
-    new_cubes = split_cube(cube)
-
-    lx = []
-    ly = []
-
-    for cube in new_cubes:
-        x, y = side_projection(cube, rvec, mtx, tvec)
-        lx.append(x)
-        ly.append(y)
-
-    xmin = int(min(lx))
-    xmax = int(max(lx))
-    ymin = int(min(ly))
-    ymax = int(max(ly))
-
-    return [xmin, xmax, ymin, ymax]
 
 
 def side_manual_projection(cube, calibration):
@@ -154,9 +129,7 @@ def side_manual_projection(cube, calibration):
     xim = round(calibration.w / 2 + ximo)
     yim = round(calibration.h / 2 - yimo)
 
-    return (min(calibration.w, max(1, xim)),
-            min(calibration.h, max(1, yim)),
-            conv)
+    return min(calibration.w, max(1, xim)), min(calibration.h, max(1, yim))
 
 
 def top_manual_projection(cube, calibration):
@@ -179,17 +152,16 @@ def top_manual_projection(cube, calibration):
     xim = round(calibration.h / 2 + ximo)
     yim = round(calibration.w / 2 - yimo)
 
-    return (min(calibration.h, max(1, xim)),
-            min(calibration.w, max(1, yim)),
-            conv)
+    return min(calibration.h, max(1, xim)), min(calibration.w, max(1, yim))
 
 
-def bbox_manual_projection(cube, calibration, top_image=False):
+def bbox_projection(cube, calibration, func_projection):
     """
 
     :param cube:
-    :param calibration:
-    :param top_image:
+    :param rvec:
+    :param mtx:
+    :param tvec:
     :return:
     """
     new_cubes = split_cube(cube)
@@ -197,28 +169,21 @@ def bbox_manual_projection(cube, calibration, top_image=False):
     lx = []
     ly = []
 
-    if top_image is True:
-        for cube in new_cubes:
-            x, y, z = top_manual_projection(cube, calibration)
-            lx.append(x)
-            ly.append(y)
-    else:
-        for cube in new_cubes:
-            x, y, z = side_manual_projection(cube, calibration)
-            lx.append(x)
-            ly.append(y)
+    for cube in new_cubes:
+        x, y = func_projection(cube, calibration)
+        lx.append(x)
+        ly.append(y)
 
     xmin = int(min(lx))
     xmax = int(max(lx))
     ymin = int(min(ly))
     ymax = int(max(ly))
 
-    return xmin, xmax, ymin, ymax
+    return [xmin, xmax, ymin, ymax]
 
 
 #       =======================================================================
 #       Create and split cubes
-
 def split_cube(cube):
     """
 
@@ -303,8 +268,7 @@ def split_cubes(cubes):
 
 #       =======================================================================
 #       Algorithm
-
-def fast_screen(image, cubes, rvec, mtx, tvec):
+def octree_builder(image, cubes, calibration, func_projection):
     """
 
     Algorithm
@@ -329,10 +293,6 @@ def fast_screen(image, cubes, rvec, mtx, tvec):
     :param tvec:
     :return:
     """
-    """ fast screen documentation
-
-
-    """
     h, l = np.shape(image)
 
     kept = deque()
@@ -340,42 +300,34 @@ def fast_screen(image, cubes, rvec, mtx, tvec):
         try:
             cube = cubes.popleft()
 
-            x, y = side_projection(cube, rvec, mtx, tvec)
+            x, y = func_projection(cube, calibration)
 
-            if y >= 0 and y < h and x >= 0 and x < l:
+            if 0 <= y < h and 0 <= x < l:
                 if image[y, x] > 0:
                     kept.append(cube)
                     continue
 
-            # ===========================================================
+            # =================================================================
 
-            b = False
-            bbox = bbox_projection(cube, rvec, mtx, tvec)
+            xmin, xmax, ymin, ymax = bbox_projection(
+                cube, calibration, func_projection)
 
-            for i in range(4):
-                if bbox[i] < 0:
-                    bbox[i] = 0
+            xmin = min(max(xmin, 0), l - 1)
+            xmax = min(max(xmax, 0), l - 1)
+            ymin = min(max(ymin, 0), h - 1)
+            ymax = min(max(ymax, 0), h - 1)
 
-            for i in [0, 1]:
-                for j in [2, 3]:
-                    if bbox[i] > 0 and bbox[i] < l and bbox[j] > 0 and bbox[
-                        j] < h:
-                        if image[bbox[j], bbox[i]] > 0:
-                            b = True
+            if image[ymin, xmin] > 0 or \
+               image[ymax, xmin] > 0 or \
+               image[ymin, xmax] > 0 or \
+               image[ymax, xmax] > 0:
+                    kept.append(cube)
+                    continue
 
-            if b is True:
-                kept.append(cube)
-                continue
 
-            # ===========================================================
+            # =================================================================
 
-            if bbox[3] > h:
-                bbox[3] = h - 1
-
-            if bbox[1] > l:
-                bbox[1] = l - 1
-
-            img = image[bbox[2]:bbox[3], bbox[0]:bbox[1]]
+            img = image[ymin:ymax + 1, xmin:xmax + 1]
 
             if img.any() > 0:
                 kept.append(cube)
@@ -385,70 +337,3 @@ def fast_screen(image, cubes, rvec, mtx, tvec):
 
     return kept
 
-
-def fast_manual_screen(image, cubes, calibration, top_image=False):
-    """ fast screen documentation
-
-    :param image:
-    :param cubes:
-    :param calibration:
-    :param top_image:
-    :return:
-
-    Algorithm
-    =========
-
-    For each cube in cubes :
-        - Project center cube position on image:
-        - Kept the cube and pass to the next if :
-            + The pixel value of center position projected is > 0
-
-        - Compute the bounding box and project the positions on image
-        - Kept the cube and pass to the next if :
-            + The pixel value of extremity of bounding box projected is > 0
-
-        - Kept the cube and pass to the next if :
-            + Any pixel value in the bounding box projected is > 0
-    """
-    dim_image = np.shape(image)
-
-    kept = deque()
-    while True:
-        try:
-            cube = cubes.popleft()
-
-            if top_image is True:
-                x, y, z = top_manual_projection(cube, calibration)
-            else:
-                x, y, z = side_manual_projection(cube, calibration)
-
-            if y < dim_image[0] and x < dim_image[1]:
-                if image[y, x] > 0:
-                    kept.append(cube)
-                    continue
-
-            # =================================================================
-
-            b = False
-            bbox = bbox_manual_projection(cube, calibration, top_image)
-
-            for i in [0, 1]:
-                for j in [2, 3]:
-                    if bbox[i] < dim_image[1] and bbox[j] < dim_image[0]:
-                        if image[bbox[j], bbox[i]] > 0:
-                            b = True
-
-            if b is True:
-                kept.append(cube)
-                continue
-
-            # =================================================================
-
-            img = image[bbox[2]:bbox[3], bbox[0]:bbox[1]]
-            if img.any() > 0:
-                kept.append(cube)
-
-        except IndexError:
-            break
-
-    return kept

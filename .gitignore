@@ -1,5 +1,5 @@
 /local
-/share/CHESSBOARD/*
-/share/data/*
-/share/refs/*
-/my_workspace/*
+/src/Alinea.phenomenal.egg-info
+/src/*.pyc
+/src/alinea/*.pyc
+/src/alinea/phenomenal/*.pyc

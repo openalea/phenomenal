@@ -44,14 +44,11 @@ from numpy import *
 #       =======================================================================
 #       Code
 
-def load_images(images_path, angles):
-
-    images = dict()
-    i = 0
-
-    for i in range(len(images_path)):
-        im = cv2.imread(images_path[i], cv2.CV_LOAD_IMAGE_GRAYSCALE)
-        images[angles[i]] = im
+def load_images(images_path):
+    images = []
+    for image_name in images_path:
+        im = cv2.imread(image_name, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+        images.append(im)
 
     return images
 
