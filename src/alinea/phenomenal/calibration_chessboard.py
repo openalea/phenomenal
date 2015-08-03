@@ -24,9 +24,9 @@ __revision__ = ""
 
 #       =======================================================================
 #       External Import
-import numpy as np
 import cv2
-
+import numpy as np
+import pickle
 #       =======================================================================
 #       Local Import 
 
@@ -34,7 +34,65 @@ import cv2
 #       =======================================================================
 #       Code
 
-def get_chessboard_corners(image, size_chessboard):
+class Chessboard(object):
+    def __init__(self, square_size, length, height):
+        self.square_size = square_size
+        self.shape = (length, height)
+        self.object_points = np.zeros((length * height, 3), np.float32)
+        self.initialize_chessboard()
+
+    def initialize_chessboard(self):
+        self.object_points[:, :2] = np.mgrid[0:8, 0:6].T.reshape(
+            -1, 2) * self.square_size
+
+        # 48 points are stored in an 48x3 array objp
+        # print objp, np.shape(objp)
+        # choose bottom-left corner as origin, to match australian convention
+        self.object_points = self.object_points - self.object_points[40, :]
+
+
+class Calibration(object):
+    def __init__(self):
+        self.focal_matrix = None
+        self.rotation_vectors = None
+        self.translation_vectors = None
+        self.distortion_coefficient = None
+
+    def __getitem__(self, item):
+        return (self.focal_matrix,
+                self.rotation_vectors[item],
+                self.translation_vectors[item],
+                self.distortion_coefficient)
+
+    def write_calibration(self, filename):
+        with open(filename + '.pickle', 'wb') as handle:
+            pickle.dump(self, handle)
+
+    @staticmethod
+    def read_calibration(filename):
+        with open(filename + '.pickle', 'rb') as handle:
+            return pickle.load(handle)
+
+    def print_value(self):
+        print 'Focal Matrix : ', self.focal_matrix
+        print 'Distortion coefficient : ', self.distortion_coefficient
+
+        for angle in self.rotation_vectors.keys():
+            print 'Angle : %d - rot : %f, %f, %f' % (
+                angle,
+                self.rotation_vectors[angle][0][0],
+                self.rotation_vectors[angle][1][0],
+                self.rotation_vectors[angle][2][0])
+
+        for angle in self.translation_vectors.keys():
+            print 'Angle : %d - trans : %f, %f, %f' % (
+                angle,
+                self.translation_vectors[angle][0][0],
+                self.translation_vectors[angle][1][0],
+                self.translation_vectors[angle][2][0])
+
+
+def find_chessboard_corners(image, size_chessboard):
     """
     Return position x, y of chessboard corners
 
@@ -67,60 +125,11 @@ def get_chessboard_corners(image, size_chessboard):
     return corners
 
 
-def get_global_tvec(tvecs):
+def calibration_with_chessboard(images, chessboard):
     """
-    Compute the tvec mean and return it
-
-    :param tvecs:
-    :return:
-    """
-    x = [t[0][0] for t in tvecs]
-    y = [t[1][0] for t in tvecs]
-    z = [t[2][0] for t in tvecs]
-
-    x_mean = np.mean(x)
-    y_mean = np.mean(y)
-    z_mean = np.mean(z)
-
-    return x_mean, y_mean, z_mean
-
-
-def get_global_tvec_2(tvecs, angles):
-    """
-    Compute the global tvec with Christian methods
-
-    :param tvecs:
-    :param angles:
-    :return:
-    """
-    x = [t[0][0] for t in tvecs]
-    y = [t[1][0] for t in tvecs]
-    z = [t[2][0] for t in tvecs]
-
-    # fit circle
-    points = dict(zip(angles, zip(x, y, z)))
-    A, B, C = [np.array(points[k]) for k in [21, 45, 69]]
-    a = np.linalg.norm(C - B)
-    b = np.linalg.norm(C - A)
-    c = np.linalg.norm(B - A)
-    s = (a + b + c) / 2
-    R = a * b * c / 4 / np.sqrt(s * (s - a) * (s - b) * (s - c))
-
-    b1 = a * a * (b * b + c * c - a * a)
-    b2 = b * b * (a * a + c * c - b * b)
-    b3 = c * c * (a * a + b * b - c * c)
-    P = np.column_stack((A, B, C)).dot(np.hstack((b1, b2, b3)))
-    P /= b1 + b2 + b3
-
-    return P
-
-
-def get_calibration(files_name, chessboard, size_chessboard):
-    """
-    1. Load images files in grayscale
-    2. Find chessboard corners
-    3. Compute calibrate camera parameters
-    4. Return this paremeters
+    1. Find chessboard corners
+    2. Compute calibrate camera parameters
+    3. Return this paremeters
 
     :param files: image files names
     :param chessboard:
@@ -128,31 +137,30 @@ def get_calibration(files_name, chessboard, size_chessboard):
     :return:
     """
 
-    # Read images
-    images = map(lambda img: cv2.imread(img, cv2.CV_LOAD_IMAGE_GRAYSCALE),
-                 files_name)
-
     # Get corners images
-    image_points = map(lambda img: get_chessboard_corners(
-        img, size_chessboard), images)
+    image_points = list()
+    for angle in images.keys():
+        image_points.append(find_chessboard_corners(images[angle],
+                                                    chessboard.shape))
 
     # Clean possibly None corners
     image_points = [corners for corners in image_points if corners is not None]
-    object_points = [chessboard] * len(image_points)
 
-    ret, mtx, dists, rvecs, tvecs = cv2.calibrateCamera(
+    object_points = [chessboard.object_points] * len(image_points)
+
+    ret, mtx, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(
         object_points,
         image_points,
-        images[0].shape[0:2],
-        flags=(cv2.cv.CV_CALIB_ZERO_TANGENT_DIST +
-               cv2.cv.CV_CALIB_FIX_K1 +
-               cv2.cv.CV_CALIB_FIX_K2 +
-               cv2.cv.CV_CALIB_FIX_K3))
+        images[0].shape[0:2])
+        # flags=(cv2.cv.CV_CALIB_ZERO_TANGENT_DIST +
+        #        cv2.cv.CV_CALIB_FIX_K1 +
+        #        cv2.cv.CV_CALIB_FIX_K2 +
+        #        cv2.cv.CV_CALIB_FIX_K3))
 
-    return image_points, object_points, ret, mtx, dists, rvecs, tvecs
+    return image_points, object_points, ret, mtx, dist_coeffs, rvecs, tvecs
 
 
-def calibrate(files, angles, chessboard, size_chessboard):
+def calibration(images, chessboard):
     """
     Calibrate camera and return matrix (focal, image center) parameters and
     dict of rvec, tvec value for each angle key.
@@ -165,19 +173,25 @@ def calibrate(files, angles, chessboard, size_chessboard):
     :param size_chessboard:
     :return:
     """
-    image_points, object_points, ret, mtx, dists, rvecs, tvecs = \
-        get_calibration(files, chessboard, size_chessboard)
+    image_points, object_points, ret, mtx, dist_coeffs, rvecs, tvecs = \
+        calibration_with_chessboard(images, chessboard)
 
-    global_tvec = get_global_tvec(tvecs)
+    my_calibration = Calibration()
+    my_calibration.focal_matrix = mtx
+    my_calibration.distortion_coefficient = dist_coeffs
+    my_calibration.rotation_vectors = dict()
+    my_calibration.translation_vectors = dict()
 
-    angle_rvec_tvec = dict()
-    for i in range(len(angles)):
-        angle_rvec_tvec[angles[i]] = (rvecs[i], tvecs[i])
+    i = 0
+    for angle in images.keys():
+        my_calibration.rotation_vectors[angle] = rvecs[i]
+        my_calibration.translation_vectors[angle] = tvecs[i]
+        i += 1
 
-    return mtx, angle_rvec_tvec, global_tvec
+    return my_calibration
 
 
-def get_reprojection_error(image_points, object_points, mtx, rvecs, tvecs):
+def compute_reprojection_error(image_points, object_points, mtx, rvecs, tvecs):
     """
     Return mean reprojection error
 
@@ -196,6 +210,7 @@ def get_reprojection_error(image_points, object_points, mtx, rvecs, tvecs):
                                               tvecs[i],
                                               mtx,
                                               None)
+        print(image_points_2)
 
         error = cv2.norm(image_points[i], image_points_2, cv2.NORM_L2) / len(
             image_points_2)

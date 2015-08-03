@@ -25,73 +25,113 @@ __revision__ = ""
 #       =======================================================================
 #       External Import 
 import numpy as np
-import alinea.phenomenal.calibration_chessboard as calibration_chessboard
+
 import glob
+import cv2
+import pylab as p
+import mpl_toolkits.mplot3d.axes3d as p3
+import pickle
 
 
-#       =======================================================================
+# =======================================================================
 #       Local Import
+import alinea.phenomenal.calibration_chessboard as calibration_chessboard
+import alinea.phenomenal.calibration_tools as calibration_tools
+import alinea.phenomenal.reconstruction_3d as reconstruction_3d
+import tools_test
 
-#       =======================================================================
+
+# =======================================================================
 #       Code
 
 
-def get_chessboard():
-    """
-    Return chessboard position in real world (arbitrary data)
-
-    :return:
-    """
-    # mm is the unit of australian pipeline
-    square_size = 47
-
-    object_points = np.zeros((8 * 6, 3), np.float32)
-    object_points[:, :2] = np.mgrid[0:8, 0:6].T.reshape(-1, 2) * square_size
-
-    # 48 points are stored in an 48x3 array objp
-    # print objp, np.shape(objp)
-
-    # choose bottom-left corner as origin, to match australian convention
-    object_points = object_points - object_points[40, :]
-
-    return object_points
-
-
 def get_parameters():
-    directory = '../../share/CHESSBOARD/'
+    directory = '../../local/data/CHESSBOARD/'
     files = glob.glob(directory + '*.png')
     angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files)
 
-    chessboard = get_chessboard()
-    size_chessboard = (8, 6)
+    images = dict()
+    for i in range(len(files)):
+        images[angles[i]] = cv2.imread(files[i], cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
-    return files, angles, chessboard, size_chessboard
+    chessboard = calibration_chessboard.Chessboard(47, 8, 6)
 
-
-def test_calibrate():
-    files, angles, chessboard, size_chessboard = get_parameters()
-
-    mtx, angle_rvec_tvec, global_tvec = calibration_chessboard.calibrate(
-        files, angles, chessboard, size_chessboard)
-
-    print "Mtx : ", mtx
-    print "Angles - rvec - tvec : ", angle_rvec_tvec
-    print "Global tvec : ", global_tvec
+    return images, chessboard
 
 
-def test_get_calibration():
-    files, angles, chessboard, size_chessboard = get_parameters()
+def test_calibration():
+    images, chessboard = get_parameters()
 
-    image_points, object_points, ret, mtx, dists, rvecs, tvecs = \
-        calibration_chessboard.get_calibration(files,
-                                               chessboard,
-                                               size_chessboard)
+    my_calibration = calibration_chessboard.calibration(images, chessboard)
 
-    reprojection_error = calibration_chessboard.get_reprojection_error(
-        image_points,
-        object_points,
-        mtx,
-        rvecs,
-        tvecs)
+    my_calibration.print_value()
+    my_calibration.write_calibration('my_calibration')
 
-    print "reprojection_error : ", reprojection_error
+
+def test_compute_rotation_and_translation_vectors():
+    my_calibration = calibration_chessboard.Calibration.read_calibration(
+        'calibration')
+
+    my_calibration.print_value()
+
+    angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]
+
+    calibration_tools.compute_rotation_vectors(
+        my_calibration.rotation_vectors, angles)
+    my_calibration.write_calibration('calibration')
+    calibration_tools.plot_vectors(my_calibration.rotation_vectors)
+
+    calibration_tools.compute_translation_vectors(
+        my_calibration.translation_vectors, angles)
+    my_calibration.write_calibration('calibration')
+    calibration_tools.plot_vectors(my_calibration.translation_vectors)
+
+
+def test_reconstruction_3d():
+
+    my_calibration = calibration_chessboard.Calibration.read_calibration(
+        'calibration')
+
+    #directory = '../../local/data/tests/Samples_binarization_2/'
+    # directory = '../../local/data/tests/Samples_binarization_3/'
+    # directory = '../../local/data/tests/Samples_binarization_4/'
+    directory = '../../local/data/tests/Samples_binarization_5/'
+
+
+    files = glob.glob(directory + '*.png')
+    angles = map(lambda x: int((x.split('/')[-1]).split('.png')[0]), files)
+
+    images = dict()
+    for i in range(len(files)):
+        if angles[i] < 270:
+            images[angles[i]] = cv2.imread(files[i],
+                                           cv2.CV_LOAD_IMAGE_GRAYSCALE)
+
+
+
+    octree_result = reconstruction_3d.reconstruction_3d(
+        images, my_calibration, 1)
+
+    tools_test.show_cube(octree_result, 9, "OpenCv")
+
+    reconstruction_3d.reprojection_3d_objects_to_images(
+        images, octree_result, my_calibration)
+
+    import alinea.phenomenal.calibration_manual as calibration_manual
+    camera_configuration = calibration_manual.CameraConfiguration()
+    my_calibration = calibration_manual.Calibration(camera_configuration)
+    my_calibration.print_value()
+    octree_result = reconstruction_3d.reconstruction_3d_manual_calibration(
+        images, my_calibration, 1)
+
+    tools_test.show_cube(octree_result, 1, "Manual")
+
+
+
+#       =======================================================================
+#       TEST
+
+if __name__ == "__main__":
+    # test_calibration()
+    # test_compute_rotation_and_translation_vectors()
+    test_reconstruction_3d()

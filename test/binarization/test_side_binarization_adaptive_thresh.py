@@ -78,5 +78,3 @@ def test_suite_generator():
                directory[0],
                directory[1],
                True)
-
-

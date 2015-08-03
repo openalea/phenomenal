@@ -69,11 +69,14 @@ def read_csv_dict_key_list(csv_name):
 
 def check_import_image(genotype_name, plant_id, rewrite=False,):
     dict_dates_images = config.import_images(
-        "../../share/data/Structure_filename",
+        "../../local/data/tests/Structure_filename",
         genotype_name,
         plant_id)
 
-    csv_name = "../../share/refs/test_config/import_image_2" + genotype_name\
+    print dict_dates_images
+
+    csv_name = "../../local/data/refs/test_config/import_image_" + \
+               genotype_name\
                + \
                "_" + plant_id + ".csv"
 
@@ -81,11 +84,12 @@ def check_import_image(genotype_name, plant_id, rewrite=False,):
         write_csv_dict_key_list(csv_name, dict_dates_images)
     else:
         dict_refs = read_csv_dict_key_list(csv_name)
+        print dict_refs
         assert cmp(dict_refs, dict_dates_images) == 0
 
 
 def check_getconfig():
-    config_path = "../../share/refs/test_config/config.cfg"
+    config_path = "../../local/data/refs/test_config/config.cfg"
     parser = config.getconfig(config_path)
 
     dictionary = parser.as_dict()
@@ -132,7 +136,7 @@ def check_sidebinarisation_configuration():
         image = cv2.imread(os.path.join(shared_directory, image_path), flag)
         return image[50:1680, 275:1746]
 
-    config_path = "../../share/refs/test_config/config.cfg"
+    config_path = "../../local/data/refs/test_config/config.cfg"
     parser = config.getconfig(config_path)
     configuration = config.sidebinarisation_configuration(parser)
     shared_directory = str(shared_data(alinea.phenomenal))

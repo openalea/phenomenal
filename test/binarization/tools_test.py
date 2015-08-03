@@ -31,17 +31,17 @@ import numpy
 #       =======================================================================
 
 directories = [
-    ['../../share/data/Samples_13_view/first/',
-     '../../share/refs/test_binarization/Samples_13_view/first/'],
+    ['../../local/data/tests/Samples_13_view/first/',
+     '../../local/data/refs/test_binarization/Samples_13_view/first/'],
 
-    ['../../share/data/Samples_13_view/last/',
-     '../../share/refs/test_binarization/Samples_13_view/last/'],
+    ['../../local/data/tests/Samples_13_view/last/',
+     '../../local/data/refs/test_binarization/Samples_13_view/last/'],
 
-    ['../../share/data/Samples_3_view/first/',
-     '../../share/refs/test_binarization/Samples_3_view/first/'],
+    ['../../local/data/tests/Samples_3_view/first/',
+     '../../local/data/refs/test_binarization/Samples_3_view/first/'],
 
-    ['../../share/data/Samples_3_view/last/',
-     '../../share/refs/test_binarization/Samples_3_view/last/']]
+    ['../../local/data/tests/Samples_3_view/last/',
+     '../../local/data/refs/test_binarization/Samples_3_view/last/']]
 
 
 def load_images(images_path):

@@ -27,16 +27,15 @@ __revision__ = ""
 import math
 import numpy as np
 from collections import deque
+import cv2
 
 #       =======================================================================
 #       Local Import
 import alinea.phenomenal.reconstruction_3d_algorithm as algo
 
+#       =======================================================================
 
-
-
-def reconstruction_3d_manual_calibration(images, angles, calibration,
-                                         precision=1, use_top_image=True):
+def reconstruction_3d_manual_calibration(images, calibration, precision=1):
     """ Octree doc
 
     :param images:
@@ -64,24 +63,63 @@ def reconstruction_3d_manual_calibration(images, angles, calibration,
 
         cubes = algo.split_cubes(cubes)
 
-        for j in range(len(images)):
-            if angles[j] == -1:
-                cubes = algo.fast_manual_screen(images[j], cubes, calibration, True)
+        print "start len : ", len(cubes)
+        for angle in images.keys():
+            if angle == -1:
+                cubes = algo.octree_builder(images[angle],
+                                         cubes,
+                                         calibration,
+                                         algo.top_manual_projection)
             else:
-                if angles[j] != 0:
-                    cubes = algo.side_rotation(cubes, angles[j], calibration)
+                if angle != 0:
+                    cubes = algo.side_rotation(cubes, angle, calibration)
 
-                cubes = algo.fast_manual_screen(images[j], cubes, calibration)
+                cubes = algo.octree_builder(images[angle],
+                                         cubes,
+                                         calibration,
+                                         algo.side_manual_projection)
+                if angle != 0:
+                    cubes = algo.side_rotation(cubes, -angle, calibration)
 
-                if angles[j] != 0:
-                    cubes = algo.side_rotation(cubes, -angles[j], calibration)
+            print "image: ", angle, "end len : ", len(cubes)
 
     return cubes
 
 
+def reconstruction_3d(images, calibration, precision=1):
+    """
+
+    :param images:
+    :param angle:
+    :param calibration:
+    :param precision:
+    :param use_top_image:
+    :return:
+    """
+    origin = algo.Cube(algo.Point3D(0, 0, 0), 5000)
+
+    cubes = deque()
+    cubes.append(origin)
+
+    nb_iteration = int(round(math.log10(origin.radius / precision) /
+                             math.log10(2)))
+
+    for i in range(nb_iteration):
+        print 'octree decimation, iteration', i + 1, '/', nb_iteration
+        cubes = algo.split_cubes(cubes)
+
+        print "start len : ", len(cubes)
+        for angle in images.keys():
+            cubes = algo.octree_builder(
+                images[angle], cubes, calibration[angle], algo.side_projection)
+
+            print "image: ", angle, "end len : ", len(cubes)
 
 
-def reprojection_3d_objects_to_images(image, cubes, rvec, mtx, tvec):
+    return cubes
+
+
+def reprojection_3d_objects_to_images(images, cubes, calibration):
     """ fast screen documentation
 
     :param image:
@@ -106,173 +144,25 @@ def reprojection_3d_objects_to_images(image, cubes, rvec, mtx, tvec):
             + Any pixel value in the bounding box projected is > 0
     """
 
-    image[:] = 0
-    h, l = np.shape(image)
-
-    for cube in cubes:
-        bbox = algo.bbox_projection(cube, rvec, mtx, tvec)
-
-        for i in range(4):
-            if bbox[i] < 0:
-                bbox[i] = 0
-        # ===========================================================
-
-        if bbox[3] > h:
-            bbox[3] = h - 1
-
-        if bbox[1] > l:
-            bbox[1] = l - 1
-
-        image[bbox[2]:bbox[3], bbox[0]:bbox[1]] = 255
-
-    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-    cv2.imshow('image', image)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
-
-
-def reconstruction_3d(images, rvecs, mtx, tvecs, precision=1):
-    """
-
-    :param images:
-    :param angle:
-    :param calibration:
-    :param precision:
-    :param use_top_image:
-    :return:
-    """
-
     h, l = np.shape(images[0])
-    print h, l
 
-    origin = algo.Cube(algo.Point3D(l / 2.0, l / 2.0, h / 2.0), h / 2.0)
-    print origin.center.x, origin.center.y, origin.center.z, origin.radius
+    for angle in images.keys():
+        img = images[angle]
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
-    cubes = deque()
-    cubes.append(origin)
+        for cube in cubes:
+            xmin, xmax, ymin, ymax = algo.bbox_projection(
+                cube, calibration[angle], algo.side_projection)
 
-    nb_iteration = int(round(math.log10(origin.radius / precision) /
-                             math.log10(2)))
+            xmin = min(max(xmin, 0), l - 1)
+            xmax = min(max(xmax, 0), l - 1)
+            ymin = min(max(ymin, 0), h - 1)
+            ymax = min(max(ymax, 0), h - 1)
 
-    nb_iteration = 8
+            img[ymin:ymax, xmin:xmax] = (255, 0, 0)
 
-    for i in range(nb_iteration):
-        print 'octree decimation, iteration', i + 1, '/', nb_iteration
-        cubes = algo.split_cubes(cubes)
+        cv2.namedWindow(str(angle), cv2.WINDOW_NORMAL)
+        cv2.imshow(str(angle), img)
+        cv2.waitKey()
+        cv2.destroyAllWindows()
 
-        for j in range(len(images)):
-            print i, "start len : ", len(cubes)
-            cubes = algo.fast_screen(images[j], cubes, rvecs[j], mtx, tvecs[j])
-            print i, "end len : ", len(cubes)
-
-    return cubes
-
-
-#       =======================================================================
-
-import cv2
-# images_path = [data/'top.png', data/'side0.png', data/'side90.png']
-
-def load_images(images_path):
-    images = []
-    for image_name in images_path:
-        print image_name
-        im = cv2.imread(image_name, cv2.CV_LOAD_IMAGE_GRAYSCALE)
-        images.append(im)
-    return images
-
-
-def binarize_images(images):
-    for im in images:
-        im[im == 255] = 0
-        im[im != 0] = 255
-    return images
-
-
-import alinea.phenomenal.calibration_manual as calib_class
-
-
-def get_configuration_camera():
-    return calib_class.CameraConfiguration()
-
-
-def get_calibration(configuration_camera):
-    return calib_class.Calibration(configuration_camera)
-
-
-def create_matrix(calibration):
-    dtype = np.uint8
-    matrix = np.zeros([calibration.cbox,
-                       calibration.cbox,
-                       calibration.hbox], dtype=dtype)
-
-    return matrix
-
-
-def fill_matrix(cubes, m):
-    while True:
-        try:
-            cube = cubes.popleft()
-
-            r = cube.radius
-            x = cube.center.x
-            y = cube.center.y
-            z = cube.center.z
-
-            m[x - r:x + r,
-              y - r:y + r,
-              z - r:z + r] = 50
-
-        except IndexError:
-            break
-
-    return m
-
-
-def write_images_on_matrix(images, m):
-    img = images[1]
-    h, l = np.shape(img)
-    xl, yl, zl = np.shape(m)
-    resized_image = cv2.resize(img, (xl, zl), interpolation=cv2.INTER_AREA)
-    resized_image[resized_image > 0] = 255
-    for h in range(zl):
-        for l in range(xl):
-            if resized_image[h, l] == 255:
-                m[l, 0, zl - 30 - h - 1] = 100
-            else:
-                m[l, 0, zl - 30 - h - 1] = 70
-
-    # ======================================================================
-
-    img = images[2]
-    h, l = np.shape(img)
-    xl, yl, zl = np.shape(m)
-    resized_image = cv2.resize(img, (xl, zl), interpolation=cv2.INTER_AREA)
-    resized_image[resized_image > 0] = 255
-    for h in range(zl):
-        for l in range(xl):
-            if resized_image[h, l] == 255:
-                m[0, l, zl - 30 - h - 1] = 100
-            else:
-                m[0, l, zl - 30 - h - 1] = 70
-
-    # ======================================================================
-
-    img = images[0]
-    h, l = np.shape(img)
-    print h, l
-
-    xl, yl, zl = np.shape(m)
-    print xl, yl, zl
-
-    resized_image = cv2.resize(img, (xl, yl), interpolation=cv2.INTER_AREA)
-    resized_image[resized_image > 0] = 255
-
-    print np.shape(resized_image)
-    for h in range(xl):
-        for l in range(yl):
-            if resized_image[h, l] == 255:
-                m[l, yl - h - 1, zl - 1] = 100
-            else:
-                m[l, yl - h - 1, zl - 1] = 70
-    return m
