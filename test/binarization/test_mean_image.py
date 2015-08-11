@@ -67,7 +67,7 @@ def check_get_mean_image(data_directory, refs_directory, rewrite=False):
     mean_image = get_mean_image(images)
 
     ref_mean_image = cv2.imread(refs_directory + 'ref_mean_image.png',
-                                cv2.CV_LOAD_IMAGE_UNCHANGED)
+                                cv2.IMREAD_UNCHANGED)
 
     if rewrite:
         cv2.imwrite(refs_directory + 'ref_mean_image.png', mean_image)

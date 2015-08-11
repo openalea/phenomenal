@@ -77,27 +77,27 @@ def loadconfig(config='SideCamera2013_ZoomOut.cfg'):
     d = p.as_dict()
     if p.has_section('config_images'):
         for it in p.items('config_images', raw=True):
-            flag = cv2.CV_LOAD_IMAGE_UNCHANGED
+            flag = cv2.IMREAD_UNCHANGED
             if it[1].endswith('mask'):
-                flag = cv2.CV_LOAD_IMAGE_GRAYSCALE
+                flag = cv2.IMREAD_GRAYSCALE
             d['config_images'][it[0]] = cv2.imread(confdir / it[1], flag)
 
     if p.has_section('config_images_elcom'):
         for it in p.items('config_images_elcom', raw=True):
-            flag = cv2.CV_LOAD_IMAGE_UNCHANGED
+            flag = cv2.IMREAD_UNCHANGED
             if it[1].endswith('mask'):
-                flag = cv2.CV_LOAD_IMAGE_GRAYSCALE
+                flag = cv2.IMREAD_GRAYSCALE
             d['config_images_elcom'][it[0]] = cv2.imread(confdir / it[1], flag)
 
     for key in d:
         for sub_key in d[key]:
             if str(sub_key).startswith('mask'):
                 d[key][sub_key] = cv2.imread(confdir / str(d[key][sub_key]),
-                                             cv2.CV_LOAD_IMAGE_GRAYSCALE)
+                                             cv2.IMREAD_GRAYSCALE)
 
             if str(sub_key).startswith('background'):
                 d[key][sub_key] = cv2.imread(confdir / str(d[key][sub_key]),
-                                             cv2.CV_LOAD_IMAGE_UNCHANGED)
+                                             cv2.IMREAD_UNCHANGED)
     return d
 
 

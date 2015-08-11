@@ -166,10 +166,7 @@ def adaptive_thresh_gaussian_c(image,
     return result
 
 
-def adaptive_thresh_mean_c(image,
-                           block_size,
-                           c,
-                           mask=None):
+def adaptive_thresh_mean_c(image, block_size, c, mask=None):
     """
 
     :param image:

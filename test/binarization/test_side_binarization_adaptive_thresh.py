@@ -49,8 +49,8 @@ def check_side_binarization_adaptive_thresh(data_directory,
 
     images_path = glob.glob(data_directory + '*sv*.png')
     images = tools_test.load_images(images_path)
-    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), images_path)
-    print images_path
+    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]),
+                 images_path)
 
     config = configuration.loadconfig('configuration_side_image_michael.cfg')
     bin_config = configuration.binarization_config(config)
@@ -66,11 +66,6 @@ def check_side_binarization_adaptive_thresh(data_directory,
                                      rewrite,
                                      angles)
 
-check_side_binarization_adaptive_thresh(tools_test.directories[0][0],
-               tools_test.directories[0][1],
-               True)
-
-
 def test_suite_generator():
     tools_test.print_check(check_side_binarization_adaptive_thresh.__name__)
     for directory in tools_test.directories:
@@ -78,3 +73,12 @@ def test_suite_generator():
                directory[0],
                directory[1],
                True)
+
+
+#       =======================================================================
+#       LOCAL TEST
+
+if __name__ == "__main__":
+    do_nothing = None
+
+

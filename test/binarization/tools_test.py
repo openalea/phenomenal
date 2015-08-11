@@ -53,7 +53,7 @@ def load_images(images_path):
     """
     images = []
     for image_name in images_path:
-        images.append(cv2.imread(image_name, cv2.CV_LOAD_IMAGE_UNCHANGED))
+        images.append(cv2.imread(image_name, cv2.IMREAD_UNCHANGED))
 
     return images
 
@@ -90,10 +90,10 @@ def check_result_with_ref(list_binarize_image,
     for image in list_binarize_image:
         if angles is not None:
             ref_image = cv2.imread(refs_path + '%d.png' % angles[i],
-                               cv2.CV_LOAD_IMAGE_GRAYSCALE)
+                                   cv2.IMREAD_GRAYSCALE)
         else:
             ref_image = cv2.imread(refs_path + '%d.png' % i,
-                               cv2.CV_LOAD_IMAGE_GRAYSCALE)
+                                   cv2.IMREAD_GRAYSCALE)
 
         assert numpy.array_equal(ref_image, image)
         i += 1
