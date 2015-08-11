@@ -124,6 +124,7 @@ def get_closest_label(label, labels, r):
 
     return None
 
+
 def transfer_label(label_src, label_dest):
     for j, i in label_src['index']:
         label_dest['index'].append((j, i))
@@ -134,12 +135,69 @@ def transfer_label(label_src, label_dest):
 class Segment(object):
     def __init__(self, id_number):
         self.id_number = id_number
+        self.first_id_number = id_number
         self.points = list()
         self.first_point = -1
         self.last_point = -1
 
     def get_size(self):
         return len(self.points)
+
+
+class Trunk(object):
+    def __init__(self):
+        self.segments = list()
+
+    def global_position(self):
+        y_mean, x_mean = (0, 0)
+        for segment in self.segments:
+            for y, x in segment.points:
+                y_mean += y
+                x_mean += x
+
+        return y_mean, x_mean
+
+
+    def get_height(self):
+        y_min = 5000
+        y_max = -5000
+
+        for segment in self.segments:
+            for y, x in segment.points:
+                y_min = min(y_min, y)
+                y_max = max(y_max, y)
+
+        return y_max - y_min
+
+
+    def get_width(self):
+        x_min = 5000
+        x_max = -5000
+
+        for segment in self.segments:
+            for y, x in segment.points:
+                x_min = min(x_min, x)
+                x_max = max(x_max, x)
+
+        return x_max - x_min
+
+
+    def is_in_trunk(self, segment):
+        for trunk_segment in self.segments:
+            if trunk_segment is segment:
+                return True
+
+        return False
+
+    def print_value(self):
+        print "Number of segment : ", len(self.segments)
+        print "Height : ", self.get_height()
+        print "Width : ", self.get_width()
+        print "Global position : ", self.global_position()
+
+        for segment in self.segments:
+            for y, x in segment.points:
+                print y, x
 
 
 def neighbors_value(skeleton_image, y, x):
@@ -201,7 +259,6 @@ def next_neighbors(skeleton_image, y, x):
                 continue
 
             pixel = skeleton_image[y + j, x + i]
-            print pixel
             # Continue, pixel is black, no organs
             if pixel == 0:
                 continue
@@ -228,7 +285,6 @@ def segment_skeleton(skeleton_image):
     id_number = 1
     for j in xrange(h):
         for i in xrange(l):
-            print j, i
             pixel = skeleton_image[j, i]
 
             # Continue, pixel is black, no organs
@@ -293,8 +349,6 @@ def segment_organs_skeleton_image(skeleton_image):
 
     segments = segment_skeleton(skeleton_image)
 
-
-
     candidates_trunc = list()
     for segment in segments:
         size_segments = len(segment.points)
@@ -302,7 +356,6 @@ def segment_organs_skeleton_image(skeleton_image):
         if size_segments <= 4:
             candidates_trunc.append(segment)
             continue
-
 
         yb, xb = segment.first_point
         ya, xa = segment.last_point
@@ -337,51 +390,40 @@ def segment_organs_skeleton_image(skeleton_image):
                         if -r <= j - jj <= r and -r <= i - ii <= r:
                             segment_2.id_number = segment_1.id_number
 
-    # tron_number = -1
-    # count = 0
-    #
-    # mydict =  dict()
-    # for label in candidates_trunc:
-    #
-    #     if label['number'] not in mydict:
-    #         mydict[label['number']] = len(label['index'])
-    #     else:
-    #         mydict[label['number']] += len(label['index'])
-    #
-    # mymax = -1
-    # mykey = -1
-    # for key in mydict.keys():
-    #
-    #     if mydict[key] > mymax:
-    #         mymax = mydict[key]
-    #         mykey = key
-    #
-    # if mymax == -1 or mykey == 1:
-    #     return -1
-    #
-    # for label in new_list:
-    #     if label['number'] != mykey:
-    #         label['number'] = label_number
-    #         label_number += 1
+
+    trunks = dict()
+    for segment in candidates_trunc:
+        if segment.id_number not in trunks:
+            trunks[segment.id_number] = Trunk()
+
+        trunks[segment.id_number].segments.append(segment)
+
+
+    final_trunk = None
+    max_height = 0
+    for id in trunks.keys():
+        height = trunks[id].get_height()
+        if height > max_height:
+            max_height = height
+            final_trunk = trunks[id]
+
+
+    final_trunk.print_value()
+
+    for segment in candidates_trunc:
+        if final_trunk.is_in_trunk(segment) is False:
+            segment.id_number = segment.first_id_number
+
+
 
     for segment in segments:
         for y, x in segment.points:
             skeleton_image[y, x] = segment.id_number
 
-
     return skeleton_image
 
 
-
-
-
-
-
-
-
-
-
-#       =======================================================================
+#       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
