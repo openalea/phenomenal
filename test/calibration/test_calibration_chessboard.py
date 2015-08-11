@@ -129,7 +129,7 @@ def test_reconstruction_3d():
 
 
 #       =======================================================================
-#       TEST
+#       LOCAL TEST
 
 if __name__ == "__main__":
     # test_calibration()

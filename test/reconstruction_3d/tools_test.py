@@ -50,7 +50,7 @@ def load_images(images_path, angles):
     i = 0
 
     for i in range(len(images_path)):
-        im = cv2.imread(images_path[i], cv2.CV_LOAD_IMAGE_GRAYSCALE)
+        im = cv2.imread(images_path[i], cv2.IMREAD_GRAYSCALE)
         images[angles[i]] = im
 
     return images
