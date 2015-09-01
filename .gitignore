@@ -3,3 +3,5 @@
 /src/*.pyc
 /src/alinea/*.pyc
 /src/alinea/phenomenal/*.pyc
+/build
+/dist

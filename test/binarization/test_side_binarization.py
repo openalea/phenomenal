@@ -47,6 +47,8 @@ def check_side_binarization_meanshift(data_directory,
     """
     images_path = glob.glob(data_directory + '*sv*.png')
     images = tools_test.load_images(images_path)
+    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]),
+                 images_path)
     mean_image = test_mean_image.get_mean_image(images)
 
     config = configuration.loadconfig('configuration_image_basic.cfg')
@@ -62,7 +64,8 @@ def check_side_binarization_meanshift(data_directory,
     tools_test.check_result_with_ref(list_binarize_image,
                                      refs_directory,
                                      "side_binarization_meanshift",
-                                     rewrite)
+                                     rewrite,
+                                     angles)
 
 
 def test_suite_generator():
@@ -71,3 +74,11 @@ def test_suite_generator():
         yield (check_side_binarization_meanshift,
                directory[0],
                directory[1])
+
+#       =======================================================================
+#       LOCAL TEST
+
+if __name__ == "__main__":
+    tools_test.print_check(check_side_binarization_meanshift.__name__)
+    for directory in tools_test.directories:
+        check_side_binarization_meanshift(directory[0], directory[1], True)

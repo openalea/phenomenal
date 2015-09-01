@@ -29,7 +29,7 @@ import cv2
 
 #       =======================================================================
 #       Local Import 
-import tools_test
+from phenomenal.test import tools_test
 import alinea.phenomenal.calibration_manual as calibration_manual
 import alinea.phenomenal.reconstruction_3d as reconstruction_3d
 
@@ -75,7 +75,7 @@ def test_reconstruction_3d_samples_binarization_2():
     #   =======================================================================
     #   Input
 
-    directory = '../../local/data/tests/Samples_binarization_2/'
+    directory = '../../local/data/tests/Samples_binarization_6/'
     files = glob.glob(directory + '*.png')
     angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
 
@@ -90,7 +90,7 @@ def test_reconstruction_3d_samples_binarization_2():
     #   Reconstruction 3D
 
     octree_result = reconstruction_3d.reconstruction_3d_manual_calibration(
-        images, calibration, 1)
+        images, calibration, 0.5)
 
     tools_test.show_cube(octree_result, 1)
 
@@ -98,5 +98,5 @@ def test_reconstruction_3d_samples_binarization_2():
 #       TEST
 
 if __name__ == "__main__":
-    test_reconstruction_3d_samples_binarization_1()
+    # test_reconstruction_3d_samples_binarization_1()
     test_reconstruction_3d_samples_binarization_2()

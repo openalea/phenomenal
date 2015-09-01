@@ -26,14 +26,14 @@ __revision__ = ""
 #       External Import
 import cv2
 import glob
-import matplotlib
-from pylab import *
+import numpy as np
 
 #       =======================================================================
 #       Local Import
 import alinea.phenomenal.skeletonize as skeletonize
+import alinea.phenomenal.repair_processing as repair_processing
 import alinea.phenomenal.segmentation as segmentation
-
+from phenomenal.test import tools_test
 
 #       =======================================================================
 #       Code
@@ -65,7 +65,6 @@ def compute_my_random_color_map():
     return my_random_color_map
 
 
-
 def show_image_and_skeleton(image, skeleton):
 
     my_random_color_map = compute_my_random_color_map()
@@ -87,19 +86,49 @@ def show_image_and_skeleton(image, skeleton):
 
 def test_skeletonize():
     data_directory = "../../local/data/tests/Samples_binarization_2/"
-    images_path = glob.glob(data_directory + '*.png')
+    files = glob.glob(data_directory + '*.png')
+    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
 
-    images = map(lambda x: cv2.imread(x, cv2.IMREAD_GRAYSCALE), images_path)
+    images = dict()
+    for i in range(len(files)):
+            images[angles[i]] = cv2.imread(
+                files[i], cv2.IMREAD_GRAYSCALE)
 
-    for image in images:
-        skeleton = skeletonize.skeletonize_image_skimage(image)
+    for angle in images:
+
+        image_repair = repair_processing.fill_up_prop(images[angle])
+        skeleton = skeletonize.skeletonize_image_skimage(image_repair)
+
+        # kernel = np.ones((5, 5), np.uint8)
+        # skeleton = cv2.dilate(skeleton, kernel, iterations=4)
+
+        tools_test.show_comparison_2_image(images[angle], skeleton)
+
+        cv2.imwrite("../../local/data/refs/test_skeletonize/" +
+                    "ref_skeletonize_%d.png" % angle, skeleton)
+
+
+def test_segmentation():
+    data_directory = "../../local/data/tests/Samples_binarization_7/"
+    files = glob.glob(data_directory + '*.png')
+    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
+
+    images = dict()
+    for i in range(len(files)):
+            images[angles[i]] = cv2.imread(
+                files[i], cv2.IMREAD_GRAYSCALE)
+
+    for angle in images:
+        image_repair = repair_processing.fill_up_prop(images[angle])
+
+        skeleton = skeletonize.skeletonize_image_skimage(image_repair)
         skeleton = segmentation.segment_organs_skeleton_image(skeleton)
 
-        show_image_and_skeleton(image, skeleton)
+        show_image_and_skeleton(images[angle], skeleton)
 
 #       =======================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    do_nothing = None
     test_skeletonize()
+    # test_segmentation()

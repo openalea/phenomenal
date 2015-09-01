@@ -66,19 +66,22 @@ def check_side_binarization_adaptive_thresh(data_directory,
                                      rewrite,
                                      angles)
 
+
 def test_suite_generator():
     tools_test.print_check(check_side_binarization_adaptive_thresh.__name__)
     for directory in tools_test.directories:
         yield (check_side_binarization_adaptive_thresh,
                directory[0],
-               directory[1],
-               True)
+               directory[1])
 
 
 #       =======================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    do_nothing = None
-
+    tools_test.print_check(check_side_binarization_adaptive_thresh.__name__)
+    for directory in tools_test.directories:
+        check_side_binarization_adaptive_thresh(directory[0],
+                                                directory[1],
+                                                True)
 

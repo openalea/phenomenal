@@ -14,7 +14,7 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
 """
 Write the doc here...
@@ -22,18 +22,19 @@ Write the doc here...
 
 __revision__ = ""
 
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import math
 import numpy as np
-from collections import deque
 import cv2
+from collections import deque
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import
 import alinea.phenomenal.reconstruction_3d_algorithm as algo
 
-#       =======================================================================
+#       ========================================================================
+
 
 def reconstruction_3d_manual_calibration(images, calibration, precision=1):
     """ Octree doc
@@ -46,11 +47,10 @@ def reconstruction_3d_manual_calibration(images, calibration, precision=1):
     :return:
     """
 
-    origin = algo.Cube(
-        algo.Point3D(calibration.cbox / 2.0,
-                     calibration.cbox / 2.0,
-                     calibration.hbox / 2.0),
-        max(calibration.cbox, calibration.hbox))
+    origin = algo.Cube(calibration.cbox / 2.0,
+                       calibration.cbox / 2.0,
+                       calibration.hbox / 2.0,
+                       max(calibration.cbox, calibration.hbox))
 
     cubes = deque()
     cubes.append(origin)
@@ -61,23 +61,27 @@ def reconstruction_3d_manual_calibration(images, calibration, precision=1):
     for i in range(nb_iteration):
         print 'octree decimation, iteration', i + 1, '/', nb_iteration
 
-        cubes = algo.split_cubes(cubes)
+        cubes = algo.manual_split_cubes(cubes)
 
         print "start len : ", len(cubes)
         for angle in images.keys():
             if angle == -1:
-                cubes = algo.octree_builder(images[angle],
-                                         cubes,
-                                         calibration,
-                                         algo.top_manual_projection)
+                cubes = algo.octree_builder(
+                    images[angle],
+                    cubes,
+                    calibration,
+                    algo.top_manual_projection)
+                print "HERE"
             else:
                 if angle != 0:
                     cubes = algo.side_rotation(cubes, angle, calibration)
 
-                cubes = algo.octree_builder(images[angle],
-                                         cubes,
-                                         calibration,
-                                         algo.side_manual_projection)
+                cubes = algo.octree_builder(
+                    images[angle],
+                    cubes,
+                    calibration,
+                    algo.side_manual_projection)
+
                 if angle != 0:
                     cubes = algo.side_rotation(cubes, -angle, calibration)
 
@@ -87,16 +91,7 @@ def reconstruction_3d_manual_calibration(images, calibration, precision=1):
 
 
 def reconstruction_3d(images, calibration, precision=1):
-    """
-
-    :param images:
-    :param angle:
-    :param calibration:
-    :param precision:
-    :param use_top_image:
-    :return:
-    """
-    origin = algo.Cube(algo.Point3D(0, 0, 0), 5000)
+    origin = algo.Cube(0, 0, 0, 2500)
 
     cubes = deque()
     cubes.append(origin)
@@ -115,54 +110,102 @@ def reconstruction_3d(images, calibration, precision=1):
 
             print "image: ", angle, "end len : ", len(cubes)
 
-
     return cubes
 
 
-def reprojection_3d_objects_to_images(images, cubes, calibration):
-    """ fast screen documentation
+def new_reconstruction_3d(images, calibration, precision=1):
 
-    :param image:
-    :param cubes:
-    :param calibration:
-    :param top_image:
-    :return:
+    origin = algo.Cube(0, 0, 0, 2500)
 
-    Algorithm
-    =========
+    my_octree = algo.new_octree_builder(
+        images, calibration, algo.side_projection, origin, 0)
 
-    For each cube in cubes :
-        - Project center cube position on image:
-        - Kept the cube and pass to the next if :
-            + The pixel value of center position projected is > 0
+    return my_octree
 
-        - Compute the bounding box and project the positions on image
-        - Kept the cube and pass to the next if :
-            + The pixel value of extremity of bounding box projected is > 0
 
-        - Kept the cube and pass to the next if :
-            + Any pixel value in the bounding box projected is > 0
-    """
+def re_projection_cubes_to_image(cubes, image, calibration):
 
-    h, l = np.shape(images[0])
+    h, l = np.shape(image)
 
-    for angle in images.keys():
-        img = images[angle]
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    img = image.copy()
+    img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
-        for cube in cubes:
-            xmin, xmax, ymin, ymax = algo.bbox_projection(
-                cube, calibration[angle], algo.side_projection)
+    for cube in cubes:
+        x_min, x_max, y_min, y_max = algo.bbox_projection(
+            cube, calibration, algo.side_projection)
 
-            xmin = min(max(xmin, 0), l - 1)
-            xmax = min(max(xmax, 0), l - 1)
-            ymin = min(max(ymin, 0), h - 1)
-            ymax = min(max(ymax, 0), h - 1)
+        x_min = min(max(x_min, 0), l - 1)
+        x_max = min(max(x_max, 0), l - 1)
+        y_min = min(max(y_min, 0), h - 1)
+        y_max = min(max(y_max, 0), h - 1)
 
-            img[ymin:ymax, xmin:xmax] = (255, 0, 0)
+        img[y_min:y_max, x_min:x_max] = (255, 0, 0)
 
-        cv2.namedWindow(str(angle), cv2.WINDOW_NORMAL)
-        cv2.imshow(str(angle), img)
-        cv2.waitKey()
-        cv2.destroyAllWindows()
+    return img
 
+
+def manual_re_projection_cubes_to_image(cubes, image, calibration, angle):
+
+    h, l = np.shape(image)
+
+    img = image.copy()
+    img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
+    if angle != 0:
+        cubes = algo.side_rotation(cubes, angle, calibration)
+
+    for cube in cubes:
+        x_min, x_max, y_min, y_max = algo.bbox_projection(
+            cube, calibration, algo.side_manual_projection)
+
+        x_min = min(max(x_min, 0), l - 1)
+        x_max = min(max(x_max, 0), l - 1)
+        y_min = min(max(y_min, 0), h - 1)
+        y_max = min(max(y_max, 0), h - 1)
+
+        img[y_min:y_max, x_min:x_max] = (255, 0, 0)
+
+    if angle != 0:
+        cubes = algo.side_rotation(cubes, -angle, calibration)
+
+    return img
+
+
+def re_projection_octree_to_image(octree, image, calibration):
+
+    h, l = np.shape(image)
+
+    img = image.copy()
+    img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
+    oct_nodes = list()
+    oct_nodes.append(octree)
+
+    while True:
+        if not oct_nodes:
+            break
+
+        oct_node = oct_nodes.pop()
+
+        if oct_node.isLeafNode is True:
+            cube = algo.Cube(oct_node.position[0],
+                             oct_node.position[1],
+                             oct_node.position[2],
+                             oct_node.size)
+
+            x_min, x_max, y_min, y_max = algo.bbox_projection(
+                cube, calibration, algo.side_projection)
+
+            x_min = min(max(x_min, 0), l - 1)
+            x_max = min(max(x_max, 0), l - 1)
+            y_min = min(max(y_min, 0), h - 1)
+            y_max = min(max(y_max, 0), h - 1)
+
+            img[y_min:y_max, x_min:x_max] = (255, 0, 0)
+
+        else:
+            for branch in oct_node.branches:
+                if branch is not None:
+                    oct_nodes.append(branch)
+
+    return img

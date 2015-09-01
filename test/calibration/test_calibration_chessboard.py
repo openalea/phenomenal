@@ -23,23 +23,19 @@ Write the doc here...
 __revision__ = ""
 
 #       =======================================================================
-#       External Import 
-import numpy as np
+#       External Import
 
 import glob
 import cv2
-import pylab as p
-import mpl_toolkits.mplot3d.axes3d as p3
-import pickle
-
 
 # =======================================================================
 #       Local Import
 import alinea.phenomenal.calibration_chessboard as calibration_chessboard
+import alinea.phenomenal.calibration_manual as calibration_manual
 import alinea.phenomenal.calibration_tools as calibration_tools
 import alinea.phenomenal.reconstruction_3d as reconstruction_3d
-import tools_test
-
+from phenomenal.test import tools_test
+import pylab
 
 # =======================================================================
 #       Code
@@ -52,7 +48,8 @@ def get_parameters():
 
     images = dict()
     for i in range(len(files)):
-        images[angles[i]] = cv2.imread(files[i], cv2.CV_LOAD_IMAGE_GRAYSCALE)
+        print angles[i], files[i]
+        images[angles[i]] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
 
     chessboard = calibration_chessboard.Chessboard(47, 8, 6)
 
@@ -65,7 +62,71 @@ def test_calibration():
     my_calibration = calibration_chessboard.calibration(images, chessboard)
 
     my_calibration.print_value()
+
+    calibration_tools.plot_vectors(my_calibration.rotation_vectors)
+    calibration_tools.plot_vectors(my_calibration.translation_vectors)
+
+    my_calibration.write_calibration('calibration')
+
+
+def get_parameters_2():
+    directory = '../../local/data/CHESSBOARD_2/'
+    files = glob.glob(directory + '*.png')
+    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files)
+
+    images = dict()
+    for i in range(len(files)):
+            images[angles[i]] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
+
+    chessboard = calibration_chessboard.Chessboard(47, 8, 6)
+
+    return images, chessboard
+
+
+def test_calibration_2():
+    images, chessboard = get_parameters_2()
+
+    my_calibration = calibration_chessboard.calibration(images, chessboard)
+
+    my_calibration.print_value()
+    calibration_tools.plot_vectors(my_calibration.rotation_vectors)
+    calibration_tools.plot_vectors(my_calibration.translation_vectors)
+
     my_calibration.write_calibration('my_calibration')
+
+
+def test_re_projection():
+    images, chessboard = get_parameters_2()
+
+    opencv_calibration = calibration_chessboard.Calibration.read_calibration(
+        'my_calibration')
+
+    opencv_calibration.print_value()
+
+    object_points = chessboard.object_points
+    focal_matrix = opencv_calibration.focal_matrix
+    distortion_coefficient = opencv_calibration.distortion_coefficient
+
+    for angle in images:
+        if angle % 30 == 0:
+
+            rotation_vector = opencv_calibration.rotation_vectors[angle]
+            translation_vector = opencv_calibration.translation_vectors[angle]
+
+            projection_point, _ = cv2.projectPoints(object_points,
+                                                    rotation_vector,
+                                                    translation_vector,
+                                                    focal_matrix,
+                                                    distortion_coefficient)
+
+            img = images[angle]
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
+            projection_point = projection_point.astype(int)
+            img[projection_point[:, 0, 0],
+                projection_point[:, 0, 1]] = [0, 0, 255]
+
+            tools_test.show_image(img)
 
 
 def test_compute_rotation_and_translation_vectors():
@@ -87,45 +148,141 @@ def test_compute_rotation_and_translation_vectors():
     calibration_tools.plot_vectors(my_calibration.translation_vectors)
 
 
-def test_reconstruction_3d():
+def test_calibration_on_reconstruction_3d():
 
-    my_calibration = calibration_chessboard.Calibration.read_calibration(
-        'calibration')
+    #   ========================================================================
+    #   LOAD IMAGE & ANGLE
+    #   Samples_binarization_2 : Tree
+    #   Samples_binarization_3 - 5 : etc...
 
-    #directory = '../../local/data/tests/Samples_binarization_2/'
-    # directory = '../../local/data/tests/Samples_binarization_3/'
-    # directory = '../../local/data/tests/Samples_binarization_4/'
-    directory = '../../local/data/tests/Samples_binarization_5/'
-
+    directory = '..\\..\\local\\data\\tests\\Samples_binarization_7\\'
 
     files = glob.glob(directory + '*.png')
-    angles = map(lambda x: int((x.split('/')[-1]).split('.png')[0]), files)
+    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
 
     images = dict()
     for i in range(len(files)):
-        if angles[i] < 270:
-            images[angles[i]] = cv2.imread(files[i],
-                                           cv2.CV_LOAD_IMAGE_GRAYSCALE)
+            images[angles[i]] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
 
+    #   ========================================================================
 
+    opencv_calibration = calibration_chessboard.Calibration.read_calibration(
+        'my_calibration')
 
-    octree_result = reconstruction_3d.reconstruction_3d(
-        images, my_calibration, 1)
+    opencv_calibration.print_value()
+    calibration_tools.plot_vectors(opencv_calibration.rotation_vectors)
+    calibration_tools.plot_vectors(opencv_calibration.translation_vectors)
 
-    tools_test.show_cube(octree_result, 9, "OpenCv")
+    image_0_90 = dict()
+    image_180_270 = dict()
+    image_0_270 = dict()
 
-    reconstruction_3d.reprojection_3d_objects_to_images(
-        images, octree_result, my_calibration)
+    for angle in images:
+        if angle <= 105:
+            image_0_90[angle] = images[angle]
 
-    import alinea.phenomenal.calibration_manual as calibration_manual
-    camera_configuration = calibration_manual.CameraConfiguration()
-    my_calibration = calibration_manual.Calibration(camera_configuration)
-    my_calibration.print_value()
-    octree_result = reconstruction_3d.reconstruction_3d_manual_calibration(
-        images, my_calibration, 1)
+        if 180 <= angle <= 270:
+            image_180_270[angle] = images[angle]
 
-    tools_test.show_cube(octree_result, 1, "Manual")
+            # opencv_calibration.rotation_vectors[angle] = \
+            #     opencv_calibration.rotation_vectors[angle - 180]
+            #
+            # opencv_calibration.translation_vectors[angle] = \
+            #     opencv_calibration.translation_vectors[angle - 180]
 
+        if 0 <= angle <= 90 or 180 <= angle <= 270:
+            image_0_270[angle] = images[angle]
+
+    opencv_calibration.print_value()
+
+    opencv_cubes_1 = reconstruction_3d.reconstruction_3d(
+        image_0_90, opencv_calibration, 10)
+
+    tools_test.show_cube(opencv_cubes_1, 10, "0 - 90")
+
+    opencv_cubes_2 = reconstruction_3d.reconstruction_3d(
+        image_180_270, opencv_calibration, 10)
+
+    tools_test.show_cube(opencv_cubes_2, 10, "180 - 270")
+
+    opencv_cubes_3 = reconstruction_3d.reconstruction_3d(
+        image_0_270, opencv_calibration, 10)
+
+    tools_test.show_cube(opencv_cubes_3, 10, "0 - 270")
+
+    opencv_cubes_1 += opencv_cubes_2
+
+    tools_test.show_cube(opencv_cubes_1, 10, "2")
+
+    f = open('reconstruction_3d.xyz', 'w')
+
+    for cube in opencv_cubes_1:
+        x = cube.position[0, 0]
+        y = cube.position[0, 1]
+        z = cube.position[0, 2]
+
+        f.write("%f %f %f \n" % (x, y, z))
+
+    f.close()
+
+    # def is_in_cubes(cubes, cube):
+    #     for tmp_cube in cubes:
+    #         if tmp_cube.position[0, 0] == cube.position[0, 0]:
+    #             if tmp_cube.position[0, 1] == cube.position[0, 1]:
+    #                 if tmp_cube.position[0, 2] == cube.position[0, 2]:
+    #                     return True
+    #     return False
+    #
+    # cubes = list()
+    # for cube_1 in opencv_cubes_1:
+    #     if is_in_cubes(opencv_cubes_2, cube_1):
+    #         cubes.append(cube_1)
+    #
+    # tools_test.show_cube(cubes, 10, "OpenCv")
+
+    #   ========================================================================
+
+    # octree = reconstruction_3d.new_reconstruction_3d(
+    #     images, opencv_calibration, 1)
+    #
+    # tools_test.show_octree(octree, 1, "Octree")
+    #
+
+    #   ========================================================================
+    #
+    # manual_calibration = calibration_manual.CameraConfiguration()
+    # manual_calibration = calibration_manual.Calibration(manual_calibration)
+    #
+    # manual_cubes = reconstruction_3d.reconstruction_3d_manual_calibration(
+    #     images, manual_calibration, 0.5)
+    #
+    # tools_test.show_cube(manual_cubes, 1, "Manual")
+
+    #   ========================================================================
+    #   Visual comparison
+
+    # for angle in images:
+    #
+    #
+    #     import alinea.phenomenal.reconstruction_3d_algorithm as algo
+    #     c = algo.Cube(0, 0, 0, 10)
+    #     cubes = list()
+    #     cubes.append(c)
+    #
+    #     opencv_img = reconstruction_3d.re_projection_cubes_to_image(
+    #         cubes, images[angle], opencv_calibration[angle])
+    #
+    #     # octree_img = reconstruction_3d.re_projection_octree_to_image(
+    #     #     octree, images[angle], opencv_calibration[angle])
+    #     #
+    #     # manual_img = reconstruction_3d.manual_re_projection_cubes_to_image(
+    #     #     manual_cubes, images[angle], manual_calibration, angle)
+    #     #
+    #     # tools_test.show_comparison_3_image(opencv_img,
+    #     #                                    octree_img,
+    #     #                                    manual_img)
+
+          # tools_test.show_image(opencv_img)
 
 
 #       =======================================================================
@@ -133,5 +290,10 @@ def test_reconstruction_3d():
 
 if __name__ == "__main__":
     # test_calibration()
+    test_calibration_2()
     # test_compute_rotation_and_translation_vectors()
-    test_reconstruction_3d()
+    test_calibration_on_reconstruction_3d()
+
+    #test_re_projection()
+
+
