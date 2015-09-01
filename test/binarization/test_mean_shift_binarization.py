@@ -34,6 +34,7 @@ import tools_test
 
 #       =======================================================================
 
+
 def check_mean_shift_binarization(data_directory,
                                   refs_directory,
                                   rewrite=False):
@@ -47,6 +48,9 @@ def check_mean_shift_binarization(data_directory,
     """
     images_path = glob.glob(data_directory + '*sv*.png')
     images = tools_test.load_images(images_path)
+    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]),
+                 images_path)
+
     mean_image = test_mean_image.get_mean_image(images)
 
     list_binarize_image = []
@@ -57,7 +61,8 @@ def check_mean_shift_binarization(data_directory,
     tools_test.check_result_with_ref(list_binarize_image,
                                      refs_directory,
                                      "binarization_meanshift",
-                                     rewrite)
+                                     rewrite,
+                                     angles)
 
 
 def test_suite_generator():
@@ -65,4 +70,13 @@ def test_suite_generator():
     for directory in tools_test.directories:
         yield (check_mean_shift_binarization,
                directory[0],
-               directory[1])
+               directory[1],
+               True)
+
+#       =======================================================================
+#       LOCAL TEST
+
+if __name__ == "__main__":
+    tools_test.print_check(check_mean_shift_binarization.__name__)
+    for directory in tools_test.directories:
+        check_mean_shift_binarization(directory[0], directory[1], True)

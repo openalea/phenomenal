@@ -28,7 +28,7 @@ import cv2
 #       =======================================================================
 #       Local Import
 import openalea.opencv.extension as ocv2
-import alinea.phenomenal.binarization_processing as b_processing
+import alinea.phenomenal.repair_processing as repair_processing
 import alinea.phenomenal.binarization_algorithm as b_algorithm
 
 
@@ -139,7 +139,7 @@ def side_binarization(image, mean_image, configuration):
     mask_clean_noise = cv2.add(configuration.roi_orange_band.mask,
                                configuration.roi_panel.mask)
 
-    result = b_processing.clean_noise(result, mask_clean_noise)
+    result = repair_processing.clean_noise(result, mask_clean_noise)
 
     return result
 

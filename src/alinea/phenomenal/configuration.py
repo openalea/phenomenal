@@ -101,7 +101,6 @@ def loadconfig(config='SideCamera2013_ZoomOut.cfg'):
     return d
 
 
-
 def import_images(image_directory, genotype_name, plant_id):
     """
     Return a dictionary of side images according to the structure of

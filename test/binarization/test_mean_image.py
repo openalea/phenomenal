@@ -79,3 +79,11 @@ def test_suite_generator():
     tools_test.print_check(check_get_mean_image.__name__)
     for directory in tools_test.directories:
         yield (check_get_mean_image, directory[0], directory[1])
+
+#       =======================================================================
+#       LOCAL TEST
+
+if __name__ == "__main__":
+    tools_test.print_check(check_get_mean_image.__name__)
+    for directory in tools_test.directories:
+        check_get_mean_image(directory[0], directory[1], True)

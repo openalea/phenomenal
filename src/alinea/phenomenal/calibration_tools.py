@@ -24,14 +24,12 @@ from __builtin__ import dict
 __revision__ = ""
 
 #       =======================================================================
-#       External Import 
-import cv2
-import random
+#       External Import
 import numpy as np
 from scipy import optimize
 import pylab as p
 import mpl_toolkits.mplot3d.axes3d as p3
-import pickle
+
 #       =======================================================================
 #       Local Import 
 import transformations as tf
@@ -77,7 +75,7 @@ def compute_rotation_vectors(rotation_vectors, angles):
 
         distance = 0
         step = 60
-        for angle in rotation_vectors.keys():
+        for angle in rotation_vectors:
             if angle + step not in rotation_vectors:
                 continue
             if angle == 6:
@@ -249,10 +247,9 @@ def plot_vectors(vectors):
     ax = p3.Axes3D(fig)
 
     for angle in vectors.keys():
-        vector = vectors[angle]
-        ax.scatter3D(vector[0][0],
-                     vector[1][0],
-                     vector[2][0])
+        if vectors[angle] is not None:
+            vector = vectors[angle]
+            ax.scatter3D(vector[0][0], vector[1][0], vector[2][0])
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')

@@ -14,7 +14,7 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
 """
 Write the doc here...
@@ -22,26 +22,20 @@ Write the doc here...
 
 __revision__ = ""
 
-#       =======================================================================
+#       ========================================================================
 #       External Import 
-from mayavi import mlab
+
 import cv2
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-from numpy import *
-import pylab as p
-import mpl_toolkits.mplot3d.axes3d as p3
-
 import vtk
-from numpy import *
 
-#       =======================================================================
+from mayavi import mlab
+import pylab
+import numpy as np
+#       ========================================================================
 #       Local Import 
 
 
-#       =======================================================================
+#       ========================================================================
 #       Code
 
 def load_images(images_path, angles):
@@ -54,27 +48,70 @@ def load_images(images_path, angles):
         images[angles[i]] = im
 
     return images
+#       ========================================================================
+#       Show reconstruction 3d
 
 
-def show_cube(cubes, scale_factor, name=None):
-    xx = []
-    yy = []
-    zz = []
-    ss = []
-    for cube in cubes:
-        xx.append(int(round(cube.center.x)))
-        yy.append(int(round(cube.center.y)))
-        zz.append(int(round(cube.center.z)))
-        ss.append(int(round(cube.radius)))
-
-    if name is not None:
-        mlab.figure(name)
+def show_points_3d(x, y, z, s, scale_factor=10.0, figure_name=None):
+    if figure_name is not None:
+        mlab.figure(figure_name)
     else:
         mlab.figure("3D Reconstruction")
-    mlab.points3d(xx, yy, zz, mode='cube',
+
+    mlab.points3d(x, y, z, mode='cube',
                   color=(0.1, 0.7, 0.1),
                   scale_factor=scale_factor)
     mlab.show()
+
+
+def show_cube(cubes, scale_factor=10.0, figure_name=None):
+
+    x = []
+    y = []
+    z = []
+    s = []
+
+    for cube in cubes:
+        x.append(int(round(cube.position[0, 0])))
+        y.append(int(round(cube.position[0, 1])))
+        z.append(int(round(cube.position[0, 2])))
+        s.append(int(round(cube.radius)))
+
+    show_points_3d(x, y, z, s, scale_factor, figure_name)
+
+
+def show_octree(octree, scale_factor=10.0, figure_name=None):
+
+    x = []
+    y = []
+    z = []
+    s = []
+
+    oct_nodes = list()
+    oct_nodes.append(octree)
+
+    while True:
+        if not oct_nodes:
+            break
+
+        oct_node = oct_nodes.pop()
+
+        if oct_node.isLeafNode is True:
+            x.append(int(round(oct_node.position[0])))
+            y.append(int(round(oct_node.position[1])))
+            z.append(int(round(oct_node.position[2])))
+            s.append(int(round(oct_node.size)))
+
+        else:
+            for branch in oct_node.branches:
+                if branch is not None:
+                    oct_nodes.append(branch)
+
+    print "Len cubes octree : ", len(x)
+
+    show_points_3d(x, y, z, s, scale_factor, figure_name)
+
+#       ========================================================================
 
 
 def write_images_on_matrix(images, m):
@@ -152,49 +189,6 @@ def fill_matrix(cubes, m):
             break
 
     return m
-
-
-def show_mat(cubes):
-
-    xx = []
-    yy = []
-    zz = []
-    ss = []
-    for cube in cubes:
-        xx.append(int(round(cube.center.x)))
-        yy.append(int(round(cube.center.y)))
-        zz.append(int(round(cube.center.z)))
-        ss.append(int(round(cube.radius)))
-
-    fig = p.figure()
-    ax = p3.Axes3D(fig)
-    ax.scatter3D(xx, yy, zz)
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    p.show()
-
-
-def show_mat_2(cubes):
-
-    xx = []
-    yy = []
-    zz = []
-    ss = []
-    for cube in cubes:
-        xx.append(int(round(cube.center.x)))
-        yy.append(int(round(cube.center.y)))
-        zz.append(int(round(cube.center.z)))
-        ss.append(int(round(cube.radius)))
-
-    print len(xx), len(yy), len(zz)
-
-    x, y, z = np.meshgrid(xx, yy, zz)
-
-    print np.shape(x), np.shape(y), np.shape(z)
-
-    mlab.figure()
-    mlab.points3d(xx, yy, zz)
 
 
 def show_mat_vtk(data_matrix):
@@ -293,3 +287,47 @@ def show_mat_vtk(data_matrix):
     renderInteractor.Start()
 
     cv2.waitKey()
+
+#       ========================================================================
+
+
+def show_comparison_3_image(image_1, image_2, image_3):
+    f = pylab.figure()
+    f.canvas.set_window_title("Image Comparison")
+
+    f.add_subplot(1, 3, 1)
+    pylab.title('Image 1')
+    pylab.imshow(image_1)
+
+    f.add_subplot(1, 3, 2)
+    pylab.title('Image 2')
+    pylab.imshow(image_2)
+
+    f.add_subplot(1, 3, 3)
+    pylab.title('Image 3')
+    pylab.imshow(image_3)
+
+    pylab.show()
+
+
+def show_comparison_2_image(image_1, image_2):
+    f = pylab.figure()
+    f.canvas.set_window_title("Image Comparison")
+
+    f.add_subplot(1, 2, 1)
+    pylab.title('Image 1')
+    pylab.imshow(image_1, cmap=pylab.cm.binary)
+
+    f.add_subplot(1, 2, 2)
+    pylab.title('Image 2')
+    pylab.imshow(image_2, cmap=pylab.cm.binary)
+
+    pylab.show()
+
+
+def show_image(image):
+    f = pylab.figure()
+    f.canvas.set_window_title("Image")
+    pylab.title('Image')
+    pylab.imshow(image, cmap=pylab.cm.binary)
+    pylab.show()

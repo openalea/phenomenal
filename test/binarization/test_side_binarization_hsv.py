@@ -45,6 +45,8 @@ def check_side_binarization_hsv(data_directory,
     """
     images_path = glob.glob(data_directory + '*sv*.png')
     images = tools_test.load_images(images_path)
+    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]),
+                 images_path)
 
     config = configuration.loadconfig('configuration_side_image_michael.cfg')
     bin_config = configuration.binarization_config(config)
@@ -57,7 +59,8 @@ def check_side_binarization_hsv(data_directory,
     tools_test.check_result_with_ref(list_binarize_image,
                                      refs_directory,
                                      "side_binarization_hsv",
-                                     rewrite)
+                                     rewrite,
+                                     angles)
 
 
 def check_top_binarization_hsv(data_directory,
@@ -95,5 +98,20 @@ def test_suite_generator():
     for directory in tools_test.directories:
         yield (check_top_binarization_hsv,
                directory[0],
-               directory[1],
-               True)
+               directory[1])
+
+#       =======================================================================
+#       LOCAL TEST
+
+if __name__ == "__main__":
+    tools_test.print_check(check_side_binarization_hsv.__name__)
+    for directory in tools_test.directories:
+        check_side_binarization_hsv(directory[0],
+                                    directory[1],
+                                    True)
+
+    tools_test.print_check(check_top_binarization_hsv.__name__)
+    for directory in tools_test.directories:
+        check_top_binarization_hsv(directory[0],
+                                   directory[1],
+                                   True)

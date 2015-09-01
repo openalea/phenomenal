@@ -25,11 +25,13 @@ __revision__ = ""
 #       =======================================================================
 #       External Import 
 import cv2
-
+import numpy as np
 
 #       =======================================================================
 #       Local Import 
 import openalea.opencv.extension as ocv2
+from openalea.deploy.shared_data import shared_data
+import alinea.phenomenal
 
 
 #       =======================================================================
@@ -65,3 +67,16 @@ def clean_noise(image, mask=None):
     res = ocv2.dilate(res)
 
     return res
+
+def fill_up_prop(image):
+    confdir = shared_data(alinea.phenomenal)
+    mask = cv2.imread(confdir + "/roi_stem.png", cv2.IMREAD_GRAYSCALE)
+
+    if mask is not None:
+        img = cv2.bitwise_and(image, image, mask=mask)
+
+    kernel = np.ones((7, 7), np.uint8)
+    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+    img = cv2.add(image, img)
+
+    return img

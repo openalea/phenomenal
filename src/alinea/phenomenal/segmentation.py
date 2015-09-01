@@ -19,7 +19,6 @@
 """
 Write the doc here...
 """
-from networkx.algorithms.assortativity import neighbor_degree
 
 __revision__ = ""
 
@@ -85,8 +84,6 @@ class Organ(object):
                 for yy, xx in segment.points:
                     if (-radius <= y - yy <= radius and
                         -radius <= x - xx <= radius):
-                        print y, x, yy, xx
-                        print segment.first_point, segment.last_point
                         return True
 
         return False
@@ -127,6 +124,29 @@ class Segment(object):
             x_mean += x
 
         return y_mean / len(self.points), x_mean / len(self.points)
+
+    def compute_inclination(self, step=10):
+
+        result = list()
+
+        my_range = range(1, len(self.points) - step, step)
+        if len(my_range) < 2:
+            return result
+
+        for i in my_range:
+            ya, xa = self.points[i]
+            yb, xb = self.points[i + step]
+
+            diff_x = xa - xb
+            diff_y = ya - yb
+
+            norm = math.sqrt(diff_x**2 + diff_y**2)
+            inclination = math.atan2(math.fabs(diff_y), math.fabs(diff_x))
+            inclination = inclination / math.pi * 180.0
+
+            result.append((inclination, norm))
+
+        return result
 
 #       =======================================================================
 #       Segments plants
@@ -383,6 +403,22 @@ def segment_leaves(segments, stem):
 #       =======================================================================
 #       Segment Organs
 
+
+def compute_inclination(segments):
+    histogram = list()
+    for segment in segments:
+        angles_inclinations = segment.compute_inclination()
+
+        for angle in angles_inclinations:
+            histogram.append(angle[0])
+
+    x = np.array(histogram)
+
+    import pylab as P
+    n, bins, patches = P.hist(x, 90, histtype='bar', rwidth=0.8)
+    P.show()
+
+
 def segment_organs_skeleton_image(skeleton_image):
 
     # Transform skeleton image as type int for tag pixel to -1
@@ -399,8 +435,9 @@ def segment_organs_skeleton_image(skeleton_image):
                    for segment in segments
                    if not stem.is_in(segment) is True]
 
-    leaves, segments = segment_leaves(segments, stem)
+    compute_inclination(segments)
 
+    leaves, segments = segment_leaves(segments, stem)
 
 #   ============================================================================
 
@@ -419,8 +456,8 @@ def segment_organs_skeleton_image(skeleton_image):
                 skeleton_image[y, x] = leaf.id_number
 
     skeleton_image = skeleton_image.astype(np.uint8)
-    return skeleton_image
 
+    return skeleton_image
 
 #       ========================================================================
 #       LOCAL TEST
