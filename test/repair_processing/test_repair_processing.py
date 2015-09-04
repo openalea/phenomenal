@@ -38,7 +38,7 @@ from phenomenal.test import tools_test
 
 def test_repair_processing():
 
-    data_directory = "../../local/data/tests/Samples_binarization_2/"
+    data_directory = "../../local/data/tests/Samples_binarization_8/"
     files = glob.glob(data_directory + '*.png')
     angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
 
