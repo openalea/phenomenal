@@ -221,31 +221,27 @@ def show_mat_vtk(data_matrix):
     # simple case, all axes are of length 75 and begins with the first element. For other data, this is probably not the case.
     # I have to admit however, that I honestly dont know the difference between SetDataExtent() and SetWholeExtent() although
     # VTK complains if not both are used.
-    dataImporter.SetDataExtent(0, lx - 1, 0, ly - 1, 0, lz - 1)
-    dataImporter.SetWholeExtent(0, lx - 1, 0, ly - 1, 0, lz - 1)
+    # dataImporter.SetDataExtent(0, lx - 1, 0, ly - 1, 0, lz - 1)
+    # dataImporter.SetWholeExtent(0, lx - 1, 0, ly - 1, 0, lz - 1)
 
     # The following class is used to store transparencyv-values for later retrival. In our case, we want the value 0 to be
     # completly opaque whereas the three different cubes are given different transperancy-values to show how it works.
     alphaChannelFunc = vtk.vtkPiecewiseFunction()
-    alphaChannelFunc.AddPoint(0, 0.001)
-    alphaChannelFunc.AddPoint(50, 1.0)
-    alphaChannelFunc.AddPoint(100, 0.1)
-    alphaChannelFunc.AddPoint(150, 0.2)
+    alphaChannelFunc.AddPoint(0, 1.0)
+    alphaChannelFunc.AddPoint(1, 0.0)
 
     # This class stores color data and can create color tables from a few color points. For this demo, we want the three cubes
     # to be of the colors red green and blue.
     colorFunc = vtk.vtkColorTransferFunction()
 
-    # colorFunc.AddRGBPoint(0, 0.0, 0.0, 0.0)
-    colorFunc.AddRGBPoint(50, 1.0, 0.0, 0.0)
-    colorFunc.AddRGBPoint(100, 0.0, 1.0, 0.0)
-    colorFunc.AddRGBPoint(150, 0.0, 0.0, 1.0)
+    colorFunc.AddRGBPoint(0, 1.0, 0.0, 0.0)
+    colorFunc.AddRGBPoint(1, 0.0, 1.0, 0.0)
 
     # The preavius two classes stored properties. Because we want to apply these properties to the volume we want to render,
     # we have to store them in a class that stores volume prpoperties.
     volumeProperty = vtk.vtkVolumeProperty()
     volumeProperty.SetColor(colorFunc)
-    volumeProperty.SetScalarOpacity(alphaChannelFunc)
+    # volumeProperty.SetScalarOpacity(alphaChannelFunc)
 
     # This class describes how the volume is rendered (through ray tracing).
     compositeFunction = vtk.vtkVolumeRayCastCompositeFunction()
@@ -325,9 +321,9 @@ def show_comparison_2_image(image_1, image_2):
     pylab.show()
 
 
-def show_image(image):
+def show_image(image, name_windows='Image'):
     f = pylab.figure()
-    f.canvas.set_window_title("Image")
-    pylab.title('Image')
+    f.canvas.set_window_title(name_windows)
+    pylab.title(name_windows)
     pylab.imshow(image, cmap=pylab.cm.binary)
     pylab.show()

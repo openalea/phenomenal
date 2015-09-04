@@ -62,7 +62,7 @@ def check_side_binarization_adaptive_thresh(data_directory,
 
     tools_test.check_result_with_ref(list_binarize_image,
                                      refs_directory,
-                                     "side_binarization_adaptive_thresh",
+                                     "side_binarization_adaptive_thresh1",
                                      rewrite,
                                      angles)
 
