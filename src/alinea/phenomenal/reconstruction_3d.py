@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       calibration_class: Module Description
+#       reconstruction_3d.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -15,12 +15,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 #       ========================================================================
-
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
 
 #       ========================================================================
 #       External Import
@@ -123,12 +117,14 @@ def new_reconstruction_3d(images, calibration, precision=1):
     return my_octree
 
 
-def re_projection_cubes_to_image(cubes, image, calibration):
-
-    h, l = np.shape(image)
+def re_projection_cubes_to_image(cubes, image, calibration, color=(255, 0, 0)):
 
     img = image.copy()
-    img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    if len(image.shape) == 2:
+        h, l = np.shape(image)
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    else:
+        h, l, _ = np.shape(image)
 
     for cube in cubes:
         x_min, x_max, y_min, y_max = algo.bbox_projection(
@@ -139,7 +135,7 @@ def re_projection_cubes_to_image(cubes, image, calibration):
         y_min = min(max(y_min, 0), h - 1)
         y_max = min(max(y_max, 0), h - 1)
 
-        img[y_min:y_max, x_min:x_max] = (255, 0, 0)
+        img[y_min:y_max, x_min:x_max] = color
 
     return img
 

@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_calibration: Module Description
+#       test_calibration_chessboard.py:
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,43 +14,40 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
-
 import glob
-
 import cv2
 
-
-# =======================================================================
+#       ========================================================================
 #       Local Import
 import alinea.phenomenal.calibration_chessboard as calibration_chessboard
 import alinea.phenomenal.calibration_tools as calibration_tools
 import alinea.phenomenal.reconstruction_3d as reconstruction_3d
 import alinea.phenomenal.reconstruction_3d_algorithm as reconstruction_3d_algorithm
+import alinea.phenomenal.configuration as configuration
+import alinea.phenomenal.binarization as binarization
+
 from phenomenal.test import tools_test
 
-# =======================================================================
+#       ========================================================================
 #       Code
 
 
 def get_parameters():
     directory = '../../local/data/CHESSBOARD/'
-    files = glob.glob(directory + '*.png')
-    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files)
+    files_sv = glob.glob(directory + '*sv*.png')
+    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_sv)
 
     images = dict()
-    for i in range(len(files)):
-        print angles[i], files[i]
-        images[angles[i]] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
+
+    files_tv = glob.glob(directory + '*tv*.png')
+    images[-1] = cv2.imread(files_tv[0], cv2.IMREAD_COLOR)
+
+    for i in range(len(files_sv)):
+        images[angles[i]] = cv2.imread(files_sv[i], cv2.IMREAD_GRAYSCALE)
 
     chessboard = calibration_chessboard.Chessboard(47, 8, 6)
 
@@ -60,7 +57,8 @@ def get_parameters():
 def test_calibration():
     images, chessboard = get_parameters()
 
-    my_calibration = calibration_chessboard.calibration(images, chessboard)
+    my_calibration = calibration_chessboard.calibration(
+        images, chessboard)
 
     my_calibration.print_value()
 
@@ -147,167 +145,6 @@ def test_compute_rotation_and_translation_vectors():
         my_calibration.translation_vectors, angles)
     my_calibration.write_calibration('calibration')
     calibration_tools.plot_vectors(my_calibration.translation_vectors)
-
-
-def test_calibration_on_reconstruction_3d_2():
-    #   ========================================================================
-    #   LOAD IMAGE & ANGLE
-    #   Samples_binarization_2 : Tree
-    #   Samples_binarization_3 - 5 : etc...
-
-    directory = '..\\..\\local\\data\\tests\\Samples_binarization_7\\'
-
-    files = glob.glob(directory + '*.png')
-    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
-
-    images = dict()
-    for i in range(len(files)):
-        angle = angles[i]
-
-        if angle < 105:
-            images[angle] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
-
-    #   ========================================================================
-
-    opencv_calibration = calibration_chessboard.Calibration.read_calibration(
-        'calibration')
-
-    opencv_calibration.print_value()
-    calibration_tools.plot_vectors(opencv_calibration.rotation_vectors)
-    calibration_tools.plot_vectors(opencv_calibration.translation_vectors)
-
-    image_0_90 = dict()
-
-    for angle in images:
-        if angle <= 105:
-            image_0_90[angle] = images[angle]
-
-    opencv_cubes = reconstruction_3d.reconstruction_3d(
-        images, opencv_calibration, 1)
-
-    tools_test.show_cube(opencv_cubes, 1, "opencv_cubes")
-
-    f = open('reconstruction_3d.xyz', 'w')
-    for cube in opencv_cubes:
-        x = cube.position[0, 0]
-        y = cube.position[0, 1]
-        z = cube.position[0, 2]
-
-        f.write("%f %f %f \n" % (x, y, z))
-
-    f.close()
-
-    #   ========================================================================
-    #   Visual comparison
-
-    for angle in images:
-
-        opencv_img = reconstruction_3d.re_projection_cubes_to_image(
-            opencv_cubes, images[angle], opencv_calibration[angle])
-
-        tools_test.show_image(opencv_img, str(angle))
-
-def test_calibration_on_reconstruction_3d_3():
-    #   ========================================================================
-    #   LOAD IMAGE & ANGLE
-    #   Samples_binarization_2 : Tree
-    #   Samples_binarization_3 - 5 : etc...
-
-    directory = '..\\..\\local\\data\\tests\\Samples_binarization_7\\'
-
-    files = glob.glob(directory + '*.png')
-    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
-
-    images = dict()
-    for i in range(len(files)):
-        angle = angles[i]
-
-        if angle < 105:
-            images[angle] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
-
-    #   ========================================================================
-
-    opencv_calibration = calibration_chessboard.Calibration.read_calibration(
-        'calibration')
-
-    image_0_90 = dict()
-    for angle in images:
-        if angle <= 105:
-            image_0_90[angle] = images[angle]
-
-    opencv_cubes = reconstruction_3d.reconstruction_3d(
-        images, opencv_calibration, 5)
-
-    x_min = float("inf")
-    y_min = float("inf")
-    z_min = float("inf")
-
-    x_max = - float("inf")
-    y_max = - float("inf")
-    z_max = - float("inf")
-
-    for cube in opencv_cubes:
-        x, y, z = cube.position[0, 0], cube.position[0, 1], cube.position[0, 2]
-
-        x_min = min(x_min, x)
-        y_min = min(y_min, y)
-        z_min = min(z_min, z)
-
-        x_max = max(x_max, x)
-        y_max = max(y_max, y)
-        z_max = max(z_max, z)
-
-    r = opencv_cubes[0].radius * 2
-    print r
-    print x_min, x_max, (x_max - x_min) / r
-    print y_min, y_max, (y_max - y_min) / r
-    print z_min, z_max, (z_max - z_min) / r
-
-    x_r_min = x_min / r
-    y_r_min = y_min / r
-    z_r_min = z_min / r
-
-    import numpy as np
-
-    mat = np.zeros(
-        (((x_max - x_min) / r) + 1,
-         ((y_max - y_min) / r) + 1,
-         ((z_max - z_min) / r) + 1))
-
-    print mat.shape
-
-    X = list()
-    Y = list()
-    Z = list()
-    for cube in opencv_cubes:
-        x, y, z = cube.position[0, 0], cube.position[0, 1], cube.position[0, 2]
-        x_new = (x / r) - x_r_min
-        y_new = (y / r) - y_r_min
-        z_new = (z / r) - z_r_min
-
-
-        print x_new, y_new, z_new
-
-        X.append(np.uint8(x_new))
-        Y.append(np.uint8(y_new))
-        Z.append(np.uint8(z_new))
-
-        mat[x_new, y_new, z_new] = 1
-
-    xl, yl, zl = mat.shape
-    print xl, yl, zl
-    for i in range(zl):
-        m = mat[:, :, i] * 255
-        cv2.imwrite('./images/%d.png' % i, m)
-
-
-    cubes = list()
-    for (x, y, z), value in np.ndenumerate(mat):
-        if mat[x, y, z] == 1:
-            cube = reconstruction_3d_algorithm.Cube(x, y, z, 10)
-            cubes.append(cube)
-
-    tools_test.show_cube(cubes, 1)
 
 
 def test_calibration_on_reconstruction_3d():
@@ -447,6 +284,227 @@ def test_calibration_on_reconstruction_3d():
           # tools_test.show_image(opencv_img)
 
 
+def test_calibration_on_reconstruction_3d_2():
+    #   ========================================================================
+    #   LOAD IMAGE & ANGLE
+    #   Samples_binarization_2 : Tree
+    #   Samples_binarization_3 - 5 : etc...
+
+    directory = '..\\..\\local\\data\\tests\\Samples_binarization_7\\'
+
+    files = glob.glob(directory + '*.png')
+    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
+
+    images = dict()
+    for i in range(len(files)):
+        angle = angles[i]
+
+        if angle < 105:
+            images[angle] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
+
+    #   ========================================================================
+
+    opencv_calibration = calibration_chessboard.Calibration.read_calibration(
+        'calibration')
+
+    opencv_calibration.print_value()
+    calibration_tools.plot_vectors(opencv_calibration.rotation_vectors)
+    calibration_tools.plot_vectors(opencv_calibration.translation_vectors)
+
+    image_0_90 = dict()
+
+    for angle in images:
+        if angle <= 105:
+            image_0_90[angle] = images[angle]
+
+    opencv_cubes = reconstruction_3d.reconstruction_3d(
+        images, opencv_calibration, 1)
+
+    tools_test.show_cube(opencv_cubes, 1, "opencv_cubes")
+
+    f = open('reconstruction_3d.xyz', 'w')
+    for cube in opencv_cubes:
+        x = cube.position[0, 0]
+        y = cube.position[0, 1]
+        z = cube.position[0, 2]
+
+        f.write("%f %f %f \n" % (x, y, z))
+
+    f.close()
+
+    #   ========================================================================
+    #   Visual comparison
+
+    for angle in images:
+
+        opencv_img = reconstruction_3d.re_projection_cubes_to_image(
+            opencv_cubes, images[angle], opencv_calibration[angle])
+
+        tools_test.show_image(opencv_img, str(angle))
+
+
+def test_calibration_on_reconstruction_3d_3():
+    #   ========================================================================
+    #   LOAD IMAGE & ANGLE
+    #   Samples_binarization_2 : Tree
+    #   Samples_binarization_3 - 5 : etc...
+
+    directory = '..\\..\\local\\data\\tests\\Samples_binarization_7\\'
+
+    files = glob.glob(directory + '*.png')
+    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
+
+    images = dict()
+    for i in range(len(files)):
+        angle = angles[i]
+
+        if angle < 105:
+            images[angle] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
+
+    #   ========================================================================
+
+    opencv_calibration = calibration_chessboard.Calibration.read_calibration(
+        'calibration')
+
+    image_0_90 = dict()
+    for angle in images:
+        if angle <= 105:
+            image_0_90[angle] = images[angle]
+
+    opencv_cubes = reconstruction_3d.reconstruction_3d(
+        images, opencv_calibration, 5)
+
+    x_min = float("inf")
+    y_min = float("inf")
+    z_min = float("inf")
+
+    x_max = - float("inf")
+    y_max = - float("inf")
+    z_max = - float("inf")
+
+    for cube in opencv_cubes:
+        x, y, z = cube.position[0, 0], cube.position[0, 1], cube.position[0, 2]
+
+        x_min = min(x_min, x)
+        y_min = min(y_min, y)
+        z_min = min(z_min, z)
+
+        x_max = max(x_max, x)
+        y_max = max(y_max, y)
+        z_max = max(z_max, z)
+
+    r = opencv_cubes[0].radius * 2
+    print r
+    print x_min, x_max, (x_max - x_min) / r
+    print y_min, y_max, (y_max - y_min) / r
+    print z_min, z_max, (z_max - z_min) / r
+
+    x_r_min = x_min / r
+    y_r_min = y_min / r
+    z_r_min = z_min / r
+
+    import numpy as np
+
+    mat = np.zeros(
+        (((x_max - x_min) / r) + 1,
+         ((y_max - y_min) / r) + 1,
+         ((z_max - z_min) / r) + 1))
+
+    print mat.shape
+
+    X = list()
+    Y = list()
+    Z = list()
+    for cube in opencv_cubes:
+        x, y, z = cube.position[0, 0], cube.position[0, 1], cube.position[0, 2]
+        x_new = (x / r) - x_r_min
+        y_new = (y / r) - y_r_min
+        z_new = (z / r) - z_r_min
+
+
+        print x_new, y_new, z_new
+
+        X.append(np.uint8(x_new))
+        Y.append(np.uint8(y_new))
+        Z.append(np.uint8(z_new))
+
+        mat[x_new, y_new, z_new] = 1
+
+    xl, yl, zl = mat.shape
+    print xl, yl, zl
+    for i in range(zl):
+        m = mat[:, :, i] * 255
+        cv2.imwrite('./images/%d.png' % i, m)
+
+
+    cubes = list()
+    for (x, y, z), value in np.ndenumerate(mat):
+        if mat[x, y, z] == 1:
+            cube = reconstruction_3d_algorithm.Cube(x, y, z, 10)
+            cubes.append(cube)
+
+    tools_test.show_cube(cubes, 1)
+
+
+def test_calibration_on_reconstruction_3d_4():
+    #   ========================================================================
+    #   LOAD IMAGE & ANGLE
+    #   Samples_binarization_2 : Tree
+    #   Samples_binarization_3 - 5 : etc...
+
+    directory = '..\\..\\local\\data\\tests\\Samples_binarization_7\\'
+
+    files = glob.glob(directory + '*.png')
+    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
+
+    images = dict()
+    for i in range(len(files)):
+        angle = angles[i]
+
+        if angle < 270:
+            images[angle] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
+
+    #   ========================================================================
+
+    opencv_calibration = calibration_chessboard.Calibration.read_calibration(
+        'calibration')
+
+    opencv_calibration.print_value()
+    calibration_tools.plot_vectors(opencv_calibration.rotation_vectors)
+    calibration_tools.plot_vectors(opencv_calibration.translation_vectors)
+
+    image_0_270 = dict()
+
+    for angle in images:
+        if angle <= 270:
+            image_0_270[angle] = images[angle]
+
+    opencv_cubes = reconstruction_3d.reconstruction_3d(
+        images, opencv_calibration, 1)
+
+    tools_test.show_cube(opencv_cubes, 1, "opencv_cubes")
+
+    f = open('reconstruction_3d.xyz', 'w')
+    for cube in opencv_cubes:
+        x = cube.position[0, 0]
+        y = cube.position[0, 1]
+        z = cube.position[0, 2]
+
+        f.write("%f %f %f \n" % (x, y, z))
+
+    f.close()
+
+    #   ========================================================================
+    #   Visual comparison
+
+    for angle in images:
+
+        opencv_img = reconstruction_3d.re_projection_cubes_to_image(
+            opencv_cubes, images[angle], opencv_calibration[angle])
+
+        tools_test.show_image(opencv_img, str(angle))
+
+
 def test_pickle():
     opencv_calibration = calibration_chessboard.Calibration.read_calibration(
         'my_calibration')
@@ -454,15 +512,15 @@ def test_pickle():
     opencv_calibration.write_calibration('my_calibration')
 
 
-#       =======================================================================
+#       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    # test_calibration()
+    test_calibration()
     # test_calibration_2()
     # test_compute_rotation_and_translation_vectors()
     # test_calibration_on_reconstruction_3d()
-    test_calibration_on_reconstruction_3d_3()
+    # test_calibration_on_reconstruction_3d_4()
 
     #test_re_projection()
 

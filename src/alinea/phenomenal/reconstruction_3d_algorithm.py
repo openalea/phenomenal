@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       calibration_class: Module Description
+#       reconstruction_3d_algorithm.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,27 +14,22 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
 
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import math
 import numpy as np
-from collections import deque
 import cv2
+from collections import deque
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import
 import alinea.phenomenal.octree as octree
 
 
-#       =======================================================================
+#       ========================================================================
 #       Class
 
 class Cube(object):
@@ -107,7 +102,7 @@ class Cube(object):
                self.position[0, 2],
                self.radius)
 
-#       =======================================================================
+#       ========================================================================
 #       ROTATION
 def side_rotation(cubes, theta, calibration):
     """
@@ -134,10 +129,12 @@ def side_rotation(cubes, theta, calibration):
 
     return cubes
 
-
-#       =======================================================================
+#       ========================================================================
 #       PROJECTION
 def side_projection(cube, calibration):
+
+
+    # return calibration.project_point(cube.position)
 
     mtx, rvec, tvec, dist_coeff = calibration
 
@@ -404,97 +401,8 @@ def new_octree_builder(images, calibrations, func_projection, cube, iteration):
 
 #       =======================================================================
 #       LOCAL TEST
-def closest_cubes(cube, cubes):
-
-    min_distance = float("inf")
-
-    r = cube.radius
-
-    x = cube.position[0, 0] + r
-    y = cube.position[0, 1] + r
-    z = cube.position[0, 2] + r
-    pos = np.float32([[x, y, z]])
-
-    dist = np.linalg.norm(cube.position - pos) * 2
-    closest_neighbors = list()
-    for c in cubes:
-        if c is cube:
-            continue
-
-        distance = np.linalg.norm(cube.position - c.position)
-        if distance <= dist:
-            closest_neighbors.append(c)
-
-    return closest_neighbors
-
-import copy
-
-
-def skeletonize_3d_transform_distance(cubes):
-
-    import phenomenal.test.tools_test as tools_test
-
-    cubes_transform = list()
-    number = 1
-
-    cubes_save = copy.copy(cubes)
-
-    tools_test.show_cube(cubes, 1)
-
-    while cubes:
-
-        cubes_tmp = list()
-        while True:
-            try:
-                cube = cubes.pop()
-                closest = closest_cubes(cube, cubes_save)
-
-                if len(closest) < 26:
-                    cubes_transform.append([number, cube])
-                else:
-                    cubes_tmp.append(cube)
-
-            except IndexError:
-                break
-
-        number += 1
-        tools_test.show_cube(cubes_tmp, 1)
-        cubes = cubes_tmp
-        cubes_save = copy.copy(cubes)
-
-
-
-    print len(cubes), len(cubes_transform)
 
 if __name__ == "__main__":
-
-    origin = Cube(0, 0, 0, 40)
-    cubes = deque()
-    cubes.append(origin)
-
-    cubes = split_cubes(cubes)
-    cubes = split_cubes(cubes)
-    cubes = split_cubes(cubes)
-
-    skeletonize_3d_transform_distance(cubes)
-
-    # nb = dict()
-    # print 'lenght : ', len(l)
-    # for cube in l:
-    #
-    #     closest = closest_cubes(cube, l)
-    #     if len(closest) not in nb:
-    #         nb[len(closest)] = 1
-    #     else:
-    #         nb[len(closest)] += 1
-    #
-    # for number in nb:
-    #     print number, nb[number]
-
-
-    # import phenomenal.test.tools_test as tools_test
-    #
-    # tools_test.show_cube(l, 10)
-
+    do_nothing = None
 
 

@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       tools_test: Module Description
+#       tools_test.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -16,76 +16,108 @@
 #
 #       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
 #       ========================================================================
 #       External Import 
 
+from random import uniform
+from mayavi import mlab
+
 import cv2
 import vtk
-
-from mayavi import mlab
 import pylab
 import numpy as np
-#       ========================================================================
-#       Local Import 
 
-
-#       ========================================================================
-#       Code
-
-def load_images(images_path, angles):
-
-    images = dict()
-    i = 0
-
-    for i in range(len(images_path)):
-        im = cv2.imread(images_path[i], cv2.IMREAD_GRAYSCALE)
-        images[angles[i]] = im
-
-    return images
 #       ========================================================================
 #       Show reconstruction 3d
 
 
-def show_points_3d(x, y, z, s, scale_factor=10.0, figure_name=None):
-    if figure_name is not None:
-        mlab.figure(figure_name)
-    else:
-        mlab.figure("3D Reconstruction")
+def show_cubes(cubes,
+               color=None,
+               scale_factor=10.0,
+               figure_name="Cubes"):
 
-    mlab.points3d(x, y, z, mode='cube',
-                  color=(0.1, 0.7, 0.1),
-                  scale_factor=scale_factor)
+    mlab.figure(figure_name)
+
+    plot_cubes(cubes, color=color, scale_factor=scale_factor)
+
     mlab.show()
 
+    mlab.clf()
+    mlab.close()
 
-def show_cube(cubes, scale_factor=10.0, figure_name=None):
 
-    x = []
-    y = []
-    z = []
-    s = []
+def plot_cubes(cubes, color=None, scale_factor=5):
+    x = list()
+    y = list()
+    z = list()
+
+    if color is None:
+        color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
 
     for cube in cubes:
         x.append(int(round(cube.position[0, 0])))
         y.append(int(round(cube.position[0, 1])))
         z.append(int(round(cube.position[0, 2])))
-        s.append(int(round(cube.radius)))
 
-    show_points_3d(x, y, z, s, scale_factor, figure_name)
+    mlab.points3d(x, y, z,
+                  mode='cube',
+                  color=color,
+                  scale_factor=scale_factor)
+
+    return color
 
 
-def show_octree(octree, scale_factor=10.0, figure_name=None):
+def plot_vectors(vectors, color=None, tube_radius=8.0):
+
+    if color is None:
+        color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
+
+    for point_1, point_2, _ in vectors:
+        mlab.plot3d([point_1[0], point_2[0]],
+                    [point_1[1], point_2[1]],
+                    [point_1[2], point_2[2]],
+                    color=color,
+                    tube_radius=tube_radius)
+
+    return color
+
+
+def plot_segments(segments,
+                  color=None,
+                  tube_radius=8.0,
+                  color_each_segment=False):
+
+    if color is None:
+        color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
+
+    for segment in segments:
+        x = list()
+        y = list()
+        z = list()
+
+        if color_each_segment is True:
+            color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
+
+        for point in segment.points:
+            x.append(point[0])
+            y.append(point[1])
+            z.append(point[2])
+
+        mlab.plot3d(x, y, z,
+                    color=color,
+                    tube_radius=tube_radius)
+
+    return color
+
+
+def show_octree(octree,
+                color=None,
+                scale_factor=10.0,
+                figure_name="Octree"):
 
     x = []
     y = []
     z = []
-    s = []
 
     oct_nodes = list()
     oct_nodes.append(octree)
@@ -100,7 +132,6 @@ def show_octree(octree, scale_factor=10.0, figure_name=None):
             x.append(int(round(oct_node.position[0])))
             y.append(int(round(oct_node.position[1])))
             z.append(int(round(oct_node.position[2])))
-            s.append(int(round(oct_node.size)))
 
         else:
             for branch in oct_node.branches:
@@ -109,7 +140,50 @@ def show_octree(octree, scale_factor=10.0, figure_name=None):
 
     print "Len cubes octree : ", len(x)
 
-    show_points_3d(x, y, z, s, scale_factor, figure_name)
+    if color is None:
+        color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
+
+    mlab.figure(figure_name)
+    mlab.points3d(x, y, z,
+                  mode='cube',
+                  color=color,
+                  scale_factor=scale_factor)
+    mlab.show()
+
+    mlab.clf()
+    mlab.close()
+
+#       ========================================================================
+
+
+def show_images(images):
+    f = pylab.figure()
+    f.canvas.set_window_title("Image Comparison")
+
+    number_of_images = len(images)
+
+    i = 1
+    for image in images:
+        f.add_subplot(1, number_of_images, i)
+        pylab.title('Image ' + str(i))
+        pylab.imshow(image)
+        i += 1
+
+    pylab.show()
+
+    f.clf()
+    pylab.close()
+
+
+def show_image(image, name_windows='Image'):
+    f = pylab.figure()
+    f.canvas.set_window_title(name_windows)
+    pylab.title(name_windows)
+    pylab.imshow(image, cmap=pylab.cm.binary)
+    pylab.show()
+
+    f.clf()
+    pylab.close()
 
 #       ========================================================================
 
@@ -284,46 +358,4 @@ def show_mat_vtk(data_matrix):
 
     cv2.waitKey()
 
-#       ========================================================================
 
-
-def show_comparison_3_image(image_1, image_2, image_3):
-    f = pylab.figure()
-    f.canvas.set_window_title("Image Comparison")
-
-    f.add_subplot(1, 3, 1)
-    pylab.title('Image 1')
-    pylab.imshow(image_1)
-
-    f.add_subplot(1, 3, 2)
-    pylab.title('Image 2')
-    pylab.imshow(image_2)
-
-    f.add_subplot(1, 3, 3)
-    pylab.title('Image 3')
-    pylab.imshow(image_3)
-
-    pylab.show()
-
-
-def show_comparison_2_image(image_1, image_2):
-    f = pylab.figure()
-    f.canvas.set_window_title("Image Comparison")
-
-    f.add_subplot(1, 2, 1)
-    pylab.title('Image 1')
-    pylab.imshow(image_1, cmap=pylab.cm.binary)
-
-    f.add_subplot(1, 2, 2)
-    pylab.title('Image 2')
-    pylab.imshow(image_2, cmap=pylab.cm.binary)
-
-    pylab.show()
-
-
-def show_image(image, name_windows='Image'):
-    f = pylab.figure()
-    f.canvas.set_window_title(name_windows)
-    pylab.title(name_windows)
-    pylab.imshow(image, cmap=pylab.cm.binary)
-    pylab.show()

@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_reconstruction_3D_with_manual_calibration: Module Description
+#       test_repair_processiong.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,25 +14,19 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import cv2
 import glob
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import 
 from alinea.phenomenal import repair_processing
 from phenomenal.test import tools_test
 
-#       =======================================================================
+#       ========================================================================
 #       Code
 
 
@@ -50,12 +44,12 @@ def test_repair_processing():
     for angle in images:
         image_repair = repair_processing.fill_up_prop(images[angle])
 
-        tools_test.show_comparison_2_image(images[angle], image_repair)
+        tools_test.show_images([images[angle], image_repair])
 
         cv2.imwrite("../../local/data/refs/test_repair_processing/" +
                     "ref_repair_processing_%d.png" % angle, image_repair)
 
-#       =======================================================================
+#       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":

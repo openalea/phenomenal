@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       binarization.py: Module Description
+#       binarization.py : Functions call for binarization img color -> img bin
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,29 +14,27 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-""" Binarization routines for PhenoArch/ images
-"""
+""" Binarization routines for PhenoArch/ images """
 
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import numpy
 import cv2
 
-
-#       =======================================================================
+#       ========================================================================
 #       Local Import
 import openalea.opencv.extension as ocv2
 import alinea.phenomenal.repair_processing as repair_processing
 import alinea.phenomenal.binarization_algorithm as b_algorithm
 
+#       ========================================================================
 
-#       =======================================================================
 
 def side_binarization_hsv(image, configuration):
     """
-    Binarization of side image for Lemnatech  cabin based on hsv segmentation.
+    Binarization of side image for Lemnatech cabin based on hsv segmentation.
 
     Based on Michael pipeline
     :param image: BGR image
@@ -170,6 +168,13 @@ def side_binarization_elcom(image, mean_image, configuration):
 
 
 def side_binarization_adaptive_thresh(image, configuration):
+    """
+    Binarization of side image based on adaptive theshold algorithm of cv2
+
+    :param image: BGR image
+    :param configuration: Object BinarizeConfiguration
+    :return: Binary image
+    """
     img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     result1 = b_algorithm.adaptive_thresh_mean_c(
@@ -198,10 +203,11 @@ def side_binarization_adaptive_thresh(image, configuration):
 
 def top_binarization_hsv(image, configuration):
     """
+    Binarization of top image for Lemnatech cabin based on hsv segmentation.
 
-    :param image:
-    :param configuration:
-    :return:
+    :param image: BGR image
+    :param configuration: Object BinarizeConfiguration
+    :return: Binary image
     """
     configuration.print_value()
 
@@ -228,3 +234,20 @@ def top_binarization_hsv(image, configuration):
     # image_out[c[0]:c[1], c[2]:c[3]] = main_area_seg
 
     return main_area_seg
+
+
+def get_mean_image(images):
+    """
+    Compute the mean image of image list.
+
+    :param images: A list containing the images.
+    :return: A image who is the mean of the list image
+    """
+    length = len(images)
+    weight = 1. / length
+
+    start = cv2.addWeighted(images[0], weight, images[1], weight, 0)
+
+    function = lambda x, y: cv2.addWeighted(x, 1, y, weight, 0)
+
+    return reduce(function, images[2:], start)
