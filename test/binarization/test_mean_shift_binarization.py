@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_meanshift_binarization: Module Description
+#       test_mean_shift_binarization.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,25 +14,19 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import glob
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import
+import alinea.phenomenal.binarization as binarization
 import alinea.phenomenal.binarization_algorithm as binarization_algorithm
-import test_mean_image
 import tools_test
 
-#       =======================================================================
+#       ========================================================================
 
 
 def check_mean_shift_binarization(data_directory,
@@ -40,18 +34,13 @@ def check_mean_shift_binarization(data_directory,
                                   rewrite=False):
     """
     Test the function meanshift_binarization of alinea.phenomenal.binarization
-
-    :param data_directory:
-    :param refs_directory:
-    :param rewrite:
-    :return: None
     """
     images_path = glob.glob(data_directory + '*sv*.png')
     images = tools_test.load_images(images_path)
     angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]),
                  images_path)
 
-    mean_image = test_mean_image.get_mean_image(images)
+    mean_image = binarization.get_mean_image(images)
 
     list_binarize_image = []
     for image in images:
@@ -73,7 +62,7 @@ def test_suite_generator():
                directory[1],
                True)
 
-#       =======================================================================
+#       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":

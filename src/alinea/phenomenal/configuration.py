@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       phenomenal_config: Module Description
+#       configuration.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,11 +14,9 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import os
 import cv2
@@ -27,18 +25,19 @@ from ConfigParser import ConfigParser
 from collections import OrderedDict
 
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import
 from openalea.deploy.shared_data import shared_data
 import alinea.phenomenal
 import alinea.phenomenal.binarization_configuration as b_config
 
 
-#       =======================================================================
+#       ========================================================================
 
 
 class PhenomenalConfigParser(ConfigParser, object):
-    """Initialisation class necessary to read all the data from config.cfg
+    """
+    Initialisation class necessary to read all the data from config.cfg
     necessary for binarization and segmentation
     """
 
@@ -53,9 +52,9 @@ class PhenomenalConfigParser(ConfigParser, object):
                 v = value
         return v
 
-    def read(self, filenames):
+    def read(self, files_name):
         # Call to read method of ConfigParser
-        super(PhenomenalConfigParser, self).read(filenames)
+        super(PhenomenalConfigParser, self).read(files_name)
         for sect in self.sections():
             for it in self.items(sect):
                 self.set(sect, it[0], self._convert(it[1]))
@@ -69,7 +68,8 @@ class PhenomenalConfigParser(ConfigParser, object):
 
 
 def loadconfig(config='SideCamera2013_ZoomOut.cfg'):
-    """ load a configuration from shared data directory
+    """
+    Load a configuration from shared data directory
     """
     confdir = shared_data(alinea.phenomenal)
     p = PhenomenalConfigParser()

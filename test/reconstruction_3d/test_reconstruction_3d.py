@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_octree: Module Description
+#       test_reconstruction_3d.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,22 +14,16 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import 
 import cv2
 import glob
 import random
 import numpy as np
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import 
 
 import alinea.phenomenal.reconstruction_3d as reconstruction_3d
@@ -37,12 +31,12 @@ import alinea.phenomenal.calibration_chessboard as calibration_chessboard
 
 from phenomenal.test import tools_test
 
-#       =======================================================================
+#       ========================================================================
 
 
 def test_reconstruction_3d():
 
-    #   =======================================================================
+    #   ========================================================================
 
     my_calibration = calibration_chessboard.Calibration.read_calibration(
         '../calibration/calibration')
@@ -71,7 +65,7 @@ def test_reconstruction_3d():
 
 def test_new_reconstruction_3d():
 
-    #   =======================================================================
+    #   ========================================================================
 
     my_calibration = calibration_chessboard.Calibration.read_calibration(
         '../calibration/calibration')

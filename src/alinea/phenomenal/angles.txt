@@ -1,1 +1,0 @@
-Absolute	Relative (CCW)	Relative (CW)	NodeLength

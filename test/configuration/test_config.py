@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_config: Module Description
+#       test_config.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,15 +14,9 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import 
 import csv
 import os
@@ -30,7 +24,7 @@ import cv2
 import numpy
 import sys
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import
 
 import alinea.phenomenal
@@ -38,7 +32,7 @@ import alinea.phenomenal.configuration as config
 from openalea.deploy.shared_data import shared_data
 
 
-#       =======================================================================
+#       ========================================================================
 
 def write_csv_dict_key_list(csv_name, dictionary):
     with open(csv_name, 'w') as csv_file:

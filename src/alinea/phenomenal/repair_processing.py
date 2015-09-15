@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       binarization_improve: Module Description
+#       repair_processing.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,27 +14,21 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import 
 import cv2
 import numpy as np
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import 
 import openalea.opencv.extension as ocv2
 from openalea.deploy.shared_data import shared_data
 import alinea.phenomenal
 
 
-#       =======================================================================
+#       ========================================================================
 
 def clean_noise(image, mask=None):
     """
@@ -68,9 +62,11 @@ def clean_noise(image, mask=None):
 
     return res
 
+
 def fill_up_prop(image):
-    confdir = shared_data(alinea.phenomenal)
-    mask = cv2.imread(confdir + "/roi_stem.png", cv2.IMREAD_GRAYSCALE)
+    configuration_directory = shared_data(alinea.phenomenal)
+    mask = cv2.imread(configuration_directory + "/roi_stem.png",
+                      cv2.IMREAD_GRAYSCALE)
 
     if mask is not None:
         img = cv2.bitwise_and(image, image, mask=mask)

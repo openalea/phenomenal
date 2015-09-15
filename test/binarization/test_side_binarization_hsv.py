@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_side_binarization_hsv: Module Description
+#       test_side_binarization_hsv.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,35 +14,23 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import glob
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import
 import alinea.phenomenal.binarization as binarization
 import alinea.phenomenal.configuration as configuration
 import tools_test
 
-#       =======================================================================
+#       ========================================================================
 
 def check_side_binarization_hsv(data_directory,
                                 refs_directory,
                                 rewrite=False):
-    """
-    :param data_directory:
-    :param refs_directory:
-    :param rewrite:
-    :return:
-    """
     images_path = glob.glob(data_directory + '*sv*.png')
     images = tools_test.load_images(images_path)
     angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]),
@@ -66,12 +54,6 @@ def check_side_binarization_hsv(data_directory,
 def check_top_binarization_hsv(data_directory,
                                 refs_directory,
                                 rewrite=False):
-    """
-    :param data_directory:
-    :param refs_directory:
-    :param rewrite:
-    :return:
-    """
     images_path = glob.glob(data_directory + '*tv*.png')
     images = tools_test.load_images(images_path)
 
@@ -100,7 +82,7 @@ def test_suite_generator():
                directory[0],
                directory[1])
 
-#       =======================================================================
+#       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":

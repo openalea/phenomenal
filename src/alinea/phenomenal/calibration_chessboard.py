@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       calibration_camera: Module Description
+#       calibration_chessboard.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,48 +14,107 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
+""" Include Chessboard object and class """
 
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
+
+import pickle
+
+import pylab
 import cv2
 import numpy as np
-import pickle
-#       =======================================================================
-#       Local Import 
 
 
-#       =======================================================================
+#       ========================================================================
 #       Code
 
 class Chessboard(object):
     def __init__(self, square_size, length, height):
+
+        # Initialization
         self.square_size = square_size
         self.shape = (length, height)
         self.object_points = np.zeros((length * height, 3), np.float32)
-        self.initialize_chessboard()
 
-    def initialize_chessboard(self):
-        self.object_points[:, :2] = np.mgrid[0:8, 0:6].T.reshape(
-            -1, 2) * self.square_size
+        # Build Chessboard
+        self.object_points[:, :2] = \
+            np.mgrid[0:length, 0:height].T.reshape(-1, 2) * self.square_size
 
-        # 48 points are stored in an 48x3 array objp
-        # print objp, np.shape(objp)
+        # 48 points are stored in an 48x3 array obj
         # choose bottom-left corner as origin, to match australian convention
         self.object_points = self.object_points - self.object_points[40, :]
+
+    def print_value(self):
+        print 'Chessboard Object Values :'
+        print 'Square size : ', self.square_size
+        print 'Shape : ', self.shape
+        print 'Object points : ', self.object_points
+
+    def find_corners(self, image):
+        try:
+
+            found, corners = cv2.findChessboardCorners(
+                image,
+                self.shape,
+                flags=cv2.CALIB_CB_ADAPTIVE_THRESH +
+                      cv2.CALIB_CB_NORMALIZE_IMAGE)
+
+            if found:
+                cv2.cornerSubPix(image, corners, (11, 11), (-1, -1),
+                                 criteria=(cv2.TERM_CRITERIA_EPS +
+                                           cv2.TERM_CRITERIA_MAX_ITER,
+                                           30,
+                                           0.001))
+            else:
+                print "Error : Corners not find"
+                return None
+
+        except cv2.error:
+            print "Error : cv2, get_corners, calibration.py"
+            return None
+
+        return corners
+
+    def plot_corners(self, corners, image, figure_name='Image'):
+
+        y_min = min(corners[:, 0, 0])
+        y_max = max(corners[:, 0, 0])
+        x_min = min(corners[:, 0, 1])
+        x_max = max(corners[:, 0, 1])
+        r = 50
+
+        image = cv2.drawChessboardCorners(image, self.shape, corners, True)
+        image = image[x_min - r:x_max + r, y_min - r:y_max + r]
+
+        cv2.namedWindow(figure_name, cv2.WINDOW_NORMAL)
+        cv2.imshow(figure_name, image)
+        cv2.waitKey()
+
+    def plot_point(self, x, y, image, figure_name='Image'):
+
+        r = 50
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        image[x - r:x + r, y - r:y + r] = [0, 0, 255]
+
+        f = pylab.figure()
+
+        f.canvas.set_window_title(figure_name)
+        pylab.title(figure_name)
+        pylab.imshow(image, cmap=pylab.cm.binary)
+        pylab.show()
+
+        f.clf()
+        pylab.close()
 
 
 class Calibration(object):
     def __init__(self):
         self.focal_matrix = None
-        self.rotation_vectors = None
-        self.translation_vectors = None
+        self.rotation_vectors = dict()
+        self.translation_vectors = dict()
         self.distortion_coefficient = None
 
     def __getitem__(self, item):
@@ -77,7 +136,7 @@ class Calibration(object):
         print 'Focal Matrix : ', self.focal_matrix
         print 'Distortion coefficient : ', self.distortion_coefficient
 
-        for angle in self.rotation_vectors.keys():
+        for angle in self.rotation_vectors:
             if self.rotation_vectors[angle] is not None:
                 print 'Angle : %d - rot : %f, %f, %f' % (
                     angle,
@@ -85,7 +144,7 @@ class Calibration(object):
                     self.rotation_vectors[angle][1][0],
                     self.rotation_vectors[angle][2][0])
 
-        for angle in self.translation_vectors.keys():
+        for angle in self.translation_vectors:
             if self.translation_vectors[angle] is not None:
                 print 'Angle : %d - trans : %f, %f, %f' % (
                     angle,
@@ -93,202 +152,136 @@ class Calibration(object):
                     self.translation_vectors[angle][1][0],
                     self.translation_vectors[angle][2][0])
 
+    def project_point(self, point, angle):
 
-def find_chessboard_corners(image, size_chessboard):
-    """
-    Return position x, y of chessboard corners
+        projection_point, _ = cv2.projectPoints(point,
+                                                self.rotation_vectors[angle],
+                                                self.translation_vectors[angle],
+                                                self.focal_matrix,
+                                                self.distortion_coefficient)
 
-    :param image:
-    :param size_chessboard:
-    :return:
-    """
-    try:
+        return projection_point[:, 0, 1], projection_point[:, 0, 0]
 
-        found, corners = cv2.findChessboardCorners(
-            image, size_chessboard)
+    def project_points(self, points, angle):
 
-        if found:
-            cv2.cornerSubPix(
-                image,
-                corners,
-                (11, 11),
-                (-1, -1),
-                criteria=(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER,
-                          30,
-                          0.001))
-        else:
-            print "Error corners not find"
-            return None
+        projection_point, _ = cv2.projectPoints(points,
+                                                self.rotation_vectors[angle],
+                                                self.translation_vectors[angle],
+                                                self.focal_matrix,
+                                                self.distortion_coefficient)
 
-    except cv2.error:
-        print "cv2 error get_corners, calibration.py"
-        return None
+        return projection_point
 
-    return corners
+    def calibrate(self, images, chessboard, verbose=False):
+        # Get corners images
+        image_points = list()
+        for angle in images:
 
-
-def calibration_with_chessboard(images, chessboard):
-    """
-    1. Find chessboard corners
-    2. Compute calibrate camera parameters
-    3. Return this paremeters
-
-    :param files: image files names
-    :param chessboard:
-    :param size_chessboard:
-    :return:
-    """
-
-    my_calibration = Calibration()
-    my_calibration.rotation_vectors = dict()
-    my_calibration.translation_vectors = dict()
-
-    # Get corners images
-    image_points = list()
-    for angle in images:
-        corners = find_chessboard_corners(images[angle], chessboard.shape)
-        print angle
-        if corners is not None:
-            image_points.append(corners)
-
-            if angle % 30 == 0:
-
-                y_min = min(corners[:, 0, 0])
-                y_max = max(corners[:, 0, 0])
-                x_min = min(corners[:, 0, 1])
-                x_max = max(corners[:, 0, 1])
-
-                range = 50
+            print angle
+            if angle == -1:
+                do_something = None
 
                 img = images[angle]
-                img = cv2.drawChessboardCorners(
-                    img, chessboard.shape, corners, True)
+                h, l, _ = img.shape
+                corners = list()
 
-                img = img[x_min - range:x_max + range,
-                          y_min - range:y_max + range]
+                for y in range(h):
+                    for x in range(l):
+                        a = img[y, x]
+                        a = np.array(a)
+                        b = np.array([255, 0, 0])
+                        if (a == b).all():
+                            corners.append([[y, x]])
 
-                cv2.namedWindow(str(angle), cv2.WINDOW_NORMAL)
-                cv2.imshow(str(angle), img)
-                cv2.waitKey()
 
-        else:
-            my_calibration.rotation_vectors[angle] = None
-            my_calibration.translation_vectors[angle] = None
+                print len(corners)
+                corners = np.array(corners)
+                print corners
+            else:
+                corners = chessboard.find_corners(images[angle])
 
-    # Clean possibly None corners
-    image_points = [corners for corners in image_points if corners is not None]
+            if corners is not None:
+                image_points.append(corners)
 
-    object_points = [chessboard.object_points] * len(image_points)
+                if verbose is True:
+                    chessboard.plot_corners(corners, images[angle], str(angle))
 
-    print images[0].shape[0:2]
+            else:
+                self.rotation_vectors[angle] = None
+                self.translation_vectors[angle] = None
 
-    # create initial cameraMatrix and distCoeffs
-    cameraMatrix = np.zeros((3, 3), dtype=np.float32)
+        # Clean possibly None corners
+        image_points = [corners for corners in image_points if corners is not None]
 
-    distCoeffs = np.zeros((5, 1), np.float32)
+        object_points = [chessboard.object_points] * len(image_points)
 
-    ret, mtx, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(
-        object_points,
-        image_points,
-        images[0].shape[0:2],
-        cameraMatrix,
-        distCoeffs)
+        # create initial cameraMatrix and distortion coefficient
+        camera_matrix = np.zeros((3, 3), dtype=np.float32)
 
-        # flags=cv2.CALIB_ZERO_TANGENT_DIST +
-        #       cv2.CALIB_FIX_K1 +
-        #       cv2.CALIB_FIX_K2 +
-        #       cv2.CALIB_FIX_K3)
+        distortion_coefficient = np.zeros((5, 1), np.float32)
 
-    my_calibration.focal_matrix = mtx
-    my_calibration.distortion_coefficient = dist_coeffs
+        ret, focal_matrix, distortion_coefficient, rvecs, tvecs = cv2.calibrateCamera(
+            object_points,
+            image_points,
+            images[0].shape[0:2],
+            camera_matrix,
+            distortion_coefficient)
 
-    i = 0
-    for angle in images:
+            # Old flags :
+            # flags=cv2.CALIB_ZERO_TANGENT_DIST +
+            #       cv2.CALIB_FIX_K1 +
+            #       cv2.CALIB_FIX_K2 +
+            #       cv2.CALIB_FIX_K3)
 
-        if angle in my_calibration.rotation_vectors:
-            if my_calibration.rotation_vectors[angle] is None:
-                print "Not angle : ", angle
+        self.focal_matrix = focal_matrix
+        self.distortion_coefficient = distortion_coefficient
+
+        i = 0
+        for angle in images:
+
+            if (angle in self.rotation_vectors and
+                    self.rotation_vectors[angle] is None):
                 continue
 
-        my_calibration.rotation_vectors[angle] = rvecs[i]
-        my_calibration.translation_vectors[angle] = tvecs[i]
+            self.rotation_vectors[angle] = rvecs[i]
+            self.translation_vectors[angle] = tvecs[i]
+
+            if verbose is True:
+
+                pt = np.float32([[0, 0, -47]])
+
+                x, y = self.project_point(pt, angle)
+
+                chessboard.plot_point(
+                    x, y, images[angle], figure_name=str(angle))
+
+            i += 1
 
 
-        if angle % 30 == 0:
-            print object_points[i]
-            pts = np.float32([[0, 0, -47]])
-            projection_point, _ = cv2.projectPoints(pts,
-                                                    rvecs[i],
-                                                    tvecs[i],
-                                                    mtx,
-                                                    dist_coeffs)
+def calibration(images, chessboard, verbose=False):
 
-
-
-            img = images[angle]
-            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-
-            projection_point = projection_point.astype(int)
-            img[projection_point[:, 0, 1],
-                projection_point[:, 0, 0]] = [0, 0, 255]
-
-            import pylab
-            f = pylab.figure()
-            f.canvas.set_window_title(str(angle))
-            pylab.title(str(angle))
-            pylab.imshow(img, cmap=pylab.cm.binary)
-            pylab.show()
-
-        i += 1
+    my_calibration = Calibration()
+    my_calibration.calibrate(images, chessboard, verbose=verbose)
 
     return my_calibration
 
 
-    # return image_points, object_points, ret, mtx, dist_coeffs, rvecs, tvecs
-
-
-def calibration(images, chessboard):
+def compute_projection_error(image_points, object_points, mtx, rvecs, tvecs):
     """
-    Calibrate camera and return matrix (focal, image center) parameters and
-    dict of rvec, tvec value for each angle key.
+    Return mean projection error
 
-    Return also the global_tvec compute.
-
-    :param files:
-    :param angles:
-    :param chessboard:
-    :param size_chessboard:
-    :return:
-    """
-    # image_points, object_points, ret, mtx, dist_coeffs, rvecs, tvecs = \
-    #     calibration_with_chessboard(images, chessboard)
-
-    return calibration_with_chessboard(images, chessboard)
-
-
-def compute_reprojection_error(image_points, object_points, mtx, rvecs, tvecs):
-    """
-    Return mean reprojection error
-
-    :param image_points:
-    :param object_points:
-    :param mtx:
-    :param rvecs:
-    :param tvecs:
-    :return:
     """
 
     mean_error = 0
     for i in range(len(object_points)):
-        image_points_2, _ = cv2.projectPoints(object_points[i],
+        project_point, _ = cv2.projectPoints(object_points[i],
                                               rvecs[i],
                                               tvecs[i],
                                               mtx,
                                               None)
-        print(image_points_2)
 
-        error = cv2.norm(image_points[i], image_points_2, cv2.NORM_L2) / len(
-            image_points_2)
+        error = cv2.norm(image_points[i], project_point, cv2.NORM_L2) / len(
+            project_point)
 
         mean_error += error
 

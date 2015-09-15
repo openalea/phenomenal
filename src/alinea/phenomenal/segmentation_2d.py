@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_reconstruction_3D_with_manual_calibration: Module Description
+#       segmentation_2d.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,25 +14,62 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
 
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import numpy as np
 import math
 
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import 
 
-#       =======================================================================
+#       ========================================================================
 #       Class
+class Segment(object):
+    def __init__(self, id_number, first_point):
+        self.id_number = id_number
+        self.first_id_number = id_number
+        self.points = list()
+        self.points.append(first_point)
+        self.first_point = first_point
+        self.last_point = first_point
+
+    def get_size(self):
+        return len(self.points)
+
+    def global_position(self):
+        y_mean, x_mean = (0, 0)
+        for y, x in self.points:
+            y_mean += y
+            x_mean += x
+
+        return y_mean / len(self.points), x_mean / len(self.points)
+
+    def compute_inclination(self, step=10):
+
+        result = list()
+
+        my_range = range(1, len(self.points) - step, step)
+        if len(my_range) < 2:
+            return result
+
+        for i in my_range:
+            ya, xa = self.points[i]
+            yb, xb = self.points[i + step]
+
+            diff_x = xa - xb
+            diff_y = ya - yb
+
+            norm = math.sqrt(diff_x**2 + diff_y**2)
+            inclination = math.atan2(math.fabs(diff_y), math.fabs(diff_x))
+            inclination = inclination / math.pi * 180.0
+
+            result.append((inclination, norm))
+
+        return result
 
 
 class Organ(object):
@@ -50,8 +87,8 @@ class Organ(object):
         return y_mean / len(self.segments), x_mean / len(self.segments)
 
     def get_height(self):
-        y_min = 5000
-        y_max = -5000
+        y_min = np.float('inf')
+        y_max = - np.float('inf')
 
         for segment in self.segments:
             for y, x in segment.points:
@@ -104,51 +141,7 @@ class Leaf(Organ):
     def __init__(self):
         Organ.__init__(self)
 
-
-class Segment(object):
-    def __init__(self, id_number, first_point):
-        self.id_number = id_number
-        self.first_id_number = id_number
-        self.points = list()
-        self.points.append(first_point)
-        self.first_point = first_point
-        self.last_point = first_point
-
-    def get_size(self):
-        return len(self.points)
-
-    def global_position(self):
-        y_mean, x_mean = (0, 0)
-        for y, x in self.points:
-            y_mean += y
-            x_mean += x
-
-        return y_mean / len(self.points), x_mean / len(self.points)
-
-    def compute_inclination(self, step=10):
-
-        result = list()
-
-        my_range = range(1, len(self.points) - step, step)
-        if len(my_range) < 2:
-            return result
-
-        for i in my_range:
-            ya, xa = self.points[i]
-            yb, xb = self.points[i + step]
-
-            diff_x = xa - xb
-            diff_y = ya - yb
-
-            norm = math.sqrt(diff_x**2 + diff_y**2)
-            inclination = math.atan2(math.fabs(diff_y), math.fabs(diff_x))
-            inclination = inclination / math.pi * 180.0
-
-            result.append((inclination, norm))
-
-        return result
-
-#       =======================================================================
+#       ========================================================================
 #       Segments plants
 
 
@@ -278,7 +271,7 @@ def segment_skeleton(skeleton_image):
 
     return segments
 
-#       =======================================================================
+#       ========================================================================
 #       Segment Stem
 
 
@@ -358,7 +351,7 @@ def segment_stem(segments):
 
     return stem
 
-#       =======================================================================
+#       ========================================================================
 #       Segment Leaves
 
 
@@ -400,7 +393,7 @@ def segment_leaves(segments, stem):
 
     return leaves, segments
 
-#       =======================================================================
+#       ========================================================================
 #       Segment Organs
 
 
@@ -435,7 +428,7 @@ def segment_organs_skeleton_image(skeleton_image):
                    for segment in segments
                    if not stem.is_in(segment) is True]
 
-    compute_inclination(segments)
+    compute_inclination(stem.segments)
 
     leaves, segments = segment_leaves(segments, stem)
 

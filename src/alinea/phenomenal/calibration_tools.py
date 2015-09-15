@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       calibration_extrapolation: Module Description
+#       calibration_tools.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,27 +14,20 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-from __builtin__ import dict
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import numpy as np
-from scipy import optimize
 import pylab as p
 import mpl_toolkits.mplot3d.axes3d as p3
+from scipy import optimize
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import 
 import transformations as tf
 
-#       =======================================================================
+#       ========================================================================
 #       Code
 
 

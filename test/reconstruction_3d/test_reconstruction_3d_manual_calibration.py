@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_reconstruction_3D_with_manual_calibration: Module Description
+#       test_reconstruction_3d_manual_calibration.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,31 +14,25 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import glob
 import cv2
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import 
 from phenomenal.test import tools_test
 import alinea.phenomenal.calibration_manual as calibration_manual
 import alinea.phenomenal.reconstruction_3d as reconstruction_3d
 
-#       =======================================================================
+#       ========================================================================
 #       Code
 
 
 def test_reconstruction_3d_samples_binarization_1():
-    #   =======================================================================
+    #   ========================================================================
     #   Input
     images_path = ['../../local/data/tests/Samples_binarization_1/top.png',
                    '../../local/data/tests/Samples_binarization_1/side0.png',
@@ -46,9 +40,11 @@ def test_reconstruction_3d_samples_binarization_1():
 
     angles = [-1, 0, 90]
 
-    images = tools_test.load_images(images_path, angles)
+    images = dict()
+    for i in range(len(images_path)):
+        images[angles[i]] = cv2.imread(images_path[i], cv2.IMREAD_GRAYSCALE)
 
-    #   =======================================================================
+    #   ========================================================================
     #   Binarize images
     for angle in images.keys():
         im = images[angle]
@@ -56,13 +52,13 @@ def test_reconstruction_3d_samples_binarization_1():
         im[im == 255] = 0
         im[im != 0] = 255
 
-    #   =======================================================================
+    #   ========================================================================
     #   Load manual configuration
 
     camera_configuration = calibration_manual.CameraConfiguration()
     calibration = calibration_manual.Calibration(camera_configuration)
 
-    #   =======================================================================
+    #   ========================================================================
     #   Reconstruction 3D
 
     octree_result = reconstruction_3d.reconstruction_3d_manual_calibration(
@@ -72,7 +68,7 @@ def test_reconstruction_3d_samples_binarization_1():
 
 
 def test_reconstruction_3d_samples_binarization_2():
-    #   =======================================================================
+    #   ========================================================================
     #   Input
 
     directory = '../../local/data/tests/Samples_binarization_6/'
@@ -86,15 +82,15 @@ def test_reconstruction_3d_samples_binarization_2():
     camera_configuration = calibration_manual.CameraConfiguration()
     calibration = calibration_manual.Calibration(camera_configuration)
 
-    #   =======================================================================
+    #   ========================================================================
     #   Reconstruction 3D
 
-    octree_result = reconstruction_3d.reconstruction_3d_manual_calibration(
+    cubes = reconstruction_3d.reconstruction_3d_manual_calibration(
         images, calibration, 0.5)
 
-    tools_test.show_cube(octree_result, 1)
+    tools_test.show_cube(cubes, 1)
 
-#       =======================================================================
+#       ========================================================================
 #       TEST
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_side_binarization_simon: Module Description
+#       test_side_binarization_adaptive_tresh.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,38 +14,24 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import glob
-import cv2
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import
 import alinea.phenomenal.binarization as binarization
 import alinea.phenomenal.configuration as configuration
 import tools_test
 
 
-#       =======================================================================
+#       ========================================================================
 
 def check_side_binarization_adaptive_thresh(data_directory,
                                             refs_directory,
                                             rewrite=False):
-    """
-    :param data_directory:
-    :param refs_directory:
-    :param rewrite:
-    :return:
-    """
 
     images_path = glob.glob(data_directory + '*sv*.png')
     images = tools_test.load_images(images_path)
@@ -62,7 +48,7 @@ def check_side_binarization_adaptive_thresh(data_directory,
 
     tools_test.check_result_with_ref(list_binarize_image,
                                      refs_directory,
-                                     "side_binarization_adaptive_thresh1",
+                                     "side_binarization_adaptive_thresh",
                                      rewrite,
                                      angles)
 
@@ -75,7 +61,7 @@ def test_suite_generator():
                directory[1])
 
 
-#       =======================================================================
+#       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":

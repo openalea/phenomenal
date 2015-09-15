@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_side_binarization_visualea: Module Description
+#       test_side_binarization_visualea.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,26 +14,20 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import glob
 
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import
 import alinea.phenomenal.configuration as configuration
 import tools_test
 from openalea.core.alea import load_package_manager, function
 
-#       =======================================================================
+#       ========================================================================
 
 pm = load_package_manager()
 node_factory = pm['alinea.phenomenal.macros']['side_binarisation']
@@ -78,7 +72,7 @@ def test_suite_generator():
                directory[0],
                directory[1])
 
-#       =======================================================================
+#       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
