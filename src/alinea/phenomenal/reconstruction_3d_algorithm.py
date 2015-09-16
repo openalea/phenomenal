@@ -89,21 +89,27 @@ def side_projection(cube, calibration):
     :return:
     """
 
-    mtx, rvec, tvec, dist_coeff = calibration
+    # mtx, rvec, tvec, dist_coeff = calibration
+    #
+    # object_points = np.ndarray(
+    #     shape=(1, 3),
+    #     buffer=np.array([[cube.center.x,
+    #                       cube.center.y,
+    #                       cube.center.z]]))
+    #
+    # projs, jac = cv2.projectPoints(object_points,
+    #                                rvec,
+    #                                tvec,
+    #                                mtx,
+    #                                dist_coeff)
+    #
+    # return projs[0][0][0], projs[0][0][1]
+    cam, fr = calibration
+    pt = (cube.center.x, cube.center.y, cube.center.z)
 
-    object_points = np.ndarray(
-        shape=(1, 3),
-        buffer=np.array([[cube.center.x,
-                          cube.center.y,
-                          cube.center.z]]))
+    pix = cam.pixel_coordinates(fr.local_point(pt))
 
-    projs, jac = cv2.projectPoints(object_points,
-                                   rvec,
-                                   tvec,
-                                   mtx,
-                                   dist_coeff)
-
-    return projs[0][0][0], projs[0][0][1]
+    return pix
 
 
 def side_manual_projection(cube, calibration):
