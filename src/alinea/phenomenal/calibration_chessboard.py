@@ -25,11 +25,16 @@ __revision__ = ""
 #       =======================================================================
 #       External Import
 import cv2
+from math import radians
 import numpy as np
 import pickle
+from scipy.optimize import leastsq
+
 #       =======================================================================
 #       Local Import 
 
+from calibration_model import camera_frame, chess_corners, chess_frame
+from camera import Camera
 
 #       =======================================================================
 #       Code
@@ -53,43 +58,60 @@ class Chessboard(object):
 
 class Calibration(object):
     def __init__(self):
-        self.focal_matrix = None
-        self.rotation_vectors = None
-        self.translation_vectors = None
-        self.distortion_coefficient = None
+        self._sca_x = None
+        self._sca_y = None
+        self._dist_cam = None
+        self._offset = None
+        self._z_cam = None
+        self._azim_cam = None
+        self._elev_cam = None
+        self._tilt_cam = None
+        self._offset_angle = None
 
-    def __getitem__(self, item):
-        return (self.focal_matrix,
-                self.rotation_vectors[item],
-                self.translation_vectors[item],
-                self.distortion_coefficient)
+    def __getitem__(self, alpha):
+        cam = Camera((2056, 2454), (self._sca_x, self._sca_y))
+
+        fr = camera_frame(self._dist_cam, self._offset, self._z_cam,
+                          self._azim_cam, self._elev_cam, self._tilt_cam,
+                          self._offset_angle, radians(alpha))
+
+        return cam, fr
 
     def write_calibration(self, filename):
+        cal_params = (self._sca_x, self._sca_y,
+                      self._dist_cam, self._offset, self._z_cam,
+                      self._azim_cam, self._elev_cam, self._tilt_cam,
+                      self._offset_angle)
         with open(filename + '.pickle', 'wb') as handle:
-            pickle.dump(self, handle)
+            pickle.dump(cal_params, handle)
 
     @staticmethod
     def read_calibration(filename):
         with open(filename + '.pickle', 'rb') as handle:
-            return pickle.load(handle)
+            params = pickle.load(handle)
+            print params
+            sca_x, sca_y = params[0:2]
+            dist_cam, offset, z_cam = params[2:5]
+            azim_cam, elev_cam, tilt_cam, offset_angle = params[5:9]
+
+            cal = Calibration()
+            cal._sca_x = sca_x
+            cal._sca_y = sca_y
+            cal._dist_cam = dist_cam
+            cal._offset = offset
+            cal._z_cam = z_cam
+            cal._azim_cam = azim_cam
+            cal._elev_cam = elev_cam
+            cal._tilt_cam = tilt_cam
+            cal._offset_angle = offset_angle
+
+            return cal
+
 
     def print_value(self):
-        print 'Focal Matrix : ', self.focal_matrix
-        print 'Distortion coefficient : ', self.distortion_coefficient
-
-        for angle in self.rotation_vectors.keys():
-            print 'Angle : %d - rot : %f, %f, %f' % (
-                angle,
-                self.rotation_vectors[angle][0][0],
-                self.rotation_vectors[angle][1][0],
-                self.rotation_vectors[angle][2][0])
-
-        for angle in self.translation_vectors.keys():
-            print 'Angle : %d - trans : %f, %f, %f' % (
-                angle,
-                self.translation_vectors[angle][0][0],
-                self.translation_vectors[angle][1][0],
-                self.translation_vectors[angle][2][0])
+        for angle in (0, 30, 60, 90):
+            print "angle", angle
+            print self[angle]
 
 
 def find_chessboard_corners(image, size_chessboard):
@@ -218,3 +240,75 @@ def compute_reprojection_error(image_points, object_points, mtx, rvecs, tvecs):
         mean_error += error
 
     return mean_error / len(object_points)
+
+
+def project(pt, fr_chess, fr_cam, cam):
+    return cam.pixel_coordinates(fr_cam.local_point(fr_chess.global_point(pt)))
+
+
+def find_calibration_model_parameters(chessboard_ref, chessboard_corners, guess):
+    """ Find physical parameters associated with a camera
+    (i.e. distances and angles), using pictures of a rotating
+    chessboard.
+
+    args:
+     - 'chessboard_ref' (Chessboard): reference chessboard
+     - 'chessboard_corners' dict of (angle, list of pts): for
+                    a picture taken with a given angle, list
+                    the coordinates of all intersections on
+                    the chessboard in the picture
+    - 'guess' (): initial guess for calibration model
+    """
+    img_size = (2056, 2454)  # TODO: GRUUIK hardcoded
+
+    chessboard_pts = chess_corners(chessboard_ref)
+    cv_pts = chessboard_corners
+
+    print " fit model on computed points"
+    def fit(params):
+        err = []
+        fr_chess = chess_frame(*params[0:5])
+        cam = Camera(img_size, params[5:7])
+        dist_cam, offset, z_cam, azim_cam, elev_cam, tilt_cam, offset_angle = params[7:14]
+
+        for alpha, ref_pts in cv_pts.items():
+            fr_cam = camera_frame(dist_cam, offset, z_cam, azim_cam, elev_cam, tilt_cam, offset_angle, radians(alpha))
+            pts = [project(pt, fr_chess, fr_cam, cam) for pt in chessboard_pts]
+
+            err.append(np.linalg.norm(np.array(pts) - ref_pts, axis=1).sum())
+
+        print sum(err)
+        return err
+
+    # print fit(guess)
+    res = leastsq(fit, guess, maxfev=5000)
+
+    with open("fitted - step.pkl", 'wb') as f:
+        pickle.dump(res[0], f)
+
+    sca_x, sca_y, dist_cam, offset, z_cam = res[0][0:5]
+    azim_cam, elev_cam, tilt_cam, offset_angle = res[0][5:9]
+
+    cal = Calibration()
+    cal._sca_x = sca_x
+    cal._sca_y = sca_y
+    cal._dist_cam = dist_cam
+    cal._offset = offset
+    cal._z_cam = z_cam
+    cal._azim_cam = azim_cam
+    cal._elev_cam = elev_cam
+    cal._tilt_cam = tilt_cam
+    cal._offset_angle = offset_angle
+
+    return cal
+
+
+def plot_calibration(chessboard, cv_pts, guess, alpha):
+    import matplotlib.pyplot as plt
+
+    img = plt.imread('../../local/data/CHESSBOARD/2013-07-11 15_49_42vis_sv%.3d.png' % alpha)
+    plt.imshow(img)
+    print cv_pts[alpha].shape
+
+    plt.plot(cv_pts[alpha][:,0], cv_pts[alpha][:,1], 'r+')
+    plt.show()
