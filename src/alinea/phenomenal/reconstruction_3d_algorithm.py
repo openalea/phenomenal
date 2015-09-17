@@ -105,13 +105,7 @@ class Cube(object):
 #       ========================================================================
 #       ROTATION
 def side_rotation(cubes, theta, calibration):
-    """
 
-    :param cubes:
-    :param theta:
-    :param calibration:
-    :return:
-    """
     t = -theta / 180.0 * math.pi
     cbox2 = calibration.cbox / 2.0
     sint = math.sin(t)
@@ -131,29 +125,8 @@ def side_rotation(cubes, theta, calibration):
 
 #       ========================================================================
 #       PROJECTION
-def side_projection(cube, calibration):
-
-
-    # return calibration.project_point(cube.position)
-
-    mtx, rvec, tvec, dist_coeff = calibration
-
-    projs, jac = cv2.projectPoints(cube.position,
-                                   rvec,
-                                   tvec,
-                                   mtx,
-                                   dist_coeff)
-
-    return projs[0][0][0], projs[0][0][1]
-
 
 def side_manual_projection(cube, calibration):
-    """
-
-    :param cube:
-    :param calibration:
-    :return:
-    """
     # coordinates / optical center in real world
     x = cube.position[0, 0] - calibration.xo
     y = cube.position[0, 1] - calibration.yo
@@ -174,12 +147,6 @@ def side_manual_projection(cube, calibration):
 
 
 def top_manual_projection(cube, calibration):
-    """
-
-    :param cube:
-    :param calibration:
-    :return:
-    """
     # coordinates / optical center in real world
     x = cube.position[0, 0] - calibration.xt
     y = cube.position[0, 1] - calibration.yt
@@ -198,7 +165,7 @@ def top_manual_projection(cube, calibration):
     return min(calibration.h, max(1, xim)), min(calibration.w, max(1, yim))
 
 
-def bbox_projection(cube, calibration, func_projection):
+def bbox_projection(cube, calibration, angle):
 
     cubes_corners = cube.get_corner()
 
@@ -206,7 +173,7 @@ def bbox_projection(cube, calibration, func_projection):
     ly = []
 
     for cube in cubes_corners:
-        x, y = func_projection(cube, calibration)
+        x, y = calibration.project_position(cube.position, angle)
         lx.append(x)
         ly.append(y)
 
@@ -239,11 +206,6 @@ def split_cubes(cubes):
 
 
 def manual_split_cubes(cubes):
-    """
-
-    :param cubes:
-    :return:
-    """
 
     if len(cubes) == 0:
         return cubes
@@ -287,9 +249,27 @@ def manual_split_cubes(cubes):
 #       Algorithm
 
 
-def cube_is_in_image(image, cube, calibration, func_projection):
+def cube_is_in_image(image, cube, calibration, angle):
+    """
+
+    Algorithm
+    =========
+
+    For each cube in cubes :
+        - Project center cube position on image:
+        - Kept the cube and pass to the next if :
+            + The pixel value of center position projected is > 0
+
+        - Compute the bounding box and project the positions on image
+        - Kept the cube and pass to the next if :
+            + The pixel value of extremity of bounding box projected is > 0
+
+        - Kept the cube and pass to the next if :
+            + Any pixel value in the bounding box projected is > 0
+    """
+
     h, l = np.shape(image)
-    x, y = func_projection(cube, calibration)
+    x, y = calibration.project_position(cube.position, angle)
 
     if 0 <= y < h and 0 <= x < l:
         if image[y, x] > 0:
@@ -298,7 +278,7 @@ def cube_is_in_image(image, cube, calibration, func_projection):
     # =================================================================
 
     x_min, x_max, y_min, y_max = bbox_projection(
-        cube, calibration, func_projection)
+        cube, calibration, angle)
 
     x_min = min(max(x_min, 0), l - 1)
     x_max = min(max(x_max, 0), l - 1)
@@ -320,38 +300,13 @@ def cube_is_in_image(image, cube, calibration, func_projection):
     return False
 
 
-def octree_builder(image, cubes, calibration, func_projection):
-    """
-
-    Algorithm
-    =========
-
-    For each cube in cubes :
-        - Project center cube position on image:
-        - Kept the cube and pass to the next if :
-            + The pixel value of center position projected is > 0
-
-        - Compute the bounding box and project the positions on image
-        - Kept the cube and pass to the next if :
-            + The pixel value of extremity of bounding box projected is > 0
-
-        - Kept the cube and pass to the next if :
-            + Any pixel value in the bounding box projected is > 0
-
-    :param image:
-    :param cubes:
-    :param rvec:
-    :param mtx:
-    :param tvec:
-    :return:
-    """
-
+def octree_builder(image, cubes, calibration, angle):
     kept = deque()
     while True:
         try:
             cube = cubes.popleft()
 
-            if cube_is_in_image(image, cube, calibration, func_projection):
+            if cube_is_in_image(image, cube, calibration, angle):
                 kept.append(cube)
 
         except IndexError:
@@ -360,14 +315,14 @@ def octree_builder(image, cubes, calibration, func_projection):
     return kept
 
 
-def new_octree_builder(images, calibrations, func_projection, cube, iteration):
+def new_octree_builder(images, calibrations, angle, cube, iteration):
 
     ok = True
     for angle in images:
         image = images[angle]
         calibration = calibrations[angle]
 
-        if not cube_is_in_image(image, cube, calibration, func_projection):
+        if not cube_is_in_image(image, cube, calibration, angle):
             ok = False
 
     if ok is False:
@@ -386,7 +341,7 @@ def new_octree_builder(images, calibrations, func_projection, cube, iteration):
 
     for i in range(len(l)):
         oct_node.branches[i] = new_octree_builder(
-            images, calibrations, func_projection, l[i], iteration + 1)
+            images, calibrations, angle, l[i], iteration + 1)
 
     no_branch = True
     for i in range(len(l)):
