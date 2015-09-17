@@ -17,6 +17,10 @@
 #       ========================================================================
 
 #       ========================================================================
+#       External Import
+import math
+
+#       ========================================================================
 
 
 class CameraConfiguration:
@@ -144,3 +148,74 @@ class Calibration:
         print 'convTopRef', self.convTopref
         print 'convSideRef', self.convSideref
         print 'rotationTop', self.rotationTop
+
+    def top_projection(self, position):
+        # coordinates / optical center in real world
+        x = position[0, 0] - self.xt
+        y = position[0, 1] - self.yt
+        z = position[0, 2] - self.zt
+
+        # scale at this distance
+        conv = self.convTopref + z * self.pTop
+
+        # image coordinates / optical center and real world oriented  axes
+        ximo = x * conv
+        yimo = y * conv
+        # image coordinates
+        xim = round(self.h / 2 + ximo)
+        yim = round(self.w / 2 - yimo)
+
+        return min(self.h, max(1, xim)), min(self.w, max(1, yim))
+
+    def side_projection(self, position):
+        # coordinates / optical center in real world
+        x = position[0, 0] - self.xo
+        y = position[0, 1] - self.yo
+        z = position[0, 2] - self.zo
+
+        # scale at this distance
+        conv = self.convSideref - y * self.pSide
+
+        # image coordinates / optical center and real world oriented axes
+        ximo = x * conv
+        yimo = z * conv
+
+        # EBI image coordinates
+        xim = round(self.w / 2 + ximo)
+        yim = round(self.h / 2 - yimo)
+
+        return min(self.w, max(1, xim)), min(self.h, max(1, yim))
+
+    def side_rotation(self, position, angle):
+
+        t = - angle / 180.0 * math.pi
+        cbox2 = self.cbox / 2.0
+        sint = math.sin(t)
+        cost = math.cos(t)
+
+        x = position[0, 0] - cbox2
+        y = position[0, 1] - cbox2
+
+        tmp_x = cost * x - sint * y
+        tmp_y = sint * x + cost * y
+
+        position[0, 0] = tmp_x + cbox2
+        position[0, 1] = tmp_y + cbox2
+
+        return position
+
+    def project_position(self, point, angle):
+
+        if angle == -1:
+            return self.top_projection(point)
+        else:
+            if angle != 0:
+                point = self.side_rotation(point, angle)
+
+            pt = self.side_projection(point)
+
+            if angle != 0:
+                point = self.side_rotation(point, -angle)
+
+            return pt
+

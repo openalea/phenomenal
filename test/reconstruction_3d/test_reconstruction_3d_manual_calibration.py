@@ -85,10 +85,16 @@ def test_reconstruction_3d_samples_binarization_2():
     #   ========================================================================
     #   Reconstruction 3D
 
-    cubes = reconstruction_3d.reconstruction_3d_manual_calibration(
+    # cubes = reconstruction_3d.reconstruction_3d_manual_calibration(
+    #     images, calibration, 0.5)
+    #
+    # tools_test.show_cube(cubes, 1)
+
+
+    cubes = reconstruction_3d.reconstruction_3d_n(
         images, calibration, 0.5)
 
-    tools_test.show_cube(cubes, 1)
+    tools_test.show_cubes(cubes, scale_factor=1)
 
 #       ========================================================================
 #       TEST

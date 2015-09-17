@@ -29,16 +29,8 @@ import alinea.phenomenal.reconstruction_3d_algorithm as algo
 
 #       ========================================================================
 
-def reconstruction_3d_manual_calibration(images, calibration, precision=1):
-    """ Octree doc
 
-    :param images:
-    :param angle:
-    :param calibration:
-    :param precision:
-    :param use_top_image:
-    :return:
-    """
+def reconstruction_3d_manual_calibration(images, calibration, precision=1):
 
     origin = algo.Cube(calibration.cbox / 2.0,
                        calibration.cbox / 2.0,
@@ -77,6 +69,37 @@ def reconstruction_3d_manual_calibration(images, calibration, precision=1):
 
                 if angle != 0:
                     cubes = algo.side_rotation(cubes, -angle, calibration)
+
+            print "image: ", angle, "end len : ", len(cubes)
+
+    return cubes
+
+
+def reconstruction_3d_n(images, calibration, precision=1):
+    # origin = algo.Cube(0, 0, 0, 2500)
+
+    origin = algo.Cube(calibration.cbox / 2.0,
+                       calibration.cbox / 2.0,
+                       calibration.hbox / 2.0,
+                       max(calibration.cbox, calibration.hbox))
+    cubes = deque()
+    cubes.append(origin)
+
+    nb_iteration = int(round(math.log10(origin.radius / precision) /
+                             math.log10(2)))
+
+    nb_iteration = 9
+
+    for i in range(nb_iteration):
+        print 'octree decimation, iteration', i + 1, '/', nb_iteration
+        cubes = algo.split_cubes(cubes)
+
+        print "start len : ", len(cubes)
+        for angle in images.keys():
+            cubes = algo.octree_builder(images[angle],
+                                        cubes,
+                                        calibration,
+                                        angle)
 
             print "image: ", angle, "end len : ", len(cubes)
 

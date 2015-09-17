@@ -252,3 +252,13 @@ class Calibration(object):
             mean_error += error
 
         return mean_error / len(object_points)
+
+    def project_position(self, point, angle):
+
+        projection_point, _ = cv2.projectPoints(point,
+                                                self.rotation_vectors[angle],
+                                                self.translation_vectors[angle],
+                                                self.focal_matrix,
+                                                self.distortion_coefficient)
+
+        return projection_point[0, 0, 0], projection_point[0, 0, 1]

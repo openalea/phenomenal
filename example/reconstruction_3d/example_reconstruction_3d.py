@@ -41,7 +41,13 @@ def run_example(data_directory, calibration_name):
 
             images = load_images(files, cv2.IMREAD_UNCHANGED)
 
-            calibration = Calibration.read_calibration(calibration_name)
+            # calibration = Calibration.read_calibration(calibration_name)
+
+            import alinea.phenomenal.calibration_manual as cm
+            camera_config = cm.CameraConfiguration()
+            calibration = cm.Calibration(camera_config)
+
+            calibration.print_value()
 
             example_reconstruction_3d(images, calibration)
 
@@ -91,15 +97,14 @@ def example_reconstruction_3d(images, calibration):
     images_select = dict()
 
     for angle in images:
-        if 0 <= angle <= 105:
-            images_select[angle] = images[angle]
+        # if 0 <= angle <= 105:
+        images_select[angle] = images[angle]
 
-    cubes = reconstruction_3d.reconstruction_3d(images_select, calibration, 10)
+    cubes = reconstruction_3d.reconstruction_3d_n(images_select, calibration, 10)
 
-    show_cubes(cubes, scale_factor=10)
+    show_cubes(cubes, scale_factor=1)
 
 
-def example_reconstruction_3d_manual(images)
 #       ========================================================================
 #       LOCAL TEST
 
