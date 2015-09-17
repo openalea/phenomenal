@@ -29,7 +29,6 @@ import alinea.phenomenal.reconstruction_3d_algorithm as algo
 
 #       ========================================================================
 
-
 def reconstruction_3d_manual_calibration(images, calibration, precision=1):
     """ Octree doc
 
@@ -205,3 +204,17 @@ def re_projection_octree_to_image(octree, image, calibration):
                     oct_nodes.append(branch)
 
     return img
+
+
+def change_orientation(cubes):
+
+    for cube in cubes:
+        x = cube.position[0, 0]
+        y = - cube.position[0, 2]
+        z = - cube.position[0, 1]
+
+        cube.position[0, 0] = x
+        cube.position[0, 1] = y
+        cube.position[0, 2] = z
+
+    return cubes

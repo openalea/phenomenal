@@ -156,16 +156,15 @@ def show_octree(octree,
 #       ========================================================================
 
 
-def show_images(images):
+def show_images(images, name_windows='Image Comparison'):
     f = pylab.figure()
-    f.canvas.set_window_title("Image Comparison")
+    f.canvas.set_window_title(name_windows)
 
     number_of_images = len(images)
 
     i = 1
     for image in images:
         f.add_subplot(1, number_of_images, i)
-        pylab.title('Image ' + str(i))
         pylab.imshow(image)
         i += 1
 
@@ -176,6 +175,7 @@ def show_images(images):
 
 
 def show_image(image, name_windows='Image'):
+
     f = pylab.figure()
     f.canvas.set_window_title(name_windows)
     pylab.title(name_windows)

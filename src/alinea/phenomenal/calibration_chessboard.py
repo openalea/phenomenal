@@ -22,7 +22,6 @@
 #       External Import
 
 import pickle
-
 import pylab
 import cv2
 import numpy as np
@@ -93,17 +92,18 @@ class Chessboard(object):
         cv2.imshow(figure_name, image)
         cv2.waitKey()
 
-    def plot_point(self, x, y, image, figure_name='Image'):
+    def plot_points(self, projection_points, image, figure_name='Image'):
 
-        r = 50
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-        image[x - r:x + r, y - r:y + r] = [0, 0, 255]
+
+        projection_points = projection_points.astype(int)
+        image[projection_points[:, 0, 1],
+              projection_points[:, 0, 0]] = [0, 0, 255]
 
         f = pylab.figure()
-
         f.canvas.set_window_title(figure_name)
         pylab.title(figure_name)
-        pylab.imshow(image, cmap=pylab.cm.binary)
+        pylab.imshow(image)
         pylab.show()
 
         f.clf()
@@ -111,11 +111,13 @@ class Chessboard(object):
 
 
 class Calibration(object):
-    def __init__(self):
+    def __init__(self, images, chessboard, verbose=False):
         self.focal_matrix = None
         self.rotation_vectors = dict()
         self.translation_vectors = dict()
         self.distortion_coefficient = None
+
+        self.calibrate(images, chessboard, verbose=verbose)
 
     def __getitem__(self, item):
         return (self.focal_matrix,
@@ -143,6 +145,8 @@ class Calibration(object):
                     self.rotation_vectors[angle][0][0],
                     self.rotation_vectors[angle][1][0],
                     self.rotation_vectors[angle][2][0])
+            else:
+                print 'Angle : %d - rot : None' % angle
 
         for angle in self.translation_vectors:
             if self.translation_vectors[angle] is not None:
@@ -151,6 +155,8 @@ class Calibration(object):
                     self.translation_vectors[angle][0][0],
                     self.translation_vectors[angle][1][0],
                     self.translation_vectors[angle][2][0])
+            else:
+                print 'Angle : %d - trans : None' % angle
 
     def project_point(self, point, angle):
 
@@ -176,35 +182,13 @@ class Calibration(object):
         # Get corners images
         image_points = list()
         for angle in images:
-
-            print angle
-            if angle == -1:
-                do_something = None
-
-                img = images[angle]
-                h, l, _ = img.shape
-                corners = list()
-
-                for y in range(h):
-                    for x in range(l):
-                        a = img[y, x]
-                        a = np.array(a)
-                        b = np.array([255, 0, 0])
-                        if (a == b).all():
-                            corners.append([[y, x]])
-
-
-                print len(corners)
-                corners = np.array(corners)
-                print corners
-            else:
-                corners = chessboard.find_corners(images[angle])
+            corners = chessboard.find_corners(images[angle])
 
             if corners is not None:
                 image_points.append(corners)
 
-                if verbose is True:
-                    chessboard.plot_corners(corners, images[angle], str(angle))
+                # if verbose is True:
+                #     chessboard.plot_corners(corners, images[angle], str(angle))
 
             else:
                 self.rotation_vectors[angle] = None
@@ -220,18 +204,12 @@ class Calibration(object):
 
         distortion_coefficient = np.zeros((5, 1), np.float32)
 
-        ret, focal_matrix, distortion_coefficient, rvecs, tvecs = cv2.calibrateCamera(
-            object_points,
-            image_points,
-            images[0].shape[0:2],
-            camera_matrix,
-            distortion_coefficient)
-
-            # Old flags :
-            # flags=cv2.CALIB_ZERO_TANGENT_DIST +
-            #       cv2.CALIB_FIX_K1 +
-            #       cv2.CALIB_FIX_K2 +
-            #       cv2.CALIB_FIX_K3)
+        ret, focal_matrix, distortion_coefficient, rvecs, tvecs = \
+            cv2.calibrateCamera(object_points,
+                                image_points,
+                                images[0].shape[0:2],
+                                camera_matrix,
+                                distortion_coefficient)
 
         self.focal_matrix = focal_matrix
         self.distortion_coefficient = distortion_coefficient
@@ -247,42 +225,30 @@ class Calibration(object):
             self.translation_vectors[angle] = tvecs[i]
 
             if verbose is True:
+                projection_points = self.project_points(
+                    chessboard.object_points, angle)
 
-                pt = np.float32([[0, 0, -47]])
-
-                x, y = self.project_point(pt, angle)
-
-                chessboard.plot_point(
-                    x, y, images[angle], figure_name=str(angle))
+                chessboard.plot_points(
+                    projection_points, images[angle], figure_name=str(angle))
 
             i += 1
 
+    def projection_error(self, image_points, object_points, angle):
+        """ Return mean projection error """
 
-def calibration(images, chessboard, verbose=False):
+        mean_error = 0
+        for angle in object_points:
+            project_point, _ = cv2.projectPoints(
+                object_points[angle],
+                self.rotation_vectors[angle],
+                self.translation_vectors[angle],
+                self.focal_matrix,
+                self.distortion_coefficient)
 
-    my_calibration = Calibration()
-    my_calibration.calibrate(images, chessboard, verbose=verbose)
+            error = cv2.norm(image_points[angle],
+                             project_point,
+                             cv2.NORM_L2) / len(project_point)
 
-    return my_calibration
+            mean_error += error
 
-
-def compute_projection_error(image_points, object_points, mtx, rvecs, tvecs):
-    """
-    Return mean projection error
-
-    """
-
-    mean_error = 0
-    for i in range(len(object_points)):
-        project_point, _ = cv2.projectPoints(object_points[i],
-                                              rvecs[i],
-                                              tvecs[i],
-                                              mtx,
-                                              None)
-
-        error = cv2.norm(image_points[i], project_point, cv2.NORM_L2) / len(
-            project_point)
-
-        mean_error += error
-
-    return mean_error / len(object_points)
+        return mean_error / len(object_points)
