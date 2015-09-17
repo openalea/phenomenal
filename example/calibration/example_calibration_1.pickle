@@ -663,8 +663,7 @@ I00
 S'\xb4{\xe6\xdc\x87\xcb\xd0\xbfA\xbd\xfa\xc0j\x83\xed?\x80O\xec\xe5N\xfc\xbe?'
 p238
 tp239
-bsI-1
-NssS'distortion_coefficient'
+bssS'distortion_coefficient'
 p240
 g7
 (g8
@@ -1297,5 +1296,4 @@ I00
 S'\x84n\xec\xceE-\x80\xc0\x18\xf3\xcfNSx`@$\x06\xd4\xeaE\xf5\xb6@'
 p463
 tp464
-bsI-1
-Nssb.
+bssb.

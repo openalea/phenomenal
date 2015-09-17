@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_repair_processiong.py :
+#       example_reconstruction_3d.py : 
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -18,17 +18,34 @@
 
 #       ========================================================================
 #       External Import
-import cv2
 import glob
-import os
+import cv2
 
 #       ========================================================================
 #       Local Import
-from alinea.phenomenal.repair_processing import fill_up_prop
-from phenomenal.test.tools_test import show_images
-
+from phenomenal.test.tools_test import show_cubes
+from alinea.phenomenal.calibration_chessboard import Calibration
+import alinea.phenomenal.reconstruction_3d as reconstruction_3d
 #       ========================================================================
 #       Code
+
+
+def run_example(data_directory, calibration_name):
+
+    pot_ids = load_files(data_directory + 'repair_processing/')
+
+    for pot_id in pot_ids:
+        for date in pot_ids[pot_id]:
+
+            files = pot_ids[pot_id][date]
+
+            images = load_images(files, cv2.IMREAD_UNCHANGED)
+
+            calibration = Calibration.read_calibration(calibration_name)
+
+            example_reconstruction_3d(images, calibration)
+
+
 def load_files(data_directory):
 
     images_names = glob.glob(data_directory + '*.png')
@@ -67,56 +84,26 @@ def load_images(files, cv2_flag):
     return images
 
 
-def write_images(data_directory, files, images):
+def example_reconstruction_3d(images, calibration):
 
-    if not os.path.exists(data_directory):
-        os.makedirs(data_directory)
+    #   ========================================================================
+
+    images_select = dict()
 
     for angle in images:
+        if 0 <= angle <= 105:
+            images_select[angle] = images[angle]
 
-        path = files[angle]
-        filename = path.split('\\')[-1]
-        path = data_directory + filename
+    cubes = reconstruction_3d.reconstruction_3d(images_select, calibration, 10)
 
-        cv2.imwrite(path, images[angle])
-
-
-def run_example(data_directory):
-    pot_ids = load_files(data_directory + 'binarization/')
-
-    for pot_id in pot_ids:
-        for date in pot_ids[pot_id]:
-
-            files = pot_ids[pot_id][date]
-
-            images = load_images(files, cv2.IMREAD_UNCHANGED)
-
-            repair_images = example_repair_processing(images)
-
-            # print pot_id, date
-            # for angle in repair_images:
-            #     show_images([images[angle], repair_images[angle]],
-            #                 str(angle))
-
-            write_images(data_directory + 'repair_processing/',
-                         files,
-                         repair_images)
+    show_cubes(cubes, scale_factor=10)
 
 
-def example_repair_processing(images):
-
-    repair_images = dict()
-    for angle in images:
-        if angle == -1:
-            repair_images[angle] = fill_up_prop(images[angle],
-                                                is_top_image=True)
-        else:
-            repair_images[angle] = fill_up_prop(images[angle])
-
-    return repair_images
-
+def example_reconstruction_3d_manual(images)
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
+    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
+                '../calibration/example_calibration_2')
+

@@ -32,6 +32,26 @@ import alinea.phenomenal.binarization_algorithm as b_algorithm
 #       ========================================================================
 
 
+def binarization(image,
+                 configuration,
+                 methods='mean_shift',
+                 is_top_image=False,
+                 mean_image=None):
+
+    if methods == 'mean_shift':
+        return side_binarization(image, mean_image, configuration)
+    if methods == 'hsv' and is_top_image is True:
+        return top_binarization_hsv(image, configuration)
+    if methods == 'hsv' and is_top_image is False:
+        return side_binarization_hsv(image, configuration)
+    if methods == 'elcom':
+        return side_binarization_elcom(image, mean_image, configuration)
+    if methods == 'adaptive_threshold':
+        return side_binarization_adaptive_thresh(image, configuration)
+
+    return None
+
+
 def side_binarization_hsv(image, configuration):
     """
     Binarization of side image for Lemnatech cabin based on hsv segmentation.
@@ -209,7 +229,6 @@ def top_binarization_hsv(image, configuration):
     :param configuration: Object BinarizeConfiguration
     :return: Binary image
     """
-    configuration.print_value()
 
     # c = configuration.cubicle_domain
     # image_cropped = image[c[0]:c[1], c[2]:c[3]]
@@ -224,6 +243,7 @@ def top_binarization_hsv(image, configuration):
 
     main_area_seg = ocv2.dilate(main_area_seg, iterations=2)
     main_area_seg = ocv2.erode(main_area_seg, iterations=2)
+
     #
     # mask_cropped = configuration.roi_main.mask[c[0]:c[1], c[2]:c[3]]
     # main_area_seg = cv2.bitwise_and(main_area_seg,
@@ -251,3 +271,4 @@ def get_mean_image(images):
     function = lambda x, y: cv2.addWeighted(x, 1, y, weight, 0)
 
     return reduce(function, images[2:], start)
+

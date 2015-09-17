@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       skeletonize_3d.py : Module Description
+#       skeletonize_3d.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -18,9 +18,9 @@
 
 #       ========================================================================
 #       External Import
-import copy
-import numpy as np
 from math import degrees, acos
+import numpy as np
+
 
 #       ========================================================================
 #       Local Import
@@ -30,20 +30,31 @@ from openalea.plantgl.all import *
 #       ========================================================================
 #       Code
 
+
+def cubes_to_point3array(cubes):
+    vectors = list()
+    for cube in cubes:
+        x = np.double(cube.position[0, 0])
+        y = np.double(cube.position[0, 1])
+        z = np.double(cube.position[0, 2])
+
+        v = Vector3(x, y, z)
+        vectors.append(v)
+
+    return vectors
+
+
 def euclidian_contraction(points, radius):
     return contract_point3(points, radius)
 
 
 def skeletonize_3d_xu_method(points,
-                             root,
-                             bin_ratio,
-                             k,
-                             connect_all_points,
-                             verbose):
+                             bin_length,
+                             k=20,
+                             connect_all_points=True,
+                             verbose=False):
 
-    mini, maxi = points.getZMinAndMaxIndex()
-    z_distance = points[maxi].z - points[mini].z
-    bin_length = z_distance / bin_ratio
+    root = Vector3(points[points.getZMinIndex()])
 
     len_root = len(points)
     points.append(root)
@@ -59,46 +70,30 @@ def skeletonize_3d_xu_method(points,
 
     del points[len_root]
 
-    return positions, parents, point_components
-
-
-def cubes_to_Point3Array(cubes):
-    vectors = list()
-    for cube in cubes:
-        x = np.double(cube.position[0, 0])
-        y = np.double(cube.position[0, 1])
-        z = np.double(cube.position[0, 2])
-
-        v = Vector3(x, y, z)
-        vectors.append(v)
-
-    return vectors
+    return positions, parents, point_components, root
 
 
 def skeletonize_3d_segment(cubes,
                            contraction_radius,
-                           bin_ratio,
+                           bin_length,
                            k=20,
                            connect_all_points=True,
                            verbose=False):
 
-    vectors = cubes_to_Point3Array(cubes)
+    vectors = cubes_to_point3array(cubes)
 
     points = Point3Array(vectors)
 
-    points = euclidian_contraction(Point3Array(vectors), contraction_radius)
+    points = euclidian_contraction(points, contraction_radius)
 
-    root = Vector3(points[points.getZMinIndex()])
-
-    positions, parents, point_components = skeletonize_3d_xu_method(
+    positions, parents, point_components, root = skeletonize_3d_xu_method(
         points,
-        root,
-        bin_ratio,
+        bin_length,
         k=k,
         connect_all_points=connect_all_points,
         verbose=verbose)
 
-    print len(positions), len(parents), len(point_components)
+    print len(positions), len(parents), len(point_components), root
 
     segments = list()
 
@@ -108,13 +103,9 @@ def skeletonize_3d_segment(cubes,
         if index_position < len(points):
             my_point.append(points[index_position])
 
-
-
     segments.append([positions[0], root, my_point])
 
     for i in range(1, len(positions)):
-
-
         my_point = list()
         for index_position in point_components[i]:
                 my_point.append(points[index_position])
@@ -131,21 +122,20 @@ def skeletonize_3d(cubes,
                    connect_all_points=True,
                    verbose=False):
 
-    vectors = cubes_to_Point3Array(cubes)
+    vectors = cubes_to_point3array(cubes)
 
-    points = euclidian_contraction(Point3Array(vectors), contraction_radius)
+    points = Point3Array(vectors)
 
-    root = Vector3(points[points.getZMinIndex()])
+    points = euclidian_contraction(points, contraction_radius)
 
-    positions, parents, point_components = skeletonize_3d_xu_method(
+    positions, parents, point_components, root = skeletonize_3d_xu_method(
         points,
-        root,
         bin_ratio,
         k=k,
         connect_all_points=connect_all_points,
         verbose=verbose)
 
-    return positions, parents, point_components
+    return positions, parents, point_components, root
 
 
 def test_skeletonize_3d(cubes,
@@ -155,7 +145,7 @@ def test_skeletonize_3d(cubes,
                         connect_all_points=True,
                         verbose=True):
 
-    positions, parents, pointcomponents = skeletonize_3d(
+    positions, parents, pointcomponents, root_position = skeletonize_3d(
         cubes,
         contraction_radius,
         bin_ratio,
@@ -164,10 +154,10 @@ def test_skeletonize_3d(cubes,
         verbose=verbose)
 
 
-    vectors = cubes_to_Point3Array(cubes)
+    vectors = cubes_to_point3array(cubes)
     points = PointSet(euclidian_contraction(Point3Array(vectors),
                                             contraction_radius))
-    root_position = Vector3(points.pointList[points.pointList.getZMinIndex()])
+
 
     qapp = mtgeditor.QApplication([])
     w = mtgeditor.MTGEditor()
@@ -242,66 +232,6 @@ def test_skeletonize_3d(cubes,
     w.mtgeditor.updateGL()
     qapp.exec_()
 
-
-#       ========================================================================
-#       Not work
-
-def closest_cubes(cube, cubes):
-    r = cube.radius
-
-    x = cube.position[0, 0] + r
-    y = cube.position[0, 1] + r
-    z = cube.position[0, 2] + r
-    pos = np.float32([[x, y, z]])
-
-    dist = np.linalg.norm(cube.position - pos) * 2
-    closest_neighbors = list()
-    for c in cubes:
-        if c is cube:
-            continue
-
-        distance = np.linalg.norm(cube.position - c.position)
-        if distance <= dist:
-            closest_neighbors.append(c)
-
-    return closest_neighbors
-
-
-def skeletonize_3d_transform_distance(cubes):
-
-    import phenomenal.test.tools_test as tools_test
-
-    cubes_transform = list()
-    number = 1
-
-    cubes_save = copy.copy(cubes)
-
-    tools_test.show_cube(cubes, 10)
-
-    while cubes:
-
-        cubes_tmp = list()
-        while True:
-            try:
-                cube = cubes.pop()
-                closest = closest_cubes(cube, cubes_save)
-
-                if len(closest) < 26:
-                    cubes_transform.append([number, cube])
-                else:
-                    cubes_tmp.append(cube)
-
-            except IndexError:
-                break
-
-        number += 1
-        tools_test.show_cube(cubes_tmp, 10)
-        cubes = cubes_tmp
-        cubes_save = copy.copy(cubes)
-
-
-
-    print len(cubes), len(cubes_transform)
 
 #       ========================================================================
 #       LOCAL TEST

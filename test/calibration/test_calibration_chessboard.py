@@ -57,8 +57,7 @@ def get_parameters():
 def test_calibration():
     images, chessboard = get_parameters()
 
-    my_calibration = calibration_chessboard.calibration(
-        images, chessboard)
+    my_calibration = calibration_chessboard.Calibration(images, chessboard)
 
     my_calibration.print_value()
 
@@ -92,40 +91,6 @@ def test_calibration_2():
     calibration_tools.plot_vectors(my_calibration.translation_vectors)
 
     my_calibration.write_calibration('my_calibration')
-
-
-def test_re_projection():
-    images, chessboard = get_parameters_2()
-
-    opencv_calibration = calibration_chessboard.Calibration.read_calibration(
-        'my_calibration')
-
-    opencv_calibration.print_value()
-
-    object_points = chessboard.object_points
-    focal_matrix = opencv_calibration.focal_matrix
-    distortion_coefficient = opencv_calibration.distortion_coefficient
-
-    for angle in images:
-        if angle % 30 == 0:
-
-            rotation_vector = opencv_calibration.rotation_vectors[angle]
-            translation_vector = opencv_calibration.translation_vectors[angle]
-
-            projection_point, _ = cv2.projectPoints(object_points,
-                                                    rotation_vector,
-                                                    translation_vector,
-                                                    focal_matrix,
-                                                    distortion_coefficient)
-
-            img = images[angle]
-            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-
-            projection_point = projection_point.astype(int)
-            img[projection_point[:, 0, 0],
-                projection_point[:, 0, 1]] = [0, 0, 255]
-
-            tools_test.show_image(img)
 
 
 def test_compute_rotation_and_translation_vectors():
@@ -505,23 +470,16 @@ def test_calibration_on_reconstruction_3d_4():
         tools_test.show_image(opencv_img, str(angle))
 
 
-def test_pickle():
-    opencv_calibration = calibration_chessboard.Calibration.read_calibration(
-        'my_calibration')
-
-    opencv_calibration.write_calibration('my_calibration')
-
 
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    test_calibration()
+    # test_calibration()
     # test_calibration_2()
     # test_compute_rotation_and_translation_vectors()
-    # test_calibration_on_reconstruction_3d()
-    # test_calibration_on_reconstruction_3d_4()
 
-    #test_re_projection()
+    test_calibration_on_reconstruction_3d()
+    # test_calibration_on_reconstruction_3d_4()
 
 

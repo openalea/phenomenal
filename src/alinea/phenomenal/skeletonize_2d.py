@@ -26,6 +26,13 @@ import numpy as np
 #       Code
 
 
+def skeletonize(image, methods='thinning'):
+    if methods == 'thinning':
+        return skeletonize_thinning(image)
+    if methods == 'erode_dilate':
+        return skeletonize_erode_dilate(image)
+
+
 def skeletonize_thinning(image):
     """
     Thinning is used to reduce each connected component in a binary image to a

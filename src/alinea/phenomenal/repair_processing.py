@@ -63,13 +63,17 @@ def clean_noise(image, mask=None):
     return res
 
 
-def fill_up_prop(image):
-    configuration_directory = shared_data(alinea.phenomenal)
-    mask = cv2.imread(configuration_directory + "/roi_stem.png",
-                      cv2.IMREAD_GRAYSCALE)
+def fill_up_prop(image, is_top_image=False):
 
-    if mask is not None:
-        img = cv2.bitwise_and(image, image, mask=mask)
+    img = image.copy()
+
+    if is_top_image is False:
+        configuration_directory = shared_data(alinea.phenomenal)
+        mask = cv2.imread(configuration_directory + "/roi_stem.png",
+                          cv2.IMREAD_GRAYSCALE)
+
+        if mask is not None:
+            img = cv2.bitwise_and(image, image, mask=mask)
 
     kernel = np.ones((7, 7), np.uint8)
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
