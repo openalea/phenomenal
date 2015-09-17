@@ -29,6 +29,8 @@ from phenomenal.test.tools_test import show_images
 
 #       ========================================================================
 #       Code
+
+
 def load_files(data_directory):
 
     images_names = glob.glob(data_directory + '*.png')
