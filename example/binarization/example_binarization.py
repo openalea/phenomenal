@@ -22,9 +22,6 @@ import glob
 import os
 import cv2
 
-
-
-
 #       ========================================================================
 #       Local Import
 from alinea.phenomenal.binarization import binarization, get_mean_image
@@ -46,20 +43,20 @@ def run_example(data_directory):
 
             images = load_images(files, cv2.IMREAD_UNCHANGED)
 
-            images_binarize_adaptive_threshold = \
-                example_binarization_adaptive_threshold(images)
+            # images_binarize_adaptive_threshold = \
+            #     example_binarization_adaptive_threshold(images)
             images_binarize_mean_shift = example_binarization_mean_shift(images)
-            images_binarize_elcom = example_binarization_elcom(images)
-            images_binarize_hsv = example_binarization_hsv(images)
-
-            print pot_id, date
-            for angle in images:
-                show_images(
-                    [images[angle],
-                     images_binarize_adaptive_threshold[angle],
-                     images_binarize_mean_shift[angle],
-                     images_binarize_elcom[angle],
-                     images_binarize_hsv[angle]], str(angle))
+            # images_binarize_elcom = example_binarization_elcom(images)
+            # images_binarize_hsv = example_binarization_hsv(images)
+            #
+            # print pot_id, date
+            # for angle in images:
+            #     show_images(
+            #         [images[angle],
+            #          images_binarize_adaptive_threshold[angle],
+            #          images_binarize_mean_shift[angle],
+            #          images_binarize_elcom[angle],
+            #          images_binarize_hsv[angle]], str(angle))
 
             write_images(data_directory + '/binarization/',
                          files,
@@ -235,4 +232,4 @@ def example_binarization_hsv(images):
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
+    run_example('../../local/B73/')

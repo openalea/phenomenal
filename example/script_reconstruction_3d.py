@@ -262,6 +262,7 @@ def convert_orientation_cubes(cubes):
 
     return cubes
 
+
 def give_cube(organ, radius):
     cubes = list()
 
@@ -276,6 +277,7 @@ def give_cube(organ, radius):
                 cubes.append(cube)
 
     return cubes
+
 
 def execute_script_2(images_names, output_name):
     # ==========================================================================
@@ -323,6 +325,7 @@ def execute_script_2(images_names, output_name):
     for angle in images_repair:
         skeleton = skeletonize_2d.skeletonize_thinning(images_repair[angle])
         tools_test.show_image(skeleton, str(angle))
+
 
 def read_xyz(directory='./'):
     # ==========================================================================

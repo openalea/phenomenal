@@ -19,9 +19,7 @@
 
 #       ========================================================================
 #       External Import
-import math
 import numpy as np
-import cv2
 from collections import deque
 
 #       ========================================================================
@@ -102,68 +100,9 @@ class Cube(object):
                self.position[0, 2],
                self.radius)
 
-#       ========================================================================
-#       ROTATION
-def side_rotation(cubes, theta, calibration):
-
-    t = -theta / 180.0 * math.pi
-    cbox2 = calibration.cbox / 2.0
-    sint = math.sin(t)
-    cost = math.cos(t)
-
-    for cube in cubes:
-        x = cube.position[0, 0] - cbox2
-        y = cube.position[0, 1] - cbox2
-
-        tmp_x = cost * x - sint * y
-        tmp_y = sint * x + cost * y
-
-        cube.position[0, 0] = tmp_x + cbox2
-        cube.position[0, 1] = tmp_y + cbox2
-
-    return cubes
 
 #       ========================================================================
 #       PROJECTION
-
-def side_manual_projection(cube, calibration):
-    # coordinates / optical center in real world
-    x = cube.position[0, 0] - calibration.xo
-    y = cube.position[0, 1] - calibration.yo
-    z = cube.position[0, 2] - calibration.zo
-
-    # scale at this distance
-    conv = calibration.convSideref - y * calibration.pSide
-
-    # image coordinates / optical center and real world oriented axes
-    ximo = x * conv
-    yimo = z * conv
-
-    # EBI image coordinates
-    xim = round(calibration.w / 2 + ximo)
-    yim = round(calibration.h / 2 - yimo)
-
-    return min(calibration.w, max(1, xim)), min(calibration.h, max(1, yim))
-
-
-def top_manual_projection(cube, calibration):
-    # coordinates / optical center in real world
-    x = cube.position[0, 0] - calibration.xt
-    y = cube.position[0, 1] - calibration.yt
-    z = cube.position[0, 2] - calibration.zt
-
-    # scale at this distance
-    conv = calibration.convTopref + z * calibration.pTop
-
-    # image coordinates / optical center and real world oriented  axes
-    ximo = x * conv
-    yimo = y * conv
-    # image coordinates
-    xim = round(calibration.h / 2 + ximo)
-    yim = round(calibration.w / 2 - yimo)
-
-    return min(calibration.h, max(1, xim)), min(calibration.w, max(1, yim))
-
 
 def bbox_projection(cube, calibration, angle):
 
@@ -173,6 +112,7 @@ def bbox_projection(cube, calibration, angle):
     ly = []
 
     for cube in cubes_corners:
+        # x, y = angle(cube, calibration)
         x, y = calibration.project_position(cube.position, angle)
         lx.append(x)
         ly.append(y)
@@ -269,6 +209,7 @@ def cube_is_in_image(image, cube, calibration, angle):
     """
 
     h, l = np.shape(image)
+    # x, y = angle(cube, calibration)
     x, y = calibration.project_position(cube.position, angle)
 
     if 0 <= y < h and 0 <= x < l:

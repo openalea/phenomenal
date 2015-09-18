@@ -19,15 +19,114 @@
 #       ========================================================================
 #       External Import
 import glob
+import os
+import re
+
 import cv2
+
+
+
+
+
 
 #       ========================================================================
 #       Local Import
 from phenomenal.test.tools_test import show_cubes
 from alinea.phenomenal.calibration_chessboard import Calibration
+
 import alinea.phenomenal.reconstruction_3d as reconstruction_3d
+import phenomenal.test.tools_test as tools_test
+
 #       ========================================================================
 #       Code
+
+def read_xyz(file):
+    # ==========================================================================
+    # Read reconstruction
+
+    read_cubes = list()
+    with open(file, 'r') as f:
+
+        radius = float(f.readline())
+        for line in f:
+            position = re.findall(r'[-0-9.]+', line)
+            cube = reconstruction_3d.algo.Cube(position[0],
+                                               position[1],
+                                               position[2],
+                                               radius)
+
+            read_cubes.append(cube)
+
+    f.close()
+
+    tools_test.show_cubes(read_cubes, figure_name=file)
+
+
+def write_cubes(cubes, data_directory, name_file):
+
+    if not os.path.exists(data_directory):
+        os.makedirs(data_directory)
+
+    f = open(data_directory + name_file + '.xyz', 'w')
+
+    f.write("%f\n" % (cubes[0].radius))
+
+    for cube in cubes:
+        x = cube.position[0, 0]
+        y = cube.position[0, 1]
+        z = cube.position[0, 2]
+
+        f.write("%f %f %f \n" % (x, y, z))
+
+    f.close()
+
+
+def convert_orientation_cubes(cubes):
+
+    for cube in cubes:
+        x = cube.position[0, 0]
+        y = - cube.position[0, 2]
+        z = - cube.position[0, 1]
+
+        cube.position[0, 0] = x
+        cube.position[0, 1] = y
+        cube.position[0, 2] = z
+
+    return cubes
+
+
+def give_cube(organ, radius):
+    cubes = list()
+
+    for segment in organ.segments:
+        for component in segment.component:
+            for point in component:
+                cube = reconstruction_3d.algo.Cube(point[0],
+                                                   point[1],
+                                                   point[2],
+                                                   radius)
+
+                cubes.append(cube)
+
+    return cubes
+
+
+def write_cubes_labelize(cubes, data_directory, name_file, id):
+    if not os.path.exists(data_directory):
+        os.makedirs(data_directory)
+
+    f = open(data_directory + name_file + '.xyz', 'w')
+
+    f.write("%f\n" % (cubes[0].radius))
+
+    for cube in cubes:
+        x = cube.position[0, 0]
+        y = cube.position[0, 1]
+        z = cube.position[0, 2]
+
+        f.write("%f %f %f %d\n" % (x, y, z, id))
+
+    f.close()
 
 
 def run_example(data_directory, calibration_name):
@@ -39,17 +138,64 @@ def run_example(data_directory, calibration_name):
 
             files = pot_ids[pot_id][date]
 
-            images = load_images(files, cv2.IMREAD_UNCHANGED)
+            if len(files) > 3:
+                images = load_images(files, cv2.IMREAD_UNCHANGED)
 
-            # calibration = Calibration.read_calibration(calibration_name)
+                calibration = Calibration.read_calibration(calibration_name)
 
-            import alinea.phenomenal.calibration_manual as cm
-            camera_config = cm.CameraConfiguration()
-            calibration = cm.Calibration(camera_config)
+                # import alinea.phenomenal.calibration_manual as cm
+                # camera_config = cm.CameraConfiguration()
+                # calibration = cm.Calibration(camera_config)
 
-            calibration.print_value()
+                cubes = example_reconstruction_3d(images, calibration)
 
-            example_reconstruction_3d(images, calibration)
+                print pot_id, date
+                show_cubes(cubes, scale_factor=3)
+
+                file_name = files[0].split('\\')[-1].split('_vis_')[0]
+
+                write_cubes(cubes,
+                            data_directory + 'reconstruction_3/',
+                            file_name)
+
+                # cubes = convert_orientation_cubes(cubes)
+                #
+                # skeleton_3d = skeletonize_3d.skeletonize_3d_segment(cubes, 10, 20)
+                #
+                # stem, leaves, segments = \
+                #     segmentation_3d.segment_organs_from_skeleton_3d(skeleton_3d)
+                #
+                # stem_cubes = give_cube(stem, cubes[0].radius)
+                #
+                # directory = data_directory + 'segmentation_3d/'
+                #
+                # if not os.path.exists(directory):
+                #     os.makedirs(directory)
+                #
+                # f = open(directory + file_name + '.xyz', 'w')
+                #
+                # f.write("%f\n" % (cubes[0].radius))
+                #
+                # id = 0
+                # for cube in stem_cubes:
+                #     x = cube.position[0, 0]
+                #     y = cube.position[0, 1]
+                #     z = cube.position[0, 2]
+                #
+                #     f.write("%f %f %f %d\n" % (x, y, z, id))
+                # id += 1
+                #
+                # for leaf in leaves:
+                #     leaf_cubes = give_cube(leaf, cubes[0].radius)
+                #     for cube in leaf_cubes:
+                #         x = cube.position[0, 0]
+                #         y = cube.position[0, 1]
+                #         z = cube.position[0, 2]
+                #
+                #         f.write("%f %f %f %d\n" % (x, y, z, id))
+                #     id += 1
+                #
+                # f.close()
 
 
 def load_files(data_directory):
@@ -97,12 +243,14 @@ def example_reconstruction_3d(images, calibration):
     images_select = dict()
 
     for angle in images:
-        # if 0 <= angle <= 105:
-        images_select[angle] = images[angle]
+        if 0 <= angle <= 240:
+            images_select[angle] = images[angle]
 
-    cubes = reconstruction_3d.reconstruction_3d_n(images_select, calibration, 10)
+    cubes = reconstruction_3d.reconstruction_3d(images_select,
+                                                calibration,
+                                                5)
 
-    show_cubes(cubes, scale_factor=1)
+    return cubes
 
 
 #       ========================================================================
@@ -112,3 +260,5 @@ if __name__ == "__main__":
     run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
                 '../calibration/example_calibration_2')
 
+    # run_example('../../local/B73/',
+    #             '../calibration/example_calibration_2')
