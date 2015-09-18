@@ -181,12 +181,14 @@ class Calibration:
         yimo = z * conv
 
         # EBI image coordinates
-        xim = round(self.w / 2 + ximo)
-        yim = round(self.h / 2 - yimo)
+        xim = round(self.w / 2.0 + ximo)
+        yim = round(self.h / 2.0 - yimo)
 
-        return min(self.w, max(1, xim)), min(self.h, max(1, yim))
+        return min(self.w, max(0, xim)), min(self.h, max(0, yim))
 
     def side_rotation(self, position, angle):
+
+        pos = position.copy()
 
         t = - angle / 180.0 * math.pi
         cbox2 = self.cbox / 2.0
@@ -199,10 +201,10 @@ class Calibration:
         tmp_x = cost * x - sint * y
         tmp_y = sint * x + cost * y
 
-        position[0, 0] = tmp_x + cbox2
-        position[0, 1] = tmp_y + cbox2
+        pos[0, 0] = tmp_x + cbox2
+        pos[0, 1] = tmp_y + cbox2
 
-        return position
+        return pos
 
     def project_position(self, point, angle):
 
@@ -212,10 +214,10 @@ class Calibration:
             if angle != 0:
                 point = self.side_rotation(point, angle)
 
-            pt = self.side_projection(point)
+            x, y = self.side_projection(point)
 
-            if angle != 0:
-                point = self.side_rotation(point, -angle)
+            # if angle != 0:
+            #     point = self.side_rotation(point, -angle)
 
-            return pt
+            return x, y
 
