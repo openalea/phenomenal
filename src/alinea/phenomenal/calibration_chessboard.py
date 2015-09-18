@@ -286,8 +286,8 @@ def find_calibration_model_parameters(chessboard_ref, chessboard_corners, guess)
     with open("fitted - step.pkl", 'wb') as f:
         pickle.dump(res[0], f)
 
-    sca_x, sca_y, dist_cam, offset, z_cam = res[0][0:5]
-    azim_cam, elev_cam, tilt_cam, offset_angle = res[0][5:9]
+    sca_x, sca_y, = res[0][5:7]
+    dist_cam, offset, z_cam, azim_cam, elev_cam, tilt_cam, offset_angle = res[0][7:14]
 
     cal = Calibration()
     cal._sca_x = sca_x
