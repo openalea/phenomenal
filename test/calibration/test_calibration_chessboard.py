@@ -106,12 +106,13 @@ def test_compute_rotation_and_translation_vectors():
 def test_reconstruction_3d():
 
     my_calibration = cc.Calibration.read_calibration(
-        'fitted - fmt')
+        'fitted - best')
 
     #directory = '../../local/data/tests/Samples_binarization_2/'
     # directory = '../../local/data/tests/Samples_binarization_3/'
     # directory = '../../local/data/tests/Samples_binarization_4/'
-    directory = '../../local/data/tests/Samples_binarization_5/'
+    # directory = '../../local/data/tests/Samples_binarization_5/'
+    directory = '../../local/data/tests/Samples_binarization_sphere/'
 
 
     files = glob.glob(directory + '*.png')
