@@ -77,11 +77,11 @@ def test_reconstruction_3d_samples_binarization_2():
 
     directory = '../../local/data/tests/Samples_binarization_2/'
     files = glob.glob(directory + '*.png')
-    angles = map(lambda x: int((x.split('/')[-1]).split('.png')[0]), files)
+    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
 
     images = dict()
     for i in range(len(files)):
-        images[angles[i]] = cv2.imread(files[i], cv2.CV_LOAD_IMAGE_GRAYSCALE)
+        images[angles[i]] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
 
     camera_configuration = calibration_manual.CameraConfiguration()
     calibration = calibration_manual.Calibration(camera_configuration)

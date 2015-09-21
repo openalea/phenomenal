@@ -112,7 +112,7 @@ def test_reconstruction_3d():
     # directory = '../../local/data/tests/Samples_binarization_3/'
     # directory = '../../local/data/tests/Samples_binarization_4/'
     # directory = '../../local/data/tests/Samples_binarization_5/'
-    directory = '../../local/data/tests/Samples_binarization_sphere/'
+    directory = '../../local/data/tests/Samples_binarization_2/'
 
 
     files = glob.glob(directory + '*.png')
@@ -121,15 +121,12 @@ def test_reconstruction_3d():
     images = dict()
     for i in range(len(files)):
         if True or angles[i] < 120:
-            images[angles[i]] = cv2.imread(files[i],
-                                           cv2.CV_LOAD_IMAGE_GRAYSCALE)
-
-
+            images[angles[i]] = cv2.imread(files[i], cv2.IMREAD_GRAYSCALE)
 
     octree_result = reconstruction_3d.reconstruction_3d(
         images, my_calibration, 10)
 
-    tools_test.show_cube(octree_result, 9, "OpenCv")
+    tools_test.show_cube(octree_result, 10, "OpenCv")
 
     # reconstruction_3d.reprojection_3d_objects_to_images(
     #     images, octree_result, my_calibration)

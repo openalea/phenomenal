@@ -45,18 +45,18 @@ def test_reconstruction_3d():
         '../calibration/calibration')
 
 
-    directory = '../../local/data/tests/Samples_binarization_3/'
+    directory = '../../local/data/tests/Samples_binarization_2/'
     # directory = '../../local/data/tests/Samples_binarization_4/'
     # directory = '../../local/data/tests/Samples_binarization_5/'
     # directory = '../../local/data/tests/Samples_binarization_2/'
     files = glob.glob(directory + '*.png')
-    angles = map(lambda x: int((x.split('/')[-1]).split('.png')[0]), files)
+    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]), files)
 
     images = dict()
     for i in range(len(files)):
         if angles[i] < 120:
             images[angles[i]] = cv2.imread(
-                files[i], cv2.CV_LOAD_IMAGE_GRAYSCALE)
+                files[i], cv2.IMREAD_GRAYSCALE)
 
 
     octree_result = reconstruction_3d.reconstruction_3d(
