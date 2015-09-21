@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       example_repair_processing.py : 
+#       example_skeletonize_2d.py.py : 
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -18,18 +18,20 @@
 
 #       ========================================================================
 #       External Import
-import cv2
 import glob
 import os
 
+import cv2
+
+
 #       ========================================================================
 #       Local Import
-from alinea.phenomenal.repair_processing import fill_up_prop
+from alinea.phenomenal.skeletonize_2d import skeletonize_thinning
 from phenomenal.test.tools_test import show_images
+
 
 #       ========================================================================
 #       Code
-
 
 def load_files(data_directory):
 
@@ -43,7 +45,7 @@ def load_files(data_directory):
             pot_ids[pot_id] = dict()
 
         date = images_names[i].split(' ')[0].split('_')[-1]
-
+        data = 10
         if date not in pot_ids[pot_id]:
             pot_ids[pot_id][date] = dict()
 
@@ -85,7 +87,7 @@ def write_images(data_directory, files, images):
 
 
 def run_example(data_directory):
-    pot_ids = load_files(data_directory + 'binarization/')
+    pot_ids = load_files(data_directory + 'repair_processing/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
@@ -94,34 +96,29 @@ def run_example(data_directory):
 
             images = load_images(files, cv2.IMREAD_UNCHANGED)
 
-            repair_images = example_repair_processing(images)
+            skeleton_images = example_skeletonize(images)
 
             # print pot_id, date
-            # for angle in repair_images:
-            #     show_images([images[angle], repair_images[angle]],
+            # for angle in skeleton_images:
+            #     show_images([images[angle], skeleton_images[angle]],
             #                 str(angle))
 
-            write_images(data_directory + 'repair_processing/',
+            write_images(data_directory + 'skeletonize_2d/',
                          files,
-                         repair_images)
+                         skeleton_images)
 
 
-def example_repair_processing(images):
-
-    repair_images = dict()
+def example_skeletonize(images):
+    skeleton_images = dict()
     for angle in images:
-        if angle == -1:
-            repair_images[angle] = fill_up_prop(images[angle],
-                                                is_top_image=True)
-        else:
-            repair_images[angle] = fill_up_prop(images[angle])
+        skeleton_images[angle] = skeletonize_thinning(images[angle])
 
-    return repair_images
+    return skeleton_images
 
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
     # run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
-    run_example('../../local/B73/')
-    # run_example('../../local/Figure_3D/')
+    # run_example('../../local/B73/')
+    run_example('../../local/Figure_3D/')

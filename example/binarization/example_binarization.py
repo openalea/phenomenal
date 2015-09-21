@@ -75,10 +75,13 @@ def load_files(data_directory):
             pot_ids[pot_id] = dict()
 
         date = images_names[i].split(' ')[0].split('_')[-1]
+
         if date not in pot_ids[pot_id]:
             pot_ids[pot_id][date] = dict()
 
+
         result = images_names[i].split('_sv')
+        print result
         if len(result) == 2:
             angle = result[1].split('.png')[0]
         else:
@@ -233,3 +236,4 @@ def example_binarization_hsv(images):
 
 if __name__ == "__main__":
     run_example('../../local/B73/')
+    # run_example('../../local/Figure_3D/')

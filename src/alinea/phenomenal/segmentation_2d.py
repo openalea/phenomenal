@@ -428,7 +428,7 @@ def segment_organs_skeleton_image(skeleton_image):
                    for segment in segments
                    if not stem.is_in(segment) is True]
 
-    compute_inclination(stem.segments)
+    # compute_inclination(stem.segments)
 
     leaves, segments = segment_leaves(segments, stem)
 
