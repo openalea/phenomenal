@@ -22,10 +22,10 @@ import cv2
 
 #       ========================================================================
 #       Local Import
+from alinea.phenomenal.misc import (load_files, load_images, write_images)
+
 from alinea.phenomenal.binarization import binarization, get_mean_image
 from alinea.phenomenal.configuration import loadconfig, binarization_config
-
-from phenomenal.example.example_tools import (load_files, load_images, write_images)
 
 #       ========================================================================
 #       Code
@@ -130,7 +130,6 @@ def test_binarization_elcom(images):
     top_image = images.pop(-1)
     mean_image = get_mean_image(images.values())
     images[-1] = top_image
-
 
     load_configuration = loadconfig('configuration_top_image.cfg')
     configuration_top = binarization_config(load_configuration)
