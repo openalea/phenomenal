@@ -1,6 +1,7 @@
 # -*- python -*-
 #
-#       binarization_configuration: Module Description
+#       binarization_configuration.py : Configuration object for binarization
+#       parameter
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,23 +15,11 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
+""" Include definition class for object parameter of binarization """
 
-__revision__ = ""
-
-#       =======================================================================
-#       External Import 
-
-
-#       =======================================================================
-#       Local Import 
-
-
-#       =======================================================================
+#       ========================================================================
 
 
 class RegionOfInterest:

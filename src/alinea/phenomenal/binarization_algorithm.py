@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       binarization_algorithm: Module Description
+#       binarization_algorithm.py : Algorithm of binarization
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,24 +14,17 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
+""" Algorithm of binarization """
 
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import numpy
 import cv2
 
+#       ========================================================================
 
-#       =======================================================================
-#       Local Import
-
-#       =======================================================================
 
 def mean_shift_binarization(image,
                             mean_image,
@@ -88,8 +81,8 @@ def hsv_binarization(image,
     => cv2.bitwise_and(binary_hsv_image, mask)
 
     :param image: BGR image
-    :param hsv_min:
-    :param hsv_max:
+    :param hsv_min: min hsv value for threshold
+    :param hsv_max: max hsv value for threshold
     :param mask: Binary image
     :return: Binary image
     """
@@ -112,16 +105,19 @@ def mixed_binarization(image,
                        mask_meanshift=None,
                        mask_hsv=None):
     """
+    Mixed hsv binarization and mean shif binarization and return the total
 
-    :param image:
-    :param mean_image:
-    :param hsv_min:
-    :param hsv_max:
-    :param threshold:
-    :param dark_background:
-    :param mask_meanshift:
-    :param mask_hsv:
-    :return:
+
+    :param image: BGR image
+    :param mean_image: Mean image
+    :param hsv_min: in hsv value for threshold hsv algorithm
+    :param hsv_max: max hsv value for threshold hsv algorithm
+    :param threshold: threshold value for meanshift algorithm
+    :param dark_background: Boolean, if is True inverse behavior of threshold
+    algorithm
+    :param mask_meanshift: Binary image applied before meanshift algorithm
+    :param mask_hsv: Binary image applied before and after the algorithm
+    :return: Binary Image (0 or 255)
     """
 
     binary_hsv_image = hsv_binarization(image, hsv_min, hsv_max, mask_hsv)
@@ -142,12 +138,22 @@ def adaptive_thresh_gaussian_c(image,
                                c,
                                mask=None):
     """
+    Throw adaptive Threshold algorithm of openCv and applied a mask on him.
+    This adaptive threshold binarization is based on gaussian methods
 
-    :param image:
-    :param block_size:
-    :param c:
-    :param mask:
-    :return:
+
+    :param Source 8-bit single-channel image.
+
+    :param block_size: Size of a pixel neighborhood that is used to calculate a
+    threshold value for the pixel: 3, 5, 7, and so on.
+
+    :param c: Constant subtracted from the mean or weighted mean
+    (see the details below). Normally, it is positive but may be zero
+    or negative as well.
+
+    :param mask: Binary image applied before and after the algorithm
+
+    :return: A image of the same size and the same type as image parameter .
     """
     if mask is not None:
         image = cv2.bitwise_and(image, image, mask=mask)
@@ -171,12 +177,22 @@ def adaptive_thresh_mean_c(image,
                            c,
                            mask=None):
     """
+    Throw adaptive Threshold algorithm of openCv and applied a mask on him.
+    This adaptive threshold binarization is based on mean methods
 
-    :param image:
-    :param block_size:
-    :param c:
-    :param mask:
-    :return:
+
+    :param Source 8-bit single-channel image.
+
+    :param block_size: Size of a pixel neighborhood that is used to calculate a
+    threshold value for the pixel: 3, 5, 7, and so on.
+
+    :param c: Constant subtracted from the mean or weighted mean
+    (see the details below). Normally, it is positive but may be zero
+    or negative as well.
+
+    :param mask: Binary image applied before and after the algorithm
+
+    :return: A image of the same size and the same type as image parameter .
     """
     if mask is not None:
         image = cv2.bitwise_and(image, image, mask=mask)

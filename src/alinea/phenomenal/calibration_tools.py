@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       calibration_extrapolation: Module Description
+#       calibration_tools.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,29 +14,20 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-from __builtin__ import dict
+#       ========================================================================
+#       External Import
+import numpy
+import pylab
+import mpl_toolkits.mplot3d.axes3d
+import scipy.optimize
 
-__revision__ = ""
-
-#       =======================================================================
-#       External Import 
-import cv2
-import random
-import numpy as np
-from scipy import optimize
-import pylab as p
-import mpl_toolkits.mplot3d.axes3d as p3
-import pickle
-#       =======================================================================
+#       ========================================================================
 #       Local Import 
 import transformations as tf
 
-#       =======================================================================
+#       ========================================================================
 #       Code
 
 
@@ -66,8 +57,8 @@ def compute_rotation_vectors(rotation_vectors, angles):
         matrix = matrix[:3, :3]
 
         rvec = rvec_src.copy()
-        rvec = np.dot(matrix, rvec)
-        rvec = np.add(xyz, rvec)
+        rvec = numpy.dot(matrix, rvec)
+        rvec = numpy.add(xyz, rvec)
 
         return rvec
 
@@ -77,7 +68,7 @@ def compute_rotation_vectors(rotation_vectors, angles):
 
         distance = 0
         step = 60
-        for angle in rotation_vectors.keys():
+        for angle in rotation_vectors:
             if angle + step not in rotation_vectors:
                 continue
             if angle == 6:
@@ -90,20 +81,20 @@ def compute_rotation_vectors(rotation_vectors, angles):
 
             rvec = compute_rotation_vector(rvec_src, xyz, rxyz)
 
-            distance += np.linalg.norm(rvec - rvec_dest)
+            distance += numpy.linalg.norm(rvec - rvec_dest)
 
         print distance * 100
         return distance * 100
 
-    pi2 = 2 * np.pi
+    pi2 = 2 * numpy.pi
     bounds = [(-pi2, pi2), (-pi2, pi2), (-pi2, pi2),
               (-pi2, pi2), (-pi2, pi2), (-pi2, pi2)]
 
-    optimize_result = optimize.differential_evolution(minimize_function,
+    optimize_result = scipy.optimize.differential_evolution(minimize_function,
                                                       bounds)
 
     while minimize_function(optimize_result.x) > 5:
-        optimize_result = optimize.differential_evolution(minimize_function,
+        optimize_result = scipy.optimize.differential_evolution(minimize_function,
                                                           bounds)
 
     print optimize_result.x
@@ -154,11 +145,11 @@ def compute_translation_vectors(translation_vectors, angles):
                                  rxyz[2][0],
                                  axes='sxyz')
         matrix = matrix[:3, :3]
-        matrix = np.linalg.inv(matrix)
+        matrix = numpy.linalg.inv(matrix)
 
         tvec = tvec_src.copy()
-        tvec = np.subtract(tvec, xyz)
-        tvec = np.dot(matrix, tvec)
+        tvec = numpy.subtract(tvec, xyz)
+        tvec = numpy.dot(matrix, tvec)
 
         return tvec
 
@@ -171,8 +162,8 @@ def compute_translation_vectors(translation_vectors, angles):
         matrix = matrix[:3, :3]
 
         tvec = tvec_src.copy()
-        tvec = np.dot(matrix, tvec)
-        tvec = np.add(xyz, tvec)
+        tvec = numpy.dot(matrix, tvec)
+        tvec = numpy.add(xyz, tvec)
 
         return tvec
 
@@ -197,7 +188,7 @@ def compute_translation_vectors(translation_vectors, angles):
                                               xyz,
                                               rxyz)
 
-            distance += np.linalg.norm(tvec - tvec_dest)
+            distance += numpy.linalg.norm(tvec - tvec_dest)
 
         tvec_src = translation_vectors[105]
         tvec_dest = translation_vectors[0]
@@ -207,22 +198,22 @@ def compute_translation_vectors(translation_vectors, angles):
         for i in range(1, 85):
             tvec = compute_translation_vector(tvec, xyz, rxyz)
 
-        distance += np.linalg.norm(tvec - tvec_dest)
+        distance += numpy.linalg.norm(tvec - tvec_dest)
 
         print distance
         return distance
 
-    pi2 = 2 * np.pi
+    pi2 = 2 * numpy.pi
     r = 500
     bounds = [(-r, r), (-r, r), (-r, r),
               (-pi2, pi2), (-pi2, pi2), (-pi2, pi2)]
 
-    optimize_result = optimize.differential_evolution(minimize_function,
-                                                      bounds)
+    optimize_result = scipy.optimize.differential_evolution(
+        minimize_function, bounds)
 
     while minimize_function(optimize_result.x) > 25:
-        optimize_result = optimize.differential_evolution(minimize_function,
-                                                          bounds)
+        optimize_result = scipy.optimize.differential_evolution(
+            minimize_function, bounds)
 
     print optimize_result.x
     res = optimize_result.x
@@ -245,16 +236,15 @@ def compute_translation_vectors(translation_vectors, angles):
 
 
 def plot_vectors(vectors):
-    fig = p.figure()
-    ax = p3.Axes3D(fig)
+    fig = pylab.figure()
+    ax = mpl_toolkits.mplot3d.axes3d.Axes3D(fig)
 
     for angle in vectors.keys():
-        vector = vectors[angle]
-        ax.scatter3D(vector[0][0],
-                     vector[1][0],
-                     vector[2][0])
+        if vectors[angle] is not None:
+            vector = vectors[angle]
+            ax.scatter3D(vector[0][0], vector[1][0], vector[2][0])
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    p.show()
+    pylab.show()
