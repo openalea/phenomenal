@@ -26,7 +26,7 @@ from alinea.phenomenal.binarization import binarization, get_mean_image
 from alinea.phenomenal.configuration import loadconfig, binarization_config
 from alinea.phenomenal.result_viewer import show_images
 
-from phenomenal.example.example_tools import (
+from alinea.phenomenal.misc import (
     load_files, load_images, write_images)
 
 #       ========================================================================
