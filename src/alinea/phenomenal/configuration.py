@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       phenomenal_config: Module Description
+#       configuration.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,11 +14,9 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import
 import os
 import cv2
@@ -27,18 +25,19 @@ from ConfigParser import ConfigParser
 from collections import OrderedDict
 
 
-#       =======================================================================
+#       ========================================================================
 #       Local Import
 from openalea.deploy.shared_data import shared_data
 import alinea.phenomenal
 import alinea.phenomenal.binarization_configuration as b_config
 
 
-#       =======================================================================
+#       ========================================================================
 
 
 class PhenomenalConfigParser(ConfigParser, object):
-    """Initialisation class necessary to read all the data from config.cfg
+    """
+    Initialisation class necessary to read all the data from config.cfg
     necessary for binarization and segmentation
     """
 
@@ -53,9 +52,9 @@ class PhenomenalConfigParser(ConfigParser, object):
                 v = value
         return v
 
-    def read(self, filenames):
+    def read(self, files_name):
         # Call to read method of ConfigParser
-        super(PhenomenalConfigParser, self).read(filenames)
+        super(PhenomenalConfigParser, self).read(files_name)
         for sect in self.sections():
             for it in self.items(sect):
                 self.set(sect, it[0], self._convert(it[1]))
@@ -69,7 +68,8 @@ class PhenomenalConfigParser(ConfigParser, object):
 
 
 def loadconfig(config='SideCamera2013_ZoomOut.cfg'):
-    """ load a configuration from shared data directory
+    """
+    Load a configuration from shared data directory
     """
     confdir = shared_data(alinea.phenomenal)
     p = PhenomenalConfigParser()
@@ -77,29 +77,28 @@ def loadconfig(config='SideCamera2013_ZoomOut.cfg'):
     d = p.as_dict()
     if p.has_section('config_images'):
         for it in p.items('config_images', raw=True):
-            flag = cv2.CV_LOAD_IMAGE_UNCHANGED
+            flag = cv2.IMREAD_UNCHANGED
             if it[1].endswith('mask'):
-                flag = cv2.CV_LOAD_IMAGE_GRAYSCALE
+                flag = cv2.IMREAD_GRAYSCALE
             d['config_images'][it[0]] = cv2.imread(confdir / it[1], flag)
 
     if p.has_section('config_images_elcom'):
         for it in p.items('config_images_elcom', raw=True):
-            flag = cv2.CV_LOAD_IMAGE_UNCHANGED
+            flag = cv2.IMREAD_UNCHANGED
             if it[1].endswith('mask'):
-                flag = cv2.CV_LOAD_IMAGE_GRAYSCALE
+                flag = cv2.IMREAD_GRAYSCALE
             d['config_images_elcom'][it[0]] = cv2.imread(confdir / it[1], flag)
 
     for key in d:
         for sub_key in d[key]:
             if str(sub_key).startswith('mask'):
                 d[key][sub_key] = cv2.imread(confdir / str(d[key][sub_key]),
-                                             cv2.CV_LOAD_IMAGE_GRAYSCALE)
+                                             cv2.IMREAD_GRAYSCALE)
 
             if str(sub_key).startswith('background'):
                 d[key][sub_key] = cv2.imread(confdir / str(d[key][sub_key]),
-                                             cv2.CV_LOAD_IMAGE_UNCHANGED)
+                                             cv2.IMREAD_UNCHANGED)
     return d
-
 
 
 def import_images(image_directory, genotype_name, plant_id):

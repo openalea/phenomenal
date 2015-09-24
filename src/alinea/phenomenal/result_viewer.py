@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       tools_test: Module Description
+#       tools_test.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,67 +14,179 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+#       ========================================================================
 
-"""
-Write the doc here...
-"""
-
-__revision__ = ""
-
-#       =======================================================================
+#       ========================================================================
 #       External Import 
-from mayavi import mlab
-import cv2
 
-import matplotlib.pyplot as plt
+from random import uniform
+from mayavi import mlab
+
+import cv2
+import vtk
+import pylab
 import numpy as np
 
-from numpy import *
-import pylab as p
-import mpl_toolkits.mplot3d.axes3d as p3
-
-import vtk
-from numpy import *
-
-#       =======================================================================
-#       Local Import 
+#       ========================================================================
+#       Show reconstruction 3d
 
 
-#       =======================================================================
-#       Code
+def show_cubes(cubes,
+               color=None,
+               scale_factor=10.0,
+               figure_name="Cubes"):
 
-def load_images(images_path, angles):
+    mlab.figure(figure_name)
 
-    images = dict()
-    i = 0
+    plot_cubes(cubes, color=color, scale_factor=scale_factor)
 
-    for i in range(len(images_path)):
-        im = cv2.imread(images_path[i], cv2.CV_LOAD_IMAGE_GRAYSCALE)
-        images[angles[i]] = im
+    mlab.show()
 
-    return images
+    mlab.clf()
+    mlab.close()
 
 
-def show_cube(cubes, scale_factor, name=None):
-    xx = []
-    yy = []
-    zz = []
-    ss = []
+def plot_cubes(cubes, color=None, scale_factor=5):
+    x = list()
+    y = list()
+    z = list()
+
+    if color is None:
+        color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
+
     for cube in cubes:
-        xx.append(int(round(cube.center.x)))
-        yy.append(int(round(cube.center.y)))
-        zz.append(int(round(cube.center.z)))
-        ss.append(int(round(cube.radius)))
+        x.append(int(round(cube.position[0, 0])))
+        y.append(int(round(cube.position[0, 1])))
+        z.append(int(round(cube.position[0, 2])))
 
-    if name is not None:
-        mlab.figure(name)
-    else:
-        mlab.figure("3D Reconstruction")
-    mlab.points3d(xx, yy, zz, mode='cube',
-                  color=(0.1, 0.7, 0.1),
+    if len(cubes) > 0:
+        mlab.points3d(x, y, z,
+                      mode='cube',
+                      color=color,
+                      scale_factor=scale_factor)
+
+    return color
+
+
+def plot_vectors(vectors, color=None, tube_radius=8.0):
+
+    if color is None:
+        color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
+
+    for point_1, point_2, _ in vectors:
+        mlab.plot3d([point_1[0], point_2[0]],
+                    [point_1[1], point_2[1]],
+                    [point_1[2], point_2[2]],
+                    color=color,
+                    tube_radius=tube_radius)
+
+    return color
+
+
+def plot_segments(segments,
+                  color=None,
+                  tube_radius=8.0,
+                  color_each_segment=False):
+
+    if color is None:
+        color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
+
+    for segment in segments:
+        x = list()
+        y = list()
+        z = list()
+
+        if color_each_segment is True:
+            color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
+
+        for point in segment.points:
+            x.append(point[0])
+            y.append(point[1])
+            z.append(point[2])
+
+        mlab.plot3d(x, y, z,
+                    color=color,
+                    tube_radius=tube_radius)
+
+    return color
+
+
+def show_octree(octree,
+                color=None,
+                scale_factor=10.0,
+                figure_name="Octree"):
+
+    x = []
+    y = []
+    z = []
+
+    oct_nodes = list()
+    oct_nodes.append(octree)
+
+    while True:
+        if not oct_nodes:
+            break
+
+        oct_node = oct_nodes.pop()
+
+        if oct_node.isLeafNode is True:
+            x.append(int(round(oct_node.position[0])))
+            y.append(int(round(oct_node.position[1])))
+            z.append(int(round(oct_node.position[2])))
+
+        else:
+            for branch in oct_node.branches:
+                if branch is not None:
+                    oct_nodes.append(branch)
+
+    print "Len cubes octree : ", len(x)
+
+    if color is None:
+        color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
+
+    mlab.figure(figure_name)
+    mlab.points3d(x, y, z,
+                  mode='cube',
+                  color=color,
                   scale_factor=scale_factor)
     mlab.show()
+
+    mlab.clf()
+    mlab.close()
+
+#       ========================================================================
+
+
+def show_images(images, name_windows='Image Comparison'):
+    f = pylab.figure()
+    f.canvas.set_window_title(name_windows)
+
+    number_of_images = len(images)
+
+    i = 1
+    for image in images:
+        f.add_subplot(1, number_of_images, i)
+        pylab.imshow(image)
+        i += 1
+
+    pylab.show()
+
+    f.clf()
+    pylab.close()
+
+
+def show_image(image, name_windows='Image'):
+
+    f = pylab.figure()
+    f.canvas.set_window_title(name_windows)
+    pylab.title(name_windows)
+    pylab.imshow(image, cmap=pylab.cm.binary)
+    pylab.show()
+
+    f.clf()
+    pylab.close()
+
+#       ========================================================================
 
 
 def write_images_on_matrix(images, m):
@@ -154,49 +266,6 @@ def fill_matrix(cubes, m):
     return m
 
 
-def show_mat(cubes):
-
-    xx = []
-    yy = []
-    zz = []
-    ss = []
-    for cube in cubes:
-        xx.append(int(round(cube.center.x)))
-        yy.append(int(round(cube.center.y)))
-        zz.append(int(round(cube.center.z)))
-        ss.append(int(round(cube.radius)))
-
-    fig = p.figure()
-    ax = p3.Axes3D(fig)
-    ax.scatter3D(xx, yy, zz)
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    p.show()
-
-
-def show_mat_2(cubes):
-
-    xx = []
-    yy = []
-    zz = []
-    ss = []
-    for cube in cubes:
-        xx.append(int(round(cube.center.x)))
-        yy.append(int(round(cube.center.y)))
-        zz.append(int(round(cube.center.z)))
-        ss.append(int(round(cube.radius)))
-
-    print len(xx), len(yy), len(zz)
-
-    x, y, z = np.meshgrid(xx, yy, zz)
-
-    print np.shape(x), np.shape(y), np.shape(z)
-
-    mlab.figure()
-    mlab.points3d(xx, yy, zz)
-
-
 def show_mat_vtk(data_matrix):
     # # We begin by creating the data we want to render.
     # # For this tutorial, we create a 3D-image containing three overlaping cubes.
@@ -227,31 +296,27 @@ def show_mat_vtk(data_matrix):
     # simple case, all axes are of length 75 and begins with the first element. For other data, this is probably not the case.
     # I have to admit however, that I honestly dont know the difference between SetDataExtent() and SetWholeExtent() although
     # VTK complains if not both are used.
-    dataImporter.SetDataExtent(0, lx - 1, 0, ly - 1, 0, lz - 1)
-    dataImporter.SetWholeExtent(0, lx - 1, 0, ly - 1, 0, lz - 1)
+    # dataImporter.SetDataExtent(0, lx - 1, 0, ly - 1, 0, lz - 1)
+    # dataImporter.SetWholeExtent(0, lx - 1, 0, ly - 1, 0, lz - 1)
 
     # The following class is used to store transparencyv-values for later retrival. In our case, we want the value 0 to be
     # completly opaque whereas the three different cubes are given different transperancy-values to show how it works.
     alphaChannelFunc = vtk.vtkPiecewiseFunction()
-    alphaChannelFunc.AddPoint(0, 0.001)
-    alphaChannelFunc.AddPoint(50, 1.0)
-    alphaChannelFunc.AddPoint(100, 0.1)
-    alphaChannelFunc.AddPoint(150, 0.2)
+    alphaChannelFunc.AddPoint(0, 1.0)
+    alphaChannelFunc.AddPoint(1, 0.0)
 
     # This class stores color data and can create color tables from a few color points. For this demo, we want the three cubes
     # to be of the colors red green and blue.
     colorFunc = vtk.vtkColorTransferFunction()
 
-    # colorFunc.AddRGBPoint(0, 0.0, 0.0, 0.0)
-    colorFunc.AddRGBPoint(50, 1.0, 0.0, 0.0)
-    colorFunc.AddRGBPoint(100, 0.0, 1.0, 0.0)
-    colorFunc.AddRGBPoint(150, 0.0, 0.0, 1.0)
+    colorFunc.AddRGBPoint(0, 1.0, 0.0, 0.0)
+    colorFunc.AddRGBPoint(1, 0.0, 1.0, 0.0)
 
     # The preavius two classes stored properties. Because we want to apply these properties to the volume we want to render,
     # we have to store them in a class that stores volume prpoperties.
     volumeProperty = vtk.vtkVolumeProperty()
     volumeProperty.SetColor(colorFunc)
-    volumeProperty.SetScalarOpacity(alphaChannelFunc)
+    # volumeProperty.SetScalarOpacity(alphaChannelFunc)
 
     # This class describes how the volume is rendered (through ray tracing).
     compositeFunction = vtk.vtkVolumeRayCastCompositeFunction()
@@ -293,3 +358,5 @@ def show_mat_vtk(data_matrix):
     renderInteractor.Start()
 
     cv2.waitKey()
+
+
