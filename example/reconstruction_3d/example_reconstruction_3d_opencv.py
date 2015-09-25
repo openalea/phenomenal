@@ -26,10 +26,7 @@ import cv2
 from alinea.phenomenal.result_viewer import show_cubes
 from alinea.phenomenal.calibration_opencv import Calibration
 from alinea.phenomenal.reconstruction_3d import reconstruction_3d
-from phenomenal.example.example_tools import \
-    load_files, \
-    load_images, \
-    write_cubes
+from alinea.phenomenal.misc import load_files, load_images, write_cubes
 
 
 

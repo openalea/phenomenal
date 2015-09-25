@@ -22,11 +22,7 @@ import cv2
 
 #       ========================================================================
 #       Local Import
-from phenomenal.example.example_tools import \
-    load_files, \
-    load_images, \
-    write_cubes
-
+from alinea.phenomenal.misc import load_images, load_files, write_cubes
 from alinea.phenomenal.result_viewer import show_cubes
 
 from alinea.phenomenal.reconstruction_3d import \

@@ -26,15 +26,13 @@ from mayavi import mlab
 #       ========================================================================
 #       Local Import
 
-from phenomenal.example.example_tools import read_xyz
-
+from alinea.phenomenal.misc import read_xyz
 from alinea.phenomenal.skeletonize_3d import skeletonize_3d_segment
 from alinea.phenomenal.segmentation_3d import segment_organs_from_skeleton_3d
 from alinea.phenomenal.reconstruction_3d_algorithm import Cube
-from alinea.phenomenal.result_viewer import \
-    plot_vectors, \
-    plot_cubes, \
-    plot_segments
+from alinea.phenomenal.result_viewer import (plot_vectors,
+                                             plot_cubes,
+                                             plot_segments)
 
 #       ========================================================================
 #       Code

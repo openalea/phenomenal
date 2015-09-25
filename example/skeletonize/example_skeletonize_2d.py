@@ -25,7 +25,7 @@ import cv2
 #       Local Import
 import alinea.phenomenal.skeletonize_2d
 import alinea.phenomenal.result_viewer
-import phenomenal.example.example_tools
+import alinea.phenomenal.misc
 
 
 #       ========================================================================
@@ -33,7 +33,7 @@ import phenomenal.example.example_tools
 
 
 def run_example(data_directory):
-    pot_ids = phenomenal.example.example_tools.load_files(
+    pot_ids = alinea.phenomenal.misc.load_files(
         data_directory + 'repair_processing/')
 
     for pot_id in pot_ids:
@@ -41,7 +41,7 @@ def run_example(data_directory):
 
             files = pot_ids[pot_id][date]
 
-            images = phenomenal.example.example_tools.load_images(
+            images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
             skeleton_images = example_skeletonize(images)
@@ -51,7 +51,7 @@ def run_example(data_directory):
                 alinea.phenomenal.result_viewer.show_images(
                     [images[angle], skeleton_images[angle]], str(angle))
 
-            phenomenal.example.example_tools.write_images(
+            alinea.phenomenal.misc.write_images(
                 data_directory + 'skeletonize_2d/', files, skeleton_images)
 
 

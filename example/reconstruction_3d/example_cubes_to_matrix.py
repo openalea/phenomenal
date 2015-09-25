@@ -23,14 +23,13 @@ import numpy as np
 
 #       ========================================================================
 #       Local Import
-from phenomenal.test.tools_test import show_cubes, show_images
-from phenomenal.example.example_tools import load_files, load_images
 
+from alinea.phenomenal.result_viewer import show_cubes, show_images
+from alinea.phenomenal.misc import load_images, load_files
 from alinea.phenomenal.calibration_jerome import Calibration
 from alinea.phenomenal.reconstruction_3d import reconstruction_3d
-from alinea.phenomenal.reconstruction_3d import \
-    cubes_to_matrix, \
-    save_matrix_like_stack_image
+from alinea.phenomenal.reconstruction_3d import (cubes_to_matrix,
+                                                 save_matrix_like_stack_image)
 from alinea.phenomenal.reconstruction_3d_algorithm import Cube
 
 #       ========================================================================

@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 #       ========================================================================
 #       Local Import
 from alinea.phenomenal.segmentation_2d import segment_organs_skeleton_image
-from phenomenal.example.example_tools import load_files, load_images, write_images
+from alinea.phenomenal.misc import load_images, load_files, write_images
 
 #       ========================================================================
 #       Code

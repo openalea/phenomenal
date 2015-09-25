@@ -23,8 +23,7 @@ import random
 
 #       ========================================================================
 #       Local Import
-from phenomenal.example.example_tools import load_files, load_images
-
+from alinea.phenomenal.misc import load_files, load_images
 from alinea.phenomenal.result_viewer import show_cubes
 from alinea.phenomenal.reconstruction_3d import reconstruction_3d
 from alinea.phenomenal.calibration_jerome import Calibration

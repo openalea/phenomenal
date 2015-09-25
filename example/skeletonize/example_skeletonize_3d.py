@@ -24,8 +24,7 @@ from mayavi import mlab
 
 #       ========================================================================
 #       Local Import
-from phenomenal.example.example_tools import read_xyz
-
+from alinea.phenomenal.misc import read_xyz
 from alinea.phenomenal.skeletonize_3d import skeletonize_3d_segment
 from alinea.phenomenal.reconstruction_3d import change_orientation
 from alinea.phenomenal.result_viewer import plot_vectors, plot_cubes

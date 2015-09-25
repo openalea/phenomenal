@@ -23,8 +23,7 @@ import numpy as np
 
 #       ========================================================================
 #       Local Import
-from phenomenal.example.example_tools import load_files, load_images
-
+from alinea.phenomenal.misc import load_images, load_files
 from alinea.phenomenal.result_viewer import show_cubes, show_images
 from alinea.phenomenal.calibration_jerome import Calibration
 from alinea.phenomenal.reconstruction_3d import reconstruction_3d

@@ -23,11 +23,7 @@ import cv2
 #       Local Import
 from alinea.phenomenal.repair_processing import fill_up_prop
 from alinea.phenomenal.result_viewer import show_images
-
-from phenomenal.example.example_tools import \
-    load_images, \
-    load_files, \
-    write_images
+from alinea.phenomenal.misc import load_files, load_images, write_images
 
 #       ========================================================================
 #       Code
