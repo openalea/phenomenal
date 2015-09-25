@@ -20,8 +20,12 @@
 
 #       ========================================================================
 #       External Import
+import sys
+
 import numpy
 import cv2
+
+
 
 #       ========================================================================
 #       Local Import
@@ -39,18 +43,30 @@ def binarization(image,
                  is_top_image=False,
                  mean_image=None):
 
-    if methods == 'mean_shift':
-        return side_binarization(image, mean_image, configuration)
-    if methods == 'hsv' and is_top_image is True:
-        return top_binarization_hsv(image, configuration)
-    if methods == 'hsv' and is_top_image is False:
-        return side_binarization_hsv(image, configuration)
-    if methods == 'elcom':
-        return side_binarization_elcom(image, mean_image, configuration)
-    if methods == 'adaptive_threshold':
-        return side_binarization_adaptive_thresh(image, configuration)
+    try:
 
-    return None
+        if methods == 'mean_shift':
+            return side_binarization_mean_shift(image, mean_image, configuration)
+        if methods == 'hsv' and is_top_image is True:
+            return top_binarization_hsv(image, configuration)
+        if methods == 'hsv' and is_top_image is False:
+            return side_binarization_hsv(image, configuration)
+        if methods == 'elcom':
+            return side_binarization_elcom(image, mean_image, configuration)
+        if methods == 'adaptive_threshold':
+            return side_binarization_adaptive_thresh(image, configuration)
+
+        return None
+
+    except cv2.error, e:
+        sys.stderr.write("OpenCvError - " + methods + " : " + str(e) + "\n")
+        return None
+    except TypeError, e:
+        sys.stderr.write("TypeError - " + methods + " : " + str(e) + "\n")
+        return None
+    except Exception, e:
+        sys.stderr.write("Error - " + methods + " : " + str(e) + "\n")
+        return None
 
 
 def side_binarization_hsv(image, configuration):
@@ -61,9 +77,7 @@ def side_binarization_hsv(image, configuration):
     :param image: BGR image
     :param configuration: Object BinarizationConfig
     :return: Binary image
-    """
-
-    # elementMorph = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    """  # elementMorph = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
 
     c = configuration.cubicle_domain
     image_cropped = image[c[0]:c[1], c[2]:c[3]]
@@ -130,7 +144,73 @@ def side_binarization_hsv(image, configuration):
     return image_out
 
 
-def side_binarization(image, mean_image, configuration):
+def top_binarization_hsv(image, configuration):
+    """
+    Binarization of top image for Lemnatech cabin based on hsv segmentation.
+
+    :param image: BGR image
+    :param configuration: Object BinarizeConfiguration
+    :return: Binary image
+    """  # c = configuration.cubicle_domain
+    # image_cropped = image[c[0]:c[1], c[2]:c[3]]
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    #   =======================================================================
+    #   Main area segmentation
+    main_area_seg = cv2.medianBlur(hsv_image, ksize=9)
+    main_area_seg = cv2.inRange(main_area_seg,
+                                configuration.roi_main.hsv_min,
+                                configuration.roi_main.hsv_max)
+
+    element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    main_area_seg = cv2.dilate(main_area_seg, element, iterations=5)
+    main_area_seg = cv2.erode(main_area_seg, element, iterations=5)
+
+    # mask_cropped = configuration.roi_main.mask[c[0]:c[1], c[2]:c[3]]
+    # main_area_seg = cv2.bitwise_and(main_area_seg,
+    #                                 main_area_seg,
+    #                                 mask=mask_cropped)
+
+    # image_out = numpy.zeros([image.shape[0], image.shape[1]], 'uint8')
+    # image_out[c[0]:c[1], c[2]:c[3]] = main_area_seg
+
+    return main_area_seg
+
+
+def get_mean_image(images):
+    """
+    Compute the mean image of a image list.
+
+    :param images: A list images.
+    :return: A image who is the mean of the list image
+    """
+    try:
+        if isinstance(images, (list, tuple)):
+            length = len(images)
+            weight = 1. / length
+
+            start = cv2.addWeighted(images[0], weight, images[1], weight, 0)
+
+            function = lambda x, y: cv2.addWeighted(x, 1, y, weight, 0)
+
+            return reduce(function, images[2:], start)
+        else:
+            sys.stderr.write("TypeError - get_mean_image : "
+                             "Require list argument\n")
+            return None
+
+    except cv2.error, e:
+        sys.stderr.write("OpenCvError - get_mean_image : " + str(e) + "\n")
+        return None
+    except TypeError, e:
+        sys.stderr.write("TypeError - get_mean_image : " + str(e) + "\n")
+        return None
+    except Exception, e:
+        sys.stderr.write("Error - get_mean_image : " + str(e) + "\n")
+        return None
+
+
+def side_binarization_mean_shift(image, mean_image, configuration):
     """
     Binarization of side image based on mean shift difference
 
@@ -139,30 +219,32 @@ def side_binarization(image, mean_image, configuration):
     :param configuration: Object BinarizeConfiguration
     :return: Binary image
     """
-    roi_main = configuration.roi_main
+    try:
+        mask = cv2.add(configuration.roi_main.mask,
+                       configuration.roi_orange_band.mask)
 
-    mask = cv2.add(roi_main.mask,
-                   configuration.roi_orange_band.mask)
+        mask = cv2.add(mask, configuration.roi_panel.mask)
 
-    mask = cv2.add(mask,
-                   configuration.roi_panel.mask)
+        result = mixed_binarization(
+            image,
+            mean_image,
+            configuration.roi_main.hsv_min,
+            configuration.roi_main.hsv_max,
+            configuration.meanshift_binarization_factor.threshold,
+            configuration.meanshift_binarization_factor.dark_background,
+            mask,
+            configuration.roi_main.mask)
 
-    result = mixed_binarization(
-        image,
-        mean_image,
-        configuration.roi_main.hsv_min,
-        configuration.roi_main.hsv_max,
-        configuration.meanshift_binarization_factor.threshold,
-        configuration.meanshift_binarization_factor.dark_background,
-        mask,
-        configuration.roi_main.mask)
+        mask_clean_noise = cv2.add(configuration.roi_orange_band.mask,
+                                   configuration.roi_panel.mask)
 
-    mask_clean_noise = cv2.add(configuration.roi_orange_band.mask,
-                               configuration.roi_panel.mask)
+        result = clean_noise(result, mask_clean_noise)
 
-    result = clean_noise(result, mask_clean_noise)
+        return result
 
-    return result
+    except Exception, e:
+        print "Error - side_binarization : " + str(e)
+        return None
 
 
 def side_binarization_elcom(image, mean_image, configuration):
@@ -200,23 +282,14 @@ def side_binarization_adaptive_thresh(image, configuration):
     """
     img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    result1 = adaptive_thresh_mean_c(
-        img,
-        41,
-        20,
-        mask=configuration.roi_main.mask)
+    result1 = adaptive_thresh_mean_c(img, 41, 20,
+                                     mask=configuration.roi_main.mask)
 
-    result2 = adaptive_thresh_mean_c(
-        img,
-        399,
-        45,
-        mask=configuration.roi_main.mask)
+    result2 = adaptive_thresh_mean_c(img, 399, 45,
+                                     mask=configuration.roi_main.mask)
 
-    result3 = adaptive_thresh_gaussian_c(
-        img,
-        41,
-        20,
-        mask=configuration.roi_main.mask)
+    result3 = adaptive_thresh_gaussian_c(img, 41, 20,
+                                         mask=configuration.roi_main.mask)
 
     result = cv2.add(result1, result2)
     result = cv2.add(result, result3)
@@ -224,54 +297,4 @@ def side_binarization_adaptive_thresh(image, configuration):
     return result
 
 
-def top_binarization_hsv(image, configuration):
-    """
-    Binarization of top image for Lemnatech cabin based on hsv segmentation.
-
-    :param image: BGR image
-    :param configuration: Object BinarizeConfiguration
-    :return: Binary image
-    """
-
-    # c = configuration.cubicle_domain
-    # image_cropped = image[c[0]:c[1], c[2]:c[3]]
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-    #   =======================================================================
-    #   Main area segmentation
-    main_area_seg = cv2.medianBlur(hsv_image, ksize=9)
-    main_area_seg = cv2.inRange(main_area_seg,
-                                configuration.roi_main.hsv_min,
-                                configuration.roi_main.hsv_max)
-
-    element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
-    main_area_seg = cv2.dilate(main_area_seg, element, iterations=5)
-    main_area_seg = cv2.erode(main_area_seg, element, iterations=5)
-
-    # mask_cropped = configuration.roi_main.mask[c[0]:c[1], c[2]:c[3]]
-    # main_area_seg = cv2.bitwise_and(main_area_seg,
-    #                                 main_area_seg,
-    #                                 mask=mask_cropped)
-
-    # image_out = numpy.zeros([image.shape[0], image.shape[1]], 'uint8')
-    # image_out[c[0]:c[1], c[2]:c[3]] = main_area_seg
-
-    return main_area_seg
-
-
-def get_mean_image(images):
-    """
-    Compute the mean image of image list.
-
-    :param images: A list containing the images.
-    :return: A image who is the mean of the list image
-    """
-    length = len(images)
-    weight = 1. / length
-
-    start = cv2.addWeighted(images[0], weight, images[1], weight, 0)
-
-    function = lambda x, y: cv2.addWeighted(x, 1, y, weight, 0)
-
-    return reduce(function, images[2:], start)
 

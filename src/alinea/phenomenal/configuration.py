@@ -20,7 +20,7 @@
 #       External Import
 import os
 import cv2
-from glob import glob
+import glob
 from ConfigParser import ConfigParser
 from collections import OrderedDict
 
@@ -120,7 +120,7 @@ def import_images(image_directory, genotype_name, plant_id):
     """
 
     im_dir = os.path.join(image_directory, genotype_name, plant_id)
-    side_views = glob(im_dir + '*sv*.png')
+    side_views = glob.glob(im_dir + '*sv*.png')
     dates = map(lambda s: os.path.basename(s).split(' ')[0].split('_')[-1],
                 side_views)
     images = {d: [] for d in set(dates)}
