@@ -22,11 +22,11 @@ import cv2
 
 #       ========================================================================
 #       Local Import
-from alinea.phenomenal.binarization import binarization, get_mean_image
-from alinea.phenomenal.configuration import loadconfig, binarization_config
-from alinea.phenomenal.result_viewer import show_images
+import alinea.phenomenal.binarization
+import alinea.phenomenal.configuration
+import alinea.phenomenal.misc
+import alinea.phenomenal.binarization_factor
 
-from alinea.phenomenal.misc import (load_files, load_images, write_images)
 
 #       ========================================================================
 #       Code
@@ -34,14 +34,15 @@ from alinea.phenomenal.misc import (load_files, load_images, write_images)
 
 def run_example(data_directory):
 
-    pot_ids = load_files(data_directory)
+    pot_ids = alinea.phenomenal.misc.load_files(data_directory)
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
 
             files = pot_ids[pot_id][date]
 
-            images = load_images(files, cv2.IMREAD_UNCHANGED)
+            images = alinea.phenomenal.misc.load_images(
+                files, cv2.IMREAD_UNCHANGED)
 
             # images_binarize_adaptive_threshold = \
             #     example_binarization_adaptive_threshold(images)
@@ -58,122 +59,138 @@ def run_example(data_directory):
             #          images_binarize_elcom[angle],
             #          images_binarize_hsv[angle]], str(angle))
 
-            write_images(data_directory + '/binarization/',
-                         files,
-                         images_binarize_mean_shift)
+            alinea.phenomenal.misc.write_images(
+                data_directory + '/binarization/',
+                files,
+                images_binarize_mean_shift)
 
 
 def example_binarization_adaptive_threshold(images):
 
-    load_configuration = loadconfig('configuration_side_image_michael.cfg')
-    configuration_side = binarization_config(load_configuration)
+    factor_side_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'configuration_side_image_michael.cfg')
 
-    load_configuration = loadconfig('configuration_top_image.cfg')
-    configuration_top = binarization_config(load_configuration)
+    factor_top_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'configuration_top_image.cfg')
 
     images_binarize = dict()
     for angle in images:
 
         if angle == -1:
-            images_binarize[angle] = binarization(
-                images[angle],
-                configuration_top,
-                is_top_image=True,
-                methods='hsv')
+            images_binarize[angle] = \
+                alinea.phenomenal.binarization.binarization(
+                    images[angle],
+                    factor_top_binarization,
+                    is_top_image=True,
+                    methods='hsv')
         else:
-            images_binarize[angle] = binarization(
-                images[angle],
-                configuration_side,
-                methods='adaptive_threshold')
+            images_binarize[angle] = \
+                alinea.phenomenal.binarization.binarization(
+                    images[angle],
+                    factor_side_binarization,
+                    methods='adaptive_threshold')
 
     return images_binarize
 
 
 def example_binarization_mean_shift(images):
 
-    load_configuration = loadconfig('configuration_image_basic.cfg')
-    configuration_side = binarization_config(load_configuration)
+    factor_side_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'configuration_image_basic.cfg')
+
+    factor_top_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'configuration_top_image.cfg')
 
     top_image = images.pop(-1)
-    mean_image = get_mean_image(images.values())
+    mean_image = alinea.phenomenal.binarization.get_mean_image(images.values())
     images[-1] = top_image
-
-    load_configuration = loadconfig('configuration_top_image.cfg')
-    configuration_top = binarization_config(load_configuration)
 
     images_binarize = dict()
     for angle in images:
 
         if angle == -1:
-            images_binarize[angle] = binarization(
-                images[angle],
-                configuration_top,
-                is_top_image=True,
-                methods='hsv')
+            images_binarize[angle] = \
+                alinea.phenomenal.binarization.binarization(
+                    images[angle],
+                    factor_top_binarization,
+                    is_top_image=True,
+                    methods='hsv')
         else:
-            images_binarize[angle] = binarization(
-                images[angle],
-                configuration_side,
-                methods='mean_shift',
-                mean_image=mean_image)
+            images_binarize[angle] = \
+                alinea.phenomenal.binarization.binarization(
+                    images[angle],
+                    factor_side_binarization,
+                    methods='mean_shift',
+                    mean_image=mean_image)
 
     return images_binarize
 
 
 def example_binarization_elcom(images):
 
-    load_configuration = loadconfig('configuration_cubicle_6_elcom.cfg')
-    configuration_side = binarization_config(load_configuration)
+    factor_side_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'configuration_cubicle_6_elcom.cfg')
+
+    factor_top_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'configuration_top_image.cfg')
 
     top_image = images.pop(-1)
-    mean_image = get_mean_image(images.values())
+    mean_image = alinea.phenomenal.binarization.get_mean_image(images.values())
     images[-1] = top_image
-
-
-    load_configuration = loadconfig('configuration_top_image.cfg')
-    configuration_top = binarization_config(load_configuration)
 
     images_binarize = dict()
     for angle in images:
 
         if angle == -1:
-            images_binarize[angle] = binarization(
-                images[angle],
-                configuration_top,
-                is_top_image=True,
-                methods='hsv')
+            images_binarize[angle] = \
+                alinea.phenomenal.binarization.binarization(
+                    images[angle],
+                    factor_top_binarization,
+                    is_top_image=True,
+                    methods='hsv')
         else:
-            images_binarize[angle] = binarization(
-                images[angle][0:2448, 0:2048],
-                configuration_side,
-                methods='elcom',
-                mean_image=mean_image[0:2448, 0:2048])
+            images_binarize[angle] = \
+                alinea.phenomenal.binarization.binarization(
+                    images[angle][0:2448, 0:2048],
+                    factor_side_binarization,
+                    methods='elcom',
+                    mean_image=mean_image[0:2448, 0:2048])
 
     return images_binarize
 
 
 def example_binarization_hsv(images):
 
-    load_configuration = loadconfig('configuration_side_image_michael.cfg')
-    configuration_side = binarization_config(load_configuration)
+    factor_side_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'configuration_side_image_michael.cfg')
 
-    load_configuration = loadconfig('configuration_top_image.cfg')
-    configuration_top = binarization_config(load_configuration)
+    factor_top_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'configuration_top_image.cfg')
 
     images_binarize = dict()
     for angle in images:
 
         if angle == -1:
-            images_binarize[angle] = binarization(
-                images[angle],
-                configuration_top,
-                is_top_image=True,
-                methods='hsv')
+            images_binarize[angle] = \
+                alinea.phenomenal.binarization.binarization(
+                    images[angle],
+                    factor_top_binarization,
+                    is_top_image=True,
+                    methods='hsv')
         else:
-            images_binarize[angle] = binarization(
-                images[angle],
-                configuration_side,
-                methods='hsv',)
+            images_binarize[angle] = \
+                alinea.phenomenal.binarization.binarization(
+                    images[angle],
+                    factor_side_binarization,
+                    methods='hsv', )
 
     return images_binarize
 

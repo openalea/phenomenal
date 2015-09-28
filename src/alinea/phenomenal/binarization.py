@@ -230,8 +230,8 @@ def side_binarization_mean_shift(image, mean_image, configuration):
             mean_image,
             configuration.roi_main.hsv_min,
             configuration.roi_main.hsv_max,
-            configuration.meanshift_binarization_factor.threshold,
-            configuration.meanshift_binarization_factor.dark_background,
+            configuration.mean_shift_binarization_factor.threshold,
+            configuration.mean_shift_binarization_factor.dark_background,
             mask,
             configuration.roi_main.mask)
 
