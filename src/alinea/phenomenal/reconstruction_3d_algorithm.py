@@ -19,12 +19,13 @@
 
 #       ========================================================================
 #       External Import
-import numpy as np
-from collections import deque
+import collections
+import math
+import numpy
+
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.octree as octree
 
 
 #       ========================================================================
@@ -35,15 +36,15 @@ class Cube(object):
 
     def __init__(self, x, y, z, radius):
         self.radius = radius
-        self.position = np.float32([[x, y, z]])
+        self.position = numpy.float32([x, y, z])
 
     def oct_split(self):
 
         radius = self.radius / 2.0
 
-        cx = self.position[0, 0]
-        cy = self.position[0, 1]
-        cz = self.position[0, 2]
+        cx = self.position[0]
+        cy = self.position[1]
+        cz = self.position[2]
 
         x_minus = cx - radius
         x_plus = cx + radius
@@ -54,7 +55,7 @@ class Cube(object):
         z_minus = cz - radius
         z_plus = cz + radius
 
-        l = deque()
+        l = collections.deque()
         l.append(Cube(x_minus, y_minus, z_minus, radius))
         l.append(Cube(x_plus, y_minus, z_minus, radius))
         l.append(Cube(x_minus, y_plus, z_minus, radius))
@@ -69,9 +70,9 @@ class Cube(object):
     def get_corner(self):
         radius = self.radius
 
-        cx = self.position[0, 0]
-        cy = self.position[0, 1]
-        cz = self.position[0, 2]
+        cx = self.position[0]
+        cy = self.position[1]
+        cz = self.position[2]
 
         x_minus = cx - radius
         x_plus = cx + radius
@@ -82,7 +83,7 @@ class Cube(object):
         z_minus = cz - radius
         z_plus = cz + radius
 
-        l = deque()
+        l = collections.deque()
         l.append(Cube(x_minus, y_minus, z_minus, radius))
         l.append(Cube(x_plus, y_minus, z_minus, radius))
         l.append(Cube(x_minus, y_plus, z_minus, radius))
@@ -95,9 +96,9 @@ class Cube(object):
         return l
 
     def print_value(self):
-        print (self.position[0, 0],
-               self.position[0, 1],
-               self.position[0, 2],
+        print (self.position[0],
+               self.position[1],
+               self.position[2],
                self.radius)
 
 
@@ -133,7 +134,7 @@ def split_cubes(cubes):
     if len(cubes) == 0:
         return cubes
 
-    l = deque()
+    l = collections.deque()
     while True:
         try:
             cube = cubes.popleft()
@@ -153,14 +154,14 @@ def manual_split_cubes(cubes):
     radius = cubes[0].radius / 2.0
     r = radius / 2.0
 
-    l = deque()
+    l = collections.deque()
     while True:
         try:
             cube = cubes.popleft()
 
-            cx = cube.position[0, 0]
-            cy = cube.position[0, 1]
-            cz = cube.position[0, 2]
+            cx = cube.position[0]
+            cy = cube.position[1]
+            cz = cube.position[2]
 
             x_minus = cx - r
             x_plus = cx + r
@@ -208,7 +209,7 @@ def cube_is_in_image(image, cube, calibration, angle):
             + Any pixel value in the bounding box projected is > 0
     """
 
-    h, l = np.shape(image)
+    h, l = numpy.shape(image)
     x, y = calibration.project_point(cube.position, angle)
 
     if 0 <= y < h and 0 <= x < l:
@@ -219,28 +220,28 @@ def cube_is_in_image(image, cube, calibration, angle):
 
     x_min, x_max, y_min, y_max = bbox_projection(cube, calibration, angle)
 
-    x_min = min(max(x_min, 0), l - 1)
-    x_max = min(max(x_max, 0), l - 1)
-    y_min = min(max(y_min, 0), h - 1)
-    y_max = min(max(y_max, 0), h - 1)
+    x_min = min(max(math.floor(x_min), 0), l - 1)
+    x_max = min(max(math.ceil(x_max), 0), l - 1)
+    y_min = min(max(math.floor(y_min), 0), h - 1)
+    y_max = min(max(math.ceil(y_max), 0), h - 1)
 
     if (image[y_min, x_min] > 0 or
         image[y_max, x_min] > 0 or
         image[y_min, x_max] > 0 or
-        image[y_max, x_max] > 0):
+            image[y_max, x_max] > 0):
         return True
     # ==================================================================
 
     img = image[y_min:y_max + 1, x_min:x_max + 1]
 
-    if np.any(img > 0):
+    if numpy.any(img > 0):
         return True
 
     return False
 
 
 def octree_builder(image, cubes, calibration, angle):
-    kept = deque()
+    kept = collections.deque()
     while True:
         try:
             cube = cubes.popleft()
@@ -252,45 +253,6 @@ def octree_builder(image, cubes, calibration, angle):
             break
 
     return kept
-
-
-def new_octree_builder(images, calibrations, angle, cube, iteration):
-
-    ok = True
-    for angle in images:
-        image = images[angle]
-        calibration = calibrations[angle]
-
-        if not cube_is_in_image(image, cube, calibration, angle):
-            ok = False
-
-    if ok is False:
-        return None
-
-    oct_node = octree.OctNode((cube.position[0, 0],
-                               cube.position[0, 1],
-                               cube.position[0, 2]), cube.radius)
-
-    if iteration == 9:
-        return oct_node
-
-    oct_node.isLeafNode = False
-
-    l = cube.oct_split()
-
-    for i in range(len(l)):
-        oct_node.branches[i] = new_octree_builder(
-            images, calibrations, angle, l[i], iteration + 1)
-
-    no_branch = True
-    for i in range(len(l)):
-        if oct_node.branches[i] is not None:
-            no_branch = False
-
-    if no_branch is True:
-        return None
-
-    return oct_node
 
 
 #       =======================================================================

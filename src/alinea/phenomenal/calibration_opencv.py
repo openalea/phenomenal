@@ -23,11 +23,18 @@ import cv2
 import numpy
 import pickle
 
+
+#       ========================================================================
+#       Local Import
+import openalea.deploy.shared_data
+import alinea.phenomenal
+import alinea.phenomenal.calibration
+
 #       ========================================================================
 #       Code
 
 
-class Calibration(object):
+class Calibration(alinea.phenomenal.calibration.Calibration, object):
     def __init__(self, images, chessboard, verbose=False):
         self.focal_matrix = None
         self.rotation_vectors = dict()
@@ -36,19 +43,31 @@ class Calibration(object):
 
         self.calibrate(images, chessboard, verbose=verbose)
 
-    def __getitem__(self, item):
-        return (self.focal_matrix,
-                self.rotation_vectors[item],
-                self.translation_vectors[item],
-                self.distortion_coefficient)
+    def write_calibration(self, filename, file_is_in_share_directory=True):
 
-    def write_calibration(self, filename):
-        with open(filename + '.pickle', 'wb') as handle:
+        if file_is_in_share_directory is True:
+            share_data_directory = openalea.deploy.shared_data.shared_data(
+                alinea.phenomenal)
+
+            file_path = share_data_directory + filename + '.pickle'
+        else:
+            file_path = filename + '.pickle'
+
+        with open(file_path, 'wb') as handle:
             pickle.dump(self, handle)
 
     @staticmethod
-    def read_calibration(filename):
-        with open(filename + '.pickle', 'rb') as handle:
+    def read_calibration(filename, file_is_in_share_directory=True):
+
+        if file_is_in_share_directory is True:
+            share_data_directory = openalea.deploy.shared_data.shared_data(
+                alinea.phenomenal)
+
+            file_path = share_data_directory + filename + '.pickle'
+        else:
+            file_path = filename + '.pickle'
+
+        with open(file_path, 'rb') as handle:
             return pickle.load(handle)
 
     def print_value(self):
@@ -84,7 +103,9 @@ class Calibration(object):
 
     def project_point(self, point, angle):
 
-        projection_point, _ = cv2.projectPoints(point,
+        pt = numpy.reshape(point, (1, 3))
+
+        projection_point, _ = cv2.projectPoints(pt,
                                                 self.rotation_vectors[angle],
                                                 self.translation_vectors[angle],
                                                 self.focal_matrix,

@@ -151,9 +151,9 @@ class Calibration:
 
     def top_projection(self, position):
         # coordinates / optical center in real world
-        x = position[0, 0] - self.xt
-        y = position[0, 1] - self.yt
-        z = position[0, 2] - self.zt
+        x = position[0] - self.xt
+        y = position[1] - self.yt
+        z = position[2] - self.zt
 
         # scale at this distance
         conv = self.convTopref + z * self.pTop
@@ -169,9 +169,9 @@ class Calibration:
 
     def side_projection(self, position):
         # coordinates / optical center in real world
-        x = position[0, 0] - self.xo
-        y = position[0, 1] - self.yo
-        z = position[0, 2] - self.zo
+        x = position[0] - self.xo
+        y = position[1] - self.yo
+        z = position[2] - self.zo
 
         # scale at this distance
         conv = self.convSideref - y * self.pSide
@@ -195,14 +195,14 @@ class Calibration:
         sint = math.sin(t)
         cost = math.cos(t)
 
-        x = position[0, 0] - cbox2
-        y = position[0, 1] - cbox2
+        x = position[0] - cbox2
+        y = position[1] - cbox2
 
         tmp_x = cost * x - sint * y
         tmp_y = sint * x + cost * y
 
-        pos[0, 0] = tmp_x + cbox2
-        pos[0, 1] = tmp_y + cbox2
+        pos[0] = tmp_x + cbox2
+        pos[1] = tmp_y + cbox2
 
         return pos
 

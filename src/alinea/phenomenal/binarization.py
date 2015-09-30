@@ -21,11 +21,8 @@
 #       ========================================================================
 #       External Import
 import sys
-
 import numpy
 import cv2
-
-
 
 #       ========================================================================
 #       Local Import
@@ -262,8 +259,8 @@ def side_binarization_elcom(image, mean_image, configuration):
         mean_image,
         configuration.roi_stem.hsv_min,
         configuration.roi_stem.hsv_max,
-        configuration.meanshift_binarization_factor.threshold,
-        configuration.meanshift_binarization_factor.dark_background,
+        configuration.mean_shift_binarization_factor.threshold,
+        configuration.mean_shift_binarization_factor.dark_background,
         configuration.roi_main.mask,
         configuration.roi_stem.mask)
 
