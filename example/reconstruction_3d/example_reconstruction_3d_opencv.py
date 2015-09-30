@@ -28,8 +28,6 @@ from alinea.phenomenal.calibration_opencv import Calibration
 from alinea.phenomenal.reconstruction_3d import reconstruction_3d
 from alinea.phenomenal.misc import load_files, load_images, write_cubes
 
-
-
 #       ========================================================================
 #       Code
 
@@ -45,7 +43,8 @@ def run_example(data_directory, calibration_name):
 
             images = load_images(files, cv2.IMREAD_UNCHANGED)
 
-            calibration = Calibration.read_calibration(calibration_name)
+            calibration = Calibration.read_calibration(
+                calibration_name, file_is_in_share_directory=False)
 
             images_select = dict()
             for angle in images:
@@ -68,7 +67,7 @@ def run_example(data_directory, calibration_name):
 
 if __name__ == "__main__":
     run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
-                '../calibration/example_calibration_opencv')
+                'example_calibration_opencv')
     #
     # run_example('../../local/B73/',
     #             '../calibration/example_calibration_2')

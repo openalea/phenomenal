@@ -116,9 +116,9 @@ def write_cubes(cubes, data_directory, name_file):
         f.write("%f\n" % cubes[0].radius)
 
     for cube in cubes:
-        x = cube.position[0, 0]
-        y = cube.position[0, 1]
-        z = cube.position[0, 2]
+        x = cube.position[0]
+        y = cube.position[1]
+        z = cube.position[2]
 
         f.write("%f %f %f \n" % (x, y, z))
 

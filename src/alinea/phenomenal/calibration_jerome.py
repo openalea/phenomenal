@@ -19,16 +19,21 @@
 #       ========================================================================
 #       External Import
 import pickle
+import numpy
 from math import radians
 from scipy.optimize import leastsq
 
 #       ========================================================================
-#       Local Import 
+#       Local Import
+import openalea.deploy.shared_data
+import alinea.phenomenal
+
 from calibration_model import camera_frame, chess_corners, chess_frame
 from camera import Camera
 
 #       ========================================================================
 #       Code
+
 
 class Calibration(object):
     def __init__(self):
@@ -52,16 +57,26 @@ class Calibration(object):
 
         return cam, fr
 
+    def initialize_camera_frame(self):
+
+        self.frame = dict()
+
+        for angle in range(0, 360, 1):
+            self.frame[angle] = camera_frame(
+                self._dist_cam,
+                self._offset,
+                self._z_cam,
+                self._azim_cam,
+                self._elev_cam,
+                self._tilt_cam,
+                self._offset_angle,
+                radians(angle))
+
     def project_point(self, point, angle):
-        # cam = Camera((2056, 2454), (self._sca_x, self._sca_y))
 
-        fr = camera_frame(self._dist_cam, self._offset, self._z_cam,
-                          self._azim_cam, self._elev_cam, self._tilt_cam,
-                          self._offset_angle, radians(angle))
+        pt = (point[0], point[1], point[2])
 
-        pt = (point[0, 0], point[0, 1], point[0, 2])
-
-        pix = self._camera.pixel_coordinates(fr.local_point(pt))
+        pix = self._camera.pixel_coordinates(self.frame[angle].local_point(pt))
 
         return pix
 
@@ -74,8 +89,18 @@ class Calibration(object):
             pickle.dump(cal_params, handle)
 
     @staticmethod
-    def read_calibration(filename):
-        with open(filename + '.pickle', 'rb') as handle:
+    def read_calibration(filename, file_is_in_share_directory=True):
+
+        if file_is_in_share_directory is True:
+            share_data_directory = openalea.deploy.shared_data.shared_data(
+                alinea.phenomenal)
+
+            file_path = share_data_directory + filename + '.pickle'
+        else:
+            file_path = filename + '.pickle'
+
+
+        with open(file_path, 'rb') as handle:
             params = pickle.load(handle)
             print params
             sca_x, sca_y = params[0:2]
@@ -93,6 +118,8 @@ class Calibration(object):
             cal._tilt_cam = tilt_cam
             cal._offset_angle = offset_angle
             cal._camera = Camera((2056, 2454), (cal._sca_x, cal._sca_y))
+
+            cal.initialize_camera_frame()
 
             return cal
 
@@ -173,6 +200,8 @@ class Calibration(object):
 
         self._camera = Camera((2056, 2454), (self._sca_x, self._sca_y))
 
+        self.initialize_camera_frame()
+
 
 def project(pt, fr_chess, fr_cam, cam):
     return cam.pixel_coordinates(fr_cam.local_point(fr_chess.global_point(pt)))
@@ -231,6 +260,8 @@ def find_calibration_model_parameters(chessboard_ref, chessboard_corners, guess)
     cal._elev_cam = elev_cam
     cal._tilt_cam = tilt_cam
     cal._offset_angle = offset_angle
+
+    cal.initialize_camera_frame()
 
     return cal
 

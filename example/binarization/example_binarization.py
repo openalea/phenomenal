@@ -26,6 +26,7 @@ import alinea.phenomenal.binarization
 import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
 import alinea.phenomenal.binarization_factor
+import alinea.phenomenal.result_viewer
 
 
 #       ========================================================================
@@ -44,20 +45,20 @@ def run_example(data_directory):
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            # images_binarize_adaptive_threshold = \
-            #     example_binarization_adaptive_threshold(images)
+            images_binarize_adaptive_threshold = \
+                example_binarization_adaptive_threshold(images)
             images_binarize_mean_shift = example_binarization_mean_shift(images)
-            # images_binarize_elcom = example_binarization_elcom(images)
-            # images_binarize_hsv = example_binarization_hsv(images)
-            #
-            # print pot_id, date
-            # for angle in images:
-            #     show_images(
-            #         [images[angle],
-            #          images_binarize_adaptive_threshold[angle],
-            #          images_binarize_mean_shift[angle],
-            #          images_binarize_elcom[angle],
-            #          images_binarize_hsv[angle]], str(angle))
+            images_binarize_elcom = example_binarization_elcom(images)
+            images_binarize_hsv = example_binarization_hsv(images)
+
+            print pot_id, date
+            for angle in images:
+                alinea.phenomenal.result_viewer.show_images(
+                    [images[angle],
+                     images_binarize_adaptive_threshold[angle],
+                     images_binarize_mean_shift[angle],
+                     images_binarize_elcom[angle],
+                     images_binarize_hsv[angle]], str(angle))
 
             alinea.phenomenal.misc.write_images(
                 data_directory + '/binarization/',
