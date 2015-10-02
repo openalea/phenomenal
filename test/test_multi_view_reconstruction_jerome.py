@@ -55,7 +55,7 @@ def test_multi_view_reconstruction_jerome_1():
     # alinea.phenomenal.result_viewer.show_image(images[0])
 
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, precision=1, verbose=True)
+        images, calibration, precision=2, verbose=True)
 
     # mat = alinea.phenomenal.data_transformation.points_3d_to_matrix(
     #     points, radius)
