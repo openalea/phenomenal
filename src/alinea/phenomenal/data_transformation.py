@@ -18,15 +18,29 @@
 
 #       ========================================================================
 #       External Import
-import numpy
 import os
+import numpy
 import cv2
 
+
 #       ========================================================================
-#       Local Import 
-import alinea.phenomenal.reconstruction_3d_algorithm
+#       Local Import
+
 #       ========================================================================
 #       Code
+
+
+def change_orientation(cubes):
+    for cube in cubes:
+        x = cube.position[0, 0]
+        y = - cube.position[0, 2]
+        z = - cube.position[0, 1]
+
+        cube.position[0, 0] = x
+        cube.position[0, 1] = y
+        cube.position[0, 2] = z
+
+    return cubes
 
 
 def save_matrix_like_stack_image(matrix, data_directory):
@@ -41,7 +55,7 @@ def save_matrix_like_stack_image(matrix, data_directory):
         cv2.imwrite(data_directory + '%d.png' % i, mat)
 
 
-def limit_cubes(cubes):
+def limit_points_3d(points_3d):
     x_min = float("inf")
     y_min = float("inf")
     z_min = float("inf")
@@ -50,8 +64,8 @@ def limit_cubes(cubes):
     y_max = - float("inf")
     z_max = - float("inf")
 
-    for cube in cubes:
-        x, y, z = cube.position[0], cube.position[1], cube.position[2]
+    for point_3d in points_3d:
+        x, y, z = point_3d[0], point_3d[1], point_3d[2]
 
         x_min = min(x_min, x)
         y_min = min(y_min, y)
@@ -64,52 +78,46 @@ def limit_cubes(cubes):
     return x_min, y_min, z_min, x_max, y_max, z_max
 
 
-def matrix_to_cubes(matrix, radius, position):
+def matrix_to_points_3d(matrix, radius, point_3d):
 
-    cubes = list()
+    points_3d = list()
     for (x, y, z), value in numpy.ndenumerate(matrix):
         if value == 1:
-            cubes.append(alinea.phenomenal.reconstruction_3d_algorithm.Cube(
-                position[0] + x * radius * 2,
-                position[1] + y * radius * 2,
-                position[2] + z * radius * 2, radius))
+            pt_3d = (point_3d[0] + x * radius * 2,
+                     point_3d[1] + y * radius * 2,
+                     point_3d[2] + z * radius * 2)
 
-    return cubes
+            points_3d.append(pt_3d)
+
+    return points_3d
 
 
-def cubes_to_matrix(cubes):
+def points_3d_to_matrix(points_3d, radius):
 
-    x_min, y_min, z_min, x_max, y_max, z_max = limit_cubes(cubes)
+    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
 
-    r = cubes[0].radius * 2
+    r = radius * 2
 
     x_r_min = x_min / r
     y_r_min = y_min / r
     z_r_min = z_min / r
 
-    mat = numpy.zeros((((x_max - x_min) / r) + 1,
-                       ((y_max - y_min) / r) + 1,
-                       ((z_max - z_min) / r) + 1), dtype=numpy.uint8)
+    mat = numpy.zeros((round((x_max - x_min) / r) + 1,
+                       round((y_max - y_min) / r) + 1,
+                       round((z_max - z_min) / r) + 1), dtype=numpy.uint8)
 
-    X = list()
-    Y = list()
-    Z = list()
-
-    for cube in cubes:
-        x, y, z = cube.position[0], cube.position[1], cube.position[2]
-        x_new = (x / r) - x_r_min
-        y_new = (y / r) - y_r_min
-        z_new = (z / r) - z_r_min
-
-        X.append(numpy.uint8(x_new))
-        Y.append(numpy.uint8(y_new))
-        Z.append(numpy.uint8(z_new))
+    for point_3d in points_3d:
+        x_new = (point_3d[0] / r) - x_r_min
+        y_new = (point_3d[1] / r) - y_r_min
+        z_new = (point_3d[2] / r) - z_r_min
 
         mat[x_new, y_new, z_new] = 1
 
     return mat
+
+
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    do_nothing = None
+    pass

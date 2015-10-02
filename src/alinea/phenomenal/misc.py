@@ -25,7 +25,7 @@ import re
 
 #       ========================================================================
 #       Local Import 
-import alinea.phenomenal.reconstruction_3d as reconstruction_3d
+import alinea.phenomenal.multi_view_reconstruction as reconstruction_3d
 
 #       ========================================================================
 #       Code

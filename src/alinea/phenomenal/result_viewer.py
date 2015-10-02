@@ -53,9 +53,13 @@ def plot_cubes(cubes, color=None, scale_factor=5):
         color = (uniform(0, 1), uniform(0, 1), uniform(0, 1))
 
     for cube in cubes:
-        x.append(int(round(cube.position[0])))
-        y.append(int(round(cube.position[1])))
-        z.append(int(round(cube.position[2])))
+        # x.append(int(round(cube.position[0])))
+        # y.append(int(round(cube.position[1])))
+        # z.append(int(round(cube.position[2])))
+        x.append(int(round(cube[0])))
+        y.append(int(round(cube[1])))
+        z.append(int(round(cube[2])))
+
 
     if len(cubes) > 0:
         mlab.points3d(x, y, z,
