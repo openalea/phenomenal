@@ -27,8 +27,8 @@ import numpy as np
 from alinea.phenomenal.result_viewer import show_cubes, show_images
 from alinea.phenomenal.misc import load_images, load_files
 from alinea.phenomenal.calibration_jerome import Calibration
-from alinea.phenomenal.reconstruction_3d import reconstruction_3d
-from alinea.phenomenal.reconstruction_3d import (cubes_to_matrix,
+from alinea.phenomenal.multi_view_reconstruction import reconstruction_3d
+from alinea.phenomenal.multi_view_reconstruction import (cubes_to_matrix,
                                                  save_matrix_like_stack_image)
 from alinea.phenomenal.reconstruction_3d_algorithm import Cube
 

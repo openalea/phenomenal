@@ -73,12 +73,8 @@ class Calibration(object):
                 radians(angle))
 
     def project_point(self, point, angle):
-
-        pt = (point[0], point[1], point[2])
-
-        pix = self._camera.pixel_coordinates(self.frame[angle].local_point(pt))
-
-        return pix
+        return self._camera.pixel_coordinates(
+            self.frame[angle].local_point(point))
 
     def write_calibration(self, filename):
         cal_params = (self._sca_x, self._sca_y,

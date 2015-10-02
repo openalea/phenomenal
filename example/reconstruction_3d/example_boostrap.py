@@ -23,10 +23,10 @@ import random
 
 #       ========================================================================
 #       Local Import
-from alinea.phenomenal.misc import load_files, load_images
-from alinea.phenomenal.result_viewer import show_cubes
-from alinea.phenomenal.reconstruction_3d import reconstruction_3d
-from alinea.phenomenal.calibration_jerome import Calibration
+import alinea.phenomenal.misc
+import alinea.phenomenal.result_viewer
+import alinea.phenomenal.multi_view_reconstruction
+import alinea.phenomenal.calibration_jerome
 
 #       ========================================================================
 #       Code
@@ -34,14 +34,16 @@ from alinea.phenomenal.calibration_jerome import Calibration
 
 def run_example(data_directory):
 
-    pot_ids = load_files(data_directory + 'repair_processing/')
+    pot_ids = alinea.phenomenal.misc.load_files(
+        data_directory + 'repair_processing/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
             files = pot_ids[pot_id][date]
 
             if len(files) > 3:
-                images = load_images(files, cv2.IMREAD_UNCHANGED)
+                images = alinea.phenomenal.misc.load_images(
+                    files, cv2.IMREAD_UNCHANGED)
 
                 selected_images = dict()
                 for angle in images:
@@ -53,7 +55,6 @@ def run_example(data_directory):
 
 def select_random_image(number_of_image, images):
     tmp_angles = list(images.keys())
-    print tmp_angles
     selected_images = dict()
 
     for i in range(number_of_image):
@@ -66,18 +67,21 @@ def select_random_image(number_of_image, images):
 
 def example_boostrap(images):
 
-    calibration = Calibration.read_calibration('../calibration/fitted_result')
+    calibration = alinea.phenomenal.calibration_jerome.Calibration.\
+        read_calibration('../calibration/fitted_result',
+                         file_is_in_share_directory=False)
 
     results_reconstruction_3d = list()
     for i in range(5):
         selected_images = select_random_image(5, images)
 
-        cubes = reconstruction_3d(selected_images, calibration, precision=5)
+        points_3d = alinea.phenomenal.multi_view_reconstruction.\
+            reconstruction_3d(selected_images, calibration, precision=4)
 
-        results_reconstruction_3d.append(cubes)
+        results_reconstruction_3d.append(points_3d)
 
         print selected_images.keys()
-        show_cubes(cubes, scale_factor=2)
+        alinea.phenomenal.result_viewer.show_cubes(points_3d, scale_factor=2)
 
 
 #       ========================================================================
@@ -86,5 +90,4 @@ def example_boostrap(images):
 if __name__ == "__main__":
     run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
     # run_example('../../local/B73/')
-
     # run_example('../../local/Figure_3D/')

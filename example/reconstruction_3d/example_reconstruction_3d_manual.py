@@ -25,11 +25,9 @@ import cv2
 from alinea.phenomenal.misc import load_images, load_files, write_cubes
 from alinea.phenomenal.result_viewer import show_cubes
 
-from alinea.phenomenal.reconstruction_3d import \
-    reconstruction_3d_manual_calibration
+import alinea.phenomenal.multi_view_reconstruction
 
-from alinea.phenomenal.calibration_manual import \
-    CameraConfiguration, Calibration
+from alinea.phenomenal.calibration_manual import Calibration
 
 #       ========================================================================
 #       Code
@@ -44,11 +42,10 @@ def run_example(data_directory):
 
             images = load_images(files, cv2.IMREAD_UNCHANGED)
 
-            camera_config = CameraConfiguration()
-            calibration = Calibration(camera_config)
+            calibration = Calibration()
 
-            cubes = reconstruction_3d_manual_calibration(
-                images, calibration, precision=0.5)
+            cubes = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
+                images, calibration, precision=1)
 
             print pot_id, date
             show_cubes(cubes, scale_factor=1)

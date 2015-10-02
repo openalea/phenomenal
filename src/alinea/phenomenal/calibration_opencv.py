@@ -104,7 +104,7 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
     def project_point(self, point, angle):
 
         pt = numpy.reshape(point, (1, 3))
-
+        pt = pt.astype(numpy.float32)
         projection_point, _ = cv2.projectPoints(pt,
                                                 self.rotation_vectors[angle],
                                                 self.translation_vectors[angle],

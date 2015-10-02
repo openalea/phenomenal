@@ -26,7 +26,7 @@ import cv2
 
 from alinea.phenomenal.misc import load_files, load_images, write_cubes
 from alinea.phenomenal.result_viewer import show_cubes
-from alinea.phenomenal.reconstruction_3d import reconstruction_3d
+from alinea.phenomenal.multi_view_reconstruction import reconstruction_3d
 from alinea.phenomenal.calibration_jerome import Calibration
 
 #       ========================================================================
@@ -44,14 +44,18 @@ def run_example(data_directory):
             images = load_images(files, cv2.IMREAD_UNCHANGED)
 
             calibration = Calibration.read_calibration(
-                '../calibration/fitted_result')
+                '../calibration/fitted_result',
+                file_is_in_share_directory=False)
 
             images_selected = dict()
             for angle in images:
                 if 0 <= angle <= 360:
                     images_selected[angle] = images[angle]
 
-            cubes = reconstruction_3d(images_selected, calibration, precision=5)
+            cubes = reconstruction_3d(
+                images_selected,
+                calibration,
+                precision=5)
 
             print pot_id, date
             show_cubes(cubes, scale_factor=2)

@@ -25,7 +25,7 @@ import cv2
 #       Local Import
 from alinea.phenomenal.result_viewer import show_cubes
 from alinea.phenomenal.calibration_opencv import Calibration
-from alinea.phenomenal.reconstruction_3d import reconstruction_3d
+from alinea.phenomenal.multi_view_reconstruction import reconstruction_3d
 from alinea.phenomenal.misc import load_files, load_images, write_cubes
 
 #       ========================================================================
@@ -43,8 +43,7 @@ def run_example(data_directory, calibration_name):
 
             images = load_images(files, cv2.IMREAD_UNCHANGED)
 
-            calibration = Calibration.read_calibration(
-                calibration_name, file_is_in_share_directory=False)
+            calibration = Calibration.read_calibration('/tests/test_calibration_opencv')
 
             images_select = dict()
             for angle in images:

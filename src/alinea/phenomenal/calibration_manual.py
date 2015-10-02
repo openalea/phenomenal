@@ -23,7 +23,7 @@ import math
 #       ========================================================================
 
 
-class CameraConfiguration:
+class CameraConfiguration(object):
     def __init__(self):
         #   ===================================================================
         #   Default value
@@ -71,83 +71,46 @@ class CameraConfiguration:
         # careau noir) sur le fond
         self.convSide = 30 / 3.95
 
-    def print_value(self):
-        print 'Dimension image (w, h): ', self.w, ' , ', self.h
-        print 'Angle conveyor', self.angTop
-        print '', self.cTop
-        print '', self.dleft_top
-        print '', self.dback
-        print '', self.hcTop
-        print '', self.lcTop
-        print '', self.cSide
-        print '', self.hSide
-        print '', self.dleft
-        print '', self.dhSide
-        print '', self.lcSide
-        print '', self.convSide
 
+class Calibration(CameraConfiguration, object):
+    def __init__(self):
 
-class Calibration:
-    def __init__(self, camera_config):
+        super(Calibration, self).__init__()
+
         # Dimension image
-        self.w = camera_config.w
-        self.h = camera_config.h
+        # self.w = camera_config.w
+        # self.h = camera_config.h
 
         # Box
-        self.hbox = camera_config.hSide / camera_config.convSide
-        self.cbox = camera_config.cSide / camera_config.convSide
+        self.hbox = self.hSide / self.convSide
+        self.cbox = self.cSide / self.convSide
 
         # X0, Y0, Z0
-        self.xo = ((camera_config.w / 2 - camera_config.dleft) /
-                   camera_config.convSide)
-
+        self.xo = ((self.w / 2 - self.dleft) / self.convSide)
         self.yo = self.cbox / 2
-
-        self.zo = ((camera_config.h / 2 - (camera_config.h -
-                                           camera_config.hSide)) /
-                   camera_config.convSide)
+        self.zo = ((self.h / 2 - (self.h - self.hSide)) / self.convSide)
 
         # echelle top au niveau du sol (pix / cm)
-        convTop = camera_config.convSide / camera_config.cSide * camera_config.cTop
+        convTop = self.convSide / self.cSide * self.cTop
 
         # XT, YT, ZT
-        self.xt = (camera_config.h / 2 - camera_config.dleft_top) / convTop
-        self.yt = (camera_config.w / 2 - (
-        camera_config.w - camera_config.dback - camera_config.cTop)) / convTop
+        self.xt = (self.h / 2 - self.dleft_top) / convTop
+        self.yt = (self.w / 2 - (self.w - self.dback - self.cTop)) / convTop
         self.zt = self.zo
 
-
         # facteur grandissement
-        gamma = camera_config.lcSide[1] / camera_config.lcSide[0]
-        self.pSide = camera_config.convSide * (gamma - 1) / self.cbox
+        gamma = self.lcSide[1] / self.lcSide[0]
+        self.pSide = self.convSide * (gamma - 1) / self.cbox
 
-        gamma = camera_config.lcTop[1] / camera_config.lcTop[0]
-        cTop = camera_config.lcTop[0] / camera_config.lcSide[
-            0] * camera_config.convSide  # echelle au niveau hcTop[1]
+        gamma = self.lcTop[1] / self.lcTop[0]
+        cTop = self.lcTop[0] / self.lcSide[0] * self.convSide  # echelle au niveau hcTop[1]
 
-        self.pTop = cTop * (gamma - 1) / (camera_config.hcTop[0] -
-                                          camera_config.hcTop[1])
+        self.pTop = cTop * (gamma - 1) / (self.hcTop[0] - self.hcTop[1])
 
         # echelle au niveau 0
         self.convTopref = convTop + self.pTop * self.zo
-        self.convSideref = camera_config.convSide + self.pSide * self.cbox / 2
-        self.rotationTop = - camera_config.angTop
-
-    def print_value(self):
-        print 'w, h', self.w, self.h
-        print 'hbox', self.hbox
-        print 'cbox', self.cbox
-        print 'X0', self.xo
-        print 'Y0', self.yo
-        print 'Z0', self.zo
-        print 'XT', self.xt
-        print 'YT', self.yt
-        print 'ZT', self.zt
-        print 'pSide', self.pSide
-        print 'pTop', self.pTop
-        print 'convTopRef', self.convTopref
-        print 'convSideRef', self.convSideref
-        print 'rotationTop', self.rotationTop
+        self.convSideref = self.convSide + self.pSide * self.cbox / 2
+        self.rotationTop = - self.angTop
 
     def top_projection(self, position):
         # coordinates / optical center in real world
@@ -186,9 +149,8 @@ class Calibration:
 
         return min(self.w, max(0, xim)), min(self.h, max(0, yim))
 
-    def side_rotation(self, position, angle):
 
-        pos = position.copy()
+    def side_rotation(self, position, angle):
 
         t = - angle / 180.0 * math.pi
         cbox2 = self.cbox / 2.0
@@ -201,10 +163,7 @@ class Calibration:
         tmp_x = cost * x - sint * y
         tmp_y = sint * x + cost * y
 
-        pos[0] = tmp_x + cbox2
-        pos[1] = tmp_y + cbox2
-
-        return pos
+        return tmp_x + cbox2, tmp_y + cbox2, position[2]
 
     def project_point(self, point, angle):
 

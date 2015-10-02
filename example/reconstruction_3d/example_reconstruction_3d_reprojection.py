@@ -26,7 +26,7 @@ import numpy as np
 from alinea.phenomenal.misc import load_images, load_files
 from alinea.phenomenal.result_viewer import show_cubes, show_images
 from alinea.phenomenal.calibration_jerome import Calibration
-from alinea.phenomenal.reconstruction_3d import reconstruction_3d
+from alinea.phenomenal.multi_view_reconstruction import reconstruction_3d
 from alinea.phenomenal.reconstruction_3d_algorithm import bbox_projection
 
 #       ========================================================================
