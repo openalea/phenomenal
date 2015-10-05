@@ -41,7 +41,7 @@ def test_multi_view_reconstruction_jerome_1():
     points = alinea.phenomenal.data_creation.build_object_1(
         size, radius, point_3d)
 
-    # alinea.phenomenal.result_viewer.show_points_3d(points)
+    alinea.phenomenal.result_viewer.show_points_3d(points)
 
     calibration = alinea.phenomenal.calibration_jerome.\
         Calibration.read_calibration('/tests/test_calibration_jerome')
@@ -86,6 +86,8 @@ def test_multi_view_reconstruction_jerome_2():
 
         img = numpy.subtract(image, images[0])
         img[img == -255] = 255
+
+        alinea.phenomenal.result_viewer.show_images([images[angle], img, image])
         print "Angle : ", angle, ' Err : ', numpy.count_nonzero(img)
         assert numpy.count_nonzero(img) < 4000
 

@@ -43,7 +43,8 @@ def binarization(image,
     try:
 
         if methods == 'mean_shift':
-            return side_binarization_mean_shift(image, mean_image, configuration)
+            return side_binarization_mean_shift(
+                image, mean_image, configuration)
         if methods == 'hsv' and is_top_image is True:
             return top_binarization_hsv(image, configuration)
         if methods == 'hsv' and is_top_image is False:
@@ -63,6 +64,39 @@ def binarization(image,
         return None
     except Exception, e:
         sys.stderr.write("Error - " + methods + " : " + str(e) + "\n")
+        return None
+
+
+def get_mean_image(images):
+    """
+    Compute the mean image of a image list.
+
+    :param images: A list images.
+    :return: A image who is the mean of the list image
+    """
+    try:
+        if isinstance(images, (list, tuple)):
+            length = len(images)
+            weight = 1. / length
+
+            start = cv2.addWeighted(images[0], weight, images[1], weight, 0)
+
+            function = lambda x, y: cv2.addWeighted(x, 1, y, weight, 0)
+
+            return reduce(function, images[2:], start)
+        else:
+            sys.stderr.write("TypeError - get_mean_image : "
+                             "Require list argument\n")
+            return None
+
+    except cv2.error, e:
+        sys.stderr.write("OpenCvError - get_mean_image : " + str(e) + "\n")
+        return None
+    except TypeError, e:
+        sys.stderr.write("TypeError - get_mean_image : " + str(e) + "\n")
+        return None
+    except Exception, e:
+        sys.stderr.write("Error - get_mean_image : " + str(e) + "\n")
         return None
 
 
@@ -174,39 +208,6 @@ def top_binarization_hsv(image, configuration):
     return main_area_seg
 
 
-def get_mean_image(images):
-    """
-    Compute the mean image of a image list.
-
-    :param images: A list images.
-    :return: A image who is the mean of the list image
-    """
-    try:
-        if isinstance(images, (list, tuple)):
-            length = len(images)
-            weight = 1. / length
-
-            start = cv2.addWeighted(images[0], weight, images[1], weight, 0)
-
-            function = lambda x, y: cv2.addWeighted(x, 1, y, weight, 0)
-
-            return reduce(function, images[2:], start)
-        else:
-            sys.stderr.write("TypeError - get_mean_image : "
-                             "Require list argument\n")
-            return None
-
-    except cv2.error, e:
-        sys.stderr.write("OpenCvError - get_mean_image : " + str(e) + "\n")
-        return None
-    except TypeError, e:
-        sys.stderr.write("TypeError - get_mean_image : " + str(e) + "\n")
-        return None
-    except Exception, e:
-        sys.stderr.write("Error - get_mean_image : " + str(e) + "\n")
-        return None
-
-
 def side_binarization_mean_shift(image, mean_image, configuration):
     """
     Binarization of side image based on mean shift difference
@@ -292,6 +293,3 @@ def side_binarization_adaptive_thresh(image, configuration):
     result = cv2.add(result, result3)
 
     return result
-
-
-

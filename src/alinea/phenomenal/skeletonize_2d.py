@@ -25,7 +25,6 @@ import numpy
 #       ========================================================================
 #       Code
 
-
 def skeletonize(image, methods='thinning'):
     if methods == 'thinning':
         return skeletonize_thinning(image)

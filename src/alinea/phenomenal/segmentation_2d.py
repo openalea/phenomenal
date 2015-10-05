@@ -250,19 +250,23 @@ def segment_skeleton(skeleton_image):
             if not (number_of_valid_neighbors == 2 and
                     neighbors_is_tagged(skeleton_image, j, i) is True):
 
-                count = 0
-                for y, x in neighbors_index:
+                if len(neighbors_index) > 0:
+                    y, x = neighbors_index[0]
                     while y > -1 and x > -1:
                         segment.points.append((y, x))
                         skeleton_image[y, x] = -1
                         y, x = next_neighbors(skeleton_image, y, x)
 
-                    if count == 0:
-                        segment.last_point = segment.points[-1]
-                    else:
-                        segment.first_point = segment.points[-1]
+                    segment.last_point = segment.points[-1]
 
-                    count += 1
+                if len(neighbors_index) > 1:
+                    y, x = neighbors_index[0]
+                    while y > -1 and x > -1:
+                        segment.points.insert(0, (y, x))
+                        skeleton_image[y, x] = -1
+                        y, x = next_neighbors(skeleton_image, y, x)
+
+                    segment.first_point = segment.points[0]
 
             # Add segment to the list
             segments.append(segment)
@@ -400,16 +404,12 @@ def segment_leaves(segments, stem):
 def compute_inclination(segments):
     histogram = list()
     for segment in segments:
-        angles_inclinations = segment.compute_inclination()
+        angles_inclinations = segment.compute_inclination(step=5)
 
         for angle in angles_inclinations:
             histogram.append(angle[0])
 
-    x = np.array(histogram)
-
-    import pylab as P
-    n, bins, patches = P.hist(x, 90, histtype='bar', rwidth=0.8)
-    P.show()
+    return np.array(histogram)
 
 
 def segment_organs_skeleton_image(skeleton_image):
@@ -432,25 +432,8 @@ def segment_organs_skeleton_image(skeleton_image):
 
     leaves, segments = segment_leaves(segments, stem)
 
-#   ============================================================================
+    return stem, leaves, segments
 
-    # Write if number on pixel image:
-    for segment in segments:
-        for y, x in segment.points:
-            skeleton_image[y, x] = segment.id_number
-
-    for segment in stem.segments:
-        for y, x in segment.points:
-            skeleton_image[y, x] = 255
-
-    for leaf in leaves:
-        for segment in leaf.segments:
-            for y, x in segment.points:
-                skeleton_image[y, x] = leaf.id_number
-
-    skeleton_image = skeleton_image.astype(np.uint8)
-
-    return skeleton_image
 
 #       ========================================================================
 #       LOCAL TEST

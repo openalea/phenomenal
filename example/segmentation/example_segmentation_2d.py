@@ -20,43 +20,76 @@
 #       External Import
 import cv2
 import matplotlib
+import matplotlib.cm
+import numpy
+import pylab
 
 #       ========================================================================
 #       Local Import
-from alinea.phenomenal.segmentation_2d import segment_organs_skeleton_image
-from alinea.phenomenal.misc import load_images, load_files, write_images
+import alinea.phenomenal.segmentation_2d
+import alinea.phenomenal.misc
 import alinea.phenomenal.result_viewer
-import matplotlib.cm
-
 
 #       ========================================================================
 #       Code
 
 
+def write_segmentation_on_image(stem, leaves, segments, skeleton_image):
+
+    # Write if number on pixel image:
+    for segment in segments:
+        for y, x in segment.points:
+            skeleton_image[y, x] = segment.id_number
+
+    for segment in stem.segments:
+        for y, x in segment.points:
+            skeleton_image[y, x] = 255
+
+    for leaf in leaves:
+        for segment in leaf.segments:
+            for y, x in segment.points:
+                skeleton_image[y, x] = leaf.id_number
+
+    skeleton_image = skeleton_image.astype(numpy.uint8)
+
+    return skeleton_image
+
+
 def run_example(data_directory):
-    pot_ids = load_files(data_directory + 'skeletonize_2d/')
+    pot_ids = alinea.phenomenal.misc.load_files(
+        data_directory + 'skeletonize_2d/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
 
             files = pot_ids[pot_id][date]
 
-            images = load_images(files, cv2.IMREAD_UNCHANGED)
+            images = alinea.phenomenal.misc.load_images(
+                files, cv2.IMREAD_UNCHANGED)
 
-            skeleton_images = example_segmentation(images)
+            segmentation = example_segmentation(images)
 
             print pot_id, date
-            for angle in skeleton_images:
+            for angle in segmentation:
+                stem, leaves, segments = segmentation[angle]
+
+                image = numpy.zeros(images[angle].shape)
+
+                img = write_segmentation_on_image(
+                    stem, leaves, segments, image)
+
                 alinea.phenomenal.result_viewer.show_images(
-                    [images[angle], skeleton_images[angle]],
+                    [images[angle], img],
                     name_windows='Image & Segmentation : %d degree' % angle,
                     names_axes=['Image', 'Segmentation'],
                     color_map_axes=[matplotlib.cm.binary,
                                     compute_my_random_color_map()])
 
-            write_images(data_directory + 'segmentation_2d/',
-                         files,
-                         skeleton_images)
+                histogram = alinea.phenomenal.segmentation_2d.\
+                    compute_inclination(stem.segments)
+
+                pylab.hist(histogram, 180, histtype='bar', rwidth=0.8)
+                pylab.show()
 
 
 def compute_my_random_color_map():
@@ -87,12 +120,15 @@ def compute_my_random_color_map():
 
 
 def example_segmentation(images):
-    skeleton_images = dict()
+    segmentation = dict()
     for angle in images:
         if angle != -1:
-            skeleton_images[angle] = segment_organs_skeleton_image(images[angle])
+            stem, leaves, segments = alinea.phenomenal.segmentation_2d.\
+                segment_organs_skeleton_image(images[angle])
 
-    return skeleton_images
+            segmentation[angle] = stem, leaves, segments
+
+    return segmentation
 
 #       ========================================================================
 #       LOCAL TEST

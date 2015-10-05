@@ -18,23 +18,14 @@
 
 #       ========================================================================
 #       External Import
-import glob
-import os
 import mayavi.mlab
-
-from mayavi import mlab
-
 
 
 #       ========================================================================
 #       Local Import
 
-from alinea.phenomenal.segmentation_3d import segment_organs_from_skeleton_3d
-from alinea.phenomenal.reconstruction_3d_algorithm import Cube
-from alinea.phenomenal.result_viewer import (plot_points_3d,
-                                             plot_segments)
-
 import alinea.phenomenal.misc
+import alinea.phenomenal.segmentation_3d
 import alinea.phenomenal.skeletonize_3d
 import alinea.phenomenal.result_viewer
 
@@ -64,56 +55,17 @@ def run_example(data_directory):
             xyz_file = pot_ids[pot_id][date]
             points_3d, radius = alinea.phenomenal.misc.read_xyz(xyz_file)
 
-            example_segmentation_3d(points_3d, radius)
-
-            # write_segmentation_3d(
-            #     data_directory + 'segmentation_3d/',
-            #     stem,
-            #     leaves,
-            #     cubes[0].radius)
+            example_segmentation_3d(points_3d)
 
 
-def write_segmentation_3d(data_directory, file_name, stem, leaves, radius):
-    directory = data_directory + 'segmentation_3d/'
-
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-    f = open(directory + file_name + '.xyz', 'w')
-
-    f.write("%f\n" % (radius))
-    stem_cubes = extract_points_3d(stem, radius)
-
-    id = 0
-    for cube in stem_cubes:
-        x = cube.position[0, 0]
-        y = cube.position[0, 1]
-        z = cube.position[0, 2]
-
-        f.write("%f %f %f %d\n" % (x, y, z, id))
-    id += 1
-
-    for leaf in leaves:
-        leaf_cubes = extract_points_3d(leaf, radius)
-        for cube in leaf_cubes:
-            x = cube.position[0, 0]
-            y = cube.position[0, 1]
-            z = cube.position[0, 2]
-
-            f.write("%f %f %f %d\n" % (x, y, z, id))
-        id += 1
-
-    f.close()
-
-
-def example_segmentation_3d(points_3d, radius):
+def example_segmentation_3d(points_3d):
 
     alinea.phenomenal.result_viewer.show_points_3d(
         points_3d, color=(0.1, 0.7, 0.1), scale_factor=10)
 
     #   ========================================================================
 
-    skeleton_3d = alinea.phenomenal.skeletonize_3d. \
+    skeleton_3d = alinea.phenomenal.skeletonize_3d.\
         skeletonize_3d_segment(points_3d, 10, 50)
 
     #   ========================================================================
@@ -126,37 +78,44 @@ def example_segmentation_3d(points_3d, radius):
 
     #   ========================================================================
 
-    stem, leaves, segments = segment_organs_from_skeleton_3d(skeleton_3d)
+    stem, leaves, segments = alinea.phenomenal.segmentation_3d.\
+        segment_organs_from_skeleton_3d(skeleton_3d)
 
     #   ========================================================================
 
-    mlab.figure("Organs")
+    mayavi.mlab.figure("Organs")
     for leaf in leaves:
-        plot_segments(leaf.segments)
-    plot_segments(stem.segments)
-    plot_points_3d(points_3d, color=(0.1, 0.7, 0.1), scale_factor=3)
-    mlab.show()
+        alinea.phenomenal.result_viewer.plot_segments(leaf.segments)
+    alinea.phenomenal.result_viewer.plot_segments(stem.segments)
+    alinea.phenomenal.result_viewer.plot_points_3d(
+        points_3d, color=(0.1, 0.7, 0.1), scale_factor=3)
+    mayavi.mlab.show()
 
     #   ========================================================================
 
-    mlab.figure("Propagation")
+    mayavi.mlab.figure("Propagation")
     stem_points_3d = extract_points_3d(stem)
-    color = plot_segments(stem.segments)
-    plot_points_3d(stem_points_3d, color=color, scale_factor=3)
+    color = alinea.phenomenal.result_viewer.plot_segments(stem.segments)
+    alinea.phenomenal.result_viewer.plot_points_3d(
+        stem_points_3d, color=color, scale_factor=3)
 
     for leaf in leaves:
         leaf_points_3d = extract_points_3d(leaf)
-        color = plot_segments(leaf.segments)
-        plot_points_3d(leaf_points_3d, color=color, scale_factor=3)
 
-    # tools_test.plot_points_3d(cubes, color=(0.1, 0.7, 0.1), scale_factor=3)
-    mlab.show()
+        color = alinea.phenomenal.result_viewer.plot_segments(leaf.segments)
+
+        alinea.phenomenal.result_viewer.plot_points_3d(
+            leaf_points_3d, color=color, scale_factor=3)
+
+    mayavi.mlab.show()
+    mayavi.mlab.clf()
+    mayavi.mlab.close()
 
 
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
-    # run_example('../../local/B73/')
+    # run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
+    run_example('../../local/B73/')
     # run_example('../../local/Figure_3D/')

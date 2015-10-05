@@ -201,5 +201,4 @@ def example_binarization_hsv(images):
 if __name__ == "__main__":
     run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
     # run_example('../../local/B73/')
-
     # run_example('../../local/Figure_3D/')

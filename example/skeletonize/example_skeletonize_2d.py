@@ -43,7 +43,10 @@ def run_example(data_directory):
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            skeleton_images = example_skeletonize(images)
+            skeleton_images = dict()
+            for angle in images:
+                skeleton_images[angle] = alinea.phenomenal.skeletonize_2d.\
+                    skeletonize(images[angle], methods='thinning')
 
             print pot_id, date
             for angle in skeleton_images:
@@ -54,15 +57,6 @@ def run_example(data_directory):
 
             alinea.phenomenal.misc.write_images(
                 data_directory + 'skeletonize_2d/', files, skeleton_images)
-
-
-def example_skeletonize(images):
-    skeleton_images = dict()
-    for angle in images:
-        skeleton_images[angle] = \
-            alinea.phenomenal.skeletonize_2d.skeletonize_thinning(images[angle])
-
-    return skeleton_images
 
 #       ========================================================================
 #       LOCAL TEST
