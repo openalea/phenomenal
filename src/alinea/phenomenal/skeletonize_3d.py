@@ -19,7 +19,9 @@
 #       ========================================================================
 #       External Import
 import math
+
 import numpy
+
 
 
 #       ========================================================================
@@ -33,24 +35,22 @@ import openalea.plantgl.math
 #       Code
 
 
-def cubes_to_point3array(cubes):
+def points_3d_to_point3array(points_3d):
     vectors = list()
 
     Vector3 = openalea.plantgl.math.Vector3
 
-    for cube in cubes:
-        x = numpy.double(cube.position[0, 0])
-        y = numpy.double(cube.position[0, 1])
-        z = numpy.double(cube.position[0, 2])
+    for point_3d in points_3d:
+
+        x = numpy.double(point_3d[0])
+        y = numpy.double(point_3d[1])
+        z = numpy.double(point_3d[2])
 
         v = Vector3(x, y, z)
+
         vectors.append(v)
 
     return vectors
-
-
-def euclidian_contraction(points, radius):
-    return openalea.plantgl.algo.contract_point3(points, radius)
 
 
 def skeletonize_3d_xu_method(points,
@@ -78,18 +78,17 @@ def skeletonize_3d_xu_method(points,
     return positions, parents, point_components, root
 
 
-def skeletonize_3d_segment(cubes,
+def skeletonize_3d_segment(points_3d,
                            contraction_radius,
                            bin_length,
                            k=20,
                            connect_all_points=True,
                            verbose=False):
 
-    vectors = cubes_to_point3array(cubes)
+    vectors = points_3d_to_point3array(points_3d)
 
     points = openalea.plantgl.scenegraph.Point3Array(vectors)
-
-    points = euclidian_contraction(points, contraction_radius)
+    points = openalea.plantgl.algo.contract_point3(points, contraction_radius)
 
     positions, parents, point_components, root = skeletonize_3d_xu_method(
         points,
@@ -127,11 +126,11 @@ def skeletonize_3d(cubes,
                    connect_all_points=True,
                    verbose=False):
 
-    vectors = cubes_to_point3array(cubes)
+    vectors = points_3d_to_point3array(cubes)
 
     points = openalea.plantgl.scenegraph.Point3Array(vectors)
 
-    points = euclidian_contraction(points, contraction_radius)
+    points = openalea.plantgl.algo.contract_point3(points, contraction_radius)
 
     positions, parents, point_components, root = skeletonize_3d_xu_method(
         points,
@@ -158,11 +157,11 @@ def test_skeletonize_3d(cubes,
         connect_all_points=connect_all_points,
         verbose=verbose)
 
+    vectors = points_3d_to_point3array(cubes)
 
-    vectors = cubes_to_point3array(cubes)
-    points = openalea.plantgl.scenegraph.PointSet(
-        euclidian_contraction(
-            openalea.plantgl.scenegraph.Point3Array(vectors), contraction_radius))
+    points = openalea.plantgl.algo.contract_point3(
+        openalea.plantgl.scenegraph.Point3Array(vectors), contraction_radius)
+    points = openalea.plantgl.scenegraph.PointSet(points)
 
     qapp = vplants.treeeditor3d.mtgeditor.QApplication([])
     w = vplants.treeeditor3d.mtgeditor.MTGEditor()

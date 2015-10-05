@@ -24,10 +24,6 @@ import cv2
 import re
 
 #       ========================================================================
-#       Local Import 
-import alinea.phenomenal.multi_view_reconstruction as reconstruction_3d
-
-#       ========================================================================
 #       Code
 
 
@@ -84,42 +80,55 @@ def write_images(data_directory, files, images):
 
 
 def read_xyz(file):
-    # ==========================================================================
-    # Read reconstruction
 
-    read_cubes = list()
+    points_3d = list()
     with open(file, 'r') as f:
 
         radius = float(f.readline())
-        for line in f:
-            position = re.findall(r'[-0-9.]+', line)
-            cube = reconstruction_3d.algo.Cube(position[0],
-                                               position[1],
-                                               position[2],
-                                               radius)
 
-            read_cubes.append(cube)
+        for line in f:
+            point_3d = re.findall(r'[-0-9.]+', line)
+
+            x = float(point_3d[0])
+            y = float(point_3d[1])
+            z = float(point_3d[2])
+
+            points_3d.append((x, y, z))
 
     f.close()
 
-    return read_cubes
+    return points_3d, radius
 
 
-def write_cubes(cubes, data_directory, name_file):
+def load_xyz_files(data_directory):
+    images_names = glob.glob(data_directory + '*.xyz')
+
+    pot_ids = dict()
+    for i in range(len(images_names)):
+
+        pot_id = images_names[i].split('\\')[-1].split('_')[0]
+        if pot_id not in pot_ids:
+            pot_ids[pot_id] = dict()
+
+        date = images_names[i].split(' ')[0].split('_')[-1]
+
+        pot_ids[pot_id][date] = images_names[i]
+
+    return pot_ids
+
+
+def write_points_3d(points_3d, radius, data_directory, name_file):
 
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)
 
     f = open(data_directory + name_file + '.xyz', 'w')
 
-    if len(cubes) > 0:
-        f.write("%f\n" % cubes[0].radius)
+    if len(points_3d) > 0:
+        f.write("%f\n" % radius)
 
-    for cube in cubes:
-        x = cube.position[0]
-        y = cube.position[1]
-        z = cube.position[2]
-
+    for point_3d in points_3d:
+        x, y, z = point_3d
         f.write("%f %f %f \n" % (x, y, z))
 
     f.close()

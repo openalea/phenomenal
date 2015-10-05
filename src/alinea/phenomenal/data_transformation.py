@@ -24,21 +24,18 @@ import cv2
 
 
 #       ========================================================================
-#       Local Import
-
-#       ========================================================================
 #       Code
 
 
 def change_orientation(cubes):
     for cube in cubes:
-        x = cube.position[0, 0]
-        y = - cube.position[0, 2]
-        z = - cube.position[0, 1]
+        x = cube.position[0]
+        y = - cube.position[2]
+        z = - cube.position[1]
 
-        cube.position[0, 0] = x
-        cube.position[0, 1] = y
-        cube.position[0, 2] = z
+        cube.position[0] = x
+        cube.position[1] = y
+        cube.position[2] = z
 
     return cubes
 
@@ -83,6 +80,7 @@ def matrix_to_points_3d(matrix, radius, point_3d):
     points_3d = list()
     for (x, y, z), value in numpy.ndenumerate(matrix):
         if value == 1:
+
             pt_3d = (point_3d[0] + x * radius * 2,
                      point_3d[1] + y * radius * 2,
                      point_3d[2] + z * radius * 2)

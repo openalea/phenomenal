@@ -95,10 +95,9 @@ class Calibration(object):
         else:
             file_path = filename + '.pickle'
 
-
         with open(file_path, 'rb') as handle:
             params = pickle.load(handle)
-            print params
+            # print params
             sca_x, sca_y = params[0:2]
             dist_cam, offset, z_cam = params[2:5]
             azim_cam, elev_cam, tilt_cam, offset_angle = params[5:9]
