@@ -23,50 +23,61 @@ import cv2
 
 #       ========================================================================
 #       Local Import
-from alinea.phenomenal.result_viewer import show_cubes
-from alinea.phenomenal.calibration_opencv import Calibration
-from alinea.phenomenal.multi_view_reconstruction import reconstruction_3d
-from alinea.phenomenal.misc import load_files, load_images, write_cubes
+import alinea.phenomenal.misc
+import alinea.phenomenal.result_viewer
+import alinea.phenomenal.multi_view_reconstruction
+import alinea.phenomenal.calibration_opencv
+
 
 #       ========================================================================
 #       Code
 
 
-def run_example(data_directory, calibration_name):
+def run_example(data_directory):
 
-    pot_ids = load_files(data_directory + 'repair_processing/')
+    pot_ids = alinea.phenomenal.misc.load_files(
+        data_directory + 'repair_processing/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
-
             files = pot_ids[pot_id][date]
 
-            images = load_images(files, cv2.IMREAD_UNCHANGED)
+            images = alinea.phenomenal.misc.load_images(
+                files, cv2.IMREAD_UNCHANGED)
 
-            calibration = Calibration.read_calibration('/tests/test_calibration_opencv')
+            calibration = alinea.phenomenal.calibration_opencv.\
+                Calibration.read_calibration(
+                    '../calibration/example_calibration_opencv',
+                    file_is_in_share_directory=False)
 
-            images_select = dict()
+            images_selected = dict()
             for angle in images:
-                if 0 <= angle <= 240:
-                    images_select[angle] = images[angle]
+                if 0 <= angle <= 180:
+                    images_selected[angle] = images[angle]
 
-            cubes = reconstruction_3d(images_select, calibration, precision=5)
+            points_3d = alinea.phenomenal.multi_view_reconstruction. \
+                reconstruction_3d(images_selected,
+                                  calibration,
+                                  precision=4,
+                                  verbose=True)
 
             print pot_id, date
-            show_cubes(cubes, scale_factor=5)
+            alinea.phenomenal.result_viewer.show_points_3d(
+                points_3d, scale_factor=2)
 
             file_name = files[0].split('\\')[-1].split('_vis_')[0]
-            write_cubes(cubes,
-                        data_directory + 'reconstruction_3d/',
-                        file_name)
+
+            alinea.phenomenal.misc.write_points_3d(
+                points_3d,
+                4,
+                data_directory + 'reconstruction_3d_opencv/',
+                file_name)
 
 
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
-                'example_calibration_opencv')
-    #
-    # run_example('../../local/B73/',
-    #             '../calibration/example_calibration_2')
+    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
+    # run_example('../../local/B73/')
+    # run_example('../../local/Figure_3D/')

@@ -19,7 +19,7 @@
 #       ========================================================================
 #       External Import
 import numpy
-import collections
+
 #       ========================================================================
 #       Local Import
 import alinea.phenomenal.result_viewer
@@ -34,17 +34,14 @@ import alinea.phenomenal.data_creation
 
 def test_multi_view_reconstruction_jerome_1():
 
-    Point3D = collections.namedtuple('Point3D', ['x', 'y', 'z'])
-
     size = 10
     radius = 8
-    # point_3d = (-472, -472, 200
-    point_3d = Point3D(-472, -472, 200)
+    point_3d = (-472, -472, 200)
 
     points = alinea.phenomenal.data_creation.build_object_1(
         size, radius, point_3d)
 
-    # alinea.phenomenal.result_viewer.show_cubes(points)
+    # alinea.phenomenal.result_viewer.show_points_3d(points)
 
     calibration = alinea.phenomenal.calibration_jerome.\
         Calibration.read_calibration('/tests/test_calibration_jerome')
@@ -55,15 +52,15 @@ def test_multi_view_reconstruction_jerome_1():
     # alinea.phenomenal.result_viewer.show_image(images[0])
 
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, precision=2, verbose=True)
+        images, calibration, precision=8, verbose=True)
 
-    # mat = alinea.phenomenal.data_transformation.points_3d_to_matrix(
-    #     points, radius)
-    #
-    # alinea.phenomenal.result_viewer.show_cubes(points)
+    mat = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+        points, radius)
 
-    # assert mat.size == 1728
-    # assert (mat == 1).all()
+    # alinea.phenomenal.result_viewer.show_points_3d(points)
+
+    assert mat.size == 1728
+    assert (mat == 1).all()
 
 
 def test_multi_view_reconstruction_jerome_2():
@@ -98,4 +95,4 @@ def test_multi_view_reconstruction_jerome_2():
 
 if __name__ == "__main__":
     test_multi_view_reconstruction_jerome_1()
-    # test_multi_view_reconstruction_jerome_2()
+    test_multi_view_reconstruction_jerome_2()

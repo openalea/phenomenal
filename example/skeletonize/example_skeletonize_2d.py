@@ -20,7 +20,6 @@
 #       External Import
 import cv2
 
-
 #       ========================================================================
 #       Local Import
 import alinea.phenomenal.skeletonize_2d
@@ -49,7 +48,9 @@ def run_example(data_directory):
             print pot_id, date
             for angle in skeleton_images:
                 alinea.phenomenal.result_viewer.show_images(
-                    [images[angle], skeleton_images[angle]], str(angle))
+                    [images[angle], skeleton_images[angle]],
+                    name_windows='Image & Skeleton',
+                    names_axes=['Image', 'Skeleton'])
 
             alinea.phenomenal.misc.write_images(
                 data_directory + 'skeletonize_2d/', files, skeleton_images)
@@ -69,5 +70,4 @@ def example_skeletonize(images):
 if __name__ == "__main__":
     run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
     # run_example('../../local/B73/')
-
     # run_example('../../local/Figure_3D/')

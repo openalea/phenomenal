@@ -20,67 +20,51 @@
 #       External Import
 import glob
 import os
+import mayavi.mlab
+
 from mayavi import mlab
+
 
 
 #       ========================================================================
 #       Local Import
 
-from alinea.phenomenal.misc import read_xyz
-from alinea.phenomenal.skeletonize_3d import skeletonize_3d_segment
 from alinea.phenomenal.segmentation_3d import segment_organs_from_skeleton_3d
 from alinea.phenomenal.reconstruction_3d_algorithm import Cube
-from alinea.phenomenal.result_viewer import (plot_vectors,
-                                             plot_cubes,
+from alinea.phenomenal.result_viewer import (plot_points_3d,
                                              plot_segments)
+
+import alinea.phenomenal.misc
+import alinea.phenomenal.skeletonize_3d
+import alinea.phenomenal.result_viewer
 
 #       ========================================================================
 #       Code
 
 
-def give_cube(organ, radius):
-    cubes = list()
+def extract_points_3d(organ):
+    points_3d = list()
 
     for segment in organ.segments:
         for component in segment.component:
             for point in component:
-                cube = Cube(point[0],
-                            point[1],
-                            point[2],
-                            radius)
+                points_3d.append(point)
 
-                cubes.append(cube)
-
-    return cubes
-
-
-def load_xyz_file(data_directory):
-    images_names = glob.glob(data_directory + '*.xyz')
-
-    pot_ids = dict()
-    for i in range(len(images_names)):
-
-        pot_id = images_names[i].split('\\')[-1].split('_')[0]
-        if pot_id not in pot_ids:
-            pot_ids[pot_id] = dict()
-
-        date = images_names[i].split(' ')[0].split('_')[-1]
-
-        pot_ids[pot_id][date] = images_names[i]
-
-    return pot_ids
+    return points_3d
 
 
 def run_example(data_directory):
-    pot_ids = load_xyz_file(data_directory + 'reconstruction_3d_jerome/')
+
+    pot_ids = alinea.phenomenal.misc.load_xyz_files(
+        data_directory + 'reconstruction_3d_jerome/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
 
             xyz_file = pot_ids[pot_id][date]
-            cubes = read_xyz(xyz_file)
+            points_3d, radius = alinea.phenomenal.misc.read_xyz(xyz_file)
 
-            example_segmentation_3d(cubes)
+            example_segmentation_3d(points_3d, radius)
 
             # write_segmentation_3d(
             #     data_directory + 'segmentation_3d/',
@@ -98,7 +82,7 @@ def write_segmentation_3d(data_directory, file_name, stem, leaves, radius):
     f = open(directory + file_name + '.xyz', 'w')
 
     f.write("%f\n" % (radius))
-    stem_cubes = give_cube(stem, radius)
+    stem_cubes = extract_points_3d(stem, radius)
 
     id = 0
     for cube in stem_cubes:
@@ -110,7 +94,7 @@ def write_segmentation_3d(data_directory, file_name, stem, leaves, radius):
     id += 1
 
     for leaf in leaves:
-        leaf_cubes = give_cube(leaf, radius)
+        leaf_cubes = extract_points_3d(leaf, radius)
         for cube in leaf_cubes:
             x = cube.position[0, 0]
             y = cube.position[0, 1]
@@ -122,35 +106,23 @@ def write_segmentation_3d(data_directory, file_name, stem, leaves, radius):
     f.close()
 
 
-def example_segmentation_3d(cubes):
+def example_segmentation_3d(points_3d, radius):
+
+    alinea.phenomenal.result_viewer.show_points_3d(
+        points_3d, color=(0.1, 0.7, 0.1), scale_factor=10)
 
     #   ========================================================================
 
-    # cubes = change_orientation(cubes)
+    skeleton_3d = alinea.phenomenal.skeletonize_3d. \
+        skeletonize_3d_segment(points_3d, 10, 50)
 
     #   ========================================================================
 
-    mlab.figure("3D Reconstruction")
-    plot_cubes(cubes, color=(0.1, 0.7, 0.1), scale_factor=10)
-    mlab.show()
-    mlab.clf()
-    mlab.close()
-
-    #   ========================================================================
-
-    # skeletonize.skeletonize_3d_transform_distance(opencv_cubes)
-
-    # from alinea.phenomenal.skeletonize_3d import test_skeletonize_3d
-    # test_skeletonize_3d(cubes, 10, 20)
-
-    skeleton_3d = skeletonize_3d_segment(cubes, 10, 50)
-
-    #   ========================================================================
-
-    mlab.figure("Skeleton")
-    plot_vectors(skeleton_3d)
-    plot_cubes(cubes, color=(0.1, 0.7, 0.1), scale_factor=3)
-    mlab.show()
+    mayavi.mlab.figure("Skeleton")
+    alinea.phenomenal.result_viewer.plot_vectors(skeleton_3d)
+    alinea.phenomenal.result_viewer.plot_points_3d(
+        points_3d, color=(0.1, 0.7, 0.1), scale_factor=3)
+    mayavi.mlab.show()
 
     #   ========================================================================
 
@@ -162,23 +134,22 @@ def example_segmentation_3d(cubes):
     for leaf in leaves:
         plot_segments(leaf.segments)
     plot_segments(stem.segments)
-    plot_cubes(cubes, color=(0.1, 0.7, 0.1), scale_factor=3)
+    plot_points_3d(points_3d, color=(0.1, 0.7, 0.1), scale_factor=3)
     mlab.show()
 
     #   ========================================================================
 
     mlab.figure("Propagation")
-
-    stem_cubes = give_cube(stem, cubes[0].radius)
+    stem_points_3d = extract_points_3d(stem)
     color = plot_segments(stem.segments)
-    plot_cubes(stem_cubes, color=color, scale_factor=3)
+    plot_points_3d(stem_points_3d, color=color, scale_factor=3)
 
     for leaf in leaves:
-        leaf_cubes = give_cube(leaf, cubes[0].radius)
+        leaf_points_3d = extract_points_3d(leaf)
         color = plot_segments(leaf.segments)
-        plot_cubes(leaf_cubes, color=color, scale_factor=3)
+        plot_points_3d(leaf_points_3d, color=color, scale_factor=3)
 
-    # tools_test.plot_cubes(cubes, color=(0.1, 0.7, 0.1), scale_factor=3)
+    # tools_test.plot_points_3d(cubes, color=(0.1, 0.7, 0.1), scale_factor=3)
     mlab.show()
 
 
@@ -188,5 +159,4 @@ def example_segmentation_3d(cubes):
 if __name__ == "__main__":
     run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
     # run_example('../../local/B73/')
-
     # run_example('../../local/Figure_3D/')

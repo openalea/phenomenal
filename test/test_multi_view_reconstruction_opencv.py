@@ -39,7 +39,7 @@ def test_multi_view_reconstruction_opencv_1():
     points = alinea.phenomenal.data_creation.build_object_1(
         size, radius, point_3d)
 
-    # alinea.phenomenal.result_viewer.show_cubes(points)
+    # alinea.phenomenal.result_viewer.show_points_3d(points)
 
     calibration = alinea.phenomenal.calibration_opencv.\
         Calibration.read_calibration('/tests/test_calibration_opencv')
@@ -55,7 +55,7 @@ def test_multi_view_reconstruction_opencv_1():
     mat = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
 
-    # alinea.phenomenal.result_viewer.show_cubes(points)
+    # alinea.phenomenal.result_viewer.show_points_3d(points)
 
     assert mat.size == 2184
     print numpy.shape(mat)

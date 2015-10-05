@@ -40,7 +40,7 @@ def test_multi_view_reconstruction_manual_1():
     points = alinea.phenomenal.data_creation.build_object_1(
         size, radius, point_3d)
 
-    # alinea.phenomenal.result_viewer.show_cubes(points)
+    # alinea.phenomenal.result_viewer.show_points_3d(points)
 
     calibration = alinea.phenomenal.calibration_manual.Calibration()
 
@@ -55,7 +55,7 @@ def test_multi_view_reconstruction_manual_1():
     mat = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
 
-    # alinea.phenomenal.result_viewer.show_cubes(points)
+    # alinea.phenomenal.result_viewer.show_points_3d(points)
 
     assert mat.size == 1331
     print numpy.shape(mat)

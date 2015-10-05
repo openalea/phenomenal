@@ -76,12 +76,15 @@ def example_boostrap(images):
         selected_images = select_random_image(5, images)
 
         points_3d = alinea.phenomenal.multi_view_reconstruction.\
-            reconstruction_3d(selected_images, calibration, precision=4)
+            reconstruction_3d(selected_images,
+                              calibration,
+                              precision=4,
+                              verbose=True)
 
         results_reconstruction_3d.append(points_3d)
 
         print selected_images.keys()
-        alinea.phenomenal.result_viewer.show_cubes(points_3d, scale_factor=2)
+        alinea.phenomenal.result_viewer.show_points_3d(points_3d, scale_factor=2)
 
 
 #       ========================================================================

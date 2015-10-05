@@ -25,7 +25,6 @@ import cv2
 #       Local Import
 from alinea.phenomenal.calibration_opencv import Calibration
 from alinea.phenomenal.chessboard import Chessboard
-
 from alinea.phenomenal.calibration_tools import (compute_rotation_vectors,
                                                  compute_translation_vectors,
                                                  plot_vectors)

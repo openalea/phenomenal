@@ -51,14 +51,14 @@ def run_example(data_directory):
             images_binarize_elcom = example_binarization_elcom(images)
             images_binarize_hsv = example_binarization_hsv(images)
 
-            print pot_id, date
-            for angle in images:
-                alinea.phenomenal.result_viewer.show_images(
-                    [images[angle],
-                     images_binarize_adaptive_threshold[angle],
-                     images_binarize_mean_shift[angle],
-                     images_binarize_elcom[angle],
-                     images_binarize_hsv[angle]], str(angle))
+            # print pot_id, date
+            # for angle in images:
+            #     alinea.phenomenal.result_viewer.show_images(
+            #         [images[angle],
+            #          images_binarize_adaptive_threshold[angle],
+            #          images_binarize_mean_shift[angle],
+            #          images_binarize_elcom[angle],
+            #          images_binarize_hsv[angle]], str(angle))
 
             alinea.phenomenal.misc.write_images(
                 data_directory + '/binarization/',

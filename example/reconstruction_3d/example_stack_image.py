@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       example_reconstruction_3d_manual.py : 
+#       example_stack_image.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -23,58 +23,57 @@ import cv2
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.misc
 import alinea.phenomenal.result_viewer
+import alinea.phenomenal.calibration_jerome
 import alinea.phenomenal.multi_view_reconstruction
-import alinea.phenomenal.calibration_manual
-
+import alinea.phenomenal.data_transformation
+import alinea.phenomenal.data_creation
+import alinea.phenomenal.misc
+import alinea.phenomenal.data_transformation
 
 #       ========================================================================
 #       Code
 
 
-def run_example(data_directory):
+def run_example(data_directory, calibration_name):
 
     pot_ids = alinea.phenomenal.misc.load_files(
         data_directory + 'repair_processing/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
+
             files = pot_ids[pot_id][date]
 
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            calibration = alinea.phenomenal.calibration_manual.Calibration()
-
             images_selected = dict()
             for angle in images:
-                if -1 <= angle <= 360:
+                if 0 <= angle <= 360:
                     images_selected[angle] = images[angle]
 
-            points_3d = alinea.phenomenal.multi_view_reconstruction. \
+            calibration = alinea.phenomenal.calibration_jerome.\
+                Calibration.read_calibration(
+                    calibration_name, file_is_in_share_directory=False)
+
+            points_3d = alinea.phenomenal.multi_view_reconstruction.\
                 reconstruction_3d(images_selected,
                                   calibration,
                                   precision=2,
                                   verbose=True)
 
-            print pot_id, date
-            alinea.phenomenal.result_viewer.show_points_3d(
-                points_3d, scale_factor=2)
+            matrix = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+                points_3d, 2)
 
-            file_name = files[0].split('\\')[-1].split('_vis_')[0]
-
-            alinea.phenomenal.misc.write_points_3d(
-                points_3d,
-                4,
-                data_directory + 'reconstruction_3d_manual/',
-                file_name)
+            alinea.phenomenal.data_transformation.save_matrix_like_stack_image(
+                matrix,
+                data_directory + 'stack_image_' + pot_id + '_' + date + '/')
 
 
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
-    # run_example('../../local/B73/')
-    # run_example('../../local/Figure_3D/')
+    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
+                '../calibration/fitted_result')

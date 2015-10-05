@@ -22,7 +22,6 @@ import collections
 import math
 import numpy
 
-Point3D = collections.namedtuple('Point3D', ['x', 'y', 'z'])
 
 #       ========================================================================
 #       PROJECTION
@@ -56,7 +55,26 @@ def split_points_3d(points_3d, radius):
     l = collections.deque()
     while True:
         try:
-            l += corners_point_3d(points_3d.popleft(), r)
+
+            point_3d = points_3d.popleft()
+
+            x_minus = point_3d[0] - r
+            x_plus = point_3d[0] + r
+
+            y_minus = point_3d[1] - r
+            y_plus = point_3d[1] + r
+
+            z_minus = point_3d[2] - r
+            z_plus = point_3d[2] + r
+
+            l.append((x_minus, y_minus, z_minus))
+            l.append((x_plus, y_minus, z_minus))
+            l.append((x_minus, y_plus, z_minus))
+            l.append((x_minus, y_minus, z_plus))
+            l.append((x_plus, y_plus, z_minus))
+            l.append((x_plus, y_minus, z_plus))
+            l.append((x_minus, y_plus, z_plus))
+            l.append((x_plus, y_plus, z_plus))
 
         except IndexError:
             break
@@ -75,16 +93,16 @@ def corners_point_3d(point_3d, radius):
     z_minus = point_3d[2] - radius
     z_plus = point_3d[2] + radius
 
-    l = collections.deque()
+    l = list()
 
-    l.append(Point3D(x_minus, y_minus, z_minus))
-    l.append(Point3D(x_plus, y_minus, z_minus))
-    l.append(Point3D(x_minus, y_plus, z_minus))
-    l.append(Point3D(x_minus, y_minus, z_plus))
-    l.append(Point3D(x_plus, y_plus, z_minus))
-    l.append(Point3D(x_plus, y_minus, z_plus))
-    l.append(Point3D(x_minus, y_plus, z_plus))
-    l.append(Point3D(x_plus, y_plus, z_plus))
+    l.append((x_minus, y_minus, z_minus))
+    l.append((x_plus, y_minus, z_minus))
+    l.append((x_minus, y_plus, z_minus))
+    l.append((x_minus, y_minus, z_plus))
+    l.append((x_plus, y_plus, z_minus))
+    l.append((x_plus, y_minus, z_plus))
+    l.append((x_minus, y_plus, z_plus))
+    l.append((x_plus, y_plus, z_plus))
 
     return l
 
@@ -119,11 +137,14 @@ def point_3d_is_in_image(image,
     """
 
     x, y = calibration.project_point(point_3d, angle)
-    try:
-        if image[y, x] > 0:
-            return True
-    except IndexError:
-        pass
+
+    # y_min = min(max(math.floor(y_min), 0), height_image - 1)
+    # y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+
+    if 0 <= x <= length_image - 1:
+        if 0 <= y <= height_image - 1:
+            if image[y, x] > 0:
+                return True
 
     # =================================================================
 
@@ -137,9 +158,12 @@ def point_3d_is_in_image(image,
     y_min = min(max(math.floor(y_min), 0), height_image - 1)
     y_max = min(max(math.ceil(y_max), 0), height_image - 1)
 
-    if (image[y_min, x_min] > 0 or image[y_max, x_min] > 0 or
-            image[y_min, x_max] > 0 or image[y_max, x_max] > 0):
+    if (image[y_min, x_min] > 0 or
+        image[y_max, x_min] > 0 or
+        image[y_min, x_max] > 0 or
+            image[y_max, x_max] > 0):
         return True
+
     # ==================================================================
 
     if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
@@ -153,7 +177,6 @@ def octree_builder_optimize(images, points, radius, calibration):
     len_image = len(images)
 
     height_image, length_image = numpy.shape(images.itervalues().next())
-    # height_image, length_image = numpy.shape(images[0])
 
     while True:
         try:
@@ -237,8 +260,7 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
     if len(images) == 0:
         return None
 
-    # origin_point = (0.0, 0.0, 0.0)
-    origin_point = Point3D(-472, -472, 200)
+    origin_point = (0.0, 0.0, 0.0)
     origin_radius = 2048
 
     points_3d = collections.deque()
@@ -254,8 +276,10 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
     for i in range(nb_iteration):
 
         points_3d = split_points_3d(points_3d, radius)
-
         radius /= 2.0
+
+        if verbose is True:
+            print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(points_3d)
 
         for angle in images:
             points_3d = octree_builder(images[angle],
@@ -264,10 +288,12 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
                                        calibration,
                                        angle)
 
+            if verbose is True:
+                print 'Angle %d : %d' % (angle, len(points_3d))
+
         # points = octree_builder(images, points_3d, radius, calibration)
 
-        if verbose is True:
-            print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(points_3d)
+
 
     return points_3d
 
