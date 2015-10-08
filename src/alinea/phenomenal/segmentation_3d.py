@@ -19,10 +19,14 @@
 #       ========================================================================
 #       External Import
 import math
-import numpy as np
+
+import numpy
+
 
 #       ========================================================================
 #       Class
+
+
 class Segment(object):
     def __init__(self, points):
         self.points = list()
@@ -45,7 +49,6 @@ class Segment(object):
                 number_of_closest_point += 1
                 save_point_equal = vector[0]
                 save_point = vector[1]
-                save_vector = vector
 
             if point == vector[1]:
                 number_of_closest_point += 1
@@ -103,7 +106,7 @@ class Segment(object):
         return False
 
     def get_max_z_point(self):
-        max_z_point = [0, 0, - np.float('inf')]
+        max_z_point = [0, 0, - numpy.float('inf')]
 
         for point in self.points:
             if point[2] > max_z_point[2]:
@@ -112,7 +115,7 @@ class Segment(object):
         return max_z_point
 
     def get_min_z_point(self):
-        min_z_point = [0, 0, np.float('inf')]
+        min_z_point = [0, 0, numpy.float('inf')]
 
         for point in self.points:
             if point[2] < min_z_point[2]:
@@ -126,18 +129,18 @@ class Segment(object):
         b = self.points[0]
         c = [b[0], b[1], a[2]]
 
-        AB = [a[0] - b[0],
+        ab = [a[0] - b[0],
               a[1] - b[1],
               a[2] - b[2]]
 
-        BC = [c[0] - b[0],
+        bc = [c[0] - b[0],
               c[1] - b[1],
               c[2] - b[2]]
 
-        angle_orientation = math.atan2(np.linalg.norm(np.cross(AB, BC)),
-                                       np.dot(AB, BC))
+        angle_orientation = math.atan2(numpy.linalg.norm(numpy.cross(ab, bc)),
+                                       numpy.dot(ab, bc))
 
-        angle_orientation = angle_orientation * 180.0 / np.pi
+        angle_orientation = angle_orientation * 180.0 / numpy.pi
 
         return angle_orientation
 
@@ -176,18 +179,17 @@ class Organ(object):
         for organ_segment in self.segments:
             for component in organ_segment.component:
                 for point_component in component:
-                    distance = np.linalg.norm(point - point_component)
+                    distance = numpy.linalg.norm(point - point_component)
 
-                if distance <= radius:
-                    print 'YES '
-                    return True
+                    if distance <= radius:
+                        return True
 
         return False
 
     def is_position_close(self, point, radius=5):
         for organ_segment in self.segments:
             for organ_point in organ_segment.points:
-                distance = np.linalg.norm(point - organ_point)
+                distance = numpy.linalg.norm(point - organ_point)
 
                 if distance <= radius:
                     return True
@@ -195,8 +197,8 @@ class Organ(object):
         return False
 
     def get_height(self):
-        z_min = np.float('inf')
-        z_max = - np.float('inf')
+        z_min = numpy.float('inf')
+        z_max = - numpy.float('inf')
 
         for segment in self.segments:
             z_min = min(segment.get_min_z_point()[2], z_min)
@@ -227,22 +229,22 @@ class Leaf(Organ):
                 return True
         return False
 
-#       ========================================================================
+
+# ========================================================================
 #       Code
 
 
 def compute_orientation(vector_1, vector_2):
     angle = math.atan2(
-        np.linalg.norm(np.cross(vector_1, vector_2)),
-        np.dot(vector_1, vector_2))
+        numpy.linalg.norm(numpy.cross(vector_1, vector_2)),
+        numpy.dot(vector_1, vector_2))
 
-    angle = angle * 180.0 / np.pi
+    angle = angle * 180.0 / numpy.pi
 
     return angle
 
 
 def segment_3d(vectors):
-
     segments = list()
 
     while vectors:
@@ -258,7 +260,6 @@ def segment_3d(vectors):
 
 
 def build_stem(segments):
-
     print "Number of segments : ", len(segments)
 
     # for segment in segments:
@@ -269,7 +270,6 @@ def build_stem(segments):
 
     list_list = list()
     for segment_1 in segments[:]:
-
 
         list_candidate = list()
         list_candidate.append(segment_1)
@@ -285,12 +285,10 @@ def build_stem(segments):
 
         list_list.append(list_candidate)
 
-
     stems = list()
     for list_candidate in list_list:
 
         list_of_possible_segment = list_candidate
-
 
         while list_of_possible_segment:
 
@@ -325,7 +323,6 @@ def build_stem(segments):
 
 
 def build_leaf(segments, stem):
-
     leaves = list()
 
     def get_first_organs():
@@ -366,7 +363,6 @@ def build_leaf(segments, stem):
 
 
 def segment_organs_from_skeleton_3d(skeleton_3d):
-
     segments = segment_3d(skeleton_3d)
 
     stem, segments = build_stem(segments)
@@ -374,6 +370,7 @@ def segment_organs_from_skeleton_3d(skeleton_3d):
     leaves, segments = build_leaf(segments, stem)
 
     return stem, leaves, segments
+
 
 #       ========================================================================
 #       LOCAL TEST

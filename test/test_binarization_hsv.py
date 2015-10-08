@@ -31,128 +31,65 @@ import alinea.phenomenal.result_viewer
 #       Code
 
 
-def test_wrong_parameters_1():
+def test_wrong_parameters():
+
     factor_side_binarization = \
         alinea.phenomenal.configuration.binarization_factor(
-            'configuration_side_image_michael.cfg')
+            'factor_image_basic.cfg')
 
     result = alinea.phenomenal.binarization.binarization(
         None,
         factor_side_binarization,
-        methods='hsv',
-        is_top_image=False,
-        mean_image=None)
+        methods='hsv')
     assert result is None
 
-    image = numpy.zeros((2056, 2056))
+    images = dict()
+    images[0] = numpy.zeros((2056, 2056))
     result = alinea.phenomenal.binarization.binarization(
-        image,
+        images,
         None,
-        methods='hsv',
-        is_top_image=False,
-        mean_image=None)
+        methods='hsv')
     assert result is None
 
-    image = numpy.zeros((2056, 2056))
     result = alinea.phenomenal.binarization.binarization(
-        image,
+        dict(),
         factor_side_binarization,
-        methods='hsv',
-        is_top_image=False,
-        mean_image=None)
-    assert result is None
+        methods='hsv')
+    assert len(result) == 0
 
-    image = numpy.zeros((2454, 2056))
-    mean_image = numpy.ones((2454, 2056))
+    images = dict()
+    images[0] = numpy.zeros((2056, 2056))
     result = alinea.phenomenal.binarization.binarization(
-        image,
+        images,
         factor_side_binarization,
-        methods='hsv',
-        is_top_image=False,
-        mean_image=mean_image)
+        methods='hsv')
     assert result is None
 
 
-def test_wrong_parameters_2():
 
-    factor_top_binarization = \
-        alinea.phenomenal.configuration.binarization_factor(
-            'configuration_top_image.cfg')
-
-    result = alinea.phenomenal.binarization.binarization(
-        None,
-        factor_top_binarization,
-        methods='hsv',
-        is_top_image=True,
-        mean_image=None)
-    assert result is None
-
-    image = numpy.zeros((2056, 2056))
-    result = alinea.phenomenal.binarization.binarization(
-        image,
-        None,
-        methods='hsv',
-        is_top_image=True,
-        mean_image=None)
-    assert result is None
-
-    image = numpy.zeros((2056, 2056))
-    result = alinea.phenomenal.binarization.binarization(
-        image,
-        factor_top_binarization,
-        methods='hsv',
-        is_top_image=True,
-        mean_image=None)
-    assert result is None
-
-    image = numpy.zeros((2454, 2056))
-    result = alinea.phenomenal.binarization.binarization(
-        image,
-        factor_top_binarization,
-        methods='hsv',
-        is_top_image=True,
-        mean_image=None)
-    assert result is None
-
-
-def test_binarization_hsv_1():
+def test_binarization_hsv():
     factor_side_binarization = \
         alinea.phenomenal.configuration.binarization_factor(
-            'configuration_side_image_michael.cfg')
+            'factor_image_basic.cfg')
 
-    image = numpy.zeros((2454, 2056, 3), dtype=numpy.uint8)
+    images = dict()
+    images[-1] = numpy.ones((2454, 2056, 3), dtype=numpy.uint8)
+    images[0] = numpy.ones((2454, 2056, 3), dtype=numpy.uint8)
     result = alinea.phenomenal.binarization.binarization(
-        image,
+        images,
         factor_side_binarization,
-        methods='hsv',
-        is_top_image=False,
-        mean_image=None)
+        methods='hsv')
 
-    assert (result == 0).all()
-    assert len(numpy.shape(result)) == 2
+    assert (result[0] == 0).all()
+    assert len(numpy.shape(result[0])) == 2
 
+    assert (result[-1] == 0).all()
+    assert len(numpy.shape(result[-1])) == 2
 
-def test_binarization_hsv_2():
-    factor_top_binarization = \
-        alinea.phenomenal.configuration.binarization_factor(
-            'configuration_top_image.cfg')
-
-    image = numpy.zeros((2454, 2056, 3), dtype=numpy.uint8)
-    result = alinea.phenomenal.binarization.binarization(
-        image,
-        factor_top_binarization,
-        methods='hsv',
-        is_top_image=True,
-        mean_image=None)
-
-    assert (result == 0).all()
-    assert len(numpy.shape(result)) == 2
 
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    test_wrong_parameters_1()
-    test_wrong_parameters_2()
-    test_binarization_hsv_1()
-    test_binarization_hsv_2()
+    test_wrong_parameters()
+    test_binarization_hsv()

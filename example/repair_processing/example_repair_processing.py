@@ -44,10 +44,10 @@ def run_example(data_directory):
 
             repair_images = example_repair_processing(images)
 
-            print pot_id, date
-            for angle in repair_images:
-                alinea.phenomenal.result_viewer.show_images([images[angle], repair_images[angle]],
-                            str(angle))
+            # print pot_id, date
+            # for angle in repair_images:
+            #     alinea.phenomenal.result_viewer.show_images(
+            #         [images[angle], repair_images[angle]], str(angle))
 
             alinea.phenomenal.misc.write_images(
                 data_directory + 'repair_processing/',

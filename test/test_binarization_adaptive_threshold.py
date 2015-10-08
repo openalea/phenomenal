@@ -33,59 +33,53 @@ import alinea.phenomenal.result_viewer
 
 def test_wrong_parameters():
 
-    factor_side_binarization = alinea.phenomenal.configuration.\
-        binarization_factor('configuration_side_image_michael.cfg')
+    factor_side_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'factor_image_basic.cfg')
 
     result = alinea.phenomenal.binarization.binarization(
         None,
         factor_side_binarization,
-        methods='adaptive_threshold',
-        is_top_image=False,
-        mean_image=None)
+        methods='adaptive_threshold')
     assert result is None
 
-    image = numpy.zeros((2056, 2056))
+    images = dict()
+    images[0] = numpy.zeros((2056, 2056))
     result = alinea.phenomenal.binarization.binarization(
-        image,
+        images,
         None,
-        methods='adaptive_threshold',
-        is_top_image=False,
-        mean_image=None)
+        methods='adaptive_threshold')
     assert result is None
 
-    image = numpy.zeros((2056, 2056))
     result = alinea.phenomenal.binarization.binarization(
-        image,
+        dict(),
         factor_side_binarization,
-        methods='adaptive_threshold',
-        is_top_image=False,
-        mean_image=None)
-    assert result is None
+        methods='adaptive_threshold')
+    assert len(result) == 0
 
-    image = numpy.zeros((2454, 2056))
+    images = dict()
+    images[0] = numpy.zeros((2056, 2056))
     result = alinea.phenomenal.binarization.binarization(
-        image,
+        images,
         factor_side_binarization,
-        methods='adaptive_threshold',
-        is_top_image=False,
-        mean_image=None)
+        methods='adaptive_threshold')
     assert result is None
 
 
 def test_binarization_adaptive_threshold():
-    factor_side_binarization = alinea.phenomenal.configuration.\
-        binarization_factor('configuration_side_image_michael.cfg')
+    factor_side_binarization = \
+        alinea.phenomenal.configuration.binarization_factor(
+            'factor_image_basic.cfg')
 
-    image = numpy.ones((2454, 2056, 3), dtype=numpy.uint8)
+    images = dict()
+    images[0] = numpy.ones((2454, 2056, 3), dtype=numpy.uint8)
     result = alinea.phenomenal.binarization.binarization(
-        image,
+        images,
         factor_side_binarization,
-        methods='adaptive_threshold',
-        is_top_image=False,
-        mean_image=None)
+        methods='adaptive_threshold')
 
-    assert (result == 0).all()
-    assert len(numpy.shape(result)) == 2
+    assert (result[0] == 0).all()
+    assert len(numpy.shape(result[0])) == 2
 
 
 #       ========================================================================

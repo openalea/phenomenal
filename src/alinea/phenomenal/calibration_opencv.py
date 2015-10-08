@@ -121,10 +121,6 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
 
             if corners is not None:
                 image_points.append(corners)
-
-                # if verbose is True:
-                #     chessboard.plot_corners(corners, images[angle], str(angle))
-
             else:
                 self.rotation_vectors[angle] = None
                 self.translation_vectors[angle] = None

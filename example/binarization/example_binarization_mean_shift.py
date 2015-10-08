@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       example_binarization.py : 
+#       example_binarization_mean_shift.py : 
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -27,7 +27,6 @@ import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
 import alinea.phenomenal.result_viewer
 
-
 #       ========================================================================
 #       Code
 
@@ -43,23 +42,21 @@ def run_example(data_directory):
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            factor_binarization = alinea.phenomenal.configuration.\
+            factor_binarization = alinea.phenomenal.configuration. \
                 binarization_factor('factor_image_basic.cfg')
 
-            images_binarize_adaptive_threshold = alinea.phenomenal.\
-                binarization.binarization(
-                    images, factor_binarization, methods='adaptive_threshold')
+            images_binarize_hsv = alinea.phenomenal.binarization.binarization(
+                images, factor_binarization, methods='mean_shift')
 
             # print pot_id, date
             # for angle in images:
             #     alinea.phenomenal.result_viewer.show_images(
-            #         [images[angle], images_binarize_adaptive_threshold[angle]],
-            #         str(angle))
+            #         [images[angle], images_binarize_hsv[angle]], str(angle))
 
             alinea.phenomenal.misc.write_images(
-                data_directory + '/binarization_adaptive_threshold/',
+                data_directory + '/binarization_mean_shift/',
                 files,
-                images_binarize_adaptive_threshold)
+                images_binarize_hsv)
 
 
 #       ========================================================================

@@ -21,23 +21,18 @@
 #       ========================================================================
 
 
-def dict_config_value(dict_config, key_1, key_2):
-        try:
-            return dict_config[key_1][key_2]
-        except KeyError:
-            return None
+def dict_factor_value(dict_factor, key_1, key_2):
+    try:
+        return dict_factor[key_1][key_2]
+    except KeyError:
+        return None
 
 
 class RegionOfInterest:
     def __init__(self, dict_config, name):
-        self.hsv_min = dict_config_value(dict_config, name, 'hsv_min')
-        self.hsv_max = dict_config_value(dict_config, name, 'hsv_max')
-        self.mask = dict_config_value(dict_config, name, 'mask')
-
-    def print_value(self):
-        print 'hsv_min ', self.hsv_min
-        print 'hsv_max ', self.hsv_max
-        print 'mask is None :', self.mask is None
+        self.hsv_min = dict_factor_value(dict_config, name, 'hsv_min')
+        self.hsv_max = dict_factor_value(dict_config, name, 'hsv_max')
+        self.mask = dict_factor_value(dict_config, name, 'mask')
 
 
 class MeanShiftBinarizationFactor(object):
@@ -47,25 +42,20 @@ class MeanShiftBinarizationFactor(object):
             self._dark_background = False
         else:
 
-            value = dict_config_value(dict_config, 'binarization', 'threshold')
+            value = dict_factor_value(dict_config, 'binarization', 'threshold')
 
             if value is None:
                 self._threshold = 0.3
             else:
                 self._threshold = float(value)
 
-            value = dict_config_value(dict_config,
-                                      'binarization',
-                                      'dark_background')
+            value = dict_factor_value(
+                dict_config, 'binarization', 'dark_background')
 
             if value is None:
                 self._dark_background = False
             else:
                 self._dark_background = bool(value)
-
-    def print_value(self):
-        print 'threshold ', self._threshold
-        print 'dark_background ', self._dark_background
 
     #   =======================================================================
     #   threshold
@@ -92,44 +82,53 @@ class MeanShiftBinarizationFactor(object):
 
 class BinarizationFactor(object):
     def __init__(self):
-        #   ===================================================================
-        #   Default value
         self.mean_shift_binarization_factor = None
-        self.roi_main = None
-        self.roi_stem = None
-        self.roi_pot = None
-        self.roi_panel = None
-        self.roi_orange_band = None
-        self.cubicle_domain = None
-        self.background = None
 
-    def fill_config(self, dict_config):
+        #   ====================================================================
+        #   SIDE
+
+        self.side_roi_main = None
+        self.side_roi_stem = None
+        self.side_roi_pot = None
+        self.side_roi_panel = None
+        self.side_roi_orange_band = None
+        self.side_cubicle_domain = None
+        self.side_cubicle_background = None
+
+        #   ====================================================================
+        #   TOP
+
+        self.top_cubicle_domain = None
+        self.top_cubicle_background = None
+        self.top_roi_main = None
+
+    def fill_config(self, dict_factor):
         self.mean_shift_binarization_factor = \
-            MeanShiftBinarizationFactor(dict_config)
+            MeanShiftBinarizationFactor(dict_factor)
 
-        self.roi_main = RegionOfInterest(dict_config, 'roi_main')
-        self.roi_stem = RegionOfInterest(dict_config, 'roi_stem')
-        self.roi_pot = RegionOfInterest(dict_config, 'roi_pot')
-        self.roi_orange_band = RegionOfInterest(dict_config, 'roi_orange_band')
-        self.roi_panel = RegionOfInterest(dict_config, 'roi_panel')
+        #   ====================================================================
+        #   SIDE
 
-        self.cubicle_domain = dict_config_value(dict_config,
-                                                'General',
-                                                'cubicle_domain')
+        self.side_roi_main = RegionOfInterest(dict_factor, 'side_roi_main')
+        self.side_roi_stem = RegionOfInterest(dict_factor, 'side_roi_stem')
+        self.side_roi_pot = RegionOfInterest(dict_factor, 'side_roi_pot')
+        self.side_roi_panel = RegionOfInterest(dict_factor, 'side_roi_panel')
+        self.side_roi_orange_band = RegionOfInterest(
+            dict_factor, 'side_roi_orange_band')
 
-        self.background = dict_config_value(dict_config,
-                                            'General',
-                                            'background')
+        self.side_cubicle_domain = dict_factor_value(
+            dict_factor, 'side_cubicle', 'domain')
 
-    def print_value(self):
+        self.side_cubicle_background = dict_factor_value(
+            dict_factor, 'side_cubicle', 'background')
 
-        self.mean_shift_binarization_factor.print_value()
+        #   ====================================================================
+        #   TOP
 
-        self.roi_main.print_value()
-        self.roi_stem.print_value()
-        self.roi_pot.print_value()
-        self.roi_panel.print_value()
-        self.roi_orange_band.print_value()
+        self.top_cubicle_domain = dict_factor_value(
+            dict_factor, 'top_cubicle', 'domain')
 
-        print 'Cubicle domain : ', self.cubicle_domain
-        print 'Background is None : ', self.background is None
+        self.top_cubicle_background = dict_factor_value(
+            dict_factor, 'top_cubicle', 'background')
+
+        self.top_roi_main = RegionOfInterest(dict_factor, 'top_roi_main')

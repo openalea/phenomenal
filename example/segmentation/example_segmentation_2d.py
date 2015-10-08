@@ -67,29 +67,31 @@ def run_example(data_directory):
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            segmentation = example_segmentation(images)
-
             print pot_id, date
-            for angle in segmentation:
-                stem, leaves, segments = segmentation[angle]
+            for angle in images:
+                if angle != -1:
+                    stem, leaves, segments = alinea.phenomenal.segmentation_2d.\
+                        segment_organs_skeleton_image(images[angle])
 
-                image = numpy.zeros(images[angle].shape)
+                    image = numpy.zeros(images[angle].shape)
 
-                img = write_segmentation_on_image(
-                    stem, leaves, segments, image)
+                    img = write_segmentation_on_image(stem,
+                                                      leaves,
+                                                      segments,
+                                                      image)
 
-                alinea.phenomenal.result_viewer.show_images(
-                    [images[angle], img],
-                    name_windows='Image & Segmentation : %d degree' % angle,
-                    names_axes=['Image', 'Segmentation'],
-                    color_map_axes=[matplotlib.cm.binary,
-                                    compute_my_random_color_map()])
+                    alinea.phenomenal.result_viewer.show_images(
+                        [images[angle], img],
+                        name_windows='Image & Segmentation : %d degree' % angle,
+                        names_axes=['Image', 'Segmentation'],
+                        color_map_axes=[matplotlib.cm.binary,
+                                        compute_my_random_color_map()])
 
-                histogram = alinea.phenomenal.segmentation_2d.\
-                    compute_inclination(stem.segments)
+                    histogram = alinea.phenomenal.segmentation_2d.\
+                        compute_inclination(stem.segments)
 
-                pylab.hist(histogram, 180, histtype='bar', rwidth=0.8)
-                pylab.show()
+                    pylab.hist(histogram, 180, histtype='bar', rwidth=0.8)
+                    pylab.show()
 
 
 def compute_my_random_color_map():
@@ -118,17 +120,6 @@ def compute_my_random_color_map():
 
     return my_random_color_map
 
-
-def example_segmentation(images):
-    segmentation = dict()
-    for angle in images:
-        if angle != -1:
-            stem, leaves, segments = alinea.phenomenal.segmentation_2d.\
-                segment_organs_skeleton_image(images[angle])
-
-            segmentation[angle] = stem, leaves, segments
-
-    return segmentation
 
 #       ========================================================================
 #       LOCAL TEST

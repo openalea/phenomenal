@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       binarization_algorithm.py : Algorithm of binarization
+#       binarization_algorithm.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -15,8 +15,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 #       ========================================================================
-
-""" Algorithm of binarization """
 
 #       ========================================================================
 #       External Import
@@ -102,7 +100,7 @@ def mixed_binarization(image,
                        hsv_max,
                        threshold=0.3,
                        dark_background=False,
-                       mask_meanshift=None,
+                       mask_mean_shift=None,
                        mask_hsv=None):
     """
     Mixed hsv binarization and mean shif binarization and return the total
@@ -122,13 +120,13 @@ def mixed_binarization(image,
 
     binary_hsv_image = hsv_binarization(image, hsv_min, hsv_max, mask_hsv)
 
-    binary_meanshift_image = mean_shift_binarization(image,
-                                                     mean_image,
-                                                     threshold,
-                                                     dark_background,
-                                                     mask_meanshift)
+    binary_mean_shift_image = mean_shift_binarization(image,
+                                                      mean_image,
+                                                      threshold,
+                                                      dark_background,
+                                                      mask_mean_shift)
 
-    result = cv2.add(binary_hsv_image, binary_meanshift_image * 255)
+    result = cv2.add(binary_hsv_image, binary_mean_shift_image * 255)
 
     return result
 

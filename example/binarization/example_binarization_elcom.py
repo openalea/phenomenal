@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       example_binarization.py : 
+#       example_binarization_elcom.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -27,13 +27,11 @@ import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
 import alinea.phenomenal.result_viewer
 
-
 #       ========================================================================
 #       Code
 
 
 def run_example(data_directory):
-
     pot_ids = alinea.phenomenal.misc.load_files(data_directory)
 
     for pot_id in pot_ids:
@@ -43,23 +41,28 @@ def run_example(data_directory):
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            factor_binarization = alinea.phenomenal.configuration.\
-                binarization_factor('factor_image_basic.cfg')
+            images_elcom = dict()
+            for angle in images:
+                images_elcom[angle] = images[angle][0:2448, 0:2048]
 
-            images_binarize_adaptive_threshold = alinea.phenomenal.\
-                binarization.binarization(
-                    images, factor_binarization, methods='adaptive_threshold')
+            factor_binarization_elcom = alinea.phenomenal.configuration.\
+                binarization_factor('factor_cubicle_6_elcom.cfg')
+
+            images_binarize_elcom = alinea.phenomenal.binarization.binarization(
+                images_elcom, factor_binarization_elcom, methods='elcom')
 
             # print pot_id, date
             # for angle in images:
-            #     alinea.phenomenal.result_viewer.show_images(
-            #         [images[angle], images_binarize_adaptive_threshold[angle]],
-            #         str(angle))
+            #     alinea.phenomenal.result_viewer.show_images([
+            #         images[angle],
+            #         images_binarize_elcom[angle]], str(angle))
 
             alinea.phenomenal.misc.write_images(
-                data_directory + '/binarization_adaptive_threshold/',
+                data_directory + '/binarization_elcom/',
                 files,
-                images_binarize_adaptive_threshold)
+                images_binarize_elcom)
+
+
 
 
 #       ========================================================================
