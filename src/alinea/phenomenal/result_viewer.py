@@ -21,8 +21,9 @@
 
 import random
 import mayavi.mlab
-import matplotlib.pylab
+# import matplotlib.pylab
 import matplotlib.cm
+import pylab
 
 
 #       ========================================================================
@@ -123,42 +124,45 @@ def show_images(images,
                 names_axes=None,
                 color_map_axes=None):
 
-    f = matplotlib.pylab.figure()
-    f.canvas.set_window_title(name_windows)
+    fig = pylab.figure()
+    fig.canvas.set_window_title(name_windows)
 
     number_of_images = len(images)
 
-    i = 0
+    i = 1
     for image in images:
-        ax = f.add_subplot(1, number_of_images, i + 1)
+        ax = fig.add_subplot(1, number_of_images, i)
+
         if names_axes is None:
             ax.set_title('Image %d/%d' % (i, number_of_images))
         else:
             ax.set_title(names_axes[i])
 
         if color_map_axes is None:
-            matplotlib.pylab.imshow(image, cmap=matplotlib.cm.binary)
+            im = pylab.imshow(image)
         else:
-            matplotlib.pylab.imshow(image, cmap=color_map_axes[i])
+            im = pylab.imshow(image, cmap=color_map_axes[i])
 
         i += 1
 
-    matplotlib.pylab.show()
+    pylab.show()
 
-    f.clf()
-    matplotlib.pylab.close()
+    fig.clear()
+    pylab.close(fig)
+
 
 
 def show_image(image,
                name_windows='Image',
-               color_map=matplotlib.cm.binary):
+               color_map=matplotlib.pylab.gray()):
 
-    f = matplotlib.pylab.figure()
-    f.canvas.set_window_title(name_windows)
+    fig = matplotlib.pylab.figure()
+    fig.canvas.set_window_title(name_windows)
     matplotlib.pylab.title(name_windows)
     matplotlib.pylab.imshow(image, cmap=color_map)
+
     matplotlib.pylab.show()
 
-    f.clf()
-    matplotlib.pylab.close()
+    fig.clf()
+    matplotlib.pylab.close(fig)
 

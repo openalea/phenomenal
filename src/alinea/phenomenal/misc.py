@@ -43,7 +43,7 @@ def load_files(data_directory):
             pot_ids[pot_id][date] = dict()
 
         result = images_names[i].split('_sv')
-        print result
+
         if len(result) == 2:
             angle = result[1].split('.png')[0]
         else:
@@ -72,7 +72,6 @@ def write_images(data_directory, files, images):
         os.makedirs(data_directory)
 
     for angle in images:
-
         path = files[angle]
         filename = path.split('\\')[-1]
         path = data_directory + filename
