@@ -22,7 +22,6 @@ import numpy
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.result_viewer
 import alinea.phenomenal.calibration_manual
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
@@ -40,22 +39,16 @@ def test_multi_view_reconstruction_manual_1():
     points = alinea.phenomenal.data_creation.build_object_1(
         size, radius, point_3d)
 
-    # alinea.phenomenal.result_viewer.show_points_3d(points)
-
     calibration = alinea.phenomenal.calibration_manual.Calibration()
 
     images = alinea.phenomenal.data_creation.build_image_from_points_3d(
         points, radius, calibration, step=30)
 
-    # alinea.phenomenal.result_viewer.show_image(images[0])
-
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images, calibration, precision=radius, verbose=True)
 
-    mat = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+    mat, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
-
-    # alinea.phenomenal.result_viewer.show_points_3d(points)
 
     assert mat.size == 1331
     print numpy.shape(mat)
@@ -85,8 +78,6 @@ def test_multi_view_reconstruction_manual_2():
         img[img == -255] = 255
         print numpy.count_nonzero(img)
         assert numpy.count_nonzero(img) < 6000
-
-        # alinea.phenomenal.result_viewer.show_image(img, str(angle))
 
 
 #       ========================================================================

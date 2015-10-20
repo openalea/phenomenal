@@ -25,7 +25,6 @@ import numpy
 import alinea.phenomenal.binarization
 import alinea.phenomenal.configuration
 import alinea.phenomenal.load_data
-import alinea.phenomenal.result_viewer
 
 #       ========================================================================
 #       Code

@@ -22,7 +22,6 @@ import numpy
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.result_viewer
 import alinea.phenomenal.calibration_opencv
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
@@ -39,23 +38,17 @@ def test_multi_view_reconstruction_opencv_1():
     points = alinea.phenomenal.data_creation.build_object_1(
         size, radius, point_3d)
 
-    # alinea.phenomenal.result_viewer.show_points_3d(points)
-
     calibration = alinea.phenomenal.calibration_opencv.\
-        Calibration.read_calibration('/tests/test_calibration_opencv')
+        Calibration.read_calibration('tests/test_calibration_opencv')
 
     images = alinea.phenomenal.data_creation.build_image_from_points_3d(
         points, radius, calibration, step=30)
 
-    # alinea.phenomenal.result_viewer.show_image(images[0])
-
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images, calibration, precision=radius, verbose=True)
 
-    mat = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+    mat, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
-
-    # alinea.phenomenal.result_viewer.show_points_3d(points)
 
     assert mat.size == 2184
     print numpy.shape(mat)
@@ -66,7 +59,7 @@ def test_multi_view_reconstruction_opencv_2():
     images = alinea.phenomenal.data_creation.build_images_1()
 
     calibration = alinea.phenomenal.calibration_opencv.\
-        Calibration.read_calibration('/tests/test_calibration_opencv')
+        Calibration.read_calibration('tests/test_calibration_opencv')
 
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images, calibration, precision=radius, verbose=True)
@@ -90,5 +83,5 @@ def test_multi_view_reconstruction_opencv_2():
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    # test_multi_view_reconstruction_opencv_1()
+    test_multi_view_reconstruction_opencv_1()
     test_multi_view_reconstruction_opencv_2()

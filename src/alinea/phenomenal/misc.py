@@ -20,15 +20,15 @@
 #       External Import
 import glob
 import os
-import cv2
 import re
+import cv2
+
 
 #       ========================================================================
 #       Code
 
 
 def load_files(data_directory):
-
     images_names = glob.glob(data_directory + '*.png')
 
     pot_ids = dict()
@@ -67,7 +67,6 @@ def load_images(files, cv2_flag):
 
 
 def write_images(data_directory, files, images):
-
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)
 
@@ -79,10 +78,8 @@ def write_images(data_directory, files, images):
 
 
 def read_xyz(file):
-
     points_3d = list()
     with open(file, 'r') as f:
-
         radius = float(f.readline())
 
         for line in f:
@@ -117,7 +114,6 @@ def load_xyz_files(data_directory):
 
 
 def write_points_3d(points_3d, radius, data_directory, name_file):
-
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)
 
@@ -131,6 +127,7 @@ def write_points_3d(points_3d, radius, data_directory, name_file):
         f.write("%f %f %f \n" % (x, y, z))
 
     f.close()
+
 
 #       ========================================================================
 #       LOCAL TEST

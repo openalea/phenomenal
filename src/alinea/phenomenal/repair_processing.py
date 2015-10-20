@@ -22,8 +22,7 @@ import cv2
 import numpy as np
 
 #       ========================================================================
-#       Local Import 
-import openalea.opencv.extension as ocv2
+#       Local Import
 from openalea.deploy.shared_data import shared_data
 import alinea.phenomenal
 
@@ -47,8 +46,9 @@ def clean_noise(image, mask=None):
     else:
         image_modify = image
 
-    image_modify = ocv2.erode(image_modify, iterations=3)
-    image_modify = ocv2.dilate(image_modify, iterations=3)
+    element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    image_modify = cv2.erode(image_modify, element, iterations=3)
+    image_modify = cv2.dilate(image_modify, element, iterations=3)
 
     if mask is not None:
         res = cv2.subtract(image, mask)
@@ -57,8 +57,8 @@ def clean_noise(image, mask=None):
 
     res = cv2.add(res, image_modify)
 
-    res = ocv2.erode(res)
-    res = ocv2.dilate(res)
+    res = cv2.erode(res, element, iterations=1)
+    res = cv2.dilate(res, element, iterations=1)
 
     return res
 
@@ -80,3 +80,15 @@ def fill_up_prop(image, is_top_image=False):
     img = cv2.add(image, img)
 
     return img
+
+
+def repair_processing(images):
+    repair_images = dict()
+    for angle in images:
+        if angle == -1:
+            repair_images[angle] = fill_up_prop(images[angle],
+                                                is_top_image=True)
+        else:
+            repair_images[angle] = fill_up_prop(images[angle])
+
+    return repair_images

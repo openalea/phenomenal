@@ -49,7 +49,7 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
             share_data_directory = openalea.deploy.shared_data.shared_data(
                 alinea.phenomenal)
 
-            file_path = share_data_directory + filename + '.pickle'
+            file_path = share_data_directory / filename + '.pickle'
         else:
             file_path = filename + '.pickle'
 
@@ -63,7 +63,7 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
             share_data_directory = openalea.deploy.shared_data.shared_data(
                 alinea.phenomenal)
 
-            file_path = share_data_directory + filename + '.pickle'
+            file_path = share_data_directory / filename + '.pickle'
         else:
             file_path = filename + '.pickle'
 

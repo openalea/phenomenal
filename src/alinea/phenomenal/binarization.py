@@ -21,10 +21,8 @@
 #       ========================================================================
 #       External Import
 import sys
-
 import numpy
 import cv2
-
 
 #       ========================================================================
 #       Local Import
@@ -34,7 +32,6 @@ import alinea.phenomenal.binarization_algorithm
 
 
 #       ========================================================================
-
 
 def binarization(images, factor, methods='mean_shift'):
 
