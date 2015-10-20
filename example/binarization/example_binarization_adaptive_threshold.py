@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       example_binarization.py : 
+#       example_binarization_adaptive_threshold.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -50,11 +50,11 @@ def run_example(data_directory):
                 binarization.binarization(
                     images, factor_binarization, methods='adaptive_threshold')
 
-            # print pot_id, date
-            # for angle in images:
-            #     alinea.phenomenal.result_viewer.show_images(
-            #         [images[angle], images_binarize_adaptive_threshold[angle]],
-            #         str(angle))
+            print pot_id, date
+            for angle in images:
+                alinea.phenomenal.result_viewer.show_images(
+                    [images[angle], images_binarize_adaptive_threshold[angle]],
+                    str(angle))
 
             alinea.phenomenal.misc.write_images(
                 data_directory + '/binarization_adaptive_threshold/',

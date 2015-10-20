@@ -22,10 +22,8 @@
 import math
 import numpy
 
-
 #       ========================================================================
-#       Local Import 
-import alinea.phenomenal.result_viewer
+#       Local Import
 
 #       ========================================================================
 #       Class

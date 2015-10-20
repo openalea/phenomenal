@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       example_reconstruction_3d_jerome.py : 
+#       example_reconstruction_3d_model.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -26,7 +26,7 @@ import cv2
 import alinea.phenomenal.misc
 import alinea.phenomenal.result_viewer
 import alinea.phenomenal.multi_view_reconstruction
-import alinea.phenomenal.calibration_jerome
+import alinea.phenomenal.calibration_model
 
 
 #       ========================================================================
@@ -45,9 +45,9 @@ def run_example(data_directory, calibration_name):
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            calibration = alinea.phenomenal.calibration_jerome.\
+            calibration = alinea.phenomenal.calibration_model.\
                 Calibration.read_calibration(
-                    calibration_name, file_is_in_share_directory=False)
+                    calibration_name, file_is_in_share_directory=True)
 
             images_selected = dict()
             for angle in images:
@@ -69,15 +69,14 @@ def run_example(data_directory, calibration_name):
             alinea.phenomenal.misc.write_points_3d(
                 points_3d,
                 4,
-                data_directory + 'reconstruction_3d_jerome/',
+                data_directory + 'reconstruction_3d_model/',
                 file_name)
-
 
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
     run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
-                '../calibration/fitted_result')
+                'fitted_result')
     # run_example('../../local/B73/')
     # run_example('../../local/Figure_3D/')

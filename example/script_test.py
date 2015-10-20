@@ -29,7 +29,7 @@ import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
 # import alinea.phenomenal.result_viewer
 import alinea.phenomenal.multi_view_reconstruction
-import alinea.phenomenal.calibration_jerome
+import alinea.phenomenal.calibration_model
 import alinea.phenomenal.calibration_manual
 import alinea.phenomenal.skeletonize_2d
 import alinea.phenomenal.segmentation_2d

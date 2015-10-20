@@ -45,8 +45,8 @@ def run_example(data_directory):
             factor_binarization = alinea.phenomenal.configuration. \
                 binarization_factor('factor_image_basic.cfg')
 
-            images_binarize_hsv = alinea.phenomenal.binarization.binarization(
-                images, factor_binarization, methods='mean_shift')
+            images_binarize_mean_shift = alinea.phenomenal.binarization.\
+                binarization(images, factor_binarization, methods='mean_shift')
 
             # print pot_id, date
             # for angle in images:
@@ -56,7 +56,7 @@ def run_example(data_directory):
             alinea.phenomenal.misc.write_images(
                 data_directory + '/binarization_mean_shift/',
                 files,
-                images_binarize_hsv)
+                images_binarize_mean_shift)
 
 
 #       ========================================================================

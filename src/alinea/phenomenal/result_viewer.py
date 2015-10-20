@@ -21,9 +21,8 @@
 
 import random
 import mayavi.mlab
-# import matplotlib.pylab
 import matplotlib.cm
-import pylab
+import matplotlib.pyplot
 
 
 #       ========================================================================
@@ -35,12 +34,8 @@ def show_points_3d(points_3d,
                    scale_factor=10.0,
                    figure_name="Cubes"):
     mayavi.mlab.figure(figure_name)
-
     plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
-
     mayavi.mlab.show()
-    mayavi.mlab.clf()
-    mayavi.mlab.close()
 
 
 def plot_points_3d(points_3d, color=None, scale_factor=5):
@@ -54,9 +49,6 @@ def plot_points_3d(points_3d, color=None, scale_factor=5):
                  random.uniform(0, 1))
 
     for point_3d in points_3d:
-
-        print point_3d
-
         x.append(int(round(point_3d[0])))
         y.append(int(round(point_3d[1])))
         z.append(int(round(point_3d[2])))
@@ -124,14 +116,12 @@ def show_images(images,
                 names_axes=None,
                 color_map_axes=None):
 
-    fig = pylab.figure()
-    fig.canvas.set_window_title(name_windows)
-
+    matplotlib.pyplot.title(name_windows)
     number_of_images = len(images)
 
     i = 1
     for image in images:
-        ax = fig.add_subplot(1, number_of_images, i)
+        ax = matplotlib.pyplot.subplot(1, number_of_images, i)
 
         if names_axes is None:
             ax.set_title('Image %d/%d' % (i, number_of_images))
@@ -139,30 +129,20 @@ def show_images(images,
             ax.set_title(names_axes[i])
 
         if color_map_axes is None:
-            im = pylab.imshow(image)
+            ax.imshow(image)
         else:
-            im = pylab.imshow(image, cmap=color_map_axes[i])
+            ax.imshow(image, cmap=color_map_axes[i])
 
         i += 1
 
-    pylab.show()
-
-    fig.clear()
-    pylab.close(fig)
-
+    matplotlib.pyplot.show()
 
 
 def show_image(image,
                name_windows='Image',
-               color_map=matplotlib.pylab.gray()):
+               color_map=matplotlib.pyplot.gray()):
 
-    fig = matplotlib.pylab.figure()
-    fig.canvas.set_window_title(name_windows)
-    matplotlib.pylab.title(name_windows)
-    matplotlib.pylab.imshow(image, cmap=color_map)
-
-    matplotlib.pylab.show()
-
-    fig.clf()
-    matplotlib.pylab.close(fig)
+    matplotlib.pyplot.title(name_windows)
+    matplotlib.pyplot.imshow(image, cmap=color_map)
+    matplotlib.pyplot.show()
 

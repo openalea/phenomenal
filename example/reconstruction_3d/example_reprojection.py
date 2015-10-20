@@ -25,7 +25,7 @@ import numpy
 #       ========================================================================
 #       Local Import
 import alinea.phenomenal.result_viewer
-import alinea.phenomenal.calibration_jerome
+import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
@@ -54,7 +54,7 @@ def run_example(data_directory, calibration_name):
                 if 0 <= angle <= 360:
                     images_selected[angle] = images[angle]
 
-            calibration = alinea.phenomenal.calibration_jerome.\
+            calibration = alinea.phenomenal.calibration_model.\
                 Calibration.read_calibration(
                     calibration_name, file_is_in_share_directory=False)
 

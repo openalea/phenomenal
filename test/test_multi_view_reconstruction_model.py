@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       test_multi_view_reconstruction_jerome.py :
+#       test_multi_view_reconstruction_model.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -23,7 +23,7 @@ import numpy
 #       ========================================================================
 #       Local Import
 import alinea.phenomenal.result_viewer
-import alinea.phenomenal.calibration_jerome
+import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
@@ -32,7 +32,7 @@ import alinea.phenomenal.data_creation
 #       Code
 
 
-def test_multi_view_reconstruction_jerome_1():
+def test_multi_view_reconstruction_model_1():
 
     size = 10
     radius = 8
@@ -43,8 +43,8 @@ def test_multi_view_reconstruction_jerome_1():
 
     # alinea.phenomenal.result_viewer.show_points_3d(points)
 
-    calibration = alinea.phenomenal.calibration_jerome.\
-        Calibration.read_calibration('/tests/test_calibration_jerome')
+    calibration = alinea.phenomenal.calibration_model.\
+        Calibration.read_calibration('tests/test_calibration_model')
 
     images = alinea.phenomenal.data_creation.build_image_from_points_3d(
         points, radius, calibration, step=30)
@@ -54,7 +54,7 @@ def test_multi_view_reconstruction_jerome_1():
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images, calibration, precision=8, verbose=True)
 
-    mat = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+    mat, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
 
     # alinea.phenomenal.result_viewer.show_points_3d(points)
@@ -63,13 +63,13 @@ def test_multi_view_reconstruction_jerome_1():
     assert (mat == 1).all()
 
 
-def test_multi_view_reconstruction_jerome_2():
+def test_multi_view_reconstruction_model_2():
 
     radius = 4
     images = alinea.phenomenal.data_creation.build_images_1()
 
-    calibration = alinea.phenomenal.calibration_jerome.\
-        Calibration.read_calibration('/tests/test_calibration_jerome')
+    calibration = alinea.phenomenal.calibration_model.\
+        Calibration.read_calibration('tests/test_calibration_model')
 
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images, calibration, precision=radius, verbose=True)
@@ -96,5 +96,5 @@ def test_multi_view_reconstruction_jerome_2():
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    test_multi_view_reconstruction_jerome_1()
-    test_multi_view_reconstruction_jerome_2()
+    test_multi_view_reconstruction_model_1()
+    test_multi_view_reconstruction_model_2()

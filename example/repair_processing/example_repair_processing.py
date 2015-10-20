@@ -33,7 +33,7 @@ import alinea.phenomenal.misc
 
 def run_example(data_directory):
     pot_ids = alinea.phenomenal.misc.load_files(
-        data_directory + 'binarization/')
+        data_directory + 'binarization_mean_shift/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
@@ -42,7 +42,8 @@ def run_example(data_directory):
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            repair_images = example_repair_processing(images)
+            repair_images = alinea.phenomenal.repair_processing.\
+                repair_processing(images)
 
             # print pot_id, date
             # for angle in repair_images:
@@ -53,20 +54,6 @@ def run_example(data_directory):
                 data_directory + 'repair_processing/',
                 files,
                 repair_images)
-
-
-def example_repair_processing(images):
-
-    repair_images = dict()
-    for angle in images:
-        if angle == -1:
-            repair_images[angle] = alinea.phenomenal.repair_processing.\
-                fill_up_prop(images[angle], is_top_image=True)
-        else:
-            repair_images[angle] = alinea.phenomenal.repair_processing.\
-                fill_up_prop(images[angle])
-
-    return repair_images
 
 #       ========================================================================
 #       LOCAL TEST

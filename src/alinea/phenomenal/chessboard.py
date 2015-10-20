@@ -21,7 +21,7 @@
 
 import pylab
 import cv2
-import numpy as np
+import numpy
 
 
 #       ========================================================================
@@ -32,11 +32,11 @@ class Chessboard(object):
         # Initialization
         self.square_size = square_size
         self.shape = (length, height)
-        self.object_points = np.zeros((length * height, 3), np.float32)
+        self.object_points = numpy.zeros((length * height, 3), numpy.float32)
 
         # Build Chessboard
         self.object_points[:, :2] = \
-            np.mgrid[0:length, 0:height].T.reshape(-1, 2) * self.square_size
+            numpy.mgrid[0:length, 0:height].T.reshape(-1, 2) * self.square_size
 
         # 48 points are stored in an 48x3 array obj
         # choose bottom-left corner as origin, to match australian convention

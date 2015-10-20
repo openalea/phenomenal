@@ -21,7 +21,6 @@ from numpy import (array, zeros,
                    dot, add, subtract, divide, tensordot,
                    cross, transpose, sign)
 from numpy.linalg import norm
-from openalea.container import triangulate_polygon
 
 __all__ = ["x_axis", "y_axis", "z_axis", "Frame",
            "triangle_frame", "tetrahedron_frame",
@@ -330,19 +329,6 @@ def mean_frame(frames):
     es = cross(et, er)
 
     return Frame((er, es, et), ori)
-
-
-def polygon_frame(corners):
-    """Compute local frame associated with a flat convex polygon
-
-    :Parameters:
-     - `corners` (list of array) - oriented corners of the polygon
-
-    :Returns Type: :class:`Frame`
-    """
-    pids = list(xrange(len(corners)))
-    return mean_frame([triangle_frame(*tuple(corners[i] for i in tr))
-                       for tr in triangulate_polygon(pids)])
 
 
 def change_frame_tensor2(tensor, frame1, frame2):

@@ -21,7 +21,7 @@
 import os
 import numpy
 import cv2
-
+import collections
 
 #       ========================================================================
 #       Code
@@ -104,6 +104,7 @@ def points_3d_to_matrix(points_3d, radius):
                        round((y_max - y_min) / r) + 1,
                        round((z_max - z_min) / r) + 1), dtype=numpy.uint8)
 
+    index = collections.deque()
     for point_3d in points_3d:
         x_new = (point_3d[0] / r) - x_r_min
         y_new = (point_3d[1] / r) - y_r_min
@@ -111,7 +112,9 @@ def points_3d_to_matrix(points_3d, radius):
 
         mat[x_new, y_new, z_new] = 1
 
-    return mat
+        index.append((x_new, y_new, z_new))
+
+    return mat, index
 
 
 #       ========================================================================

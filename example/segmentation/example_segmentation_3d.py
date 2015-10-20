@@ -47,7 +47,7 @@ def extract_points_3d(organ):
 def run_example(data_directory):
 
     pot_ids = alinea.phenomenal.misc.load_xyz_files(
-        data_directory + 'reconstruction_3d_jerome/')
+        data_directory + 'reconstruction_3d_model/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
@@ -116,6 +116,6 @@ def example_segmentation_3d(points_3d):
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    # run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
-    run_example('../../local/B73/')
+    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
+    #run_example('../../local/B73/')
     # run_example('../../local/Figure_3D/')

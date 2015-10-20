@@ -36,7 +36,7 @@ import alinea.phenomenal.result_viewer
 def run_example(data_directory):
 
     pot_ids = alinea.phenomenal.misc.load_xyz_files(
-        data_directory + 'reconstruction_3d_jerome/')
+        data_directory + 'reconstruction_3d_model/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:

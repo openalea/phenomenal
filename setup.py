@@ -86,13 +86,9 @@ setup(
     # postinstall_scripts = ['',],
 
     # Declare scripts and wralea as entry_points (extensions) of your package
-    entry_points={'wralea': ['phenomenal = alinea.phenomenal_wralea'],
-        #'console_scripts': [
-        #       'fake_script = openalea.fakepackage.amodule:console_script', ],
-        # 'gui_scripts': [
-        #      'fake_gui = openalea.fakepackage.amodule:gui_script',],
-        #	'wralea': wralea_entry_points
-        },
+    entry_points={
+        'wralea': ['phenomenal = alinea.phenomenal_wralea'],
+        'openalea.image': ['AlineaPhenomenalBinarizationPlugin =  alinea.phenomenal.plugin.binarization'],},
     )
 
 

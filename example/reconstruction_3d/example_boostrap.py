@@ -26,7 +26,7 @@ import random
 import alinea.phenomenal.misc
 import alinea.phenomenal.result_viewer
 import alinea.phenomenal.multi_view_reconstruction
-import alinea.phenomenal.calibration_jerome
+import alinea.phenomenal.calibration_model
 
 #       ========================================================================
 #       Code
@@ -67,7 +67,7 @@ def select_random_image(number_of_image, images):
 
 def example_boostrap(images):
 
-    calibration = alinea.phenomenal.calibration_jerome.Calibration.\
+    calibration = alinea.phenomenal.calibration_model.Calibration.\
         read_calibration('../calibration/fitted_result',
                          file_is_in_share_directory=False)
 

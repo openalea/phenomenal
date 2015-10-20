@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       example_calibration.py : 
+#       example_calibration_opencv.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -71,8 +71,8 @@ def example_compute_rotation_and_translation_vectors(calibration_name):
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    example_calibration(
-        '../../local/data/CHESSBOARD/', 'example_calibration_opencv')
+    example_calibration('../../local/data/CHESSBOARD/',
+                        'example_calibration_opencv')
 
     example_compute_rotation_and_translation_vectors(
         'example_calibration_opencv')

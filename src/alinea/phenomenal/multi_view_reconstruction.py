@@ -254,6 +254,26 @@ def project_points_on_image(points, radius, image, calibration, angle):
 
     return img
 
+def project_points_on_image(points, radius, image, calibration, angle):
+
+    height_image, length_image = numpy.shape(image)
+    img = numpy.zeros((height_image, length_image))
+
+    for point in points:
+        x_min, x_max, y_min, y_max = bbox_projection(point,
+                                                     radius,
+                                                     calibration,
+                                                     angle)
+
+        x_min = min(max(math.floor(x_min), 0), length_image - 1)
+        x_max = min(max(math.ceil(x_max), 0), length_image - 1)
+        y_min = min(max(math.floor(y_min), 0), height_image - 1)
+        y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+
+        img[y_min:y_max + 1, x_min:x_max + 1] = 255
+
+    return img
+
 
 def reconstruction_3d(images, calibration, precision=4, verbose=False):
 

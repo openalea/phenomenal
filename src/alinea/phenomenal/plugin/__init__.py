@@ -1,10 +1,10 @@
 # -*- python -*-
 #
-#       __init__.py:
+#       __init__.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
+#       File author(s):
 #
 #       File contributor(s):
 #
