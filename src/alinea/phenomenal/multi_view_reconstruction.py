@@ -138,13 +138,10 @@ def point_3d_is_in_image(image,
 
     x, y = calibration.project_point(point_3d, angle)
 
-    # y_min = min(max(math.floor(y_min), 0), height_image - 1)
-    # y_max = min(max(math.ceil(y_max), 0), height_image - 1)
-
-    if 0 <= x <= length_image - 1:
-        if 0 <= y <= height_image - 1:
-            if image[y, x] > 0:
-                return True
+    if (0 <= x < length_image and
+        0 <= y < height_image and
+            image[y, x] > 0):
+        return True
 
     # =================================================================
 
@@ -289,8 +286,6 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
 
             if verbose is True:
                 print 'Angle %d : %d' % (angle, len(points_3d))
-
-        # points = octree_builder(images, points_3d, radius, calibration)
 
     return points_3d
 
