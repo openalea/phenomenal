@@ -77,6 +77,8 @@ def example_calibration(data_directory, calib_name):
         # tilt angle of camera (around local z axis)
         0.85901926301294507]    # rotation offset around z_axis in world frame
 
+    guess = None
+
     # cc.plot_calibration(chessboard, cv_pts, guess, 48)
     cal = alinea.phenomenal.calibration_model.Calibration()
     cal.find_model_parameters(chessboard, cv_pts, guess)

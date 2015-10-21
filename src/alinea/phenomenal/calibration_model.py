@@ -21,13 +21,18 @@ where a chessboard is rotating instead of a plant in a picture cabin.
 #       ========================================================================
 #       External Import
 import numpy
+import numpy.random
+
 from math import radians, cos, pi, sin
 from scipy.optimize import leastsq
+import scipy.optimize
+
 
 #       ========================================================================
 #       Local Import
 import openalea.deploy.shared_data
 import alinea.phenomenal
+
 from frame import Frame, x_axis, y_axis, z_axis
 from transformations import concatenate_matrices, rotation_matrix
 from camera import Camera
@@ -187,10 +192,53 @@ class Calibration(object):
                 err.append(
                     numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum())
 
-            print sum(err)
+            err = sum(err)
+            print err
             return err
 
         res = leastsq(fit, guess, maxfev=5000)
+
+        if guess is None:
+            # guess = numpy.random.random((14, ))
+            pi2 = 2.0 * numpy.pi - 0.1
+            # bounds = [(-3000, 3000), (-3000, 3000), (-3000, 3000),
+            #           (-pi2, pi2), (-pi2, pi2),
+            #           (0.5, 2), (0.5, 2),
+            #           (-3000, 3000), (-pi2, pi2), (-3000, 3000),
+            #           (-pi2, pi2), (-pi2, pi2), (-pi2, pi2), (-pi2, pi2)]
+            #
+            # res = scipy.optimize.differential_evolution(
+            #     fit,
+            #     bounds,
+            #     strategy='best2bin',
+            #     init='random',
+            #     tol=0.1,
+            #     popsize=200)
+
+            guess = numpy.array([3000.0, 3000.0, 3000.0,
+                     pi2, pi2,
+                     1.0, 1.0,
+                     3000.0, pi2, 3000.0,
+                     pi2, pi2, pi2, pi2])
+
+            res = scipy.optimize.basinhopping(fit, guess)
+
+            # guess = numpy.array([3000.0, 3000.0, 3000.0,
+            #          pi2, pi2,
+            #          1.0, 1.0,
+            #          3000.0, pi2, 3000.0,
+            #          pi2, pi2, pi2, pi2])
+            #
+            # res = leastsq(fit, guess, maxfev=100000)
+
+
+            print 'res', res
+
+
+        # print fit(guess)
+        res = leastsq(fit, guess)#, maxfev=5000)
+
+        print res
 
         sca_x, sca_y, = res[0][5:7]
         dist_cam, offset, z_cam, azim_cam, elev_cam, tilt_cam, offset_angle = \
