@@ -90,12 +90,12 @@ def compute_rotation_vectors(rotation_vectors, angles):
     bounds = [(-pi2, pi2), (-pi2, pi2), (-pi2, pi2),
               (-pi2, pi2), (-pi2, pi2), (-pi2, pi2)]
 
-    optimize_result = scipy.optimize.differential_evolution(minimize_function,
-                                                      bounds)
+    optimize_result = scipy.optimize.differential_evolution(
+        minimize_function, bounds)
 
     while minimize_function(optimize_result.x) > 5:
-        optimize_result = scipy.optimize.differential_evolution(minimize_function,
-                                                          bounds)
+        optimize_result = scipy.optimize.differential_evolution(
+            minimize_function, bounds)
 
     print optimize_result.x
     res = optimize_result.x

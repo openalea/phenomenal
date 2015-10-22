@@ -21,8 +21,7 @@
 #       External Import
 import cv2
 import numpy
-import pickle
-
+import re
 
 #       ========================================================================
 #       Local Import
@@ -35,13 +34,11 @@ import alinea.phenomenal.calibration
 
 
 class Calibration(alinea.phenomenal.calibration.Calibration, object):
-    def __init__(self, images, chessboard, verbose=False):
+    def __init__(self):
         self.focal_matrix = None
         self.rotation_vectors = dict()
         self.translation_vectors = dict()
         self.distortion_coefficient = None
-
-        self.calibrate(images, chessboard, verbose=verbose)
 
     def write_calibration(self, filename, file_is_in_share_directory=True):
 
@@ -49,12 +46,29 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
             share_data_directory = openalea.deploy.shared_data.shared_data(
                 alinea.phenomenal)
 
-            file_path = share_data_directory / filename + '.pickle'
+            file_path = share_data_directory / filename + '.calib'
         else:
-            file_path = filename + '.pickle'
+            file_path = filename + '.calib'
 
-        with open(file_path, 'wb') as handle:
-            pickle.dump(self, handle)
+        with open(file_path, 'w') as f:
+            f.write('%f %f %f %f %f %f %f %f %f\n' %
+                    tuple(self.focal_matrix.reshape((9, )).tolist()))
+
+            f.write('%f %f %f %f %f\n' %
+                    tuple(self.distortion_coefficient.reshape((5, )).tolist()))
+
+            for angle in self.rotation_vectors:
+                x_rvec, y_rvec, z_rvec = tuple(
+                    self.rotation_vectors[angle].reshape((3, )).tolist())
+
+                x_tvec, y_tvec, z_tvec = tuple(
+                    self.translation_vectors[angle].reshape((3, )).tolist())
+
+                f.write('%f %f %f %f %f %f %f\n' % (angle,
+                                                    x_rvec, y_rvec, z_rvec,
+                                                    x_tvec, y_tvec, z_tvec))
+
+        f.close()
 
     @staticmethod
     def read_calibration(filename, file_is_in_share_directory=True):
@@ -63,12 +77,37 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
             share_data_directory = openalea.deploy.shared_data.shared_data(
                 alinea.phenomenal)
 
-            file_path = share_data_directory / filename + '.pickle'
+            file_path = share_data_directory / filename + '.calib'
         else:
-            file_path = filename + '.pickle'
+            file_path = filename + '.calib'
 
-        with open(file_path, 'rb') as handle:
-            return pickle.load(handle)
+        cal = Calibration()
+
+        with open(file_path, 'r') as f:
+            token = re.findall(r'[-0-9.]+', f.readline())
+            cal.focal_matrix = numpy.array(
+                token).reshape((3, 3)).astype(numpy.float)
+
+            token = re.findall(r'[-0-9.]+', f.readline())
+            cal.distortion_coefficient = numpy.array(
+                token).reshape((5, 1)).astype(numpy.float)
+
+            cal.rotation_vectors = dict()
+            cal.translation_vectors = dict()
+
+            for line in f:
+                token = re.findall(r'[-0-9.]+', line)
+
+                angle = float(token[0])
+                rvec = numpy.array(token[1:4]).reshape(3, 1).astype(numpy.float)
+                tvec = numpy.array(token[4:7]).reshape(3, 1).astype(numpy.float)
+
+                cal.rotation_vectors[angle] = rvec
+                cal.translation_vectors[angle] = tvec
+
+        f.close()
+
+        return cal
 
     def print_value(self):
         for angle in self.rotation_vectors:

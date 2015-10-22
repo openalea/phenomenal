@@ -15,14 +15,13 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 #       ========================================================================
-""" This module contains a calibration model
-for phenoarch experiment where a chessboard is rotating
-instead of a plant in a picture cabin.
+""" This module contains a calibration model for phenoarch experiment
+where a chessboard is rotating instead of a plant in a picture cabin.
 """
 #       ========================================================================
 #       External Import
-import pickle
 import numpy
+
 
 from math import radians, cos, pi, sin
 from scipy.optimize import leastsq
@@ -81,26 +80,26 @@ class Calibration(object):
             self.frame[angle].local_point(point))
 
     def write_calibration(self, filename, write_in_share_directory=True):
-        cal_params = (self._sca_x,
-                      self._sca_y,
-                      self._dist_cam,
-                      self._offset,
-                      self._z_cam,
-                      self._azim_cam,
-                      self._elev_cam,
-                      self._tilt_cam,
-                      self._offset_angle)
 
         if write_in_share_directory is True:
             share_data_directory = openalea.deploy.shared_data.shared_data(
                 alinea.phenomenal)
 
-            file_path = share_data_directory / filename + '.pickle'
+            file_path = share_data_directory / filename + '.calib'
         else:
-            file_path = filename + '.pickle'
+            file_path = filename + '.calib'
 
-        with open(file_path, 'wb') as handle:
-            pickle.dump(cal_params, handle)
+        with open(file_path, 'w') as f:
+            f.write('%f\n' % self._sca_x)
+            f.write('%f\n' % self._sca_y)
+            f.write('%f\n' % self._dist_cam)
+            f.write('%f\n' % self._offset)
+            f.write('%f\n' % self._z_cam)
+            f.write('%f\n' % self._azim_cam)
+            f.write('%f\n' % self._elev_cam)
+            f.write('%f\n' % self._tilt_cam)
+            f.write('%f\n' % self._offset_angle)
+        f.close()
 
     @staticmethod
     def read_calibration(filename, file_is_in_share_directory=True):
@@ -109,33 +108,30 @@ class Calibration(object):
             share_data_directory = openalea.deploy.shared_data.shared_data(
                 alinea.phenomenal)
 
-            file_path = share_data_directory / filename + '.pickle'
+            file_path = share_data_directory / filename + '.calib'
         else:
 
-            file_path = filename + '.pickle'
+            file_path = filename + '.calib'
 
-        with open(file_path, 'rb') as handle:
-            params = pickle.load(handle)
-            # print params
-            sca_x, sca_y = params[0:2]
-            dist_cam, offset, z_cam = params[2:5]
-            azim_cam, elev_cam, tilt_cam, offset_angle = params[5:9]
+        cal = Calibration()
 
-            cal = Calibration()
-            cal._sca_x = sca_x
-            cal._sca_y = sca_y
-            cal._dist_cam = dist_cam
-            cal._offset = offset
-            cal._z_cam = z_cam
-            cal._azim_cam = azim_cam
-            cal._elev_cam = elev_cam
-            cal._tilt_cam = tilt_cam
-            cal._offset_angle = offset_angle
-            cal._camera = Camera((2056, 2454), (cal._sca_x, cal._sca_y))
+        with open(file_path, 'r') as f:
+            cal._sca_x = float(f.readline())
+            cal._sca_y = float(f.readline())
+            cal._dist_cam = float(f.readline())
+            cal._offset = float(f.readline())
+            cal._z_cam = float(f.readline())
+            cal._azim_cam = float(f.readline())
+            cal._elev_cam = float(f.readline())
+            cal._tilt_cam = float(f.readline())
+            cal._offset_angle = float(f.readline())
 
-            cal.initialize_camera_frame()
+        f.close()
 
-            return cal
+        cal._camera = Camera((2056, 2454), (cal._sca_x, cal._sca_y))
+        cal.initialize_camera_frame()
+
+        return cal
 
     def print_value(self):
         print self._sca_x
@@ -196,11 +192,7 @@ class Calibration(object):
             print sum(err)
             return err
 
-        # print fit(guess)
         res = leastsq(fit, guess, maxfev=5000)
-
-        with open("fitted - step.pkl", 'wb') as f:
-            pickle.dump(res[0], f)
 
         sca_x, sca_y, = res[0][5:7]
         dist_cam, offset, z_cam, azim_cam, elev_cam, tilt_cam, offset_angle = \
