@@ -77,6 +77,6 @@ def run_example(data_directory, calibration_name):
 
 if __name__ == "__main__":
     run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
-                'fitted_result')
+                'example_calibration_model')
     # run_example('../../local/B73/')
     # run_example('../../local/Figure_3D/')

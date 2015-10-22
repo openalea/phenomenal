@@ -18,7 +18,6 @@
 
 #       ========================================================================
 #       External Import
-
 import pylab
 import cv2
 import numpy

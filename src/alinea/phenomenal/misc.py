@@ -77,25 +77,6 @@ def write_images(data_directory, files, images):
         cv2.imwrite(path, images[angle])
 
 
-def read_xyz(file):
-    points_3d = list()
-    with open(file, 'r') as f:
-        radius = float(f.readline())
-
-        for line in f:
-            point_3d = re.findall(r'[-0-9.]+', line)
-
-            x = float(point_3d[0])
-            y = float(point_3d[1])
-            z = float(point_3d[2])
-
-            points_3d.append((x, y, z))
-
-    f.close()
-
-    return points_3d, radius
-
-
 def load_xyz_files(data_directory):
     images_names = glob.glob(data_directory + '*.xyz')
 
@@ -113,11 +94,30 @@ def load_xyz_files(data_directory):
     return pot_ids
 
 
-def write_points_3d(points_3d, radius, data_directory, name_file):
+def read_xyz(filename):
+    points_3d = list()
+    with open(filename, 'r') as f:
+        radius = float(f.readline())
+
+        for line in f:
+            point_3d = re.findall(r'[-0-9.]+', line)
+
+            x = float(point_3d[0])
+            y = float(point_3d[1])
+            z = float(point_3d[2])
+
+            points_3d.append((x, y, z))
+
+    f.close()
+
+    return points_3d, radius
+
+
+def write_points_3d(points_3d, radius, data_directory, filename):
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)
 
-    f = open(data_directory + name_file + '.xyz', 'w')
+    f = open(data_directory + filename + '.xyz', 'w')
 
     if len(points_3d) > 0:
         f.write("%f\n" % radius)

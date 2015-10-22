@@ -18,11 +18,11 @@
 
 #       ========================================================================
 #       External Import
-import pickle
 import glob
 import math
 import numpy
 import cv2
+
 
 #       ========================================================================
 #       Local Import
@@ -35,7 +35,7 @@ import alinea.phenomenal.calibration_model
 #       Code
 
 
-def example_calibration(data_directory, pickle_name):
+def example_calibration(data_directory, calib_name):
 
     files_sv = glob.glob(data_directory + '*sv*.png')
     angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_sv)
@@ -46,33 +46,46 @@ def example_calibration(data_directory, pickle_name):
 
     chessboard = alinea.phenomenal.chessboard.Chessboard(47, 8, 6)
 
-    # print " find chessboard pts on each image"
-    # cv_pts = {}
-    # for alpha, img in images.items():
-    #     print alpha
-    #     pts = chessboard.find_corners(img)
-    #     # pts = cc.find_chessboard_corners(img, chessboard.shape)
-    #     if pts is not None:
-    #         cv_pts[alpha] = pts[:, 0, :]
-    #
-    # with open("buffer.pkl", 'wb') as f:
-    #     pickle.dump(cv_pts, f)
+    print " find chessboard pts on each image"
+    cv_pts = dict()
+    for alpha, img in images.items():
+        print alpha
+        pts = chessboard.find_corners(img)
+        if pts is not None:
+            cv_pts[alpha] = pts[:, 0, :]
 
-    with open("buffer.pkl", 'rb') as f:
-        cv_pts = pickle.load(f)
+    guess = [
+        -164.36793985970391,    # x position of chess in world frame
+        -184.26982549215279,    # y position of chess in world frame
+        1016.2924110974527,     # z position of chess in world frame
 
-    with open("initial guess.pkl", 'rb') as f:
-        guess = list(pickle.load(f))
+        -0.24676783786914835,   # elevation angle around local x axis
+        0.033230717529020827,   # rotation angle around local z axis
+
+        4325.1372442743241,
+        # scaling factor between real coordinates and pixel coordinates
+        4314.5457485003662,
+        # scaling factor between real coordinates and pixel coordinates
+
+        5053.3551632860035,     # distance of camera to rotation axis
+        -2.4495310698780379,    # offset angle in radians for rotation
+        666.05979874456671,     # z position of cam in world frame when alpha=0
+        0.021140291507288664,   # azimuth angle of camera (around local y axis)
+        0.00042593152159524892,
+        # elevation angle of camera (around local x axis)
+        -0.0036106966523099557,
+        # tilt angle of camera (around local z axis)
+        0.85901926301294507]    # rotation offset around z_axis in world frame
 
     # cc.plot_calibration(chessboard, cv_pts, guess, 48)
     cal = alinea.phenomenal.calibration_model.Calibration()
     cal.find_model_parameters(chessboard, cv_pts, guess)
 
     # cal.print_value()
-    cal.write_calibration(pickle_name)
+    cal.write_calibration(calib_name)
 
 
-def example_calibration_reprojection(data_directory, pickle_name):
+def example_calibration_reprojection(data_directory, calib_name):
 
     files_sv = glob.glob(data_directory + '*sv*.png')
     angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_sv)
@@ -82,7 +95,7 @@ def example_calibration_reprojection(data_directory, pickle_name):
         images[angles[i]] = cv2.imread(files_sv[i], cv2.IMREAD_COLOR)
 
     calibration = alinea.phenomenal.calibration_model.Calibration.\
-        read_calibration(pickle_name, file_is_in_share_directory=True)
+        read_calibration(calib_name)
 
     # img = alinea.phenomenal.multi_view_reconstruction.project_points_on_image(
     #     [(0.0, 0.0, 0.0)], 1.0, images[0], calibration, 0.0)
@@ -126,8 +139,8 @@ def example_calibration_reprojection(data_directory, pickle_name):
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    # example_calibration('../../local/data/CHESSBOARD/',
-    #                     'fitted_result')
+    example_calibration(
+        '../../local/CHESSBOARD/', 'example_calibration_model')
 
-    example_calibration_reprojection('../../local/data/CHESSBOARD/',
-                                     'fitted_result')
+    example_calibration_reprojection(
+        '../../local/CHESSBOARD/', 'example_calibration_model')

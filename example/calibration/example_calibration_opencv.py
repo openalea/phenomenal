@@ -23,17 +23,15 @@ import cv2
 
 #       ========================================================================
 #       Local Import
-from alinea.phenomenal.calibration_opencv import Calibration
-from alinea.phenomenal.chessboard import Chessboard
-from alinea.phenomenal.calibration_tools import (compute_rotation_vectors,
-                                                 compute_translation_vectors,
-                                                 plot_vectors)
+import alinea.phenomenal.calibration_opencv
+import alinea.phenomenal.chessboard
+import alinea.phenomenal.calibration_tools
 
 #       ========================================================================
 #       Code
 
 
-def example_calibration(data_directory, pickle_name):
+def example_calibration(data_directory, calib_name):
 
     files_sv = glob.glob(data_directory + '*sv*.png')
     angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_sv)
@@ -42,39 +40,47 @@ def example_calibration(data_directory, pickle_name):
     for i in range(len(files_sv)):
         images[angles[i]] = cv2.imread(files_sv[i], cv2.IMREAD_GRAYSCALE)
 
-    chessboard = Chessboard(47, 8, 6)
+    chessboard = alinea.phenomenal.chessboard.Chessboard(47, 8, 6)
 
-    calibration = Calibration(images, chessboard)
+    calibration = alinea.phenomenal.calibration_opencv.Calibration()
+    calibration.calibrate(images, chessboard)
 
     calibration.print_value()
-    plot_vectors(calibration.rotation_vectors)
-    plot_vectors(calibration.translation_vectors)
+    alinea.phenomenal.calibration_tools.plot_vectors(
+        calibration.rotation_vectors)
+    alinea.phenomenal.calibration_tools.plot_vectors(
+        calibration.translation_vectors)
 
-    calibration.write_calibration(pickle_name)
+    calibration.write_calibration(calib_name)
 
 
 def example_compute_rotation_and_translation_vectors(calibration_name):
-    my_calibration = Calibration.read_calibration(calibration_name)
+    my_calibration = alinea.phenomenal.calibration_opencv.Calibration.\
+        read_calibration(calibration_name)
+
     my_calibration.print_value()
 
     angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]
 
-    compute_rotation_vectors(my_calibration.rotation_vectors, angles)
-    my_calibration.write_calibration(calibration_name)
-    plot_vectors(my_calibration.rotation_vectors)
+    alinea.phenomenal.calibration_tools.compute_rotation_vectors(
+        my_calibration.rotation_vectors, angles)
 
-    compute_translation_vectors(my_calibration.translation_vectors, angles)
+    alinea.phenomenal.calibration_tools.compute_translation_vectors(
+        my_calibration.translation_vectors, angles)
+
     my_calibration.write_calibration(calibration_name)
-    plot_vectors(my_calibration.translation_vectors)
+
+    alinea.phenomenal.calibration_tools.plot_vectors(
+        my_calibration.translation_vectors)
+
+    alinea.phenomenal.calibration_tools.plot_vectors(
+        my_calibration.rotation_vectors)
 
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    example_calibration('../../local/data/CHESSBOARD/',
-                        'example_calibration_opencv')
+    example_calibration('../../local/CHESSBOARD/', 'example_calibration_opencv')
 
     example_compute_rotation_and_translation_vectors(
         'example_calibration_opencv')
-
-    # example_calibration('../../local/data/CHESSBOARD_2/', 'example_calibration_3')
