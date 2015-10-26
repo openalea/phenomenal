@@ -222,4 +222,3 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
             mean_error += error
 
         return mean_error / len(object_points)
-
