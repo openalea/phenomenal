@@ -20,12 +20,14 @@ where a chessboard is rotating instead of a plant in a picture cabin.
 """
 #       ========================================================================
 #       External Import
+from math import radians, cos, pi, sin
+
 import numpy
 import numpy.random
 
-from math import radians, cos, pi, sin
 from scipy.optimize import leastsq
 import scipy.optimize
+
 
 
 #       ========================================================================
@@ -192,51 +194,130 @@ class Calibration(object):
                 err.append(
                     numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum())
 
+            print sum(err)
+            return err
+
+        def fit_2(params):
+            err = []
+            fr_chess = chess_frame(*params[0:5])
+            cam = Camera(img_size, params[5:7])
+            dist_cam, offset, z_cam, azim_cam, elev_cam, \
+            tilt_cam, offset_angle = params[7:14]
+
+            for alpha, ref_pts in cv_pts.items():
+                fr_cam = camera_frame(dist_cam, offset, z_cam, azim_cam,
+                                      elev_cam, tilt_cam, offset_angle,
+                                      radians(alpha))
+
+                pts = [
+                    cam.pixel_coordinates(
+                        fr_cam.local_point(
+                            fr_chess.global_point(pt))) for pt in
+                    chessboard_pts]
+
+                err.append(
+                    numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum())
+
             err = sum(err)
             print err
             return err
 
-        res = leastsq(fit, guess, maxfev=5000)
-
         if guess is None:
-            # guess = numpy.random.random((14, ))
-            pi2 = 2.0 * numpy.pi - 0.1
-            # bounds = [(-3000, 3000), (-3000, 3000), (-3000, 3000),
-            #           (-pi2, pi2), (-pi2, pi2),
-            #           (0.5, 2), (0.5, 2),
-            #           (-3000, 3000), (-pi2, pi2), (-3000, 3000),
-            #           (-pi2, pi2), (-pi2, pi2), (-pi2, pi2), (-pi2, pi2)]
-            #
+
+            pi = numpy.pi
+
+            bounds = [(-200, -1),
+                      (-200, -1),
+                      (500, 1250),
+                      (-pi, 0),
+                      (0, pi),
+                      (3000, 4500),
+                      (3000, 4500),
+                      (4000, 6000),
+                      (-pi, 0),
+                      (500, 1250),
+                      (0, pi),
+                      (0, pi),
+                      (-pi, 0),
+                      (0, pi)]
+
             # res = scipy.optimize.differential_evolution(
-            #     fit,
+            #     fit_2,
             #     bounds,
-            #     strategy='best2bin',
-            #     init='random',
+            #     strategy='best1bin',
+            #     init='latinhypercube',
             #     tol=0.1,
-            #     popsize=200)
-
-            guess = numpy.array([3000.0, 3000.0, 3000.0,
-                     pi2, pi2,
-                     1.0, 1.0,
-                     3000.0, pi2, 3000.0,
-                     pi2, pi2, pi2, pi2])
-
-            res = scipy.optimize.basinhopping(fit, guess)
-
-            # guess = numpy.array([3000.0, 3000.0, 3000.0,
-            #          pi2, pi2,
-            #          1.0, 1.0,
-            #          3000.0, pi2, 3000.0,
-            #          pi2, pi2, pi2, pi2])
+            #     popsize=10)
             #
-            # res = leastsq(fit, guess, maxfev=100000)
+            # print res
+
+            guess = numpy.array([
+                numpy.random.uniform(-200, 0),
+                numpy.random.uniform(-200, 0),
+                numpy.random.uniform(500, 1250), # 50cm to 1.5m
+                numpy.random.uniform(-pi, 0),
+                numpy.random.uniform(0, pi),
+
+                numpy.random.uniform(3000, 4500),
+                numpy.random.uniform(3000, 4500),
+
+                numpy.random.uniform(4000, 6000),
+                numpy.random.uniform(-pi, 0),
+                numpy.random.uniform(100, 1250),
+
+                numpy.random.uniform(0, pi),
+                numpy.random.uniform(0, pi),
+                numpy.random.uniform(-pi, 0),
+                numpy.random.uniform(0, pi)])
+
+            # guess = numpy.array([
+            #     -150,
+            #     -150,
+            #     1000, # 50cm to 1.5m
+            #     0,
+            #     0,
+            #
+            #     numpy.random.uniform(3000, 4500),
+            #     numpy.random.uniform(3000, 4500),
+            #
+            #     numpy.random.uniform(4000, 6000),
+            #
+            #     numpy.random.uniform(-pi, 0),
+            #     numpy.random.uniform(100, 1250),
+            #
+            #     numpy.random.uniform(0, pi),
+            #     numpy.random.uniform(0, pi),
+            #     numpy.random.uniform(-pi, 0),
+            #     numpy.random.uniform(0, pi)])
 
 
-            print 'res', res
 
+            # guess = numpy.array([-100.0, -100.0, 750.0,
+            #                      0.0, 0.0,
+            #                      4000.0, 4000.0,
+            #                      5053.0, 0.0, 500.0,
+            #                      0.0, 0.0,
+            #                      0.0, 0.0])
+
+            minimizer_kwargs = dict(method="L-BFGS-B", bounds=bounds)
+
+            res = scipy.optimize.basinhopping(
+                fit_2,
+                guess,
+                T=2.,
+                niter=20,
+                minimizer_kwargs=minimizer_kwargs)
+
+            print res
+            print res.x
+            guess = res.x
+
+            # res = leastsq(fit, guess, maxfev=2000)
+            #
+            # guess = res[0]
 
         # print fit(guess)
-        res = leastsq(fit, guess)#, maxfev=5000)
+        res = leastsq(fit, guess, maxfev=500000)
 
         print res
 
