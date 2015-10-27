@@ -29,52 +29,36 @@ import cv2
 
 
 def load_files(data_directory):
-    images_names = glob.glob(data_directory + '*.png')
+
+    images_path = glob.glob(data_directory + '*.png')
 
     pot_ids = dict()
-    for i in range(len(images_names)):
+    for i in range(len(images_path)):
 
-        pot_id = images_names[i].split('\\')[-1].split('_')[0]
+        path_directory, file_name = os.path.split(images_path[i])
+
+        pot_id = file_name.split('_')[0]
         if pot_id not in pot_ids:
             pot_ids[pot_id] = dict()
 
-        date = images_names[i].split(' ')[0].split('_')[-1]
+        date = file_name.split(' ')[0].split('_')[-1]
         if date not in pot_ids[pot_id]:
             pot_ids[pot_id][date] = dict()
 
-        result = images_names[i].split('_sv')
+        result = file_name.split('_sv')
 
         if len(result) == 2:
             angle = result[1].split('.png')[0]
         else:
-            result = images_names[i].split('_tv')
+            result = file_name.split('_tv')
             if len(result) == 2:
                 angle = -1
             else:
                 continue
 
-        pot_ids[pot_id][date][int(angle)] = images_names[i]
+        pot_ids[pot_id][date][int(angle)] = images_path[i]
 
     return pot_ids
-
-
-def load_images(files, cv2_flag):
-    images = dict()
-    for angle in files:
-        images[angle] = cv2.imread(files[angle], flags=cv2_flag)
-
-    return images
-
-
-def write_images(data_directory, files, images):
-    if not os.path.exists(data_directory):
-        os.makedirs(data_directory)
-
-    for angle in images:
-        path = files[angle]
-        filename = path.split('\\')[-1]
-        path = data_directory + filename
-        cv2.imwrite(path, images[angle])
 
 
 def load_xyz_files(data_directory):
@@ -94,10 +78,27 @@ def load_xyz_files(data_directory):
     return pot_ids
 
 
-def read_xyz(filename):
+def load_images(files, cv2_flag):
+    images = dict()
+    for angle in files:
+        images[angle] = cv2.imread(files[angle], flags=cv2_flag)
+
+    return images
+
+
+def write_images(data_directory, files, images):
+    if not os.path.exists(data_directory):
+        os.makedirs(data_directory)
+
+    for angle in images:
+        path_directory, file_name = os.path.split(files[angle])
+        path_file = os.path.join(data_directory, file_name)
+        cv2.imwrite(path_file, images[angle])
+
+
+def read_xyz(file_path):
     points_3d = list()
-    with open(filename, 'r') as f:
-        radius = float(f.readline())
+    with open(file_path + '.xyz', 'r') as f:
 
         for line in f:
             point_3d = re.findall(r'[-0-9.]+', line)
@@ -110,24 +111,23 @@ def read_xyz(filename):
 
     f.close()
 
-    return points_3d, radius
+    return points_3d
 
 
-def write_points_3d(points_3d, radius, data_directory, filename):
-    if not os.path.exists(data_directory):
-        os.makedirs(data_directory)
+def write_xyz(points_3d, file_path):
 
-    f = open(data_directory + filename + '.xyz', 'w')
+    path_directory, file_name = os.path.split(file_path)
 
-    if len(points_3d) > 0:
-        f.write("%f\n" % radius)
+    if not os.path.exists(path_directory):
+        os.makedirs(path_directory)
+
+    f = open(file_path + '.xyz', 'w')
 
     for point_3d in points_3d:
         x, y, z = point_3d
         f.write("%f %f %f \n" % (x, y, z))
 
     f.close()
-
 
 #       ========================================================================
 #       LOCAL TEST

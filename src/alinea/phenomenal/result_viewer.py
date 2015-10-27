@@ -18,7 +18,8 @@
 
 #       ========================================================================
 #       External Import 
-
+import cv2
+import numpy
 import random
 import mayavi.mlab
 import matplotlib.cm
@@ -34,7 +35,13 @@ def show_points_3d(points_3d,
                    scale_factor=10.0,
                    figure_name="Cubes"):
     mayavi.mlab.figure(figure_name)
+
+    mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
+    mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
+    mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
+
     plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
+
     mayavi.mlab.show()
 
 
@@ -113,8 +120,7 @@ def plot_segments(segments,
 
 def show_images(images,
                 name_windows='Image Comparison',
-                names_axes=None,
-                color_map_axes=None):
+                names_axes=None):
 
     matplotlib.pyplot.title(name_windows)
     number_of_images = len(images)
@@ -128,21 +134,28 @@ def show_images(images,
         else:
             ax.set_title(names_axes[i])
 
-        if color_map_axes is None:
-            ax.imshow(image)
+        if len(numpy.shape(image)) == 2:
+            img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+            ax.imshow(img)
         else:
-            ax.imshow(image, cmap=color_map_axes[i])
+            img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            ax.imshow(img)
 
         i += 1
 
     matplotlib.pyplot.show()
 
 
-def show_image(image,
-               name_windows='Image',
-               color_map=matplotlib.pyplot.gray()):
+def show_image(image, name_windows='Image'):
 
     matplotlib.pyplot.title(name_windows)
-    matplotlib.pyplot.imshow(image, cmap=color_map)
+
+    if len(numpy.shape(image)) == 2:
+        img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        matplotlib.pyplot.imshow(img)
+    else:
+        img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        matplotlib.pyplot.imshow(img)
+
     matplotlib.pyplot.show()
 

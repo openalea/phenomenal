@@ -318,6 +318,8 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
     return points_3d
 
 
+
+
 #       ========================================================================
 #       LOCAL TEST
 
