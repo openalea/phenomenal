@@ -66,6 +66,8 @@ def binarization(images, factor, methods='mean_shift'):
                     binarize_images[angle] = side_binarization_adaptive_thresh(
                         images[angle], factor)
 
+
+
     except cv2.error, e:
         sys.stderr.write("OpenCvError - " + methods + " : " + str(e) + "\n")
         return None

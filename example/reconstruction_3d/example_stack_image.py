@@ -21,6 +21,8 @@
 import time
 import collections
 import cv2
+import numpy
+import scipy.optimize
 
 #       ========================================================================
 #       Local Import
@@ -158,51 +160,54 @@ def run_example_2(data_directory, calibration_name):
             t1 = time.time()
             print 'TOTAL !! ',  t1 - t0
 
-            # t0 = time.time()
-            #
-            # index = index_new
-            # index_new = collections.deque()
-            #
-            # ball_size = 20
-            # x_size, y_size, z_size = numpy.shape(mat)
-            #
-            # def func_lsq(p, x, y, z):
-            #     return z + (p[0] * x + p[1] * y + p[2])
-            #
-            # p = [numpy.random.random() * 10.0,
-            #      numpy.random.random() * 10.0,
-            #      numpy.random.random() * 10.0]
-            #
-            # print len(index)
-            # while True:
-            #     try:
-            #         x, y, z = index.popleft()
-            #         index_new.append((x, y, z))
-            #
-            #         x_min = max(x - ball_size, 0)
-            #         y_min = max(y - ball_size, 0)
-            #         z_min = max(z - ball_size, 0)
-            #
-            #         x_max = min(x + ball_size, x_size)
-            #         y_max = min(y + ball_size, y_size)
-            #         z_max = min(z + ball_size, z_size)
-            #
-            #         m = matrix[x_min:x_max, y_min:y_max, z_min:z_max]
-            #
-            #         xx, yy, zz = numpy.where(m == 1)
-            #
-            #         if len(xx) > 3:
-            #             result = scipy.optimize.leastsq(
-            #                 func_lsq, p, args=(xx, yy, zz))
-            #
-            #             a, b, d = result[0]
-            #             # print a, b, 1.0, d
-            #
-            #     except IndexError:
-            #         break
-            #
-            # t1 = time.time()
-            # print 'TOTAL !! ',  t1 - t0
+            t0 = time.time()
+
+            index = index_new
+            index_new = collections.deque()
+
+            ball_size = 20
+            x_size, y_size, z_size = numpy.shape(mat)
+
+            def func_lsq(p, x, y, z):
+                return z + (p[0] * x + p[1] * y + p[2])
+
+            p = [numpy.random.random() * 10.0,
+                 numpy.random.random() * 10.0,
+                 numpy.random.random() * 10.0]
+
+            normal = list()
+            print len(index)
+            while True:
+                try:
+                    x, y, z = index.popleft()
+                    index_new.append((x, y, z))
+
+                    x_min = max(x - ball_size, 0)
+                    y_min = max(y - ball_size, 0)
+                    z_min = max(z - ball_size, 0)
+
+                    x_max = min(x + ball_size, x_size)
+                    y_max = min(y + ball_size, y_size)
+                    z_max = min(z + ball_size, z_size)
+
+                    m = matrix[x_min:x_max, y_min:y_max, z_min:z_max]
+
+                    xx, yy, zz = numpy.where(m == 1)
+
+                    if len(xx) > 3:
+                        result = scipy.optimize.leastsq(
+                            func_lsq, p, args=(xx, yy, zz))
+
+                        a, b, d = result[0]
+                        normal.append((a, b, d))
+
+                        # print a, b, 1.0, d
+
+                except IndexError:
+                    break
+
+            t1 = time.time()
+            print 'TOTAL !! ',  t1 - t0
 
             points_3d = alinea.phenomenal.data_transformation.\
                 matrix_to_points_3d(mat, 2, [0, 0, 0])
@@ -210,12 +215,8 @@ def run_example_2(data_directory, calibration_name):
             alinea.phenomenal.result_viewer.show_points_3d(
                 points_3d, scale_factor=1.0)
 
-
-            alinea.phenomenal.misc.write_points_3d(
-                points_3d,
-                2,
-                '.',
-                'test_mesh')
+            alinea.phenomenal.misc.write_xyz(
+                points_3d, 'test_mesh')
 
 
             # skeleton_3d = alinea.phenomenal.skeletonize_3d.\
