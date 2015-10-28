@@ -46,9 +46,7 @@ def run_example(data_directory):
                 files, cv2.IMREAD_UNCHANGED)
 
             calibration = alinea.phenomenal.calibration_opencv.\
-                Calibration.read_calibration(
-                    '../calibration/example_calibration_opencv',
-                    file_is_in_share_directory=False)
+                Calibration.read_calibration('example_calibration_opencv')
 
             images_selected = dict()
             for angle in images:
