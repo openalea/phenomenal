@@ -26,7 +26,7 @@ import alinea.phenomenal.calibration_opencv
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
-
+import alinea.phenomenal.result_viewer
 
 #       ========================================================================
 #       Code
@@ -64,7 +64,7 @@ def test_multi_view_reconstruction_opencv_2():
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images, calibration, precision=radius, verbose=True)
 
-    assert len(points_3d) == 6115
+    assert len(points_3d) == 6096
 
     for angle in images:
         image = alinea.phenomenal.multi_view_reconstruction.\
@@ -83,5 +83,5 @@ def test_multi_view_reconstruction_opencv_2():
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    test_multi_view_reconstruction_opencv_1()
+    # test_multi_view_reconstruction_opencv_1()
     test_multi_view_reconstruction_opencv_2()

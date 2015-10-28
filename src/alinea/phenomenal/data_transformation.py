@@ -19,9 +19,10 @@
 #       ========================================================================
 #       External Import
 import os
+import collections
 import numpy
 import cv2
-import collections
+
 
 #       ========================================================================
 #       Code
@@ -75,15 +76,32 @@ def limit_points_3d(points_3d):
     return x_min, y_min, z_min, x_max, y_max, z_max
 
 
-def matrix_to_points_3d(matrix, radius, point_3d):
+def index_to_points_3d(index, radius):
+
+    points_3d = collections.deque()
+    ind = index.__copy__()
+    d = radius * 2
+    while True:
+        try:
+            x, y, z = ind.popleft()
+            pt_3d = (x * d, y * d, z * d)
+            points_3d.append(pt_3d)
+
+        except IndexError:
+            break
+
+    return points_3d
+
+
+def matrix_to_points_3d(matrix, radius):
 
     points_3d = list()
     for (x, y, z), value in numpy.ndenumerate(matrix):
         if value == 1:
 
-            pt_3d = (point_3d[0] + x * radius * 2,
-                     point_3d[1] + y * radius * 2,
-                     point_3d[2] + z * radius * 2)
+            pt_3d = (x * radius * 2,
+                     y * radius * 2,
+                     z * radius * 2)
 
             points_3d.append(pt_3d)
 
@@ -117,7 +135,60 @@ def points_3d_to_matrix(points_3d, radius):
     return mat, index
 
 
-#       ========================================================================
+def remove_internal_points_3d(points_3d, radius):
+
+    matrix, index = points_3d_to_matrix(points_3d, radius)
+
+    index_new = collections.deque()
+    mat = matrix.copy()
+    while True:
+        try:
+            x, y, z = index.popleft()
+
+            if (matrix[x - 1, y - 1, z] == 1 and
+                matrix[x - 1, y, z] == 1 and
+                matrix[x - 1, y + 1, z] == 1 and
+                matrix[x, y - 1, z] == 1 and
+                matrix[x, y + 1, z] == 1 and
+                matrix[x + 1, y - 1, z] == 1 and
+                matrix[x + 1, y, z] == 1 and
+                matrix[x + 1, y + 1, z] == 1 and
+
+                matrix[x - 1, y - 1, z - 1] == 1 and
+                matrix[x - 1, y, z - 1] == 1 and
+                matrix[x - 1, y + 1, z - 1] == 1 and
+                matrix[x, y - 1, z - 1] == 1 and
+                matrix[x, y, z - 1] == 1 and
+                matrix[x, y + 1, z - 1] == 1 and
+                matrix[x + 1, y - 1, z - 1] == 1 and
+                matrix[x + 1, y, z - 1] == 1 and
+                matrix[x + 1, y + 1, z - 1] == 1 and
+
+                matrix[x - 1, y - 1, z + 1] == 1 and
+                matrix[x - 1, y, z + 1] == 1 and
+                matrix[x - 1, y + 1, z + 1] == 1 and
+                matrix[x, y - 1, z + 1] == 1 and
+                matrix[x, y, z + 1] == 1 and
+                matrix[x, y + 1, z + 1] == 1 and
+                matrix[x + 1, y - 1, z + 1] == 1 and
+                matrix[x + 1, y, z + 1] == 1 and
+                    matrix[x + 1, y + 1, z + 1] == 1):
+                mat[x, y, z] = 0
+            else:
+                index_new.append((x, y, z))
+
+        except IndexError:
+
+            if len(index) > 0:
+                index_new.append((x, y, z))
+                continue
+            else:
+                break
+
+    return index_to_points_3d(index_new, radius)
+
+
+# ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":

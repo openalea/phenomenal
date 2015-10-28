@@ -25,6 +25,7 @@ import numpy
 #       ========================================================================
 #       Code
 
+
 def skeletonize(image, methods='thinning'):
     if methods == 'thinning':
         return skeletonize_thinning(image)
@@ -56,7 +57,6 @@ def skeletonize_erode_dilate(image):
     :param image: binary image with 0 or 255
     :return: skeleton of a binary image.
     """
-
 
     skeleton = numpy.zeros(image.shape, numpy.uint8)
 
