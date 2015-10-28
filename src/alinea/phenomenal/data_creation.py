@@ -52,12 +52,12 @@ def build_images_1():
     return images
 
 
-def build_object_1(size, radius, point_3d):
+def build_object_1(size, radius, origin):
 
     matrix = numpy.ones((size, size, size), dtype=numpy.uint8)
 
     points_3d = alinea.phenomenal.data_transformation.matrix_to_points_3d(
-        matrix, radius, point_3d)
+        matrix, radius, origin)
 
     return points_3d
 

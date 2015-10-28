@@ -93,15 +93,15 @@ def index_to_points_3d(index, radius):
     return points_3d
 
 
-def matrix_to_points_3d(matrix, radius):
+def matrix_to_points_3d(matrix, radius, origin=(0, 0, 0)):
 
     points_3d = list()
     for (x, y, z), value in numpy.ndenumerate(matrix):
         if value == 1:
 
-            pt_3d = (x * radius * 2,
-                     y * radius * 2,
-                     z * radius * 2)
+            pt_3d = (origin[0] + x * radius * 2,
+                     origin[1] + y * radius * 2,
+                     origin[2] + z * radius * 2)
 
             points_3d.append(pt_3d)
 
