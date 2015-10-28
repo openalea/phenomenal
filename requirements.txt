@@ -1,10 +1,10 @@
-numpy==1.10.1
-matplotlib==1.4.3
-ipython==4.0.0
+numpy
+matplotlib
+ipython
 ##ipython[notebook]
-scikit-image==0.11.3
-nose==1.3.7
-scons==2.3.6
+scikit-image
+nose
+scons
 
 #cv2==3.0.0
 #scikit==0.16.0
