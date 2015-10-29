@@ -78,7 +78,6 @@ def load_configuration_file(file_name, file_is_in_share_directory=True):
             if str(sub_key).startswith('background'):
                 dict_config[key][sub_key] = cv2.imread(
                     share_data_directory / str(dict_config[key][sub_key]),
-                    #~ os.path.join(share_data_directory, str(dict_config[key][sub_key])),
                     cv2.IMREAD_COLOR)
 
     return dict_config
@@ -95,7 +94,6 @@ def binarization_factor(file_name, file_is_in_share_directory=True):
 
 def binarization_factor_free(file_name, file_is_in_share_directory=True):
     dict_config = load_configuration_file(file_name, file_is_in_share_directory)
-
     factor = alinea.phenomenal.binarization_factor.BinarizationFactorFree()
     factor.fill_config(dict_config)
 
