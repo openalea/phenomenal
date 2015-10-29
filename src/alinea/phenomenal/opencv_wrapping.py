@@ -241,8 +241,7 @@ def findContours (binaryimage):
     """
     copied = binaryimage.copy()
     if "3.0" in cv2.__version__:
-        contours = cv2.findContours(copied, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        hierarchy = None
+        im2, contours, hierarchy = cv2.findContours(copied, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     else:
         contours, hierarchy = cv2.findContours(copied, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     #select the bigest
