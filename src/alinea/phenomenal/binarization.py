@@ -24,7 +24,9 @@
 import sys
 import numpy
 import cv2
+
 import alinea.phenomenal.opencv_wrapping as ocv2
+
 
 #       ========================================================================
 #       Local Import
@@ -41,6 +43,7 @@ def binarization(images, factor, methods='mean_shift', emptiesTop=None):
             mean_image = get_mean_image(images['side'].values())
             if mean_image is None:
                 return None
+
         binarize_images = dict([('top',dict()), ('side', dict())])
         for angle in images['top']:
             if methods == 'elcom':
@@ -48,7 +51,8 @@ def binarization(images, factor, methods='mean_shift', emptiesTop=None):
                     images['top'][angle], factor, emptiesTop)
             else:
                 binarize_images['top'][angle] = top_binarization_hsv(
-                        images['top'][angle], factor)
+                    images['top'][angle], factor)
+
         for angle in images['side']:
             if methods == 'mean_shift':
                 binarize_images['side'][angle] = side_binarization_mean_shift(
@@ -308,8 +312,10 @@ def top_binarization_elcom(bgr, factor, emptiesTop, useEmpty=True):
     hls = cv2.cvtColor(bgr, cv2.COLOR_BGR2HLS)
     xyz = cv2.cvtColor(bgr, cv2.COLOR_BGR2XYZ)
     yuv = cv2.cvtColor(bgr, cv2.COLOR_BGR2YUV)
+
     mask_pot = factor.top_cubicle.mask_pot
     mask_rails = factor.top_cubicle.mask_rails
+
     if factor.General.cabin == 5:
         if useEmpty:
             emptyImg = emptiesTop[0]
@@ -513,12 +519,16 @@ def top_binarization_elcom(bgr, factor, emptiesTop, useEmpty=True):
         emptyImg = numpy.zeros(bgr.shape, 'uint8')
         mask_pot = numpy.zeros(bgr.shape[0,2], 'uint8')
         mask_rails = numpy.zeros(bgr.shape[0,2], 'uint8')
+
+
     mask = numpy.bitwise_or(mask_pot, mask_rails)
     imageBinSeuilPot = numpy.bitwise_and(imageBinSeuil, mask)
     imageBinSeuilPot = ocv2.open(imageBinSeuilPot, iterations=3)
+
     if useEmpty:
         imageBinDiff = alinea.phenomenal.binarization_algorithm.mean_shift_binarization(bgr, emptyImg)*255
         imageBinDiff = numpy.bitwise_and(numpy.bitwise_and(imageBinDiff, imageBinSeuil), numpy.bitwise_not(mask))
     else:
         imageBinDiff = numpy.zeros(mask.shape, "uint8")
+
     return numpy.bitwise_or(imageBinSeuilPot, imageBinDiff)

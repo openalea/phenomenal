@@ -94,7 +94,6 @@ def binarization_factor(file_name, file_is_in_share_directory=True):
     return factor
 
 def binarization_factor_free(file_name, file_is_in_share_directory=True):
-
     dict_config = load_configuration_file(file_name, file_is_in_share_directory)
 
     factor = alinea.phenomenal.binarization_factor.BinarizationFactorFree()
