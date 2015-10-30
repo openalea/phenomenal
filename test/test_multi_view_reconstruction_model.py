@@ -22,7 +22,6 @@ import numpy
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.result_viewer
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
