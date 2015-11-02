@@ -21,8 +21,6 @@ where a chessboard is rotating instead of a plant in a picture cabin.
 #       ========================================================================
 #       External Import
 import numpy
-
-
 from math import radians, cos, pi, sin
 from scipy.optimize import leastsq
 
