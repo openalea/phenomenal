@@ -254,26 +254,6 @@ def project_points_on_image(points, radius, image, calibration, angle):
 
     return img
 
-def project_points_on_image(points, radius, image, calibration, angle):
-
-    height_image, length_image = numpy.shape(image)
-    img = numpy.zeros((height_image, length_image))
-
-    for point in points:
-        x_min, x_max, y_min, y_max = bbox_projection(point,
-                                                     radius,
-                                                     calibration,
-                                                     angle)
-
-        x_min = min(max(math.floor(x_min), 0), length_image - 1)
-        x_max = min(max(math.ceil(x_max), 0), length_image - 1)
-        y_min = min(max(math.floor(y_min), 0), height_image - 1)
-        y_max = min(max(math.ceil(y_max), 0), height_image - 1)
-
-        img[y_min:y_max + 1, x_min:x_max + 1] = 255
-
-    return img
-
 
 def reconstruction_3d(images, calibration, precision=4, verbose=False):
 
@@ -286,13 +266,12 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
     points_3d = collections.deque()
     points_3d.append(origin_point)
 
-    # radius = origin.radius
     nb_iteration = 0
-    while origin_radius > 0 and precision < origin_radius:
-        origin_radius >>= 1
+    while precision < origin_radius:
+        precision *= 2
         nb_iteration += 1
 
-    radius = 2048
+    radius = precision
     for i in range(nb_iteration):
 
         points_3d = split_points_3d(points_3d, radius)
@@ -313,11 +292,7 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
 
         # points = octree_builder(images, points_3d, radius, calibration)
 
-
-
     return points_3d
-
-
 
 
 #       ========================================================================

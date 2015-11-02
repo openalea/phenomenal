@@ -57,7 +57,7 @@ def run_example(data_directory, calibration_name):
             points_3d = alinea.phenomenal.multi_view_reconstruction. \
                 reconstruction_3d(images_selected,
                                   calibration,
-                                  precision=4,
+                                  precision=5,
                                   verbose=True)
 
             print pot_id, date
@@ -66,11 +66,9 @@ def run_example(data_directory, calibration_name):
 
             file_name = files[0].split('\\')[-1].split('_vis_')[0]
 
-            alinea.phenomenal.misc.write_points_3d(
+            alinea.phenomenal.misc.write_xyz(
                 points_3d,
-                4,
-                data_directory + 'reconstruction_3d_model/',
-                file_name)
+                data_directory + 'reconstruction_3d_model/' + file_name)
 
 #       ========================================================================
 #       LOCAL TEST
