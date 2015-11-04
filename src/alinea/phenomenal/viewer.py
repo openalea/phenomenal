@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       tools_test.py :
+#       viewer.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -159,3 +159,21 @@ def show_image(image, name_windows='Image'):
 
     matplotlib.pyplot.show()
 
+
+def show_mesh(vertices, faces, normals=None, centers=None):
+
+    if normals is not None and centers is not None:
+        mayavi.mlab.quiver3d(centers[:, 0], centers[:, 1], centers[:, 2],
+                             normals[:, 0], normals[:, 1], normals[:, 2],
+                             line_width=1.0, scale_factor=1)
+
+    mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
+    mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
+    mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
+
+    mayavi.mlab.triangular_mesh([vert[0] for vert in vertices],
+                                [vert[1] for vert in vertices],
+                                [vert[2] for vert in vertices],
+                                faces)
+
+    mayavi.mlab.show()

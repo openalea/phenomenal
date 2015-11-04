@@ -18,7 +18,7 @@
 
 #       ========================================================================
 #       External Import
-import pylab
+import os
 import cv2
 import numpy
 
@@ -41,11 +41,14 @@ class Chessboard(object):
         # choose bottom-left corner as origin, to match australian convention
         self.object_points = self.object_points - self.object_points[40, :]
 
-    def print_value(self):
-        print 'Chessboard Object Values :'
-        print 'Square size : ', self.square_size
-        print 'Shape : ', self.shape
-        print 'Object points : ', self.object_points
+    def __str__(self):
+        s = ''
+        s += 'Chessboard Object Values :' + os.linesep
+        s += 'Square size : ' + str(self.square_size) + os.linesep
+        s += 'Shape : ' + str(self.shape) + os.linesep
+        s += 'Object points : ' + str(self.object_points) + os.linesep
+
+        return s
 
     def find_corners(self, image):
         try:
@@ -72,7 +75,9 @@ class Chessboard(object):
 
         return corners
 
-    def plot_corners(self, corners, image, figure_name='Image'):
+    def draw_chessboard_corners_on_image(self,
+                                         corners,
+                                         image):
 
         y_min = min(corners[:, 0, 0])
         y_max = max(corners[:, 0, 0])
@@ -83,11 +88,9 @@ class Chessboard(object):
         image = cv2.drawChessboardCorners(image, self.shape, corners, True)
         image = image[x_min - r:x_max + r, y_min - r:y_max + r]
 
-        cv2.namedWindow(figure_name, cv2.WINDOW_NORMAL)
-        cv2.imshow(figure_name, image)
-        cv2.waitKey()
+        return image
 
-    def plot_points(self, projection_points, image, figure_name='Image'):
+    def draw_points_on_image(self, projection_points, image):
 
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
@@ -95,15 +98,7 @@ class Chessboard(object):
         image[projection_points[:, 0, 1],
               projection_points[:, 0, 0]] = [0, 0, 255]
 
-        f = pylab.figure()
-        f.canvas.set_window_title(figure_name)
-        pylab.title(figure_name)
-        pylab.imshow(image)
-        pylab.show()
-
-        f.clf()
-        pylab.close()
-
+        return image
 
 #       ========================================================================
 #       LOCAL TEST
