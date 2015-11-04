@@ -26,7 +26,7 @@ import alinea.phenomenal.calibration_opencv
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
-import alinea.phenomenal.result_viewer
+
 
 #       ========================================================================
 #       Code
