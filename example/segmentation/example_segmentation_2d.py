@@ -28,7 +28,7 @@ import pylab
 #       Local Import
 import alinea.phenomenal.segmentation_2d
 import alinea.phenomenal.misc
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 
 #       ========================================================================
 #       Code
@@ -80,7 +80,7 @@ def run_example(data_directory):
                                                       segments,
                                                       image)
 
-                    alinea.phenomenal.result_viewer.show_images(
+                    alinea.phenomenal.viewer.show_images(
                         [images[angle], img],
                         name_windows='Image & Segmentation : %d degree' % angle,
                         names_axes=['Image', 'Segmentation'],

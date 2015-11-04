@@ -23,7 +23,7 @@ import cv2
 #       ========================================================================
 #       Local Import
 import alinea.phenomenal.skeletonize_2d
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 import alinea.phenomenal.misc
 
 
@@ -50,7 +50,7 @@ def run_example(data_directory):
 
             print pot_id, date
             for angle in skeleton_images:
-                alinea.phenomenal.result_viewer.show_images(
+                alinea.phenomenal.viewer.show_images(
                     [images[angle], skeleton_images[angle]],
                     name_windows='Image & Skeleton',
                     names_axes=['Image', 'Skeleton'])

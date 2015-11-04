@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       repair_processing.py :
+#       binarization_post_processing.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -19,15 +19,13 @@
 #       ========================================================================
 #       External Import 
 import cv2
-import numpy as np
+import numpy
 
 #       ========================================================================
 #       Local Import
-from openalea.deploy.shared_data import shared_data
-import alinea.phenomenal
-
 
 #       ========================================================================
+
 
 def clean_noise(image, mask=None):
     """
@@ -63,32 +61,29 @@ def clean_noise(image, mask=None):
     return res
 
 
-def fill_up_prop(image, is_top_image=False):
+def remove_plant_support_from_image(image, is_top_image=False, mask=None):
 
     img = image.copy()
 
-    if is_top_image is False:
-        configuration_directory = shared_data(alinea.phenomenal)
-        mask = cv2.imread(configuration_directory + "/roi_stem.png",
-                          cv2.IMREAD_GRAYSCALE)
+    if is_top_image is False and mask is not None:
+        img = cv2.bitwise_and(image, image, mask=mask)
 
-        if mask is not None:
-            img = cv2.bitwise_and(image, image, mask=mask)
-
-    kernel = np.ones((7, 7), np.uint8)
+    kernel = numpy.ones((7, 7),numpy.uint8)
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
     img = cv2.add(image, img)
 
     return img
 
 
-def repair_processing(images):
-    repair_images = dict()
-    for angle in images:
-        if angle == -1:
-            repair_images[angle] = fill_up_prop(images[angle],
-                                                is_top_image=True)
-        else:
-            repair_images[angle] = fill_up_prop(images[angle])
+def remove_plant_support_from_images(images, mask=None):
 
-    return repair_images
+    post_processing_images = dict()
+    for angle in images:
+        if angle < 0:
+            post_processing_images[angle] = remove_plant_support_from_image(
+                images[angle], is_top_image=True, mask=mask)
+        else:
+            post_processing_images[angle] = remove_plant_support_from_image(
+                images[angle], is_top_image=False, mask=mask)
+
+    return post_processing_images

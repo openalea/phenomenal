@@ -25,7 +25,7 @@ import cv2
 import alinea.phenomenal.binarization
 import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 
 
 #       ========================================================================
@@ -52,7 +52,7 @@ def run_example(data_directory):
 
             print pot_id, date
             for angle in images:
-                alinea.phenomenal.result_viewer.show_images(
+                alinea.phenomenal.viewer.show_images(
                     [images[angle], images_binarize_adaptive_threshold[angle]],
                     str(angle))
 

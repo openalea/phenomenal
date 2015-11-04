@@ -27,7 +27,7 @@ import mayavi.mlab
 import alinea.phenomenal.misc
 import alinea.phenomenal.segmentation_3d
 import alinea.phenomenal.skeletonize_3d
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 
 #       ========================================================================
 #       Code
@@ -60,7 +60,7 @@ def run_example(data_directory):
 
 def example_segmentation_3d(points_3d):
 
-    alinea.phenomenal.result_viewer.show_points_3d(
+    alinea.phenomenal.viewer.show_points_3d(
         points_3d, color=(0.1, 0.7, 0.1), scale_factor=10)
 
     #   ========================================================================
@@ -71,8 +71,8 @@ def example_segmentation_3d(points_3d):
     #   ========================================================================
 
     mayavi.mlab.figure("Skeleton")
-    alinea.phenomenal.result_viewer.plot_vectors(skeleton_3d)
-    alinea.phenomenal.result_viewer.plot_points_3d(
+    alinea.phenomenal.viewer.plot_vectors(skeleton_3d)
+    alinea.phenomenal.viewer.plot_points_3d(
         points_3d, color=(0.1, 0.7, 0.1), scale_factor=3)
     mayavi.mlab.show()
 
@@ -85,9 +85,9 @@ def example_segmentation_3d(points_3d):
 
     mayavi.mlab.figure("Organs")
     for leaf in leaves:
-        alinea.phenomenal.result_viewer.plot_segments(leaf.segments)
-    alinea.phenomenal.result_viewer.plot_segments(stem.segments)
-    alinea.phenomenal.result_viewer.plot_points_3d(
+        alinea.phenomenal.viewer.plot_segments(leaf.segments)
+    alinea.phenomenal.viewer.plot_segments(stem.segments)
+    alinea.phenomenal.viewer.plot_points_3d(
         points_3d, color=(0.1, 0.7, 0.1), scale_factor=3)
     mayavi.mlab.show()
 
@@ -95,16 +95,16 @@ def example_segmentation_3d(points_3d):
 
     mayavi.mlab.figure("Propagation")
     stem_points_3d = extract_points_3d(stem)
-    color = alinea.phenomenal.result_viewer.plot_segments(stem.segments)
-    alinea.phenomenal.result_viewer.plot_points_3d(
+    color = alinea.phenomenal.viewer.plot_segments(stem.segments)
+    alinea.phenomenal.viewer.plot_points_3d(
         stem_points_3d, color=color, scale_factor=3)
 
     for leaf in leaves:
         leaf_points_3d = extract_points_3d(leaf)
 
-        color = alinea.phenomenal.result_viewer.plot_segments(leaf.segments)
+        color = alinea.phenomenal.viewer.plot_segments(leaf.segments)
 
-        alinea.phenomenal.result_viewer.plot_points_3d(
+        alinea.phenomenal.viewer.plot_points_3d(
             leaf_points_3d, color=color, scale_factor=3)
 
     mayavi.mlab.show()

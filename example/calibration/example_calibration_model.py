@@ -28,7 +28,7 @@ import cv2
 #       Local Import
 import alinea.phenomenal.chessboard
 import alinea.phenomenal.misc
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.calibration_model
 #       ========================================================================
@@ -132,7 +132,7 @@ def example_calibration_reprojection(data_directory, calib_name):
 
     img[y_min:y_max + 1, x_min:x_max + 1] = [255, 0, 0]
 
-    alinea.phenomenal.result_viewer.show_image(img)
+    alinea.phenomenal.viewer.show_image(img)
 
 
 #       ========================================================================

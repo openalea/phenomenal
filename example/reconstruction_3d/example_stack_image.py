@@ -26,7 +26,7 @@ import scipy.optimize
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
@@ -104,7 +104,7 @@ def run_example_2(data_directory, calibration_name):
                                   precision=2,
                                   verbose=True)
 
-            alinea.phenomenal.result_viewer.show_points_3d(
+            alinea.phenomenal.viewer.show_points_3d(
                 points_3d, scale_factor=1)
 
             t0 = time.time()
@@ -212,7 +212,7 @@ def run_example_2(data_directory, calibration_name):
             points_3d = alinea.phenomenal.data_transformation.\
                 matrix_to_points_3d(mat, 2, [0, 0, 0])
 
-            alinea.phenomenal.result_viewer.show_points_3d(
+            alinea.phenomenal.viewer.show_points_3d(
                 points_3d, scale_factor=1.0)
 
             alinea.phenomenal.misc.write_xyz(

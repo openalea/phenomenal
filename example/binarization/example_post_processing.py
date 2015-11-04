@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       example_repair_processing.py : 
+#       example_post_processing.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -19,12 +19,14 @@
 #       ========================================================================
 #       External Import
 import cv2
-
+import os
+import openalea.deploy.shared_data
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.repair_processing
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal
+import alinea.phenomenal.binarization_post_processing
+import alinea.phenomenal.viewer
 import alinea.phenomenal.misc
 
 #       ========================================================================
@@ -42,18 +44,25 @@ def run_example(data_directory):
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            repair_images = alinea.phenomenal.repair_processing.\
-                repair_processing(images)
+            share_data_directory = openalea.deploy.shared_data.\
+                shared_data(alinea.phenomenal)
 
-            # print pot_id, date
-            # for angle in repair_images:
-            #     alinea.phenomenal.result_viewer.show_images(
-            #         [images[angle], repair_images[angle]], str(angle))
+            mask_path = os.path.join(share_data_directory, 'roi_stem.png')
+            mask_image = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+
+            post_processing_images = alinea.phenomenal.\
+                binarization_post_processing.\
+                remove_plant_support_from_images(images, mask=mask_image)
+
+            print pot_id, date
+            for angle in post_processing_images:
+                alinea.phenomenal.viewer.show_images(
+                    [images[angle], post_processing_images[angle]], str(angle))
 
             alinea.phenomenal.misc.write_images(
-                data_directory + 'repair_processing/',
+                data_directory + 'post_processing_images/',
                 files,
-                repair_images)
+                post_processing_images)
 
 #       ========================================================================
 #       LOCAL TEST

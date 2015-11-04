@@ -22,7 +22,7 @@ import glob
 import os
 import re
 import cv2
-
+import json
 
 #       ========================================================================
 #       Code
@@ -78,14 +78,6 @@ def load_xyz_files(data_directory):
     return pot_ids
 
 
-def load_images(files, cv2_flag):
-    images = dict()
-    for angle in files:
-        images[angle] = cv2.imread(files[angle], flags=cv2_flag)
-
-    return images
-
-
 def write_images(data_directory, files, images):
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)
@@ -94,6 +86,30 @@ def write_images(data_directory, files, images):
         path_directory, file_name = os.path.split(files[angle])
         path_file = os.path.join(data_directory, file_name)
         cv2.imwrite(path_file, images[angle])
+
+
+def load_images(files, cv2_flag):
+    images = dict()
+    for angle in files:
+        images[angle] = cv2.imread(files[angle], flags=cv2_flag)
+
+    return images
+
+
+def write_xyz(points_3d, file_path):
+
+    path_directory, file_name = os.path.split(file_path)
+
+    if not os.path.exists(path_directory):
+        os.makedirs(path_directory)
+
+    f = open(file_path + '.xyz', 'w')
+
+    for point_3d in points_3d:
+        x, y, z = point_3d
+        f.write("%f %f %f \n" % (x, y, z))
+
+    f.close()
 
 
 def read_xyz(file_path):
@@ -114,20 +130,25 @@ def read_xyz(file_path):
     return points_3d
 
 
-def write_xyz(points_3d, file_path):
+def write_mesh(vertices, faces, mesh_path):
 
-    path_directory, file_name = os.path.split(file_path)
+    mesh_path = os.path.realpath(mesh_path)
+    path_directory, file_name = os.path.split(mesh_path)
 
     if not os.path.exists(path_directory):
         os.makedirs(path_directory)
 
-    f = open(file_path + '.xyz', 'w')
+    with open(mesh_path + '.json', 'w') as outfile:
+        json.dump({'vertices': vertices.tolist(),
+                   'faces': faces.tolist()}, outfile)
 
-    for point_3d in points_3d:
-        x, y, z = point_3d
-        f.write("%f %f %f \n" % (x, y, z))
 
-    f.close()
+def read_mesh(file_path):
+
+    with open(file_path + '.json', 'r') as infile:
+        load_mesh = json.load(infile)
+
+    return load_mesh['vertices'], load_mesh['faces']
 
 #       ========================================================================
 #       LOCAL TEST

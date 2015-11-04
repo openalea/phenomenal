@@ -24,7 +24,7 @@ import numpy
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
@@ -75,7 +75,7 @@ def run_example(data_directory, calibration_name):
                 img = numpy.subtract(image, images_selected[angle])
                 img[img == -255] = 255
                 print "Angle : ", angle, ' Err : ', numpy.count_nonzero(img)
-                alinea.phenomenal.result_viewer.show_images(
+                alinea.phenomenal.viewer.show_images(
                     [images_selected[angle], img, image])
 
 

@@ -23,11 +23,10 @@ import numpy
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.repair_processing
+import alinea.phenomenal.binarization_post_processing
 import alinea.phenomenal.binarization
 import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
-# import alinea.phenomenal.result_viewer
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.calibration_manual
@@ -36,6 +35,7 @@ import alinea.phenomenal.segmentation_2d
 
 #       ========================================================================
 #       Code
+
 
 def write_segmentation_on_image(stem, leaves, segments, skeleton_image):
 
@@ -175,10 +175,10 @@ def example_repair_processing(images):
     repair_images = dict()
     for angle in images:
         if angle == -1:
-            repair_images[angle] = alinea.phenomenal.repair_processing.\
+            repair_images[angle] = alinea.phenomenal.binarization_post_processing.\
                 fill_up_prop(images[angle], is_top_image=True)
         else:
-            repair_images[angle] = alinea.phenomenal.repair_processing.\
+            repair_images[angle] = alinea.phenomenal.binarization_post_processing.\
                 fill_up_prop(images[angle])
 
     return repair_images

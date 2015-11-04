@@ -26,7 +26,7 @@ import mayavi.mlab
 
 import alinea.phenomenal.misc
 import alinea.phenomenal.skeletonize_3d
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 
 
 #       ========================================================================
@@ -44,7 +44,7 @@ def run_example(data_directory):
             xyz_file = pot_ids[pot_id][date]
             points_3d, radius = alinea.phenomenal.misc.read_xyz(xyz_file)
 
-            alinea.phenomenal.result_viewer.show_points_3d(
+            alinea.phenomenal.viewer.show_points_3d(
                 points_3d, color=(0.1, 0.7, 0.1), scale_factor=10)
 
             # alinea.phenomenal.skeletonize_3d.test_skeletonize_3d(
@@ -54,8 +54,8 @@ def run_example(data_directory):
                 skeletonize_3d_segment(points_3d, 10, 50)
 
             mayavi.mlab.figure("Skeleton")
-            alinea.phenomenal.result_viewer.plot_vectors(skeleton_3d)
-            alinea.phenomenal.result_viewer.plot_points_3d(
+            alinea.phenomenal.viewer.plot_vectors(skeleton_3d)
+            alinea.phenomenal.viewer.plot_points_3d(
                 points_3d, color=(0.1, 0.7, 0.1), scale_factor=3)
             mayavi.mlab.show()
 

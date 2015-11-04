@@ -29,19 +29,19 @@ import numpy
 
 
 def meshing(matrix):
-    verts, faces = skimage.measure.marching_cubes(matrix, 0)
+    vertices, faces = skimage.measure.marching_cubes(matrix, 0)
 
     faces = skimage.measure.correct_mesh_orientation(
-        matrix, verts, faces, gradient_direction='descent')
+        matrix, vertices, faces, gradient_direction='descent')
 
-    return verts, faces
+    return vertices, faces
 
 
-def compute_normal(verts, faces):
-     # Fancy indexing to define two vector arrays from triangle vertices
-    actual_verts = verts[faces]
-    a = actual_verts[:, 0, :] - actual_verts[:, 1, :]
-    b = actual_verts[:, 0, :] - actual_verts[:, 2, :]
+def compute_normal(vertices, faces):
+    # Fancy indexing to define two vector arrays from triangle vertices
+    actual_vertices = vertices[faces]
+    a = actual_vertices[:, 0, :] - actual_vertices[:, 1, :]
+    b = actual_vertices[:, 0, :] - actual_vertices[:, 2, :]
 
     # Find normal vectors for each face via cross product
     crosses = numpy.cross(a, b)
@@ -51,12 +51,12 @@ def compute_normal(verts, faces):
     return crosses
 
 
-def center_of_vertice(verts, faces):
-    actual_verts = verts[faces]
+def center_of_vertices(vertices, faces):
+    actual_vertices = vertices[faces]
 
-    center = (actual_verts[:, 0, :] +
-              actual_verts[:, 1, :] +
-              actual_verts[:, 2, :]) / 3.0
+    center = (actual_vertices[:, 0, :] +
+              actual_vertices[:, 1, :] +
+              actual_vertices[:, 2, :]) / 3.0
 
     return center
 

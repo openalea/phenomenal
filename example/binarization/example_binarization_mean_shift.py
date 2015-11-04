@@ -25,7 +25,7 @@ import cv2
 import alinea.phenomenal.binarization
 import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 
 #       ========================================================================
 #       Code
