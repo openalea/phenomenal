@@ -18,37 +18,39 @@
 
 #       ========================================================================
 #       External Import
-import os
 import cv2
 import numpy
+import json
 
 
 #       ========================================================================
 #       Code
 class Chessboard(object):
-    def __init__(self, square_size, length, height):
+    def __init__(self, square_size, shape):
 
         # Initialization
         self.square_size = square_size
-        self.shape = (length, height)
-        self.object_points = numpy.zeros((length * height, 3), numpy.float32)
+        self.shape = shape
+        self.corners_points = dict()
+
+
+        self.object_points = numpy.zeros((self.shape[0] * self.shape[1], 3), numpy.float32)
 
         # Build Chessboard
-        self.object_points[:, :2] = \
-            numpy.mgrid[0:length, 0:height].T.reshape(-1, 2) * self.square_size
+        self.object_points[:, :2] = numpy.mgrid[0:self.shape[0], 0:self.shape[1]].T.reshape(-1, 2) * self.square_size
 
         # 48 points are stored in an 48x3 array obj
         # choose bottom-left corner as origin, to match australian convention
         self.object_points = self.object_points - self.object_points[40, :]
 
     def __str__(self):
-        s = ''
-        s += 'Chessboard Object Values :' + os.linesep
-        s += 'Square size : ' + str(self.square_size) + os.linesep
-        s += 'Shape : ' + str(self.shape) + os.linesep
-        s += 'Object points : ' + str(self.object_points) + os.linesep
 
-        return s
+        my_str = ''
+        my_str += 'Chessboard Object Values :'
+        my_str += 'Square size (mm): ' + str(self.square_size)
+        my_str += 'Shape : ' + str(self.shape)
+
+        return my_str
 
     def find_corners(self, image):
         try:
@@ -75,30 +77,64 @@ class Chessboard(object):
 
         return corners
 
-    def draw_chessboard_corners_on_image(self,
-                                         corners,
-                                         image):
+    def find_and_add_corners(self, angle, image):
+        corners_points = self.find_corners(image)
+        if corners_points is not None:
+            self.corners_points[angle] = corners_points[:, 0, :]
 
-        y_min = min(corners[:, 0, 0])
-        y_max = max(corners[:, 0, 0])
-        x_min = min(corners[:, 0, 1])
-        x_max = max(corners[:, 0, 1])
-        r = 50
+    def write(self, file_path):
 
-        image = cv2.drawChessboardCorners(image, self.shape, corners, True)
-        image = image[x_min - r:x_max + r, y_min - r:y_max + r]
+        save_class = dict()
+        save_class['square_size'] = self.square_size
+        save_class['shape'] = self.shape
+        save_class['corners_points'] = self.corners_points
 
-        return image
+        with open(file_path + '.json', 'w') as file_corners:
+            json.dump(save_class, file_corners)
 
-    def draw_points_on_image(self, projection_points, image):
+    def read(self, file_path):
 
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        with open(file_path + '.json', 'r') as file_corners:
+            save_class = json.load(file_corners)
 
-        projection_points = projection_points.astype(int)
-        image[projection_points[:, 0, 1],
-              projection_points[:, 0, 0]] = [0, 0, 255]
+            self.square_size = save_class['square_size']
+            self.shape = save_class['shape']
+            self.corners_points = save_class['corners_points']
 
-        return image
+
+
+    # def plot_corners(self, corners, image, figure_name='Image'):
+    #
+    #     y_min = min(corners[:, 0, 0])
+    #     y_max = max(corners[:, 0, 0])
+    #     x_min = min(corners[:, 0, 1])
+    #     x_max = max(corners[:, 0, 1])
+    #     r = 50
+    #
+    #     image = cv2.drawChessboardCorners(image, self.shape, corners, True)
+    #     image = image[x_min - r:x_max + r, y_min - r:y_max + r]
+    #
+    #     cv2.namedWindow(figure_name, cv2.WINDOW_NORMAL)
+    #     cv2.imshow(figure_name, image)
+    #     cv2.waitKey()
+    #
+    # def plot_points(self, projection_points, image, figure_name='Image'):
+    #
+    #     image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    #
+    #     projection_points = projection_points.astype(int)
+    #     image[projection_points[:, 0, 1],
+    #           projection_points[:, 0, 0]] = [0, 0, 255]
+    #
+    #     f = pylab.figure()
+    #     f.canvas.set_window_title(figure_name)
+    #     pylab.title(figure_name)
+    #     pylab.imshow(image)
+    #     pylab.show()
+    #
+    #     f.clf()
+    #     pylab.close()
+
 
 #       ========================================================================
 #       LOCAL TEST
