@@ -20,13 +20,10 @@
 #       External Import
 import glob
 import math
+import pickle
 
 import numpy
 import cv2
-
-
-
-
 
 
 #       ========================================================================
@@ -55,63 +52,65 @@ def example_calibration(data_directory, calib_name):
     # cv_pts = dict()
     # for alpha, img in images.items():
     #     print alpha
+    #
+    #     # if alpha in [0, 15, 30, 45, 60, 75, 90, 105]:
+    #
     #     pts = chessboard.find_corners(img)
     #     if pts is not None:
     #         cv_pts[alpha] = pts[:, 0, :]
-
-
+    #
+    #
     # with open('corners_points', 'wb') as corners_points:
     #     pickle.dump(cv_pts, corners_points)
 
-    import pickle
     with open('corners_points', 'rb') as corners_points:
         cv_pts = pickle.load(corners_points)
 
     #=> 492 to 486
-    guess = numpy.array([
-        -164.36793985970391,    # x position of chess in world frame
-        -184.26982549215279,    # y position of chess in world frame
-        1016.2924110974527,     # z position of chess in world frame
-
-        -0.24676783786914835,   # elevation angle around local x axis
-        0.033230717529020827,   # rotation angle around local z axis
-
-        # scaling factor between real coordinates and pixel coordinates
-        4325.1372442743241,
-        # scaling factor between real coordinates and pixel coordinates
-        4314.5457485003662,
-        5053.3551632860035,     # distance of camera to rotation axis
-
-        -2.4495310698780379,    # offset angle in radians for rotation
-
-        666.05979874456671,     # z position of cam in world frame when alpha=0
-
-        0.021140291507288664,   # azimuth angle of camera (around local y axis)
-        # elevation angle of camera (around local x axis)
-        0.00042593152159524892,
-        # tilt angle of camera (around local z axis)
-        -0.0036106966523099557,
-        0.85901926301294507])    # rotation offset around z_axis in world frame
+    # guess = numpy.array([
+    #     -164.36793985970391,    # x position of chess in world frame
+    #     -184.26982549215279,    # y position of chess in world frame
+    #     1016.2924110974527,     # z position of chess in world frame
+    #
+    #     -0.24676783786914835,   # elevation angle around local x axis
+    #     0.033230717529020827,   # rotation angle around local z axis
+    #
+    #     # scaling factor between real coordinates and pixel coordinates
+    #     4325.1372442743241,
+    #     # scaling factor between real coordinates and pixel coordinates
+    #     4314.5457485003662,
+    #     5053.3551632860035,     # distance of camera to rotation axis
+    #
+    #     -2.4495310698780379,    # offset angle in radians for rotation
+    #
+    #     666.05979874456671,     # z position of cam in world frame when alpha=0
+    #
+    #     0.021140291507288664,   # azimuth angle of camera (around local y axis)
+    #     # elevation angle of camera (around local x axis)
+    #     0.00042593152159524892,
+    #     # tilt angle of camera (around local z axis)
+    #     -0.0036106966523099557,
+    #     0.85901926301294507])    # rotation offset around z_axis in world frame
 
     #=> 545 to 435
-    guess = numpy.array([1.65469405e+02,
-                         1.84542176e+02,
-                         -9.34983079e+01,
-
-                         -2.48540532e-01,
-                         -3.10804882e+00, #here
-
-                         4.40369110e+03,
-                         4.41278698e+03,
-                         5.15430960e+03,
-
-                         6.88291474e-01, #here
-
-                         2.93955342e+02,
-                         2.17052769e-01,
-                         7.98941171e-03,
-                         -3.81842421e-03,
-                         6.66808730e-01])
+    # guess = numpy.array([1.65469405e+02,
+    #                      1.84542176e+02,
+    #                      -9.34983079e+01,
+    #
+    #                      -2.48540532e-01,
+    #                      -3.10804882e+00, #here
+    #
+    #                      4.40369110e+03,
+    #                      4.41278698e+03,
+    #                      5.15430960e+03,
+    #
+    #                      6.88291474e-01, #here
+    #
+    #                      2.93955342e+02,
+    #                      2.17052769e-01,
+    #                      7.98941171e-03,
+    #                      -3.81842421e-03,
+    #                      6.66808730e-01])
     #=> 369
     # guess = numpy.array([-1.65237625e+02,
     #                      -1.84167338e+02,
@@ -129,18 +128,11 @@ def example_calibration(data_directory, calib_name):
     #                      7.88658695e-01]),
 
 
-# array([ -1.61725390e+02,  -1.82867365e+02,  -4.11811390e-08,
-#          3.39820284e+00,   3.45550010e-02,   3.04598591e+03,
-#          3.05096267e+03,   3.61252721e+03,   3.83090924e+00,
-#          3.17462790e+02,   3.18294830e+00,   3.15020145e+00,
-#          3.13892219e+00,   3.98449077e+00])
-
-
-# array([ -1.77716315e+02,  -1.81087716e+02,   7.17079677e+02,
-#         -2.77712973e-01,   3.44009832e-02,   4.34644447e+03,
-#          4.36831988e+03,   5.12837533e+03,  -2.46988908e+00,
-#          5.13173638e+02,   7.25934401e-01,  -2.91964242e-02,
-#         -2.89082501e-03,   1.72917739e-01])
+        # -1.63733595e+02,  -1.84956493e+02,   2.55135011e+02,
+        # -2.42433255e-01,   3.37386491e-02,   2.40408789e+03,
+        #  2.36904075e+03,   2.87212785e+03,  -2.45328640e+00,
+        # -3.03441275e-03,  -3.49996937e-02,  -3.41593321e-03,
+        #  8.88510297e-01]
 
     guess = None
 
@@ -209,5 +201,5 @@ if __name__ == "__main__":
     example_calibration(
         '../../local/CHESSBOARD/', 'example_calibration_model')
 
-    example_calibration_reprojection(
-        '../../local/CHESSBOARD/', 'example_calibration_model')
+    # example_calibration_reprojection(
+    #     '../../local/CHESSBOARD/', 'example_calibration_model')

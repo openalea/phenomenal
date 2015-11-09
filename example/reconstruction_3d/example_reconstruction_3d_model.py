@@ -36,7 +36,7 @@ import alinea.phenomenal.calibration_model
 def run_example(data_directory, calibration_name):
 
     pot_ids = alinea.phenomenal.misc.load_files(
-        data_directory + 'repair_processing/')
+        data_directory + 'post_processing/')
 
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
@@ -57,7 +57,7 @@ def run_example(data_directory, calibration_name):
             points_3d = alinea.phenomenal.multi_view_reconstruction. \
                 reconstruction_3d(images_selected,
                                   calibration,
-                                  precision=5,
+                                  precision=3,
                                   verbose=True)
 
             print pot_id, date

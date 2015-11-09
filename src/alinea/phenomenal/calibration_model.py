@@ -21,13 +21,13 @@ where a chessboard is rotating instead of a plant in a picture cabin.
 #       ========================================================================
 #       External Import
 from math import radians, cos, pi, sin
+import random
 
 import numpy
 import numpy.random
 
 from scipy.optimize import leastsq
 import scipy.optimize
-
 
 
 #       ========================================================================
@@ -73,7 +73,6 @@ class Calibration(object):
             self.frame[angle] = camera_frame(
                 self._dist_cam,
                 self._offset,
-                self._z_cam,
                 self._azim_cam,
                 self._elev_cam,
                 self._tilt_cam,
@@ -99,7 +98,6 @@ class Calibration(object):
             f.write('%f\n' % self._sca_y)
             f.write('%f\n' % self._dist_cam)
             f.write('%f\n' % self._offset)
-            f.write('%f\n' % self._z_cam)
             f.write('%f\n' % self._azim_cam)
             f.write('%f\n' % self._elev_cam)
             f.write('%f\n' % self._tilt_cam)
@@ -125,7 +123,6 @@ class Calibration(object):
             cal._sca_y = float(f.readline())
             cal._dist_cam = float(f.readline())
             cal._offset = float(f.readline())
-            cal._z_cam = float(f.readline())
             cal._azim_cam = float(f.readline())
             cal._elev_cam = float(f.readline())
             cal._tilt_cam = float(f.readline())
@@ -138,17 +135,22 @@ class Calibration(object):
 
         return cal
 
-    def print_value(self):
-        print self._sca_x
-        print self._sca_y
-        print self._dist_cam
-        print self._offset
-        print self._z_cam
-        print self._azim_cam
-        print self._elev_cam
-        print self._tilt_cam
-        print self._offset_angle
-        print self._camera
+    def __str__(self):
+
+        description = ''
+        description += str(self._sca_x)
+        description += str(self._sca_x)
+        description += str(self._sca_y)
+        description += str(self._dist_cam)
+        description += str(self._offset)
+        description += str(self._azim_cam)
+        description += str(self._elev_cam)
+        description += str(self._tilt_cam)
+        description += str(self._offset_angle)
+        description += str(self._camera)
+
+        return description
+
 
     def find_model_parameters(self,
                               chessboard_ref,
@@ -177,11 +179,11 @@ class Calibration(object):
             err = []
             fr_chess = chess_frame(*params[0:5])
             cam = Camera(img_size, params[5:7])
-            dist_cam, offset, z_cam, azim_cam, elev_cam, \
-            tilt_cam, offset_angle = params[7:14]
+            dist_cam, offset, azim_cam, elev_cam, \
+            tilt_cam, offset_angle = params[7:13]
 
             for alpha, ref_pts in cv_pts.items():
-                fr_cam = camera_frame(dist_cam, offset, z_cam, azim_cam,
+                fr_cam = camera_frame(dist_cam, offset, azim_cam,
                                       elev_cam, tilt_cam, offset_angle,
                                       radians(alpha))
 
@@ -201,11 +203,11 @@ class Calibration(object):
             err = []
             fr_chess = chess_frame(*params[0:5])
             cam = Camera(img_size, params[5:7])
-            dist_cam, offset, z_cam, azim_cam, elev_cam, \
-            tilt_cam, offset_angle = params[7:14]
+            dist_cam, offset, azim_cam, elev_cam, \
+            tilt_cam, offset_angle = params[7:13]
 
             for alpha, ref_pts in cv_pts.items():
-                fr_cam = camera_frame(dist_cam, offset, z_cam, azim_cam,
+                fr_cam = camera_frame(dist_cam, offset, azim_cam,
                                       elev_cam, tilt_cam, offset_angle,
                                       radians(alpha))
 
@@ -222,114 +224,144 @@ class Calibration(object):
             print err
             return err
 
-        if guess is None:
+        def fit_new(x0):
+            err = list()
+            fr_chess = chess_frame(*x0[0:5])
+            cam = Camera(img_size, x0[5:7])
+            dist_cam, offset, offset_angle = x0[7:10]
 
-            pi = numpy.pi
+            for alpha in angles:
+                ref_pts = cv_pts[alpha]
 
-            bounds = [(-200, -1),
-                      (-200, -1),
-                      (500, 1250),
-                      (-pi, 0),
-                      (0, pi),
-                      (3000, 4500),
-                      (3000, 4500),
-                      (4000, 6000),
-                      (-pi, 0),
-                      (500, 1250),
-                      (0, pi),
-                      (0, pi),
-                      (-pi, 0),
-                      (0, pi)]
+                fr_cam = camera_frame(dist_cam, offset, 0,
+                                      0, 0, offset_angle,
+                                      radians(alpha))
 
-            # res = scipy.optimize.differential_evolution(
-            #     fit_2,
-            #     bounds,
-            #     strategy='best1bin',
-            #     init='latinhypercube',
-            #     tol=0.1,
-            #     popsize=10)
-            #
-            # print res
+                pts = [
+                    cam.pixel_coordinates(
+                        fr_cam.local_point(
+                            fr_chess.global_point(pt))) for pt in
+                    chessboard_pts]
 
-            guess = numpy.array([
-                numpy.random.uniform(-200, 0),
-                numpy.random.uniform(-200, 0),
-                numpy.random.uniform(500, 1250), # 50cm to 1.5m
-                numpy.random.uniform(-pi, 0),
-                numpy.random.uniform(0, pi),
+                err.append(
+                    numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum())
 
-                numpy.random.uniform(3000, 4500),
-                numpy.random.uniform(3000, 4500),
+            err = sum(err)
+            print err
+            return err
+            # return err
 
-                numpy.random.uniform(4000, 6000),
-                numpy.random.uniform(-pi, 0),
-                numpy.random.uniform(100, 1250),
+        def fit_new_2(x0):
+            err = list()
+            fr_chess = chess_frame(*x0[0:5])
+            cam = Camera(img_size, x0[5:7])
+            dist_cam, offset, offset_angle = x0[7:10]
 
-                numpy.random.uniform(0, pi),
-                numpy.random.uniform(0, pi),
-                numpy.random.uniform(-pi, 0),
-                numpy.random.uniform(0, pi)])
+            for alpha in angles:
+                ref_pts = cv_pts[alpha]
 
-            # guess = numpy.array([
-            #     -150,
-            #     -150,
-            #     1000, # 50cm to 1.5m
-            #     0,
-            #     0,
-            #
-            #     numpy.random.uniform(3000, 4500),
-            #     numpy.random.uniform(3000, 4500),
-            #
-            #     numpy.random.uniform(4000, 6000),
-            #
-            #     numpy.random.uniform(-pi, 0),
-            #     numpy.random.uniform(100, 1250),
-            #
-            #     numpy.random.uniform(0, pi),
-            #     numpy.random.uniform(0, pi),
-            #     numpy.random.uniform(-pi, 0),
-            #     numpy.random.uniform(0, pi)])
+                fr_cam = camera_frame(dist_cam, offset, 0,
+                                      0, 0, offset_angle,
+                                      radians(alpha))
+
+                pts = [
+                    cam.pixel_coordinates(
+                        fr_cam.local_point(
+                            fr_chess.global_point(pt))) for pt in
+                    chessboard_pts]
+
+                err.append(
+                    numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum())
+
+            print sum(err)
+            return err
+            # return err
+
+        pi = numpy.pi
+
+        guess = numpy.array([
+            numpy.random.uniform(-400, 0),
+            numpy.random.uniform(-400, 0),
+            numpy.random.uniform(-500, 500),
+            numpy.random.uniform(-pi, pi),
+            numpy.random.uniform(-pi, pi),
+            numpy.random.uniform(1000, 10000),
+            numpy.random.uniform(1000, 10000),
+            numpy.random.uniform(0, 2000),
+            numpy.random.uniform(-pi, pi),
+            numpy.random.uniform(-pi, pi)])
+
+        bounds = [(-500, 0),
+                  (-500, 0),
+                  (-1000, 1000),
+                  (-pi, pi),
+                  (-pi, pi),
+
+                  (0, 10000),
+                  (0, 10000),
+
+                  (0, 10000),
+                  (-pi, pi),
+                  (-pi, pi)]
+
+        angles = cv_pts.keys()
+        # angles = random.sample(cv_pts.keys(), 13)
+        print angles
+
+        # res = scipy.optimize.differential_evolution(
+        #     fit_new,
+        #     bounds,
+        #     strategy='best1bin',
+        #     init='latinhypercube',
+        #     tol=0.01,
+        #     popsize=20)
+
+        # print res
+        # guess = res.x
+
+        res = scipy.optimize.minimize(fit_new,
+                                      guess,
+                                      bounds=bounds,
+                                      method='TNC')
+
+        # minimizer_kwargs = dict(method="L-BFGS-B",
+        #                         bounds=bounds,
+        #                         args=dst_angles)
+        #
+        # res = scipy.optimize.basinhopping(
+        #     fit_new,
+        #     guess,
+        #     T=2,
+        #     niter=5,
+        #     minimizer_kwargs=minimizer_kwargs)
+
+        print '\n\n\n\n'
+        print res
+        print '\n\n\n\n'
 
 
+        guess = res.x
 
-            # guess = numpy.array([-100.0, -100.0, 750.0,
-            #                      0.0, 0.0,
-            #                      4000.0, 4000.0,
-            #                      5053.0, 0.0, 500.0,
-            #                      0.0, 0.0,
-            #                      0.0, 0.0])
+        res = leastsq(fit_new_2, guess, maxfev=10000)
 
-            minimizer_kwargs = dict(method="L-BFGS-B", bounds=bounds)
+        print res
 
-            res = scipy.optimize.basinhopping(
-                fit_2,
-                guess,
-                T=2.,
-                niter=20,
-                minimizer_kwargs=minimizer_kwargs)
+        guess = list()
+        guess[0:9] = res[0][0:9]
+        guess[9:13] = [0, 0, 0, res[0][9]]
 
-            print res
-            print res.x
-            guess = res.x
-
-            # res = leastsq(fit, guess, maxfev=2000)
-            #
-            # guess = res[0]
-
-        # print fit(guess)
-        res = leastsq(fit, guess, maxfev=500000)
+        res = leastsq(fit, guess, maxfev=10000)
 
         print res
 
         sca_x, sca_y, = res[0][5:7]
-        dist_cam, offset, z_cam, azim_cam, elev_cam, tilt_cam, offset_angle = \
+        dist_cam, offset, azim_cam, elev_cam, tilt_cam, offset_angle = \
             res[0][7:14]
 
         self._sca_x = sca_x
         self._sca_y = sca_y
         self._dist_cam = dist_cam
         self._offset = offset
-        self._z_cam = z_cam
         self._azim_cam = azim_cam
         self._elev_cam = elev_cam
         self._tilt_cam = tilt_cam
@@ -364,16 +396,18 @@ def chess_frame(x, y, z, elev, tilt):
     """
     origin = [x, y, z]
 
-    shift = rotation_matrix(-pi / 2., x_axis)
+    # shift = rotation_matrix(-pi / 2., x_axis)
 
     mat_elev = rotation_matrix(elev, x_axis)
     mat_tilt = rotation_matrix(tilt, z_axis)
-    rot = concatenate_matrices(shift, mat_elev, mat_tilt)
+    # rot = concatenate_matrices(shift, mat_elev, mat_tilt)
+
+    rot = concatenate_matrices(mat_elev, mat_tilt)
 
     return Frame(rot[:3, :3].T, origin)
 
 
-def camera_frame(dist, offset, z, azim, elev, tilt, offset_angle, alpha):
+def camera_frame(dist, offset, azim, elev, tilt, offset_angle, alpha):
     """ Compute local frame associated to the camera
 
     Args:
@@ -389,7 +423,7 @@ def camera_frame(dist, offset, z, azim, elev, tilt, offset_angle, alpha):
     """
     origin = (dist * cos(alpha + offset),
               dist * sin(alpha + offset),
-              z)
+              0)
 
     shift = rotation_matrix(-pi / 2., x_axis)
     rot_y = rotation_matrix(-alpha + offset_angle, y_axis)
