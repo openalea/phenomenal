@@ -60,6 +60,8 @@ def run_example(data_directory, calibration_name):
                                   precision=3,
                                   verbose=True)
 
+            print points_3d
+
             print pot_id, date
             alinea.phenomenal.viewer.show_points_3d(
                 points_3d, scale_factor=2)
@@ -74,7 +76,12 @@ def run_example(data_directory, calibration_name):
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
-                'example_calibration_model')
+    # run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
+    #             'my_calibration_test')
+
+    run_example('../../local/3D_test_plant_2_task_1860/',
+                'my_calibration_elcom_5')
+
+
     # run_example('../../local/B73/')
     # run_example('../../local/Figure_3D/')

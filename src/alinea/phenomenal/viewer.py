@@ -21,6 +21,7 @@
 import cv2
 import numpy
 import random
+
 import mayavi.mlab
 import matplotlib.cm
 import matplotlib.pyplot
@@ -177,3 +178,48 @@ def show_mesh(vertices, faces, normals=None, centers=None):
                                 faces)
 
     mayavi.mlab.show()
+
+def show_image_with_chessboard_corners(image,
+                                       corners,
+                                       name_windows="Chessboard corners"):
+    img = image.copy()
+
+    corners = corners.astype(int)
+    img[corners[:, 0, 1], corners[:, 0, 0]] = [0, 0, 255]
+
+    matplotlib.pyplot.title(name_windows)
+    matplotlib.pyplot.imshow(img)
+    matplotlib.pyplot.show()
+
+
+def show_chessboard_3d_projection_on_image(image,
+                                           angle,
+                                           chessboard,
+                                           calibration,
+                                           name_windows="Chessboard corners"):
+    img = image.copy()
+
+    # Plot Corners detect by OpenCv
+    corners = chessboard.corners_points[angle]
+    corners = corners.astype(int)
+    print corners
+    img[corners[:, 0, 1], corners[:, 0, 0]] = [0, 0, 255]
+
+    # Plot projection of position conners of chessboard 3d
+    chessboard_pts = chessboard.global_corners_position_3d(
+        calibration._chessboard_x,
+        calibration._chessboard_y,
+        calibration._chessboard_z,
+        calibration._chessboard_elev,
+        calibration._chessboard_tilt)
+
+    corners = [calibration.project_point(pt, angle) for pt in chessboard_pts]
+    for corner in corners:
+        x, y = corner
+        img[int(y), int(x)] = [255, 0, 0]
+
+    # Show image
+
+    matplotlib.pyplot.title(name_windows)
+    matplotlib.pyplot.imshow(img)
+    matplotlib.pyplot.show()

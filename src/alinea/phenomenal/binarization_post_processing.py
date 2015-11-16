@@ -69,6 +69,7 @@ def remove_plant_support_from_image(image, is_top_image=False, mask=None):
         img = cv2.bitwise_and(image, image, mask=mask)
 
     kernel = numpy.ones((7, 7),numpy.uint8)
+
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
     img = cv2.add(image, img)
 

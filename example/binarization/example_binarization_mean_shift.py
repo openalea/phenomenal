@@ -34,7 +34,7 @@ import alinea.phenomenal.viewer
 def run_example(data_directory):
 
     pot_ids = alinea.phenomenal.misc.load_files(data_directory)
-
+    print pot_ids
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
             files = pot_ids[pot_id][date]
@@ -68,6 +68,7 @@ def run_example(data_directory):
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
+    # run_example('../../local/data_set_0962_A310_ARCH2013-05-13/')
+    run_example('../../local/plant_elcom_test/')
     # run_example('../../local/B73/')
     # run_example('../../local/Figure_3D/')

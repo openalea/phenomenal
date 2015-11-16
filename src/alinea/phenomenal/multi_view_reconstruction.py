@@ -195,8 +195,8 @@ def octree_builder_optimize(images, points, radius, calibration):
                     no += 1
                     break
 
-            # if (len_image >= 10 and no <= 1) or no == 0:
-            #     kept.append(cube)
+            if (len_image >= 10 and no <= 1) or no == 0:
+                kept.append(point)
 
             if no == 0:
                 kept.append(point)

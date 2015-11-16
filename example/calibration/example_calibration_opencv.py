@@ -33,19 +33,40 @@ import alinea.phenomenal.calibration_tools
 
 def example_calibration(data_directory, calib_name):
 
-    files_sv = glob.glob(data_directory + '*sv*.png')
-    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_sv)
+    # # Load files
+    # files_path = glob.glob(data_directory + '*sv*.png')
+    # angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_path)
+    #
+    # image_path = dict()
+    # for i in range(len(files_path)):
+    #     image_path[angles[i]] = files_path[i]
+    #
+    # # Define Chessboard size
+    # chessboard = alinea.phenomenal.chessboard.Chessboard(47, (8, 6))
+    #
+    # # Load image and find chessboard corners in each image
+    # chessboard_corners = dict()
+    # for angle in image_path:
+    #     print angle
+    #     img = cv2.imread(image_path[angle], cv2.IMREAD_GRAYSCALE)
+    #     chessboard.find_and_add_corners(angle, img)
+    #
+    # chessboard.write('corners_points')
+    chessboard = alinea.phenomenal.chessboard.Chessboard.read('corners_points')
+
+    # Load files
+    files_path = glob.glob(data_directory + '*sv*.png')
+    angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_path)
 
     images = dict()
-    for i in range(len(files_sv)):
-        images[angles[i]] = cv2.imread(files_sv[i], cv2.IMREAD_GRAYSCALE)
-
-    chessboard = alinea.phenomenal.chessboard.Chessboard(47, 8, 6)
+    for i in range(len(files_path)):
+        images[angles[i]] = cv2.imread(files_path[i], cv2.IMREAD_GRAYSCALE)
 
     calibration = alinea.phenomenal.calibration_opencv.Calibration()
     calibration.calibrate(images, chessboard)
 
-    calibration.print_value()
+    print calibration
+
     alinea.phenomenal.calibration_tools.plot_vectors(
         calibration.rotation_vectors)
     alinea.phenomenal.calibration_tools.plot_vectors(
@@ -57,8 +78,6 @@ def example_calibration(data_directory, calib_name):
 def example_compute_rotation_and_translation_vectors(calibration_name):
     my_calibration = alinea.phenomenal.calibration_opencv.Calibration.\
         read_calibration(calibration_name)
-
-    my_calibration.print_value()
 
     angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]
 
@@ -82,5 +101,5 @@ def example_compute_rotation_and_translation_vectors(calibration_name):
 if __name__ == "__main__":
     example_calibration('../../local/CHESSBOARD/', 'example_calibration_opencv')
 
-    example_compute_rotation_and_translation_vectors(
-        'example_calibration_opencv')
+    # example_compute_rotation_and_translation_vectors(
+    #     'example_calibration_opencv')

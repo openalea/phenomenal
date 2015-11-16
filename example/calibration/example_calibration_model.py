@@ -21,7 +21,6 @@
 import glob
 import math
 import pickle
-
 import numpy
 import cv2
 
