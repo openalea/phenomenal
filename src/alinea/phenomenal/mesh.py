@@ -28,11 +28,13 @@ import numpy
 #       Code
 
 
-def meshing(matrix):
+def meshing(matrix, origin, radius):
     vertices, faces = skimage.measure.marching_cubes(matrix, 0)
 
     faces = skimage.measure.correct_mesh_orientation(
         matrix, vertices, faces, gradient_direction='descent')
+
+    vertices = vertices * radius * 2 + origin
 
     return vertices, faces
 
