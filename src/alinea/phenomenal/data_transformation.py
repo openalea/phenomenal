@@ -132,7 +132,7 @@ def points_3d_to_matrix(points_3d, radius):
 
         index.append((x_new, y_new, z_new))
 
-    return mat, index
+    return mat, index, (x_min, y_min, z_min)
 
 
 def remove_internal_points_3d(points_3d, radius):

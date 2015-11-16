@@ -107,10 +107,10 @@ def multi_view_reconstruction(images_binarize, file_path):
 
 def mesh(points_3d, radius, file_path):
 
-    matrix, index = alinea.phenomenal.data_transformation.\
+    matrix, index, origin = alinea.phenomenal.data_transformation.\
         points_3d_to_matrix(points_3d, radius)
 
-    vertices, faces = alinea.phenomenal.mesh.meshing(matrix)
+    vertices, faces = alinea.phenomenal.mesh.meshing(matrix, origin, radius)
 
     # Normals and centers
     normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
@@ -165,7 +165,6 @@ def main():
             # Mesh
             file_path = os.path.join(images_directory, 'mesh', file_name)
             vertices, faces = mesh(points_3d, radius, file_path)
-
 
 #       ========================================================================
 #       LOCAL TEST
