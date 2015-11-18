@@ -1,4 +1,5 @@
 # -*- python -*-
+# -*- coding:utf-8 -*-
 
 """Opencv based extension functions for additional functionality / syntactic sugars
 """
