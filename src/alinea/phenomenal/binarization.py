@@ -24,7 +24,6 @@
 import sys
 import numpy
 import cv2
-
 import alinea.phenomenal.opencv_wrapping as ocv2
 
 
@@ -251,7 +250,7 @@ def side_binarization_mean_shift(image, mean_image, factor):
                                factor.side_roi_panel.mask)
 
     result = alinea.phenomenal.binarization_post_processing.clean_noise(
-
+        result, mask_clean_noise)
     
     return result
 
@@ -520,10 +519,10 @@ def top_binarization_elcom(bgr, factor, emptiesTop, useEmpty=True):
         mask_pot = numpy.zeros(bgr.shape[0,2], 'uint8')
         mask_rails = numpy.zeros(bgr.shape[0,2], 'uint8')
 
-
     mask = numpy.bitwise_or(mask_pot, mask_rails)
     imageBinSeuilPot = numpy.bitwise_and(imageBinSeuil, mask)
     imageBinSeuilPot = ocv2.open(imageBinSeuilPot, iterations=3)
+
 
     if useEmpty:
         imageBinDiff = alinea.phenomenal.binarization_algorithm.mean_shift_binarization(bgr, emptyImg)*255
