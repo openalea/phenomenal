@@ -24,7 +24,6 @@
 import sys
 import numpy
 import cv2
-
 import alinea.phenomenal.opencv_wrapping as ocv2
 
 
