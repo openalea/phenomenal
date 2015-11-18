@@ -1,4 +1,5 @@
 # -*- python -*-
+# -*- coding:utf-8 -*-
 #
 #       configuration.py :
 #
@@ -48,11 +49,12 @@ def load_configuration_file(file_name, file_is_in_share_directory=True):
 
     share_data_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
-
+    #~ share_data_directory = "/opt/openalea_dvpt/phenomenal/share/data"
     parser = ConfigParser.ConfigParser()
 
     if file_is_in_share_directory is True:
         parser.read(share_data_directory / file_name)
+        #~ parser.read(os.path.join(share_data_directory, file_name))
     else:
         parser.read(file_name)
 
@@ -70,11 +72,13 @@ def load_configuration_file(file_name, file_is_in_share_directory=True):
             if str(sub_key).startswith('mask'):
                 dict_config[key][sub_key] = cv2.imread(
                     share_data_directory / str(dict_config[key][sub_key]),
+                    #~ os.path.join(share_data_directory, str(dict_config[key][sub_key])),
                     cv2.IMREAD_GRAYSCALE)
 
             if str(sub_key).startswith('background'):
                 dict_config[key][sub_key] = cv2.imread(
                     share_data_directory / str(dict_config[key][sub_key]),
+                    #~ os.path.join(share_data_directory, str(dict_config[key][sub_key])),
                     cv2.IMREAD_COLOR)
 
     return dict_config
