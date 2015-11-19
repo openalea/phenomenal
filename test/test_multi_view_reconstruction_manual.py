@@ -47,7 +47,7 @@ def test_multi_view_reconstruction_manual_1():
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images, calibration, precision=radius, verbose=True)
 
-    mat, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+    mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
 
     assert mat.size == 1331

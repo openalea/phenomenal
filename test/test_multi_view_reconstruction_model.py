@@ -53,7 +53,7 @@ def test_multi_view_reconstruction_model_1():
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images, calibration, precision=8, verbose=True)
 
-    mat, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+    mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
 
     # alinea.phenomenal.result_viewer.show_points_3d(points)
