@@ -39,7 +39,7 @@ def test_data_transformation():
     assert points_3d[1] == (0., 0., 16.)
     assert len(points_3d) == matrix.size
 
-    mat, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+    mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points_3d, radius)
 
     assert mat.ndim == 3

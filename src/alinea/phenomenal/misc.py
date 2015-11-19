@@ -48,7 +48,7 @@ def load_files(data_directory):
         result = file_name.split('_sv')
 
         if len(result) == 2:
-            angle = result[1].split('.png')[0]
+            angle = result[1].split('_')[0].split('.png')[0]
         else:
             result = file_name.split('_tv')
             if len(result) == 2:
