@@ -76,15 +76,17 @@ def limit_points_3d(points_3d):
     return x_min, y_min, z_min, x_max, y_max, z_max
 
 
-def index_to_points_3d(index, radius):
+def index_to_points_3d(index, radius, origin=(0, 0, 0)):
 
     points_3d = collections.deque()
     ind = index.__copy__()
-    d = radius * 2
+    d = radius * 2.0
     while True:
         try:
             x, y, z = ind.popleft()
-            pt_3d = (x * d, y * d, z * d)
+            pt_3d = (x * d + origin[0],
+                     y * d + origin[1],
+                     z * d + origin[2])
             points_3d.append(pt_3d)
 
         except IndexError:
@@ -96,12 +98,13 @@ def index_to_points_3d(index, radius):
 def matrix_to_points_3d(matrix, radius, origin=(0, 0, 0)):
 
     points_3d = list()
+    d = radius * 2.0
     for (x, y, z), value in numpy.ndenumerate(matrix):
         if value == 1:
 
-            pt_3d = (origin[0] + x * radius * 2,
-                     origin[1] + y * radius * 2,
-                     origin[2] + z * radius * 2)
+            pt_3d = (origin[0] + x * d,
+                     origin[1] + y * d,
+                     origin[2] + z * d)
 
             points_3d.append(pt_3d)
 
@@ -112,7 +115,7 @@ def points_3d_to_matrix(points_3d, radius):
 
     x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
 
-    r = radius * 2
+    r = radius * 2.0
 
     x_r_min = x_min / r
     y_r_min = y_min / r
@@ -137,7 +140,7 @@ def points_3d_to_matrix(points_3d, radius):
 
 def remove_internal_points_3d(points_3d, radius):
 
-    matrix, index = points_3d_to_matrix(points_3d, radius)
+    matrix, index, origin = points_3d_to_matrix(points_3d, radius)
 
     index_new = collections.deque()
     mat = matrix.copy()
@@ -185,7 +188,7 @@ def remove_internal_points_3d(points_3d, radius):
             else:
                 break
 
-    return index_to_points_3d(index_new, radius)
+    return index_to_points_3d(index_new, radius, origin=origin)
 
 
 # ========================================================================
