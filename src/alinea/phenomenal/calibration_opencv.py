@@ -112,7 +112,6 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
     def __str__(self):
 
         my_str = ''
-
         my_str += 'Focal Matrix : ' + str(self.focal_matrix) + '\n'
         my_str += 'Distortion Coefficient : ' + str(
             self.distortion_coefficient) + '\n'
@@ -167,14 +166,8 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
         for angle in images:
             print angle
             if angle in chessboard.corners_points:
-                # corners_1 = chessboard.find_corners(images[angle]).astype(float)
-
-                # print type(corners_1)
                 corners_2 = chessboard.corners_points[angle].astype(numpy.float32)
                 print type(corners_2)
-
-                # if (corners_1 == corners_2).all():
-                #     print "EQUALLLLLLLLL !!!!!"
 
             else:
                 corners_2 = None
