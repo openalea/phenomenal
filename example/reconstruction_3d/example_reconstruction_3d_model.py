@@ -45,9 +45,12 @@ def run_example(data_directory, calibration_name):
             images = alinea.phenomenal.misc.load_images(
                 files, cv2.IMREAD_UNCHANGED)
 
-            calibration = alinea.phenomenal.calibration_model.\
-                Calibration.read_calibration(
-                    calibration_name, file_is_in_share_directory=True)
+            cam_params = alinea.phenomenal.calibration_model.\
+                CameraModelParameters.read(
+                    '../calibration/ref_camera_parameters_2_2')
+
+            projection = alinea.phenomenal.calibration_model.ModelProjection(
+                cam_params)
 
             images_selected = dict()
             for angle in images:
@@ -56,11 +59,9 @@ def run_example(data_directory, calibration_name):
 
             points_3d = alinea.phenomenal.multi_view_reconstruction. \
                 reconstruction_3d(images_selected,
-                                  calibration,
+                                  projection,
                                   precision=3,
                                   verbose=True)
-
-            print points_3d
 
             print pot_id, date
             alinea.phenomenal.viewer.show_points_3d(
@@ -76,12 +77,11 @@ def run_example(data_directory, calibration_name):
 #       LOCAL TEST
 
 if __name__ == "__main__":
+    run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
+                'my_calibration_1')
+
     # run_example('../../local/data_set_0962_A310_ARCH2013-05-13/',
-    #             'my_calibration_test')
-
-    run_example('../../local/3D_test_plant_2_task_1860/',
-                'my_calibration_elcom_5')
-
+    #             'my_calibration_elcom_2')
 
     # run_example('../../local/B73/')
     # run_example('../../local/Figure_3D/')

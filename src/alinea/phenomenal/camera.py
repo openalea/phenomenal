@@ -1,3 +1,18 @@
+# -*- python -*-
+# -*- coding: latin-1 -*-
+#
+#       frame : mechanics package
+#
+#       Copyright or © or Copr. 2006 INRIA - CIRAD - INRA
+#
+#       File author(s): Jerome Chopard <jerome.chopard@sophia.inria.fr>
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       VPlants WebSite : https://gforge.inria.fr/projects/vplants/
+#
 """ This module defines a typical pinhole camera
 """
 

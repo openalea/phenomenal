@@ -22,10 +22,14 @@ import cv2
 import numpy
 import json
 
+#       ========================================================================
+#       Local Import
+
 import alinea.phenomenal.calibration_model
 
 #       ========================================================================
-#       Code
+
+
 class Chessboard(object):
     def __init__(self, square_size, shape):
 
@@ -33,7 +37,6 @@ class Chessboard(object):
         self.square_size = square_size
         self.shape = shape
         self.corners_points = dict()
-
 
         self.object_points = numpy.zeros((self.shape[0] * self.shape[1], 3), numpy.float32)
 
@@ -66,8 +69,6 @@ class Chessboard(object):
             for i in range(width):
                 v = numpy.array([i * square_size, j * square_size, 0.])
                 chessboard_pts.append(v)
-
-        print chessboard_pts
 
         return chessboard_pts
 
@@ -124,14 +125,14 @@ class Chessboard(object):
         save_class['shape'] = self.shape
         save_class['corners_points'] = self.corners_points
 
-        with open(file_path + '.json', 'w') as file_corners:
-            json.dump(save_class, file_corners)
+        with open(file_path + '.json', 'w') as output_file:
+            json.dump(save_class, output_file)
 
     @staticmethod
     def read(file_path):
 
-        with open(file_path + '.json', 'r') as file_corners:
-            save_class = json.load(file_corners)
+        with open(file_path + '.json', 'r') as input_file:
+            save_class = json.load(input_file)
 
             square_size = float(save_class['square_size'])
             shape = [int(val) for val in save_class['shape']]
@@ -147,41 +148,9 @@ class Chessboard(object):
 
         return chessboard
 
-    # def plot_corners(self, corners, image, figure_name='Image'):
-    #
-    #     y_min = min(corners[:, 0, 0])
-    #     y_max = max(corners[:, 0, 0])
-    #     x_min = min(corners[:, 0, 1])
-    #     x_max = max(corners[:, 0, 1])
-    #     r = 50
-    #
-    #     image = cv2.drawChessboardCorners(image, self.shape, corners, True)
-    #     image = image[x_min - r:x_max + r, y_min - r:y_max + r]
-    #
-    #     cv2.namedWindow(figure_name, cv2.WINDOW_NORMAL)
-    #     cv2.imshow(figure_name, image)
-    #     cv2.waitKey()
-    #
-    # def plot_points(self, projection_points, image, figure_name='Image'):
-    #
-    #     image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-    #
-    #     projection_points = projection_points.astype(int)
-    #     image[projection_points[:, 0, 1],
-    #           projection_points[:, 0, 0]] = [0, 0, 255]
-    #
-    #     f = pylab.figure()
-    #     f.canvas.set_window_title(figure_name)
-    #     pylab.title(figure_name)
-    #     pylab.imshow(image)
-    #     pylab.show()
-    #
-    #     f.clf()
-    #     pylab.close()
-
 
 #       ========================================================================
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    do_nothing = None
+    pass

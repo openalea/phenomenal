@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       chessboard_script.py : 
+#       chessboard_script_1.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
