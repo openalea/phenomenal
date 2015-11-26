@@ -29,7 +29,11 @@ import numpy
 
 
 def meshing(matrix, origin, radius):
-    vertices, faces = skimage.measure.marching_cubes(matrix, 0)
+
+    if len(matrix.shape) != 3 or matrix.shape < (2, 2, 2):
+        return list(), list()
+
+    vertices, faces = skimage.measure.marching_cubes(matrix, 0.0)
 
     faces = skimage.measure.correct_mesh_orientation(
         matrix, vertices, faces, gradient_direction='descent')
