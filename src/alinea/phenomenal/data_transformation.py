@@ -54,6 +54,10 @@ def save_matrix_like_stack_image(matrix, data_directory):
 
 
 def limit_points_3d(points_3d):
+
+    if not points_3d:
+        return None, None, None, None, None, None
+
     x_min = float("inf")
     y_min = float("inf")
     z_min = float("inf")
@@ -114,6 +118,9 @@ def matrix_to_points_3d(matrix, radius, origin=(0, 0, 0)):
 def points_3d_to_matrix(points_3d, radius):
 
     x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
+
+    if x_min is None:
+        return numpy.zeros((0, 0, 0)), list(), (None, None, None)
 
     r = radius * 2.0
 
