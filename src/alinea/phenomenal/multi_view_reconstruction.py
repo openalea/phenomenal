@@ -27,6 +27,25 @@ import numpy
 #       PROJECTION
 
 def bbox_projection(point_3d, radius, calibration, angle):
+    """
+    Compute the bounding box value according the radius, angle and calibration
+    parameters of point_3d projection
+
+    Parameters
+    ----------
+    point_3d : collections.deque
+
+    radius : float
+
+    calibration : object with project_point function
+
+    angle : float
+
+    Returns
+    -------
+    Tuple
+        Containing min and max value of point_3d projection in x and y axes.
+    """
 
     corners = corners_point_3d(point_3d, radius)
 

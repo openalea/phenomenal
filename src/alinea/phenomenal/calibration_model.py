@@ -28,7 +28,6 @@ import numpy
 import numpy.random
 import scipy.optimize
 
-
 #       ========================================================================
 #       Local Import
 
@@ -47,6 +46,7 @@ class ChessboardModelParameters(object):
         self._z = None
         self._elev = None
         self._tilt = None
+        self._azim = None
 
     def random_initialization(self):
         pi2 = 2 * numpy.pi
@@ -55,16 +55,18 @@ class ChessboardModelParameters(object):
         self._z = numpy.random.uniform(-1000, 1000)
         self._elev = numpy.random.uniform(0, pi2)
         self._tilt = numpy.random.uniform(0, pi2)
+        self._azim = numpy.random.uniform(0, pi2)
 
     def get_parameters(self):
-        return [self._x, self._y, self._z, self._elev, self._tilt]
+        return [self._x, self._y, self._z, self._elev, self._tilt, self._azim]
 
-    def set_parameters(self, x, y, z, elev, tilt):
+    def set_parameters(self, x, y, z, elev, tilt, azim):
         self._x = x
         self._y = y
         self._z = z
         self._elev = elev
         self._tilt = tilt
+        self._azim = azim
 
     def __str__(self):
         description = 'Chessboard :\n'
@@ -73,6 +75,7 @@ class ChessboardModelParameters(object):
         description += 'Position z : ' + str(self._z) + '\n'
         description += 'Angle elev (rad): ' + str(self._elev) + '\n'
         description += 'Angle tilt (rad): ' + str(self._tilt) + '\n'
+        description += 'Angle azim (rad): ' + str(self._azim) + '\n'
         return description
 
     def write(self, file_path):
@@ -82,6 +85,7 @@ class ChessboardModelParameters(object):
         save_class['z'] = self._z
         save_class['elev'] = self._elev
         save_class['tilt'] = self._tilt
+        save_class['azim'] = self._azim
 
         with open(file_path + '.json', 'w') as output_file:
             json.dump(save_class, output_file)
@@ -96,7 +100,8 @@ class ChessboardModelParameters(object):
                                                        save_class['y'],
                                                        save_class['z'],
                                                        save_class['elev'],
-                                                       save_class['tilt'])
+                                                       save_class['tilt'],
+                                                       save_class['azim'])
 
         return chessboard_model_parameters
 
@@ -232,44 +237,58 @@ class Calibration(object):
         self._size_image = size_image
         self._verbose = verbose
 
-        number_of_chessboard = len(chessboards)
-        if number_of_chessboard == 1:
-            chessboard = chessboards[0]
+        self._chessboards = chessboards
+        self._nb_chessboard = len(chessboards)
 
-            # Compute number of reference from chessboard corners points
-            self._number_ref = len(chessboard.corners_points)
-            if self._verbose:
-                print 'Number of ref points : ', self._number_ref
+        self._chessboard_pts = list()
+        self._cv_pts = list()
+        self._number_ref = 0
+        for chessboard in chessboards:
+            self._number_ref += len(chessboard.corners_points)
+            self._chessboard_pts.append(chessboard.local_corners_position_3d())
+            pts = chessboard.corners_points.copy()
+            for angle in pts:
+                pts[angle] = pts[angle][:, 0, :]
+            self._cv_pts.append(pts)
 
-            self._chessboard_pts = chessboard.local_corners_position_3d()
-            self._cv_pts = chessboard.corners_points.copy()
-            for angle in self._cv_pts:
-                self._cv_pts[angle] = self._cv_pts[angle][:, 0, :]
-
-        elif number_of_chessboard == 2:
-            chessboard_1 = chessboards[0]
-            chessboard_2 = chessboards[0]
-
-            self._number_ref = len(chessboard_1.corners_points) + len(
-                chessboard_2.corners_points)
-            if self._verbose:
-                print 'Number of ref points : ', self._number_ref
-
-            self._chessboard_pts_1 = chessboard_1.local_corners_position_3d()
-            self._cv_pts_1 = chessboard_1.corners_points.copy()
-            for angle in self._cv_pts_1:
-                self._cv_pts_1[angle] = self._cv_pts_1[angle][:, 0, :]
-
-            self._chessboard_pts_2 = chessboard_2.local_corners_position_3d()
-            self._cv_pts_2 = chessboard_2.corners_points.copy()
-            for angle in self._cv_pts_2:
-                self._cv_pts_2[angle] = self._cv_pts_2[angle][:, 0, :]
+        # number_of_chessboard = len(chessboards)
+        # if number_of_chessboard == 1:
+        #     chessboard = chessboards[0]
+        #
+        #     # Compute number of reference from chessboard corners points
+        #     self._number_ref = len(chessboard.corners_points)
+        #     if self._verbose:
+        #         print 'Number of ref points : ', self._number_ref
+        #
+        #     self._chessboard_pts = chessboard.local_corners_position_3d()
+        #     self._cv_pts = chessboard.corners_points.copy()
+        #     for angle in self._cv_pts:
+        #         self._cv_pts[angle] = self._cv_pts[angle][:, 0, :]
+        #
+        # elif number_of_chessboard == 2:
+        #     chessboard_1 = chessboards[0]
+        #     chessboard_2 = chessboards[1]
+        #
+        #     self._number_ref = len(chessboard_1.corners_points) + len(
+        #         chessboard_2.corners_points)
+        #     if self._verbose:
+        #         print 'Number of ref points : ', self._number_ref
+        #
+        #     self._chessboard_pts_1 = chessboard_1.local_corners_position_3d()
+        #     self._cv_pts_1 = chessboard_1.corners_points.copy()
+        #     for angle in self._cv_pts_1:
+        #         self._cv_pts_1[angle] = self._cv_pts_1[angle][:, 0, :]
+        #
+        #     self._chessboard_pts_2 = chessboard_2.local_corners_position_3d()
+        #     self._cv_pts_2 = chessboard_2.corners_points.copy()
+        #     for angle in self._cv_pts_2:
+        #         self._cv_pts_2[angle] = self._cv_pts_2[angle][:, 0, :]
 
     def fit_function_light(self, x0):
         err = 0
-        fr_chess = chess_frame(*x0[0:5])
-        cam = Camera(self._size_image, x0[5:7])
-        dist_cam, offset, offset_angle = x0[7:10]
+        fr_chess = chess_frame_2(*x0[0:6])
+        cam = Camera(self._size_image, x0[6:8])
+        dist_cam, offset, offset_angle = x0[8:11]
 
         chess_pts = map(lambda pt: fr_chess.global_point(pt),
                         self._chessboard_pts)
@@ -290,10 +309,10 @@ class Calibration(object):
 
     def fit_function(self, x0):
         err = 0
-        fr_chess = chess_frame(*x0[0:5])
-        cam = Camera(self._size_image, x0[5:7])
-        dist_cam, offset, offset_angle = x0[7:10]
-        elev_cam, tilt_cam, = x0[10:12]
+        fr_chess = chess_frame_2(*x0[0:6])
+        cam = Camera(self._size_image, x0[6:8])
+        dist_cam, offset, offset_angle = x0[8:11]
+        elev_cam, tilt_cam, = x0[11:13]
 
         chess_pts = map(lambda pt: fr_chess.global_point(pt),
                         self._chessboard_pts)
@@ -325,13 +344,13 @@ class Calibration(object):
             cam_params.random_initialization()
 
             guess = list()
-            guess[0:5] = chess_params.get_parameters()
-            guess[5:10] = cam_params.get_parameters()[1:6]
+            guess[0:6] = chess_params.get_parameters()
+            guess[6:11] = cam_params.get_parameters()[1:6]
 
             guess = scipy.optimize.minimize(
                 self.fit_function_light, guess, method='BFGS').x
 
-            for j in [3, 4, 8, 9]:
+            for j in [3, 4, 5, 9, 10]:
                 guess[j] %= 2 * numpy.pi
 
             err = self.fit_function_light(guess)
@@ -353,8 +372,8 @@ class Calibration(object):
                                   number_of_repetition):
 
         guess = list()
-        guess[0:10] = first_guess[0:10]
-        guess[10:12] = cam_params.get_parameters()[6:8]
+        guess[0:11] = first_guess[0:11]
+        guess[11:13] = cam_params.get_parameters()[6:8]
 
         guess = scipy.optimize.minimize(
                 self.fit_function, guess, method='BFGS').x
@@ -371,7 +390,7 @@ class Calibration(object):
             T=1.0,
             niter=number_of_repetition + 1).x
 
-        for i in [3, 4, 8, 9, 10, 11]:
+        for i in [3, 4, 5, 9, 10, 11, 12]:
             guess[i] %= 2 * numpy.pi
 
         if self._verbose:
@@ -404,8 +423,8 @@ class Calibration(object):
         guess = self.secondly_guess_estimation(
             cam_params, guess, number_of_repetition)
 
-        chess_params.set_parameters(*guess[0:5])
-        cam_params.set_parameters(*guess[5:])
+        chess_params.set_parameters(*guess[0:6])
+        cam_params.set_parameters(*guess[6:])
 
         if self._verbose:
             print chess_params
@@ -415,15 +434,15 @@ class Calibration(object):
 
     def fit_function_light_2(self, x0):
         err = list()
-        fr_chess_1 = chess_frame(*x0[0:5])
-        fr_chess_2 = chess_frame(*x0[5:10])
+        fr_chess_1 = chess_frame_2(*x0[0:6])
+        fr_chess_2 = chess_frame_2(*x0[6:12])
 
-        cam = Camera(self._size_image, x0[10:12])
-        dist_cam, offset, offset_angle = x0[12:15]
+        cam = Camera(self._size_image, x0[12:14])
+        dist_cam, offset = x0[14:16]
 
         for alpha, ref_pts in self._cv_pts_1.items():
             fr_cam = camera_frame_light(
-                dist_cam, offset, offset_angle, radians(alpha))
+                dist_cam, offset, 0.0, radians(alpha))
 
             pts = [
                 cam.pixel_coordinates(
@@ -436,7 +455,7 @@ class Calibration(object):
 
         for alpha, ref_pts in self._cv_pts_2.items():
             fr_cam = camera_frame_light(
-                dist_cam, offset, offset_angle, radians(alpha))
+                dist_cam, offset, 0.0, radians(alpha))
 
             pts = [
                 cam.pixel_coordinates(
@@ -454,12 +473,12 @@ class Calibration(object):
 
     def fit_function_2(self, x0):
         err = list()
-        fr_chess_1 = chess_frame(*x0[0:5])
-        fr_chess_2 = chess_frame(*x0[5:10])
+        fr_chess_1 = chess_frame_2(*x0[0:6])
+        fr_chess_2 = chess_frame_2(*x0[6:12])
 
-        cam = Camera(self._size_image, x0[10:12])
-        dist_cam, offset, offset_angle = x0[12:15]
-        elev_cam, tilt_cam = x0[15:18]
+        cam = Camera(self._size_image, x0[12:14])
+        dist_cam, offset, offset_angle = x0[14:17]
+        elev_cam, tilt_cam = x0[17:19]
 
         for alpha, ref_pts in self._cv_pts_1.items():
             fr_cam = camera_frame(
@@ -510,14 +529,14 @@ class Calibration(object):
             cam_params.random_initialization()
 
             guess = list()
-            guess[0:5] = chess_params_1.get_parameters()
-            guess[5:10] = chess_params_2.get_parameters()
-            guess[10:15] = cam_params.get_parameters()[1:6]
+            guess[0:6] = chess_params_1.get_parameters()
+            guess[6:12] = chess_params_2.get_parameters()
+            guess[12:16] = cam_params.get_parameters()[1:5]
 
             guess = scipy.optimize.minimize(
                 self.fit_function_light_2, guess, method='BFGS').x
 
-            for j in [3, 4, 8, 9, 13, 14]:
+            for j in [3, 4, 5, 9, 10, 11, 15]:
                 guess[j] %= 2 * numpy.pi
 
             err = self.fit_function_light_2(guess)
@@ -539,8 +558,8 @@ class Calibration(object):
                                     number_of_repetition):
 
         guess = list()
-        guess[0:15] = first_guess[0:15]
-        guess[15:17] = cam_params.get_parameters()[6:8]
+        guess[0:16] = first_guess[0:16]
+        guess[16:19] = cam_params.get_parameters()[5:8]
 
         guess = scipy.optimize.minimize(
             self.fit_function_2, guess, method='BFGS').x
@@ -557,7 +576,7 @@ class Calibration(object):
             T=1.0,
             niter=number_of_repetition + 1).x
 
-        for i in [3, 4, 8, 9, 13, 14, 15, 16]:
+        for i in [3, 4, 5, 9, 10, 11, 15, 16, 17, 18]:
             guess[i] %= 2 * numpy.pi
 
         if self._verbose:
@@ -566,6 +585,112 @@ class Calibration(object):
             print 'Err : ', err / self._number_ref
 
         return guess
+
+    def fit_function_light_new(self, x0):
+        err = 0
+        step = 6
+
+        index = self._nb_chessboard * step
+        cam = Camera(self._size_image, x0[index:index + 2])
+        dist_cam, offset = x0[index + 2:index + 5]
+
+        for num in range(self._nb_chessboard):
+            fr_chess = chess_frame_2(*x0[num * step: num * step + step])
+
+            for alpha, ref_pts in self._cv_pts[num].items():
+                fr_cam = camera_frame_light(
+                    dist_cam, offset, 0, radians(alpha))
+
+                pts = [
+                    cam.pixel_coordinates(
+                        fr_cam.local_point(
+                            fr_chess.global_point(pt))) for pt in
+                    self._chessboard_pts[num]]
+
+                err += numpy.linalg.norm(numpy.array(pts) - ref_pts,
+                                        axis=1).sum()
+
+        if self._verbose:
+            print err
+
+        return err
+
+    def first_guess_estimation_new(self,
+                                   chessboards_params,
+                                   cam_params,
+                                   number_of_repetition):
+        final_guess = None
+        min_err = float('inf')
+        for i in range(number_of_repetition + 1):
+
+            for chess_params in chessboards_params:
+                chess_params.random_initialization()
+
+            cam_params.random_initialization()
+
+            guess = list()
+            j = 0
+            step = 6
+            for chess_params in chessboards_params:
+                chess_params.random_initialization()
+                guess[j: j + step] = chess_params.get_parameters()
+                j += step
+
+            guess[j: j + 4] = cam_params.get_parameters()[1:5]
+
+            print guess
+
+            guess = scipy.optimize.minimize(
+                self.fit_function_light_new, guess, method='BFGS').x
+
+            j = 0
+            for chess_params in chessboards_params:
+                guess[j + 3] %= 2 * numpy.pi
+                guess[j + 4] %= 2 * numpy.pi
+                guess[j + 5] %= 2 * numpy.pi
+                j += step
+
+            guess[j: j + 3] %= 2 * numpy.pi
+
+            print guess
+            err = self.fit_function_light_new(guess)
+
+            if err < min_err:
+                min_err = err
+                final_guess = guess
+
+            if self._verbose:
+                err = self.fit_function_light_new(guess)
+                print 'Result : ', guess
+                print 'Err : ', err / self._number_ref
+
+        return final_guess
+
+
+
+
+    def find_model_parameters_new(self, number_of_repetition=1):
+
+        chessboards_params = list()
+        for i in range(self._nb_chessboard):
+            chess_params = ChessboardModelParameters()
+            chessboards_params.append(chess_params)
+
+        cam_params = CameraModelParameters(self._size_image)
+
+        guess = self.first_guess_estimation_new(
+            chessboards_params, cam_params, number_of_repetition)
+
+        print 'GUESS : ', guess
+
+        i = 0
+        step = 6
+        for chess_params in chessboards_params:
+            chess_params.set_parameters(*guess[i * step: (i + 1) * step])
+
+        cam_params.set_parameters(*guess[self._nb_chessboard * step:])
+
+        return cam_params, chessboards_params
 
     def find_model_parameters_2_chess(self, number_of_repetition=1):
         """ Find physical parameters associated with a camera
@@ -591,9 +716,9 @@ class Calibration(object):
         guess = self.secondly_guess_estimation_2(
             cam_params, guess, number_of_repetition)
 
-        chess_params_1.set_parameters(*guess[0:5])
-        chess_params_1.set_parameters(*guess[5:10])
-        cam_params.set_parameters(*guess[10:])
+        chess_params_1.set_parameters(*guess[0:6])
+        chess_params_2.set_parameters(*guess[6:12])
+        cam_params.set_parameters(*guess[12:])
 
         if self._verbose:
             print chess_params_1
@@ -601,237 +726,6 @@ class Calibration(object):
             print cam_params
 
         return cam_params, chess_params_1, chess_params_2
-
-    def find_model_parameters_2(self,
-                                chessboard_1,
-                                chessboard_2,
-                                size_image,
-                                verbose=False):
-        """ Find physical parameters associated with a camera
-        (i.e. distances and angles), using pictures of a rotating
-        chessboard.
-
-        args:
-         - 'chessboard_ref' (Chessboard): reference chessboard
-         - 'chessboard_corners' dict of (angle, list of pts): for
-                        a picture taken with a given angle, list
-                        the coordinates of all intersections on
-                        the chessboard in the picture
-        - 'guess' (): initial guess for calibration model
-        """
-
-        # Number of image used to fit factor calibration
-        number_ref = (len(chessboard_1.corners_points) +
-                      len(chessboard_2.corners_points))
-        if verbose:
-            print 'Number of ref points : ', number_ref
-
-        # Generate local position of corner for each chessboard according
-        # world chessboard representation
-        local_corners_chessboard_1 = chessboard_1.local_corners_position_3d()
-        local_corners_chessboard_2 = chessboard_2.local_corners_position_3d()
-
-        # Convert chessboard corners position to 2d array
-        cv_pts_1 = chessboard_1.corners_points.copy()
-        for angle in cv_pts_1:
-            cv_pts_1[angle] = cv_pts_1[angle][:, 0, :]
-
-        # Convert chessboard corners position to 2d array
-        cv_pts_2 = chessboard_2.corners_points.copy()
-        for angle in cv_pts_2:
-            cv_pts_2[angle] = cv_pts_2[angle][:, 0, :]
-
-        def fit_function_light(x0):
-            err = list()
-            fr_chess_1 = chess_frame(*x0[0:5])
-            fr_chess_2 = chess_frame(*x0[5:10])
-
-            cam = Camera(size_image, x0[10:12])
-            dist_cam, offset, offset_angle = x0[12:15]
-
-            for alpha, ref_pts in cv_pts_1.items():
-                fr_cam = camera_frame(dist_cam, offset,
-                                      0, 0, 0,
-                                      offset_angle, radians(alpha))
-
-                pts = [
-                    cam.pixel_coordinates(
-                        fr_cam.local_point(
-                            fr_chess_1.global_point(pt))) for pt in
-                    local_corners_chessboard_1]
-
-                err.append(
-                    numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum())
-
-            for alpha, ref_pts in cv_pts_2.items():
-                fr_cam = camera_frame(dist_cam, offset,
-                                      0, 0, 0,
-                                      offset_angle, radians(alpha))
-
-                pts = [
-                    cam.pixel_coordinates(
-                        fr_cam.local_point(
-                            fr_chess_2.global_point(pt))) for pt in
-                    local_corners_chessboard_2]
-
-                err.append(
-                    numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum())
-
-            print sum(err)
-            return err
-
-        def sum_fit_function_light(x0):
-            return sum(fit_function_light(x0))
-
-        def fit_function(x0):
-            err = list()
-            fr_chess_1 = chess_frame(*x0[0:5])
-            fr_chess_2 = chess_frame(*x0[5:10])
-
-            cam = Camera(size_image, x0[10:12])
-            dist_cam, offset, azim_cam, elev_cam, \
-            tilt_cam, offset_angle = x0[12:18]
-
-            for alpha, ref_pts in cv_pts_1.items():
-                fr_cam = camera_frame(dist_cam, offset,
-                                      azim_cam, elev_cam, tilt_cam,
-                                      offset_angle, radians(alpha))
-
-                pts = [
-                    cam.pixel_coordinates(
-                        fr_cam.local_point(
-                            fr_chess_1.global_point(pt))) for pt in
-                    local_corners_chessboard_1]
-
-                err.append(
-                    numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum())
-
-            for alpha, ref_pts in cv_pts_2.items():
-                fr_cam = camera_frame(dist_cam, offset,
-                                      0, 0, 0,
-                                      offset_angle, radians(alpha))
-
-                pts = [
-                    cam.pixel_coordinates(
-                        fr_cam.local_point(
-                            fr_chess_2.global_point(pt))) for pt in
-                    local_corners_chessboard_2]
-
-                err.append(
-                    numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum())
-
-            print sum(err)
-            return err
-
-        def sum_fit_function(x0):
-            return sum(fit_function(x0))
-
-        pi2 = 2 * numpy.pi
-
-        guess = [numpy.random.uniform(-1000, 1000),
-                 numpy.random.uniform(-1000, 1000),
-                 numpy.random.uniform(-1000, 1000),
-                 numpy.random.uniform(-pi2, pi2),
-                 numpy.random.uniform(-pi2, pi2),
-
-                 numpy.random.uniform(-1000, 1000),
-                 numpy.random.uniform(-1000, 1000),
-                 numpy.random.uniform(-1000, 1000),
-                 numpy.random.uniform(-pi2, pi2),
-                 numpy.random.uniform(-pi2, pi2),
-
-                 numpy.random.uniform(1000, 10000),
-                 numpy.random.uniform(1000, 10000),
-                 numpy.random.uniform(1000, 10000),
-                 numpy.random.uniform(-pi2, pi2),
-                 numpy.random.uniform(-pi2, pi2)]
-
-        bounds = [(-1000, 1000),
-                  (-1000, 1000),
-                  (-1000, 1000),
-                  (-pi2, pi2),
-                  (-pi2, pi2),
-
-                  (-1000, 1000),
-                  (-1000, 1000),
-                  (-1000, 1000),
-                  (-pi2, pi2),
-                  (-pi2, pi2),
-
-                  (1000, 10000),
-                  (1000, 10000),
-                  (1000, 10000),
-                  (-pi2, pi2),
-                  (-pi2, pi2)]
-
-        minimizer_kwargs = {"method": "BFGS"}
-
-        res = scipy.optimize.basinhopping(
-            sum_fit_function_light,
-            guess,
-            minimizer_kwargs=minimizer_kwargs,
-            T=2.0,
-            niter=5)
-
-        guess = res.x
-
-        for i in [3, 4, 8, 9, 13, 14]:
-            guess[i] = guess[i] % pi2
-
-        if verbose:
-            err = sum_fit_function_light(guess)
-            print 'Result : ', guess
-            print 'Err : ', err / number_ref
-
-        g = list()
-        g[0:14] = guess[0:14]
-        g[14:18] = [0, 0, 0, guess[14]]
-        guess = g
-
-        minimizer_kwargs = {"method": "BFGS"}
-
-        res = scipy.optimize.basinhopping(
-            sum_fit_function,
-            guess,
-            minimizer_kwargs=minimizer_kwargs,
-            T=2.0,
-            niter=5)
-
-        guess = res.x
-
-        for i in [3, 4, 8, 9, 13, 14]:
-            guess[i] = guess[i] % pi2
-
-        if verbose:
-            err = sum_fit_function(guess)
-            print 'Result : ', guess
-            print 'Err : ', err / number_ref
-
-
-        chess_x, chess_y, chess_z, chess_elev, chess_tilt = guess[0:5]
-        sca_x, sca_y, = guess[10:12]
-        dist_cam, offset, azim_cam, elev_cam, tilt_cam, offset_angle = \
-            guess[12:18]
-
-        self._sca_x = sca_x
-        self._sca_y = sca_y
-        self._dist_cam = dist_cam
-        self._offset = offset
-        self._azim_cam = azim_cam
-        self._elev_cam = elev_cam
-        self._tilt_cam = tilt_cam
-        self._offset_angle = offset_angle
-
-        self._chessboard_x = chess_x
-        self._chessboard_y = chess_y
-        self._chessboard_z = chess_z
-        self._chessboard_elev = chess_elev
-        self._chessboard_tilt = chess_tilt
-
-        self._size_image = size_image
-
-        self._camera = Camera(size_image, (self._sca_x, self._sca_y))
-        self.initialize_camera_frame()
 
 
 def chess_frame(x, y, z, elev, tilt):
@@ -852,6 +746,25 @@ def chess_frame(x, y, z, elev, tilt):
 
     return Frame(rot[:3, :3].T, origin)
 
+def chess_frame_2(x, y, z, elev, tilt, azim):
+    """ Compute local frame associated to chessboard
+
+    Args:
+     - x (float): x position of chess in world frame
+     - y (float): y position of chess in world frame
+     - z (float): z position of chess in world frame
+     - elev (float): elevation angle around local x axis
+     - tilt (float): rotation angle around local z axis
+     - azim (float): rotation angle around local z axis
+    """
+    origin = [x, y, z]
+    mat_elev = rotation_matrix(elev, x_axis)
+    mat_azim = rotation_matrix(azim, y_axis)
+    mat_tilt = rotation_matrix(tilt, z_axis)
+
+    rot = concatenate_matrices(mat_elev, mat_tilt, mat_azim)
+
+    return Frame(rot[:3, :3].T, origin)
 
 def camera_frame(dist, offset, elev, tilt, offset_angle, alpha):
     """ Compute local frame associated to the camera

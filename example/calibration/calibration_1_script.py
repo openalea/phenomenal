@@ -30,8 +30,7 @@ import alinea.phenomenal.chessboard
 
 import alinea.phenomenal.chessboard
 
-chessboard = alinea.phenomenal.chessboard.Chessboard.read(
-    'chessboard_1')
+chessboard = alinea.phenomenal.chessboard.Chessboard.read('chessboard_1')
 
 # ==============================================================================
 # Calibration

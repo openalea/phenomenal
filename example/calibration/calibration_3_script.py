@@ -31,68 +31,40 @@ chessboard_2 = alinea.phenomenal.chessboard.Chessboard.read(
 # Calibration
 import alinea.phenomenal.calibration_model
 
-# # Create Object
+# Create Object
 calib = alinea.phenomenal.calibration_model.Calibration(
     [chessboard_1, chessboard_2], (2056, 2454), verbose=True)
-#
-res = calib.find_model_parameters_2_chess()
+
+# Do Calibration
+res = calib.find_model_parameters_new()
+
+
 cam_params, chess_params_1, chess_params_2 = res
-print cam_params
-print chess_params_1
-print chess_params_2
 
-cam_params.write('n_camera_parameters')
-chess_params_1.write('n_chessboard_parameters_1')
-chess_params_2.write('n_chessboard_parameters_2')
 
-cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
-    'n_camera_parameters')
-
-chess_params_1 = alinea.phenomenal.calibration_model.ChessboardModelParameters.\
-    read('n_chessboard_parameters_1')
-
-chess_params_2 = alinea.phenomenal.calibration_model.ChessboardModelParameters.\
-    read('n_chessboard_parameters_2')
-
-print cam_params
-print chess_params_1
-print chess_params_2
-
-guess = list()
-guess[0:6] = chess_params_1.get_parameters()
-guess[6:12] = chess_params_2.get_parameters()
-guess[12:19] = cam_params.get_parameters()[1:]
-
-print guess
-
-err = calib.fit_function_2(guess)
-print err
+# Read & Write
+# calib.write_calibration('my_calibration_elcom_5')
+# calib = alinea.phenomenal.calibration_model.Calibration.read_calibration(
+#     'my_calibration_elcom_5')
 
 # ==============================================================================
 # Viewing
-import alinea.phenomenal.viewer
+import alinea.phenomenal.result_viewer
 
 import cv2
 import glob
 
-data_directory = '../../local/CHESSBOARD_1/'
-
-projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
+data_directory = '../../local/CHESSBOARD_ELCOM_5/'
 
 # Load files
 files_path = glob.glob(data_directory + '*.png')
-angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_path)
+angles = map(lambda x: int((x.split('side_')[1]).split('.png')[0]), files_path)
 
 for i in range(len(files_path)):
-    img = cv2.imread(files_path[i], cv2.IMREAD_UNCHANGED)
+    img = cv2.imread(files_path[i], cv2.IMREAD_GRAYSCALE)
 
-    alinea.phenomenal.viewer.show_chessboard_3d_projection_on_image(
-        img,
-        angles[i],
-        chessboard_1,
-        chess_params_1,
-        projection,
-        name_windows=str(angles[i]))
+    alinea.phenomenal.result_viewer.show_chessboard_3d_projection_on_image(
+        img, angles[i], chessboard_1, calib, name_windows=str(angles[i]))
 
 
 

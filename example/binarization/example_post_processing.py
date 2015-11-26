@@ -54,10 +54,10 @@ def run_example(data_directory):
                 binarization_post_processing.\
                 remove_plant_support_from_images(images, mask=mask_image)
 
-            print pot_id, date
-            for angle in post_processing_images:
-                alinea.phenomenal.viewer.show_images(
-                    [images[angle], post_processing_images[angle]], str(angle))
+            # print pot_id, date
+            # for angle in post_processing_images:
+            #     alinea.phenomenal.viewer.show_images(
+            #         [images[angle], post_processing_images[angle]], str(angle))
 
             alinea.phenomenal.misc.write_images(
                 data_directory + 'post_processing_images/',

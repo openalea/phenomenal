@@ -58,10 +58,10 @@ def run_example(data_directory):
                 #         [images[angle], images_binarize_mean_shift[angle]],
                 #         str(angle))
                 #
-                # alinea.phenomenal.misc.write_images(
-                #     data_directory + '/binarization_mean_shift/',
-                #     files,
-                #     images_binarize_mean_shift)
+                alinea.phenomenal.misc.write_images(
+                    data_directory + '/binarization_mean_shift/',
+                    files,
+                    images_binarize_mean_shift)
 
 
 

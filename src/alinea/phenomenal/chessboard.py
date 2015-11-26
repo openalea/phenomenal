@@ -72,12 +72,12 @@ class Chessboard(object):
 
         return chessboard_pts
 
-    def global_corners_position_3d(self, x, y, z, elev, tilt):
+    def global_corners_position_3d(self, x, y, z, elev, tilt, azim):
 
         chessboard_pts = self.local_corners_position_3d()
 
-        fr_chess = alinea.phenomenal.calibration_model.chess_frame(
-            x, y, z, elev, tilt)
+        fr_chess = alinea.phenomenal.calibration_model.chess_frame_2(
+            x, y, z, elev, tilt, azim)
 
         pts = [fr_chess.global_point(pt) for pt in chessboard_pts]
 
