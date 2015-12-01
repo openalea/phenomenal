@@ -14,18 +14,14 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 
-#       ========================================================================
-#       External Import
 import os
 import collections
 import numpy
 import cv2
 
-
-#       ========================================================================
-#       Code
+# ==============================================================================
 
 
 def change_orientation(cubes):
@@ -196,10 +192,3 @@ def remove_internal_points_3d(points_3d, radius):
                 break
 
     return index_to_points_3d(index_new, radius, origin=origin)
-
-
-# ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    pass
