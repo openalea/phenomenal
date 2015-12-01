@@ -14,19 +14,17 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 
-#       ========================================================================
-#       External Import
 import collections
 import math
 import numpy
 
 
-#       ========================================================================
-#       PROJECTION
+# ==============================================================================
+# PROJECTION
 
-def bbox_projection(point_3d, radius, calibration, angle):
+def bbox_projection(point_3d, radius, projection, angle):
     """
     Compute the bounding box value according the radius, angle and calibration
     parameters of point_3d projection
@@ -53,7 +51,7 @@ def bbox_projection(point_3d, radius, calibration, angle):
     lx = list()
 
     for pt_3d in corners:
-        x, y = calibration.project_point(pt_3d, angle)
+        x, y = projection.project_point(pt_3d, angle)
 
         lx.append(x)
         ly.append(y)
@@ -61,8 +59,8 @@ def bbox_projection(point_3d, radius, calibration, angle):
     return min(lx), max(lx), min(ly), max(ly)
 
 
-#       ========================================================================
-#       Create and split cubes
+# ==============================================================================
+# Create and split cubes
 
 def split_points_3d(points_3d, radius):
 
@@ -126,15 +124,15 @@ def corners_point_3d(point_3d, radius):
     return l
 
 
-#       =======================================================================
-#       Algorithm
+# ==============================================================================
+# Algorithm
 
 
 def point_3d_is_in_image(image,
                          height_image,
                          length_image,
                          point_3d,
-                         calibration,
+                         projection,
                          angle,
                          radius):
     """
@@ -155,18 +153,18 @@ def point_3d_is_in_image(image,
             + Any pixel value in the bounding box projected is > 0
     """
 
-    x, y = calibration.project_point(point_3d, angle)
+    x, y = projection.project_point(point_3d, angle)
 
     if (0 <= x < length_image and
         0 <= y < height_image and
             image[y, x] > 0):
         return True
 
-    # =================================================================
+    # ==========================================================================
 
     x_min, x_max, y_min, y_max = bbox_projection(point_3d,
                                                  radius,
-                                                 calibration,
+                                                 projection,
                                                  angle)
 
     x_min = min(max(math.floor(x_min), 0), length_image - 1)
@@ -180,7 +178,7 @@ def point_3d_is_in_image(image,
             image[y_max, x_max] > 0):
         return True
 
-    # ==================================================================
+    # ==========================================================================
 
     if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
         return True
@@ -188,7 +186,7 @@ def point_3d_is_in_image(image,
     return False
 
 
-def octree_builder(images, points, radius, calibration):
+def octree_builder(images, points, radius, projection):
     kept = collections.deque()
 
     height_image, length_image = numpy.shape(images.itervalues().next())
@@ -210,7 +208,7 @@ def octree_builder(images, points, radius, calibration):
                                         height_image,
                                         length_image,
                                         point,
-                                        calibration,
+                                        projection,
                                         angle,
                                         radius):
                     yes += 1
@@ -228,7 +226,7 @@ def octree_builder(images, points, radius, calibration):
     return kept
 
 
-def project_points_on_image(points, radius, image, calibration, angle):
+def project_points_on_image(points, radius, image, projection, angle):
 
     height_image, length_image = numpy.shape(image)
     img = numpy.zeros((height_image, length_image))
@@ -236,7 +234,7 @@ def project_points_on_image(points, radius, image, calibration, angle):
     for point in points:
         x_min, x_max, y_min, y_max = bbox_projection(point,
                                                      radius,
-                                                     calibration,
+                                                     projection,
                                                      angle)
 
         x_min = min(max(math.floor(x_min), 0), length_image - 1)
@@ -249,7 +247,7 @@ def project_points_on_image(points, radius, image, calibration, angle):
     return img
 
 
-def reconstruction_3d(images, calibration, precision=4, verbose=False):
+def reconstruction_3d(images, projection, precision=4, verbose=False):
 
     if len(images) == 0:
         return None
@@ -275,26 +273,9 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
             print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(points_3d),
 
         points_3d = octree_builder(
-            images, points_3d, radius, calibration)
+            images, points_3d, radius, projection)
 
         if verbose is True:
             print ' - ', len(points_3d)
 
-        # for angle in images:
-        #     points_3d = octree_builder(images[angle],
-        #                                points_3d,
-        #                                radius,
-        #                                calibration,
-        #                                angle)
-        #
-        #     if verbose is True:
-        #         print 'Angle %d : %d' % (angle, len(points_3d))
-
     return points_3d
-
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    pass

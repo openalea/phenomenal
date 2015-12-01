@@ -14,14 +14,11 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 
-#       ========================================================================
-#       External Import
-
-#       ========================================================================
-#       Local Import 
 import alinea.phenomenal.calibration_model
+
+# =============================================================================
 
 
 def test_chessboard_model_parameters():
@@ -83,7 +80,6 @@ def test_camera_model_parameters():
     assert parameters[5] is None
     assert parameters[6] is None
     assert parameters[7] is None
-    assert parameters[8] is None
 
     obj.random_initialization()
     parameters = obj.get_parameters()
@@ -96,7 +92,6 @@ def test_camera_model_parameters():
     assert isinstance(parameters[5], float)
     assert isinstance(parameters[6], float)
     assert isinstance(parameters[7], float)
-    assert isinstance(parameters[8], float)
 
     parameters = obj.get_parameters()
     parameters[1] = 1
@@ -106,7 +101,6 @@ def test_camera_model_parameters():
     parameters[5] = 5
     parameters[6] = 6
     parameters[7] = 7
-    parameters[8] = 8
 
     obj.set_parameters(*parameters[1:])
     parameters = obj.get_parameters()
@@ -119,7 +113,6 @@ def test_camera_model_parameters():
     assert parameters[5] == 5
     assert parameters[6] == 6
     assert parameters[7] == 7
-    assert parameters[8] == 8
 
     obj.write('test')
     obj = alinea.phenomenal.calibration_model.CameraModelParameters.read(
@@ -134,7 +127,6 @@ def test_camera_model_parameters():
     assert parameters[5] == 5
     assert parameters[6] == 6
     assert parameters[7] == 7
-    assert parameters[8] == 8
 
 
 #       ========================================================================
