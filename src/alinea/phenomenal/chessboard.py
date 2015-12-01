@@ -14,20 +14,16 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 
-#       ========================================================================
-#       External Import
 import cv2
 import numpy
 import json
 
-#       ========================================================================
-#       Local Import
 
 import alinea.phenomenal.calibration_model
 
-#       ========================================================================
+# ==============================================================================
 
 
 class Chessboard(object):
@@ -76,7 +72,7 @@ class Chessboard(object):
 
         chessboard_pts = self.local_corners_position_3d()
 
-        fr_chess = alinea.phenomenal.calibration_model.chess_frame_2(
+        fr_chess = alinea.phenomenal.calibration_model.chess_frame(
             x, y, z, elev, tilt, azim)
 
         pts = [fr_chess.global_point(pt) for pt in chessboard_pts]
@@ -147,10 +143,3 @@ class Chessboard(object):
                     corners_points[angle]).astype(numpy.float)
 
         return chessboard
-
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    pass

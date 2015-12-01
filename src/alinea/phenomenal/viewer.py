@@ -179,6 +179,7 @@ def show_mesh(vertices, faces, normals=None, centers=None):
 
     mayavi.mlab.show()
 
+
 def show_image_with_chessboard_corners(image,
                                        corners,
                                        name_windows="Chessboard corners"):
