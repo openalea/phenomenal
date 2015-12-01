@@ -23,6 +23,7 @@ import os
 import re
 import cv2
 import json
+import numpy
 
 #       ========================================================================
 #       Code
@@ -100,7 +101,7 @@ def write_xyz(points_3d, file_path):
 
     path_directory, file_name = os.path.split(file_path)
 
-    if not os.path.exists(path_directory):
+    if path_directory.strip() and not os.path.exists(path_directory):
         os.makedirs(path_directory)
 
     f = open(file_path + '.xyz', 'w')
@@ -148,7 +149,7 @@ def read_mesh(file_path):
     with open(file_path + '.json', 'r') as infile:
         load_mesh = json.load(infile)
 
-    return load_mesh['vertices'], load_mesh['faces']
+    return numpy.array(load_mesh['vertices']), numpy.array(load_mesh['faces'])
 
 #       ========================================================================
 #       LOCAL TEST

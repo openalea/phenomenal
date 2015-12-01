@@ -47,7 +47,7 @@ def run_example(data_directory, calibration_name):
 
             cam_params = alinea.phenomenal.calibration_model.\
                 CameraModelParameters.read(
-                    '../calibration/camera_parameters')
+                    '../calibration/parameters/params_camera')
 
             projection = alinea.phenomenal.calibration_model.ModelProjection(
                 cam_params)

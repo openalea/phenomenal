@@ -100,6 +100,3 @@ def example_compute_rotation_and_translation_vectors(calibration_name):
 
 if __name__ == "__main__":
     example_calibration('../../local/CHESSBOARD/', 'example_calibration_opencv')
-
-    # example_compute_rotation_and_translation_vectors(
-    #     'example_calibration_opencv')

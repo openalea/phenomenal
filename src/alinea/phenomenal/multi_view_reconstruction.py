@@ -188,11 +188,15 @@ def point_3d_is_in_image(image,
     return False
 
 
-def octree_builder_optimize(images, points, radius, calibration):
+def octree_builder(images, points, radius, calibration):
     kept = collections.deque()
-    len_image = len(images)
 
     height_image, length_image = numpy.shape(images.itervalues().next())
+
+    error_tolerance = 0
+
+    # if len(images) >= 10:
+    #     error_tolerance += 1
 
     while True:
         try:
@@ -212,36 +216,10 @@ def octree_builder_optimize(images, points, radius, calibration):
                     yes += 1
                 else:
                     no += 1
-                    break
+                    if no > error_tolerance:
+                        break
 
-            if (len_image >= 10 and no <= 1) or no == 0:
-                kept.append(point)
-
-            if no == 0:
-                kept.append(point)
-
-        except IndexError:
-            break
-
-    return kept
-
-
-def octree_builder(image, points, radius, calibration, angle):
-
-    kept = collections.deque()
-    height_image, length_image = numpy.shape(image)
-
-    while True:
-        try:
-            point = points.popleft()
-
-            if point_3d_is_in_image(image,
-                                    height_image,
-                                    length_image,
-                                    point,
-                                    calibration,
-                                    angle,
-                                    radius):
+            if no <= error_tolerance:
                 kept.append(point)
 
         except IndexError:
@@ -294,17 +272,23 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
         radius /= 2.0
 
         if verbose is True:
-            print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(points_3d)
+            print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(points_3d),
 
-        for angle in images:
-            points_3d = octree_builder(images[angle],
-                                       points_3d,
-                                       radius,
-                                       calibration,
-                                       angle)
+        points_3d = octree_builder(
+            images, points_3d, radius, calibration)
 
-            if verbose is True:
-                print 'Angle %d : %d' % (angle, len(points_3d))
+        if verbose is True:
+            print ' - ', len(points_3d)
+
+        # for angle in images:
+        #     points_3d = octree_builder(images[angle],
+        #                                points_3d,
+        #                                radius,
+        #                                calibration,
+        #                                angle)
+        #
+        #     if verbose is True:
+        #         print 'Angle %d : %d' % (angle, len(points_3d))
 
     return points_3d
 
