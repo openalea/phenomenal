@@ -113,6 +113,7 @@ class Frame(object):
 
         :Returns Type: array
         """
+
         return dot(self._axes, vec)
 
     def global_vec(self, vec):

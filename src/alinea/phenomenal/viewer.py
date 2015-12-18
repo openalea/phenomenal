@@ -47,22 +47,17 @@ def show_points_3d(points_3d,
 
 
 def plot_points_3d(points_3d, color=None, scale_factor=5):
-    x = list()
-    y = list()
-    z = list()
+
+    pts = numpy.array(points_3d)
+    pts = pts.astype(int)
 
     if color is None:
         color = (random.uniform(0, 1),
                  random.uniform(0, 1),
                  random.uniform(0, 1))
 
-    for point_3d in points_3d:
-        x.append(int(round(point_3d[0])))
-        y.append(int(round(point_3d[1])))
-        z.append(int(round(point_3d[2])))
-
-    if len(point_3d) > 0:
-        mayavi.mlab.points3d(x, y, z,
+    if len(points_3d) > 0:
+        mayavi.mlab.points3d(pts[:, 0], pts[:, 1], pts[:, 2],
                              mode='cube',
                              color=color,
                              scale_factor=scale_factor)

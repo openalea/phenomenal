@@ -195,7 +195,6 @@ def corners_point_3d(point_3d, radius):
 
 
 def point_3d_is_in_image(image,
-                         dict_image,
                          height_image,
                          length_image,
                          point_3d,
@@ -245,54 +244,19 @@ def point_3d_is_in_image(image,
 
     # ==========================================================================
 
-    if ((y_min, y_max), (x_min, x_max)) in dict_image:
-        return dict_image[((y_min, y_max), (x_min, x_max))]
-    else:
-        if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
-            dict_image[((y_min, y_max), (x_min, x_max))] = True
-            return True
-        else:
-            dict_image[((y_min, y_max), (x_min, x_max))] = False
-            return False
-
-    # l = bbox_projection_2(point_3d, radius, projection, angle)
-    #
-    # # ==========================================================================
-    #
-    # for pt in l:
-    #
-    #     x = min(max(math.ceil(pt[0]), 0), length_image - 1)
-    #     y = min(max(math.ceil(pt[1]), 0), height_image - 1)
-    #
-    #     if image[y, x] > 0:
-    #         return True
-    # # ==========================================================================
-    #
-    # cv = scipy.spatial.ConvexHull(l)
-    # hull_points = cv.points[cv.vertices]
-    # hull_points = hull_points.astype(int)
-    #
-    # mask = numpy.zeros(image.shape)
-    # cv2.fillConvexPoly(mask, hull_points, 1)
-    # mask = mask.astype(bool)
-    #
-    # im = numpy.bitwise_and(mask, image)
-    #
-    # if numpy.any(im > 0):
-    #     return True
-
-    # return False
+    if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
+        return True
 
 
-def octree_builder(images, dict_images, points, radius, projection):
+def octree_builder(images, points, radius, projection):
     kept = collections.deque()
 
     height_image, length_image = numpy.shape(images.itervalues().next())
 
     error_tolerance = 0
 
-    # if len(images) >= 10:
-    #     error_tolerance += 1
+    if len(images) >= 10:
+        error_tolerance = 1
 
     while True:
         try:
@@ -303,7 +267,6 @@ def octree_builder(images, dict_images, points, radius, projection):
 
             for angle in images:
                 if point_3d_is_in_image(images[angle],
-                                        dict_images[angle],
                                         height_image,
                                         length_image,
                                         point,
@@ -325,9 +288,9 @@ def octree_builder(images, dict_images, points, radius, projection):
     return kept
 
 
-def project_points_on_image(my_points, radius, image, projection, angle):
+def project_points_on_image(my_points, radius, shape_image, projection, angle):
 
-    height_image, length_image = numpy.shape(image)
+    height_image, length_image = shape_image
     img = numpy.zeros((height_image, length_image))
 
     for point in my_points:
@@ -343,21 +306,13 @@ def project_points_on_image(my_points, radius, image, projection, angle):
 
         img[y_min:y_max + 1, x_min:x_max + 1] = 255
 
-        # l = bbox_projection_2(point, radius, projection, angle)
-        #
-        # cv = scipy.spatial.ConvexHull(l)
-        # hull_points = cv.points[cv.vertices]
-        # # hull_points = numpy.array(hull_points)
-        # hull_points = hull_points.astype(int)
-        #
-        # cv2.fillConvexPoly(img, hull_points, 255)
-
     return img
 
 
 def reconstruction_3d(images, projection,
                       precision=4,
                       origin_point=(0.0, 0.0, 0.0),
+                      points_3d=None,
                       verbose=False):
 
     if len(images) == 0:
@@ -365,19 +320,18 @@ def reconstruction_3d(images, projection,
 
     origin_radius = 2048 * 2
 
-    points_3d = collections.deque()
-    points_3d.append(origin_point)
+    if points_3d is None:
+        points_3d = collections.deque()
+        points_3d.append(origin_point)
 
     nb_iteration = 0
     while precision < origin_radius:
         precision *= 2.0
         nb_iteration += 1
 
-    dict_images = dict()
-    for angle in images:
-        dict_images[angle] = dict()
-
     radius = precision
+
+    err = 1.0
     for i in range(nb_iteration):
 
         if len(images) == 1:
@@ -391,9 +345,11 @@ def reconstruction_3d(images, projection,
             print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(points_3d),
 
         points_3d = octree_builder(
-            images, dict_images, points_3d, radius, projection)
+            images, points_3d, radius, projection)
 
         if verbose is True:
             print ' - ', len(points_3d)
 
-    return points_3d
+        err += len(points_3d)
+
+    return points_3d, err

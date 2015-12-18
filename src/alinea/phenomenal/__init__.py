@@ -15,3 +15,17 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 #       =======================================================================
+
+# from distutils.core import setup
+# from distutils.extension import Extension
+# from Cython.Build import cythonize
+# from Cython.Distutils import build_ext
+#
+# extensions = [
+#     Extension("multi_view_reconstruction", ["multi_view_reconstruction.py"])
+# ]
+#
+# setup(
+#     cmdclass={'build_ext': build_ext},
+#     ext_modules=cythonize(extensions),
+# )
