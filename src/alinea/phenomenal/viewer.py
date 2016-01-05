@@ -33,7 +33,7 @@ import matplotlib.pyplot
 
 def show_points_3d(points_3d,
                    color=None,
-                   scale_factor=10.0,
+                   scale_factor=5.0,
                    figure_name="Cubes"):
     mayavi.mlab.figure(figure_name)
 

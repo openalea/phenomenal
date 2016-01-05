@@ -18,11 +18,10 @@
 
 
 import multiprocessing
-
+import gc
+import math
 import matplotlib.pyplot
 import numpy
-import gc
-
 
 import alinea.phenomenal.data_load
 import alinea.phenomenal.calibration_model
@@ -144,7 +143,7 @@ if __name__ == '__main__':
     images = alinea.phenomenal.data_load.test_plant_1_images_binarize()
 
     # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.data_load. \
+    params_camera_path, _ = alinea.phenomenal.data_load.\
         test_plant_1_calibration_params_path()
 
     cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
@@ -159,13 +158,18 @@ if __name__ == '__main__':
     points_3d_path = alinea.phenomenal.data_load.test_plant_1_points_3d_path(
         radius=radius)
 
-    points_3d = alinea.phenomenal.misc.read_xyz(points_3d_path)
+    images_selected = dict()
+    for angle in range(0, 360, 30):
+        images_selected[angle] = images[angle]
+
+    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d_2(
+        images_selected, 150, projection, radius, verbose=True)
 
     if verbose:
-        alinea.phenomenal.viewer.show_points_3d(points_3d, scale_factor=20)
+        alinea.phenomenal.viewer.show_points_3d(points_3d)
 
     # ==========================================================================
-    # Compute limits poins of points_3d reference plant
+    # Compute limits points of points_3d reference plant
 
     res = alinea.phenomenal.data_transformation.limit_points_3d(points_3d)
     x_min, y_min, z_min, x_max, y_max, z_max = res
@@ -198,13 +202,10 @@ if __name__ == '__main__':
         print "Angle : ", angle, ' Err : ', numpy.count_nonzero(
             image_leaf[angle])
 
-        # if verbose:
-        #     show_image(image_leaf[angle])
-
     # ==========================================================================
     # Define angle of reference
 
-    angle_ref = 150
+    angle_ref = 90
 
     # ==========================================================================
     # Reconstruct leaf of angle_ref image
@@ -217,22 +218,27 @@ if __name__ == '__main__':
 
     images_selected = dict()
     images_selected[angle_ref] = image_leaf[angle_ref]
-    points_3d_leaf, err = alinea.phenomenal.multi_view_reconstruction. \
+    print radius
+    points_3d_leaf = alinea.phenomenal.multi_view_reconstruction. \
         reconstruction_3d(images_selected,
                           projection,
-                          precision=radius,
+                          radius,
                           points_3d=points_3d_origin,
                           verbose=True)
 
     # Valid if the projection on image and image angle ref is 0
     img = alinea.phenomenal.multi_view_reconstruction. \
         project_points_on_image(
-        points_3d_leaf, radius, shape_image, projection, angle_ref)
+            points_3d_leaf,
+            radius,
+            shape_image,
+            projection,
+            angle_ref)
 
     img = numpy.subtract(image_leaf[angle_ref], img)
     img[img == -255] = 0
 
-    print 'Valid error reconstruction 0 : ', numpy.count_nonzero(img)
+    print 'VALIDATION - error reconstruction : ', numpy.count_nonzero(img)
 
     if verbose:
         import mayavi.mlab
@@ -248,40 +254,58 @@ if __name__ == '__main__':
         mayavi.mlab.show()
 
     # ==========================================================================
+    # ==========================================================================
 
-    import math
+    where_x_y = dict()
+    for angle in xrange(0, 360, 30):
+        where_x_y[angle] = numpy.where(images[angle] > 0)
 
-    images_selected = dict()
-    images_selected[angle_ref] = image_leaf[angle_ref]
-    verif, err = alinea.phenomenal.multi_view_reconstruction. \
-        reconstruction_3d(images_selected,
-                          projection,
-                          precision=radius,
-                          origin_point=(-100, 0, 0),
-                          verbose=True)
+    def distance_closest_point(angle, pt_x, pt_y):
+        xx, yy = where_x_y[angle]
 
-    verif_img = alinea.phenomenal.multi_view_reconstruction. \
-        project_points_on_image(
-        verif, radius, shape_image, projection, angle_ref)
+        return min((xx - pt_x) ** 2 + (yy - pt_y) ** 2)
 
-    verif_img = numpy.subtract(image_leaf[angle_ref], verif_img)
-    verif_img[verif_img == -255] = 0
-
-    print 'Valid error reconstruction 0 : ', numpy.count_nonzero(verif_img)
-
+    # ==========================================================================
     # ==========================================================================
 
     index = numpy.where(image_leaf[angle_ref] > 0)
 
     print len(index[0])
-
-    size_block = 4
     groups = dict()
     for i in xrange(len(index[0])):
         x, y = (index[0][i], index[1][i])
         groups[x, y] = list()
 
+    print 'Length leaf voxel', len(points_3d_leaf)
+    inf = float('inf')
     for pt in points_3d_leaf:
+
+        # ======================================================================
+        sum_dist = 0
+        for angle in xrange(0, 360, 30):
+
+            b = alinea.phenomenal.multi_view_reconstruction.\
+                point_3d_is_in_image(images[angle],
+                                     height_image, length_image,
+                                     pt, projection, angle, radius)
+
+            if not b:
+                sum_dist += 1
+
+            # pt_x, pt_y = projection.project_point(pt, angle)
+            #
+            # if pt_x < 0 or pt_x > length_image:
+            #     sum_dist = inf
+            #     break
+            #
+            # if pt_y < 0 or pt_y > height_image:
+            #     sum_dist = inf
+            #     break
+            #
+            # sum_dist += distance_closest_point(angle, int(pt_x), int(pt_y))
+
+        # ======================================================================
+
         res = alinea.phenomenal.multi_view_reconstruction.bbox_projection(
             pt, radius, projection, angle_ref)
 
@@ -297,93 +321,33 @@ if __name__ == '__main__':
 
         for i in xrange(len(index[0])):
             x, y = (index[0][i] + y_min, index[1][i] + x_min)
-            groups[(x, y)].append(pt)
-
-    my_groups = dict()
-    for i in xrange(0, length_image - size_block, size_block):
-        for j in xrange(0, height_image - size_block, size_block):
-            if (i, j) in groups:
-
-                my_groups[(i, j)] = list()
-
-                for k in xrange(0, size_block):
-                    for l in xrange(0, size_block):
-                        if (i + k, j + l) in groups:
-                            my_groups[(i, j)] += groups[(i + k, j + l)]
-
-                my_groups[(i, j)] = list(set(my_groups[(i, j)]))
-
-    groups = my_groups
+            groups[(x, y)].append((pt, sum_dist))
 
     print 'Number of points : ', len(points_3d_leaf)
     print 'Length groups : ', len(groups.keys())
-    print 'Length leafs : ', len(verif)
 
     # ==========================================================================
 
-    # if verbose:
-    #     import mayavi.mlab
-    #
-    #     mayavi.mlab.figure('figure')
-    #
-    #     mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
-    #     mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
-    #     mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
-    #
-    #     mypt3d = list()
-    #     for pt2D in groups:
-    #         mypt3d = list()
-    #         for pt3D in groups[pt2D]:
-    #             mypt3d.append(pt3D)
-    #
-    #         alinea.phenomenal.viewer.plot_points_3d(list(set(mypt3d)))
-    #     alinea.phenomenal.viewer.plot_points_3d(points_3d)
-    #     mayavi.mlab.show()
+    import time
+    start_time = time.time()
 
     # ==========================================================================
-
-    where_x_y = dict()
-    for angle in xrange(0, 360, 30):
-        where_x_y[angle] = numpy.where(image_leaf[angle] > 0)
-
-    def distance_closest_point(angle, pt_x, pt_y):
-        xx, yy = where_x_y[angle]
-
-        return min((xx - pt_x) ** 2 + (yy - pt_y) ** 2)
-
-    # ==========================================================================
-
-    print 'Number of groups : ', len(groups.keys())
-
     inf = float('inf')
-
     mypt3d = list()
     for pt2d in groups:
         min_dist = inf
         save_pt = None
-
-        print 'Len group : ', len(groups[pt2d])
-        for pt3D in groups[pt2d]:
-            sum_dist = 0
-            for angle in xrange(0, 360, 30):
-                pt_x, pt_y = projection.project_point(pt3D, angle)
-
-                if pt_x < 0 or pt_x > length_image:
-                    sum_dist = inf
-                    break
-                if pt_y < 0 or pt_y > height_image:
-                    sum_dist = inf
-                    break
-
-                sum_dist += distance_closest_point(angle, int(pt_x), int(pt_y))
-
+        for pt3D, sum_dist in groups[pt2d]:
             if sum_dist < min_dist:
                 min_dist = sum_dist
                 save_pt = pt3D
-
-        print 'Res : ', save_pt
         if save_pt is not None:
             mypt3d.append(save_pt)
+    # ==========================================================================
+
+    print 'DONE - Time : ', time.time() - start_time
+
+    # ==========================================================================
 
     del groups
     gc.collect()
@@ -398,7 +362,7 @@ if __name__ == '__main__':
     img = numpy.subtract(image_leaf[angle_ref], img)
     img[img == -255] = 0
 
-    print 'Valid error reconstruction 0 : ', numpy.count_nonzero(img)
+    print 'VALIDATION - error reconstruction : ', numpy.count_nonzero(img)
 
     if verbose:
         import mayavi.mlab
@@ -414,148 +378,3 @@ if __name__ == '__main__':
         mayavi.mlab.show()
 
     # ==========================================================================
-
-    angle = 0
-    img_tmp = image_leaf[angle]
-    height_image, length_image = img_tmp.shape
-    counter = 1
-    for x in groups:
-
-        new_group = list()
-        group = groups[x][1]
-        for pt in group:
-            if alinea.phenomenal.multi_view_reconstruction.point_3d_is_in_image(
-                    img_tmp,
-                    height_image,
-                    length_image,
-                    pt,
-                    projection,
-                    angle,
-                    radius):
-                new_group.append(pt)
-
-        if len(new_group) == 0:
-            print counter, x
-            counter += 1
-
-            groups[x] = (False, group)
-
-        else:
-            groups[x] = (True, new_group)
-
-    counter_2 = 0
-    if counter > 1:
-        for x in groups:
-            b, group = groups[x]
-
-            if b is False:
-                print counter_2, x
-                counter_2 += 1
-                save_x, save_y = (0, 0)
-                pt_save = (0, 0, 0)
-                min_dist = float('inf')
-
-                for pt in group:
-                    pt_x, pt_y = projection.project_point(pt, angle)
-                    if pt_x < 0 or pt_x >= length_image:
-                        continue
-                    if pt_y < 0 or pt_y >= height_image:
-                        continue
-
-                    dist = distance_closest_point(pt_x, pt_y)
-                    if dist < min_dist:
-                        min_dist = dist
-                        save_x = pt_x
-                        save_y = pt_y
-                        pt_save = pt
-
-                img_tmp[save_y, save_x] = 1
-
-                new_group = list()
-                new_group.append(pt_save)
-                groups[x] = (True, new_group)
-
-    daemon_show_image(img_tmp)
-
-    mypt3d = list()
-    for x in groups:
-        b, group = groups[x]
-        print b, x, group
-        for pt in group:
-            mypt3d.append(pt)
-
-    img = alinea.phenomenal.multi_view_reconstruction. \
-        project_points_on_image(
-        mypt3d, radius, shape_image, projection, angle_ref)
-
-    img = numpy.subtract(image_leaf[angle_ref], img)
-    img[img == -255] = 0
-
-    print 'Valid error reconstruction 0 : ', numpy.count_nonzero(img)
-
-    if verbose:
-        import mayavi.mlab
-
-        mayavi.mlab.figure('figure')
-
-        mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
-        mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
-        mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
-
-        alinea.phenomenal.viewer.plot_points_3d(mypt3d)
-        alinea.phenomenal.viewer.plot_points_3d(points_3d)
-        mayavi.mlab.show()
-
-
-
-        # ==========================================================================
-
-
-
-        # ==========================================================================
-        #
-        # dict_point_3d_leaf = create_points_3d_leaf(
-        #     points_3d, projection, image_leaf[angle_ref], angle_ref, verbose=True)
-        #
-        # mat, index, origin = alinea.phenomenal.data_transformation.\
-        #     points_3d_to_matrix_2(points_3d, dict_point_3d_leaf, radius)
-        #
-        # mat = update_mat(mat, index)
-        #
-        # points_3d, points_3d_leaf = alinea.phenomenal.data_transformation.\
-        #     matrix_to_points_3d_2(mat, radius, origin)
-        #
-        # # ==========================================================================
-        #
-        # print len(points_3d_leaf)
-        # print len(points_3d)
-        #
-        # if verbose:
-        #     import mayavi.mlab
-        #
-        #     mayavi.mlab.figure('figure')
-        #
-        #     mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
-        #     mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
-        #     mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
-        #
-        #     alinea.phenomenal.viewer.plot_points_3d(points_3d_leaf)
-        #     alinea.phenomenal.viewer.plot_points_3d(points_3d)
-        #     mayavi.mlab.show()
-        #
-        # # ==========================================================================
-        #
-        # for angle in range(0, 360, 30):
-        #
-        #     # Build image projection of points_3d cloud
-        #     img = alinea.phenomenal.multi_view_reconstruction.\
-        #         project_points_on_image(
-        #             points_3d, radius, shape_image, projection, angle)
-        #
-        #     img = numpy.subtract(image_leaf[angle], img)
-        #     img[img == -255] = 100
-        #
-        #     print "Angle : ", angle, ' Err : ', numpy.count_nonzero(img)
-        #
-        #     daemon_show_image(img)
-        #
