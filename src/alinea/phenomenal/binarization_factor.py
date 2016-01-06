@@ -20,6 +20,7 @@
 
 #       ========================================================================
 
+import types
 
 def dict_factor_value(dict_factor, key_1, key_2):
     try:
@@ -132,3 +133,19 @@ class BinarizationFactor(object):
             dict_factor, 'top_cubicle', 'background')
 
         self.top_roi_main = RegionOfInterest(dict_factor, 'top_roi_main')
+
+
+class BinarizationFactorFree(object):
+    def __init__(self, dict_factor=None):
+        if dict_factor:
+            self.fill_config(dict_factor)
+
+    def fill_config(self, dict_factor):
+        for key, value in dict_factor.items():
+            if type(value) == types.DictType:
+                factor = BinarizationFactorFree()
+                factor.fill_config(value)
+                setattr(self, key, factor)
+            else:
+                setattr(self, key, value)
+                
