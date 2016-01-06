@@ -14,45 +14,77 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 
-#       ========================================================================
-#       External Import
-import pylab
 import cv2
 import numpy
+import json
 
 
-#       ========================================================================
-#       Code
+import alinea.phenomenal.calibration_model
+
+# ==============================================================================
+
+
 class Chessboard(object):
-    def __init__(self, square_size, length, height):
+    def __init__(self, square_size, shape):
 
         # Initialization
         self.square_size = square_size
-        self.shape = (length, height)
-        self.object_points = numpy.zeros((length * height, 3), numpy.float32)
+        self.shape = shape
+        self.corners_points = dict()
+
+        self.object_points = numpy.zeros((self.shape[0] * self.shape[1], 3), numpy.float32)
 
         # Build Chessboard
-        self.object_points[:, :2] = \
-            numpy.mgrid[0:length, 0:height].T.reshape(-1, 2) * self.square_size
+        self.object_points[:, :2] = numpy.mgrid[0:self.shape[0], 0:self.shape[1]].T.reshape(-1, 2) * self.square_size
 
         # 48 points are stored in an 48x3 array obj
         # choose bottom-left corner as origin, to match australian convention
         self.object_points = self.object_points - self.object_points[40, :]
 
-    def print_value(self):
-        print 'Chessboard Object Values :'
-        print 'Square size : ', self.square_size
-        print 'Shape : ', self.shape
-        print 'Object points : ', self.object_points
+    def __str__(self):
+
+        my_str = ''
+        my_str += 'Chessboard Object Values :\n'
+        my_str += 'Square size (mm): ' + str(self.square_size) + '\n'
+        my_str += 'Shape : ' + str(self.shape) + '\n'
+
+        for angle in self.corners_points:
+            my_str += str(angle) + '\n'
+            my_str += str(self.corners_points[angle]) + '\n'
+
+        return my_str
+
+    def local_corners_position_3d(self):
+        square_size = self.square_size
+        width, height = self.shape
+
+        chessboard_pts = []
+        for j in range(height):
+            for i in range(width):
+                v = numpy.array([i * square_size, j * square_size, 0.])
+                chessboard_pts.append(v)
+
+        return chessboard_pts
+
+    def global_corners_position_3d(self, x, y, z, elev, tilt, azim):
+
+        chessboard_pts = self.local_corners_position_3d()
+
+        fr_chess = alinea.phenomenal.calibration_model.chess_frame(
+            x, y, z, elev, tilt, azim)
+
+        pts = [fr_chess.global_point(pt) for pt in chessboard_pts]
+
+        return pts
 
     def find_corners(self, image):
         try:
 
             found, corners = cv2.findChessboardCorners(
                 image,
-                self.shape,
+                tuple(self.shape),
                 flags=cv2.CALIB_CB_ADAPTIVE_THRESH +
                       cv2.CALIB_CB_NORMALIZE_IMAGE)
 
@@ -72,41 +104,42 @@ class Chessboard(object):
 
         return corners
 
-    def plot_corners(self, corners, image, figure_name='Image'):
+    def find_and_add_corners(self, angle, image):
+        corners_points = self.find_corners(image)
+        if corners_points is not None:
+            # self.corners_points[angle] = corners_points[:, 0, :]
+            self.corners_points[angle] = corners_points
 
-        y_min = min(corners[:, 0, 0])
-        y_max = max(corners[:, 0, 0])
-        x_min = min(corners[:, 0, 1])
-        x_max = max(corners[:, 0, 1])
-        r = 50
+    def write(self, file_path):
 
-        image = cv2.drawChessboardCorners(image, self.shape, corners, True)
-        image = image[x_min - r:x_max + r, y_min - r:y_max + r]
+        # Convert to json format
+        for angle in self.corners_points:
+            self.corners_points[angle] = self.corners_points[angle].tolist()
 
-        cv2.namedWindow(figure_name, cv2.WINDOW_NORMAL)
-        cv2.imshow(figure_name, image)
-        cv2.waitKey()
+        save_class = dict()
+        save_class['square_size'] = self.square_size
+        save_class['shape'] = self.shape
+        save_class['corners_points'] = self.corners_points
 
-    def plot_points(self, projection_points, image, figure_name='Image'):
+        with open(file_path + '.json', 'w') as output_file:
+            json.dump(save_class, output_file)
 
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    @staticmethod
+    def read(file_path):
 
-        projection_points = projection_points.astype(int)
-        image[projection_points[:, 0, 1],
-              projection_points[:, 0, 0]] = [0, 0, 255]
+        with open(file_path + '.json', 'r') as input_file:
+            save_class = json.load(input_file)
 
-        f = pylab.figure()
-        f.canvas.set_window_title(figure_name)
-        pylab.title(figure_name)
-        pylab.imshow(image)
-        pylab.show()
+            square_size = float(save_class['square_size'])
+            shape = [int(val) for val in save_class['shape']]
 
-        f.clf()
-        pylab.close()
+            chessboard = Chessboard(square_size, shape)
 
+            corners_points = save_class['corners_points']
 
-#       ========================================================================
-#       LOCAL TEST
+            # Convert to numpy format
+            for angle in corners_points:
+                chessboard.corners_points[float(angle)] = numpy.array(
+                    corners_points[angle]).astype(numpy.float)
 
-if __name__ == "__main__":
-    do_nothing = None
+        return chessboard

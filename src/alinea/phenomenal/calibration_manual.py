@@ -103,7 +103,8 @@ class Calibration(CameraConfiguration, object):
         self.pSide = self.convSide * (gamma - 1) / self.cbox
 
         gamma = self.lcTop[1] / self.lcTop[0]
-        cTop = self.lcTop[0] / self.lcSide[0] * self.convSide  # echelle au niveau hcTop[1]
+        # echelle au niveau hcTop[1]
+        cTop = self.lcTop[0] / self.lcSide[0] * self.convSide
 
         self.pTop = cTop * (gamma - 1) / (self.hcTop[0] - self.hcTop[1])
 
@@ -148,7 +149,6 @@ class Calibration(CameraConfiguration, object):
         yim = round(self.h / 2.0 - yimo)
 
         return min(self.w, max(0, xim)), min(self.h, max(0, yim))
-
 
     def side_rotation(self, position, angle):
 

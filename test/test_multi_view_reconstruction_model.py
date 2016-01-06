@@ -26,6 +26,7 @@ import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
+import alinea.phenomenal.data_load
 
 #       ========================================================================
 #       Code
@@ -42,18 +43,25 @@ def test_multi_view_reconstruction_model_1():
 
     # alinea.phenomenal.result_viewer.show_points_3d(points)
 
-    calibration = alinea.phenomenal.calibration_model.\
-        Calibration.read_calibration('tests/test_calibration_model')
+    # Load camera model parameters
+    params_camera_path, _ = alinea.phenomenal.data_load.\
+        test_plant_1_calibration_params_path()
+
+    cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
+        params_camera_path)
+
+    # Create model projection object
+    projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
 
     images = alinea.phenomenal.data_creation.build_image_from_points_3d(
-        points, radius, calibration, step=30)
+        points, radius, projection, step=30)
 
     # alinea.phenomenal.result_viewer.show_image(images[0])
 
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, precision=8, verbose=True)
+        images, projection, precision=8, verbose=True)
 
-    mat, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+    mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
 
     # alinea.phenomenal.result_viewer.show_points_3d(points)
@@ -67,20 +75,27 @@ def test_multi_view_reconstruction_model_2():
     radius = 4
     images = alinea.phenomenal.data_creation.build_images_1()
 
-    calibration = alinea.phenomenal.calibration_model.\
-        Calibration.read_calibration('tests/test_calibration_model')
+    # Load camera model parameters
+    params_camera_path, _ = alinea.phenomenal.data_load.\
+        test_plant_1_calibration_params_path()
+
+    cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
+        params_camera_path)
+
+    # Create model projection object
+    projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
 
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, precision=radius, verbose=True)
+        images, projection, precision=radius, verbose=True)
 
-    assert len(points_3d) == 7432
+    assert len(points_3d) == 7272
 
     for angle in images:
         image = alinea.phenomenal.multi_view_reconstruction.\
             project_points_on_image(points_3d,
                                     radius,
                                     images[angle],
-                                    calibration,
+                                    projection,
                                     angle)
 
         img = numpy.subtract(image, images[0])

@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       tools_test.py :
+#       viewer.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -21,6 +21,7 @@
 import cv2
 import numpy
 import random
+
 import mayavi.mlab
 import matplotlib.cm
 import matplotlib.pyplot
@@ -159,3 +160,62 @@ def show_image(image, name_windows='Image'):
 
     matplotlib.pyplot.show()
 
+
+def show_mesh(vertices, faces, normals=None, centers=None):
+
+    if normals is not None and centers is not None:
+        mayavi.mlab.quiver3d(centers[:, 0], centers[:, 1], centers[:, 2],
+                             normals[:, 0], normals[:, 1], normals[:, 2],
+                             line_width=1.0, scale_factor=1)
+
+    mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
+    mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
+    mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
+
+    mayavi.mlab.triangular_mesh([vert[0] for vert in vertices],
+                                [vert[1] for vert in vertices],
+                                [vert[2] for vert in vertices],
+                                faces)
+
+    mayavi.mlab.show()
+
+
+def show_image_with_chessboard_corners(image,
+                                       corners,
+                                       name_windows="Chessboard corners"):
+    img = image.copy()
+
+    corners = corners.astype(int)
+    img[corners[:, 0, 1], corners[:, 0, 0]] = [0, 0, 255]
+
+    matplotlib.pyplot.title(name_windows)
+    matplotlib.pyplot.imshow(img)
+    matplotlib.pyplot.show()
+
+
+def show_chessboard_3d_projection_on_image(image,
+                                           angle,
+                                           chessboard,
+                                           chessboard_params,
+                                           projection,
+                                           name_windows="Chessboard corners"):
+    img = image.copy()
+
+    # Plot Corners detect by OpenCv
+    corners = chessboard.corners_points[angle]
+    corners = corners.astype(int)
+    img[corners[:, 0, 1], corners[:, 0, 0]] = [0, 0, 255]
+
+    # Plot projection of position conners of chessboard 3d
+    chessboard_pts = chessboard.global_corners_position_3d(
+        *chessboard_params.get_parameters())
+
+    corners = [projection.project_point(pt, angle) for pt in chessboard_pts]
+    for corner in corners:
+        x, y = corner
+        img[int(y), int(x)] = [255, 0, 0]
+
+    # Show image
+    matplotlib.pyplot.title(name_windows)
+    matplotlib.pyplot.imshow(img)
+    matplotlib.pyplot.show()
