@@ -115,8 +115,7 @@ def test_camera_model_parameters():
     assert parameters[7] == 7
 
     obj.write('test')
-    obj = alinea.phenomenal.calibration_model.CameraModelParameters.read(
-        'test')
+    obj = alinea.phenomenal.calibration_model.CameraModelParameters.read('test')
     parameters = obj.get_parameters()
 
     assert parameters[0] == (0, 0)
