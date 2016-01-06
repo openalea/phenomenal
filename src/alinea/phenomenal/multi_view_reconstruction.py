@@ -14,19 +14,36 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 
-#       ========================================================================
-#       External Import
 import collections
 import math
 import numpy
 
 
-#       ========================================================================
-#       PROJECTION
+# ==============================================================================
+# PROJECTION
 
-def bbox_projection(point_3d, radius, calibration, angle):
+def bbox_projection(point_3d, radius, projection, angle):
+    """
+    Compute the bounding box value according the radius, angle and calibration
+    parameters of point_3d projection
+
+    Parameters
+    ----------
+    point_3d : collections.deque
+
+    radius : float
+
+    calibration : object with project_point function
+
+    angle : float
+
+    Returns
+    -------
+    Tuple
+        Containing min and max value of point_3d projection in x and y axes.
+    """
 
     corners = corners_point_3d(point_3d, radius)
 
@@ -34,7 +51,7 @@ def bbox_projection(point_3d, radius, calibration, angle):
     lx = list()
 
     for pt_3d in corners:
-        x, y = calibration.project_point(pt_3d, angle)
+        x, y = projection.project_point(pt_3d, angle)
 
         lx.append(x)
         ly.append(y)
@@ -42,8 +59,8 @@ def bbox_projection(point_3d, radius, calibration, angle):
     return min(lx), max(lx), min(ly), max(ly)
 
 
-#       ========================================================================
-#       Create and split cubes
+# ==============================================================================
+# Create and split cubes
 
 def split_points_3d(points_3d, radius):
 
@@ -107,15 +124,15 @@ def corners_point_3d(point_3d, radius):
     return l
 
 
-#       =======================================================================
-#       Algorithm
+# ==============================================================================
+# Algorithm
 
 
 def point_3d_is_in_image(image,
                          height_image,
                          length_image,
                          point_3d,
-                         calibration,
+                         projection,
                          angle,
                          radius):
     """
@@ -136,21 +153,18 @@ def point_3d_is_in_image(image,
             + Any pixel value in the bounding box projected is > 0
     """
 
-    x, y = calibration.project_point(point_3d, angle)
+    x, y = projection.project_point(point_3d, angle)
 
-    # y_min = min(max(math.floor(y_min), 0), height_image - 1)
-    # y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+    if (0 <= x < length_image and
+        0 <= y < height_image and
+            image[y, x] > 0):
+        return True
 
-    if 0 <= x <= length_image - 1:
-        if 0 <= y <= height_image - 1:
-            if image[y, x] > 0:
-                return True
-
-    # =================================================================
+    # ==========================================================================
 
     x_min, x_max, y_min, y_max = bbox_projection(point_3d,
                                                  radius,
-                                                 calibration,
+                                                 projection,
                                                  angle)
 
     x_min = min(max(math.floor(x_min), 0), length_image - 1)
@@ -164,7 +178,7 @@ def point_3d_is_in_image(image,
             image[y_max, x_max] > 0):
         return True
 
-    # ==================================================================
+    # ==========================================================================
 
     if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
         return True
@@ -172,11 +186,15 @@ def point_3d_is_in_image(image,
     return False
 
 
-def octree_builder_optimize(images, points, radius, calibration):
+def octree_builder(images, points, radius, projection):
     kept = collections.deque()
-    len_image = len(images)
 
     height_image, length_image = numpy.shape(images.itervalues().next())
+
+    error_tolerance = 0
+
+    # if len(images) >= 10:
+    #     error_tolerance += 1
 
     while True:
         try:
@@ -190,18 +208,16 @@ def octree_builder_optimize(images, points, radius, calibration):
                                         height_image,
                                         length_image,
                                         point,
-                                        calibration,
+                                        projection,
                                         angle,
                                         radius):
                     yes += 1
                 else:
                     no += 1
-                    break
+                    if no > error_tolerance:
+                        break
 
-            # if (len_image >= 10 and no <= 1) or no == 0:
-            #     kept.append(cube)
-
-            if no == 0:
+            if no <= error_tolerance:
                 kept.append(point)
 
         except IndexError:
@@ -210,31 +226,7 @@ def octree_builder_optimize(images, points, radius, calibration):
     return kept
 
 
-def octree_builder(image, points, radius, calibration, angle):
-
-    kept = collections.deque()
-    height_image, length_image = numpy.shape(image)
-
-    while True:
-        try:
-            point = points.popleft()
-
-            if point_3d_is_in_image(image,
-                                    height_image,
-                                    length_image,
-                                    point,
-                                    calibration,
-                                    angle,
-                                    radius):
-                kept.append(point)
-
-        except IndexError:
-            break
-
-    return kept
-
-
-def project_points_on_image(points, radius, image, calibration, angle):
+def project_points_on_image(points, radius, image, projection, angle):
 
     height_image, length_image = numpy.shape(image)
     img = numpy.zeros((height_image, length_image))
@@ -242,27 +234,7 @@ def project_points_on_image(points, radius, image, calibration, angle):
     for point in points:
         x_min, x_max, y_min, y_max = bbox_projection(point,
                                                      radius,
-                                                     calibration,
-                                                     angle)
-
-        x_min = min(max(math.floor(x_min), 0), length_image - 1)
-        x_max = min(max(math.ceil(x_max), 0), length_image - 1)
-        y_min = min(max(math.floor(y_min), 0), height_image - 1)
-        y_max = min(max(math.ceil(y_max), 0), height_image - 1)
-
-        img[y_min:y_max + 1, x_min:x_max + 1] = 255
-
-    return img
-
-def project_points_on_image(points, radius, image, calibration, angle):
-
-    height_image, length_image = numpy.shape(image)
-    img = numpy.zeros((height_image, length_image))
-
-    for point in points:
-        x_min, x_max, y_min, y_max = bbox_projection(point,
-                                                     radius,
-                                                     calibration,
+                                                     projection,
                                                      angle)
 
         x_min = min(max(math.floor(x_min), 0), length_image - 1)
@@ -275,7 +247,7 @@ def project_points_on_image(points, radius, image, calibration, angle):
     return img
 
 
-def reconstruction_3d(images, calibration, precision=4, verbose=False):
+def reconstruction_3d(images, projection, precision=4, verbose=False):
 
     if len(images) == 0:
         return None
@@ -286,42 +258,24 @@ def reconstruction_3d(images, calibration, precision=4, verbose=False):
     points_3d = collections.deque()
     points_3d.append(origin_point)
 
-    # radius = origin.radius
     nb_iteration = 0
-    while origin_radius > 0 and precision < origin_radius:
-        origin_radius >>= 1
+    while precision < origin_radius:
+        precision *= 2
         nb_iteration += 1
 
-    radius = 2048
+    radius = precision
     for i in range(nb_iteration):
 
         points_3d = split_points_3d(points_3d, radius)
         radius /= 2.0
 
         if verbose is True:
-            print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(points_3d)
+            print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(points_3d),
 
-        for angle in images:
-            points_3d = octree_builder(images[angle],
-                                       points_3d,
-                                       radius,
-                                       calibration,
-                                       angle)
+        points_3d = octree_builder(
+            images, points_3d, radius, projection)
 
-            if verbose is True:
-                print 'Angle %d : %d' % (angle, len(points_3d))
-
-        # points = octree_builder(images, points_3d, radius, calibration)
-
-
+        if verbose is True:
+            print ' - ', len(points_3d)
 
     return points_3d
-
-
-
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    pass

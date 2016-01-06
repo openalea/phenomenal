@@ -24,7 +24,7 @@ import random
 #       ========================================================================
 #       Local Import
 import alinea.phenomenal.misc
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.calibration_model
 
@@ -84,7 +84,7 @@ def example_boostrap(images):
         results_reconstruction_3d.append(points_3d)
 
         print selected_images.keys()
-        alinea.phenomenal.result_viewer.show_points_3d(points_3d, scale_factor=2)
+        alinea.phenomenal.viewer.show_points_3d(points_3d, scale_factor=2)
 
 
 #       ========================================================================

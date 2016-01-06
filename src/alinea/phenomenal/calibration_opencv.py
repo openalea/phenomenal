@@ -109,26 +109,34 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
 
         return cal
 
-    def print_value(self):
+    def __str__(self):
+
+        my_str = ''
+        my_str += 'Focal Matrix : ' + str(self.focal_matrix) + '\n'
+        my_str += 'Distortion Coefficient : ' + str(
+            self.distortion_coefficient) + '\n'
+
         for angle in self.rotation_vectors:
             if self.rotation_vectors[angle] is not None:
-                print 'Angle : %d - rot : %f, %f, %f' % (
+                my_str += 'Angle : %d - rot : %f, %f, %f \n' % (
                     angle,
                     self.rotation_vectors[angle][0][0],
                     self.rotation_vectors[angle][1][0],
                     self.rotation_vectors[angle][2][0])
             else:
-                print 'Angle : %d - rot : None' % angle
+                my_str += 'Angle : %d - rot : None \n' % angle
 
         for angle in self.translation_vectors:
             if self.translation_vectors[angle] is not None:
-                print 'Angle : %d - trans : %f, %f, %f' % (
+                my_str += 'Angle : %d - trans : %f, %f, %f \n' % (
                     angle,
                     self.translation_vectors[angle][0][0],
                     self.translation_vectors[angle][1][0],
                     self.translation_vectors[angle][2][0])
             else:
-                print 'Angle : %d - trans : None' % angle
+                my_str += 'Angle : %d - trans : None \n' % angle
+
+        return my_str
 
     def project_points(self, points, angle):
 
@@ -153,13 +161,19 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
         return projection_point[0, 0, 0], projection_point[0, 0, 1]
 
     def calibrate(self, images, chessboard, verbose=False):
-        # Get corners images
+
         image_points = list()
         for angle in images:
-            corners = chessboard.find_corners(images[angle])
+            print angle
+            if angle in chessboard.corners_points:
+                corners_2 = chessboard.corners_points[angle].astype(numpy.float32)
+                print type(corners_2)
 
-            if corners is not None:
-                image_points.append(corners)
+            else:
+                corners_2 = None
+
+            if corners_2 is not None:
+                image_points.append(corners_2)
             else:
                 self.rotation_vectors[angle] = None
                 self.translation_vectors[angle] = None
@@ -173,6 +187,12 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
         camera_matrix = numpy.zeros((3, 3), dtype=numpy.float32)
 
         distortion_coefficient = numpy.zeros((5, 1), numpy.float32)
+
+        print image_points
+
+        image_points = numpy.array(image_points)
+
+        print image_points
 
         ret, focal_matrix, distortion_coefficient, rvecs, tvecs = \
             cv2.calibrateCamera(object_points,
@@ -222,4 +242,3 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
             mean_error += error
 
         return mean_error / len(object_points)
-

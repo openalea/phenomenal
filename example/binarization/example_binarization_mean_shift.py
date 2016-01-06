@@ -25,7 +25,7 @@ import cv2
 import alinea.phenomenal.binarization
 import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 
 #       ========================================================================
 #       Code
@@ -34,7 +34,7 @@ import alinea.phenomenal.result_viewer
 def run_example(data_directory):
 
     pot_ids = alinea.phenomenal.misc.load_files(data_directory)
-
+    print pot_ids
     for pot_id in pot_ids:
         for date in pot_ids[pot_id]:
             files = pot_ids[pot_id][date]
@@ -58,10 +58,11 @@ def run_example(data_directory):
                 #         [images[angle], images_binarize_mean_shift[angle]],
                 #         str(angle))
                 #
-                # alinea.phenomenal.misc.write_images(
-                #     data_directory + '/binarization_mean_shift/',
-                #     files,
-                #     images_binarize_mean_shift)
+                alinea.phenomenal.misc.write_images(
+                    data_directory + '/binarization_mean_shift/',
+                    files,
+                    images_binarize_mean_shift)
+
 
 
 #       ========================================================================

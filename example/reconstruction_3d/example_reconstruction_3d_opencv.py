@@ -24,7 +24,7 @@ import cv2
 #       ========================================================================
 #       Local Import
 import alinea.phenomenal.misc
-import alinea.phenomenal.result_viewer
+import alinea.phenomenal.viewer
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.calibration_opencv
 
@@ -60,16 +60,14 @@ def run_example(data_directory):
                                   verbose=True)
 
             print pot_id, date
-            alinea.phenomenal.result_viewer.show_points_3d(
+            alinea.phenomenal.viewer.show_points_3d(
                 points_3d, scale_factor=2)
 
             file_name = files[0].split('\\')[-1].split('_vis_')[0]
 
-            alinea.phenomenal.misc.write_points_3d(
+            alinea.phenomenal.misc.write_xyz(
                 points_3d,
-                4,
-                data_directory + 'reconstruction_3d_opencv/',
-                file_name)
+                data_directory + 'reconstruction_3d_opencv/' + file_name)
 
 
 #       ========================================================================

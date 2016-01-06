@@ -62,7 +62,7 @@ def build_object_1(size, radius, origin):
     return points_3d
 
 
-def build_image_from_points_3d(points_3d, radius, calibration, step=30):
+def build_image_from_points_3d(points_3d, radius, projection, step=30):
 
     images = dict()
     for angle in range(0, 360, step):
@@ -73,7 +73,7 @@ def build_image_from_points_3d(points_3d, radius, calibration, step=30):
         for point_3d in points_3d:
             x_min, x_max, y_min, y_max = \
                 alinea.phenomenal.multi_view_reconstruction.bbox_projection(
-                    point_3d, radius, calibration, angle)
+                    point_3d, radius, projection, angle)
 
             x_min = min(max(x_min, 0), l - 1)
             x_max = min(max(x_max, 0), l - 1)

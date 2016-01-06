@@ -44,7 +44,6 @@ class Calibration(object):
     def read_calibration(filename):
         pass
 
-
 #       ========================================================================
 #       LOCAL TEST
 

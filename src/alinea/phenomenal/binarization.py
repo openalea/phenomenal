@@ -27,7 +27,7 @@ import cv2
 #       ========================================================================
 #       Local Import
 
-import alinea.phenomenal.repair_processing
+import alinea.phenomenal.binarization_post_processing
 import alinea.phenomenal.binarization_algorithm
 
 
@@ -251,7 +251,7 @@ def side_binarization_mean_shift(image, mean_image, factor):
     mask_clean_noise = cv2.add(factor.side_roi_orange_band.mask,
                                factor.side_roi_panel.mask)
 
-    result = alinea.phenomenal.repair_processing.clean_noise(
+    result = alinea.phenomenal.binarization_post_processing.clean_noise(
         result, mask_clean_noise)
 
     return result
