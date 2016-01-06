@@ -34,7 +34,6 @@ import alinea.phenomenal.binarization_algorithm
 #       ========================================================================
 
 def binarization(images, factor, methods='mean_shift'):
-
     try:
         if methods == 'mean_shift' or methods == 'elcom':
             if (-1) in images:
@@ -65,8 +64,6 @@ def binarization(images, factor, methods='mean_shift'):
                 if methods == 'adaptive_threshold':
                     binarize_images[angle] = side_binarization_adaptive_thresh(
                         images[angle], factor)
-
-
 
     except cv2.error, e:
         sys.stderr.write("OpenCvError - " + methods + " : " + str(e) + "\n")
