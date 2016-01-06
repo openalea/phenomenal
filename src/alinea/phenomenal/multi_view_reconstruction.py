@@ -318,7 +318,7 @@ def build_groups(images, points_3d, index_image, projection, radius):
     import time
 
     # angle_selected = range(0, 360, 30)
-    angle_selected = [120]
+    angle_selected = [120, 0]
 
     start = time.time()
     groups = dict()
