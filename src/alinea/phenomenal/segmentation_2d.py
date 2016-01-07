@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       segmentation_2d.py :
+#       pipeline_segmentation_2d.py :
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #

@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       skeletonize_2d.py : Function for skeletonize binary image
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,16 +12,11 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import cv2
 import skimage.morphology
 import numpy
-
-#       ========================================================================
-#       Code
+# ==============================================================================
 
 
 def skeletonize(image, methods='thinning'):
@@ -41,9 +34,10 @@ def skeletonize_thinning(image):
     :param image: binary image with 0 or 255
     :return: skeleton of a binary image.
     """
+    img = image.copy()
 
-    image[image == 255] = 1
-    skeleton = skimage.morphology.skeletonize(image)
+    img[img == 255] = 1
+    skeleton = skimage.morphology.skeletonize(img)
     skeleton = skeleton.astype(numpy.uint8)
     skeleton[skeleton > 0] = 255
 
@@ -57,17 +51,18 @@ def skeletonize_erode_dilate(image):
     :param image: binary image with 0 or 255
     :return: skeleton of a binary image.
     """
+    img = image.copy()
 
-    skeleton = numpy.zeros(image.shape, numpy.uint8)
+    skeleton = numpy.zeros(img.shape, numpy.uint8)
 
     element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
 
-    while cv2.countNonZero(image) > 0:
-        eroded = cv2.erode(image, element)
+    while cv2.countNonZero(img) > 0:
+        eroded = cv2.erode(img, element)
         temp = cv2.dilate(eroded, element)
-        temp = cv2.subtract(image, temp)
+        temp = cv2.subtract(img, temp)
         skeleton = cv2.bitwise_or(skeleton, temp)
-        image = eroded.copy()
+        img = eroded.copy()
 
     return skeleton
 

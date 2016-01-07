@@ -148,4 +148,3 @@ class BinarizationFactorFree(object):
                 setattr(self, key, factor)
             else:
                 setattr(self, key, value)
-                
