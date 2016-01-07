@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       chessboard.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -15,19 +13,18 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 import cv2
 import glob
 
 import alinea.phenomenal.chessboard
-
 # ==============================================================================
+
 
 data_directory = '../local/CHESSBOARD_1/'
 
 # Load files
 files_path = glob.glob(data_directory + '*.png')
-angles = map(lambda x: int((x.split('sv_')[1]).split('.png')[0]), files_path)
+angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_path)
 
 image_path = dict()
 for i in range(len(files_path)):

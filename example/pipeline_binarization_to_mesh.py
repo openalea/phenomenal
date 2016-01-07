@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       script_pipeline.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,15 +12,10 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       Import
+# ==============================================================================
 import os
 import cv2
-
 import openalea.deploy.shared_data
-
 
 import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
@@ -33,28 +26,41 @@ import alinea.phenomenal.binarization_post_processing
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
 import alinea.phenomenal.viewer
-
-
-#       ========================================================================
-#       Code
+import alinea.phenomenal.data_load
+from alinea.phenomenal.binarization import (get_mean_image,
+                                            top_binarization_hsv,
+                                            side_binarization_mean_shift)
+# ==============================================================================
 
 
 def binarization(images, images_directory, images_path):
-    factor = alinea.phenomenal.configuration. \
+    factor = alinea.phenomenal.configuration.\
         binarization_factor('factor_image_basic.cfg')
 
-    images_binarize = alinea.phenomenal.binarization.binarization(
-        images, factor, methods='mean_shift')
+    if (-1) in images:
+        top_image = images.pop((-1))
+        mean_image = get_mean_image(images.values())
+        images[(-1)] = top_image
+    else:
+        mean_image = get_mean_image(images.values())
+
+    binarize_images = dict()
+    for angle in images:
+        if angle < 0:
+            binarize_images[angle] = top_binarization_hsv(images[angle], factor)
+        else:
+            binarize_images[angle] = side_binarization_mean_shift(
+                images[angle], mean_image, factor)
 
     alinea.phenomenal.misc.write_images(
         images_directory + '/binarization/',
         images_path,
-        images_binarize)
+        binarize_images)
 
-    return images_binarize
+    return binarize_images
 
 
-def binarization_post_processing(images_binarize,
+def binarization_post_processing(binarize_images,
                                  images_directory,
                                  images_path):
 
@@ -66,7 +72,7 @@ def binarization_post_processing(images_binarize,
 
     post_processing_images = alinea.phenomenal. \
         binarization_post_processing. \
-        remove_plant_support_from_images(images_binarize, mask=mask_image)
+        remove_plant_support_from_images(binarize_images, mask=mask_image)
 
     alinea.phenomenal.misc.write_images(
         images_directory + 'post_processing_images/',
@@ -79,22 +85,23 @@ def binarization_post_processing(images_binarize,
 def multi_view_reconstruction(images_binarize, file_path):
 
     radius = 5
-    calibration_name = 'example_calibration_model'
+    # Load camera model parameters
+    params_camera_path, _ = alinea.phenomenal.data_load.\
+        test_plant_1_calibration_params_path()
 
-    calibration = alinea.phenomenal.calibration_model.\
-        Calibration.read_calibration(calibration_name,
-                                     file_is_in_share_directory=True)
+    cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
+        params_camera_path)
+
+    # Create model projection object
+    projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
 
     images_selected = dict()
     for angle in images_binarize:
         if 0 <= angle <= 360:
             images_selected[angle] = images_binarize[angle]
 
-    points_3d = alinea.phenomenal.multi_view_reconstruction.\
-        reconstruction_3d(images_selected,
-                          calibration,
-                          precision=radius,
-                          verbose=True)
+    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
+        images_selected, projection, precision=radius, verbose=True)
 
     # Write
     alinea.phenomenal.misc.write_xyz(points_3d, file_path)

@@ -15,11 +15,9 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 import alinea.phenomenal.data_load
 import alinea.phenomenal.chessboard
 import alinea.phenomenal.calibration_model
-
 # ==============================================================================
 
 chessboards_path = alinea.phenomenal.data_load.test_plant_1_chessboards_path()

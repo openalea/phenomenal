@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       meshing.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -15,14 +13,13 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 import alinea.phenomenal.data_load
 import alinea.phenomenal.misc
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
 import alinea.phenomenal.viewer
-
 # ==============================================================================
+
 
 radius = 2
 
