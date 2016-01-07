@@ -15,13 +15,11 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 import alinea.phenomenal.data_load
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.viewer
 import alinea.phenomenal.misc
-
 # ==============================================================================
 
 # Load images binarize

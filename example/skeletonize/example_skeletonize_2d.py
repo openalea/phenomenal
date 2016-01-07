@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       example_skeletonize_2d.py.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,7 +12,7 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 
 #       ========================================================================
 #       External Import

@@ -13,8 +13,8 @@
 #
 #       VPlants WebSite : https://gforge.inria.fr/projects/vplants/
 #
-""" This module defines a typical pinhole camera
-"""
+
+""" This module defines a typical pinhole camera """
 
 __all__ = ["Camera"]
 
@@ -22,8 +22,7 @@ __all__ = ["Camera"]
 
 
 class Camera(object):
-    """ Project point in space on the focal plane of the camera
-    """
+    """ Project point in space on the focal plane of the camera """
 
     def __init__(self, image_size, scaling):
         """ Defines a new Camera

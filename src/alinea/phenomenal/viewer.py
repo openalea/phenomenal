@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       viewer.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,35 +12,33 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 
-#       ========================================================================
-#       External Import 
+""" Module to visualize via Mayavi and Matplotlib plant data
+"""
+# ==============================================================================
+
 import cv2
 import numpy
 import random
-
 import mayavi.mlab
 import matplotlib.cm
 import matplotlib.pyplot
 
 
-#       ========================================================================
-#       Show reconstruction 3d
-
+# ==============================================================================
+# Show reconstruction 3d
 
 def show_points_3d(points_3d,
-                   color=None,
-                   scale_factor=5.0,
-                   figure_name="Cubes"):
-    mayavi.mlab.figure(figure_name)
+                   color=None,\
+                   scale_factor=5,
+                   figure_name=""):
 
+    mayavi.mlab.figure(figure_name)
     mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
     mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
     mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
-
     plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
-
     mayavi.mlab.show()
 
 
