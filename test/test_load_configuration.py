@@ -40,9 +40,9 @@ def test_load_configuration():
     assert factor_side_binarization.side_roi_main.hsv_max == (129, 254, 141)
     assert factor_side_binarization.side_roi_main.mask is not None
 
-    assert factor_side_binarization.side_roi_stem.hsv_min == (30, 25, 0)
-    assert factor_side_binarization.side_roi_stem.hsv_max == (150, 254, 165)
-    assert factor_side_binarization.side_roi_stem.mask is not None
+    # assert factor_side_binarization.side_roi_stem.hsv_min == (30, 25, 0)
+    # assert factor_side_binarization.side_roi_stem.hsv_max == (150, 254, 165)
+    # assert factor_side_binarization.side_roi_stem.mask is not None
 
     assert factor_side_binarization.side_roi_pot.hsv_min == (14, 36, 0)
     assert factor_side_binarization.side_roi_pot.hsv_max == (88, 254, 88)
