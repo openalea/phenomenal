@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       multi_view_reconstruction.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s):
@@ -15,14 +13,10 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 import collections
 import math
 import numpy
-
-
 # ==============================================================================
-# PROJECTION
 
 
 def bbox_projection(point_3d, radius, projection, angle):
@@ -55,9 +49,6 @@ def bbox_projection(point_3d, radius, projection, angle):
 
     return min(lx), max(lx), min(ly), max(ly)
 
-
-# ==============================================================================
-# Create and split cubes
 
 def split_points_3d(points_3d, radius):
 
@@ -152,9 +143,7 @@ def corners_point_3d(point_3d, radius):
 
     return l
 
-
 # ==============================================================================
-# Algorithm
 
 
 def point_3d_is_in_image(image,
@@ -210,38 +199,29 @@ def point_3d_is_in_image(image,
         return True
 
 
-def octree_builder(images, points, radius, projection):
+def octree_builder(images, points, radius, projection, error_tolerance):
     kept = collections.deque()
 
     height_image, length_image = numpy.shape(images.itervalues().next())
-
-    error_tolerance = 0
-
-    if len(images) >= 10:
-        error_tolerance = 0
 
     while True:
         try:
             point = points.popleft()
 
-            no = 0
-            yes = 0
-
+            negative_weight = 0
             for angle in images:
-                if point_3d_is_in_image(images[angle],
-                                        height_image,
-                                        length_image,
-                                        point,
-                                        projection,
-                                        angle,
-                                        radius):
-                    yes += 1
-                else:
-                    no += 1
-                    if no > error_tolerance:
+                if not point_3d_is_in_image(images[angle],
+                                            height_image,
+                                            length_image,
+                                            point,
+                                            projection,
+                                            angle,
+                                            radius):
+                    negative_weight += 1
+                    if negative_weight > error_tolerance:
                         break
 
-            if no <= error_tolerance:
+            if negative_weight <= error_tolerance:
                 kept.append(point)
 
         except IndexError:
@@ -250,28 +230,8 @@ def octree_builder(images, points, radius, projection):
     return kept
 
 
-def project_points_on_image(my_points, radius, shape_image, projection, angle):
-
-    height_image, length_image = shape_image
-    img = numpy.zeros((height_image, length_image))
-
-    for point in my_points:
-        x_min, x_max, y_min, y_max = bbox_projection(point,
-                                                     radius,
-                                                     projection,
-                                                     angle)
-
-        x_min = min(max(math.floor(x_min), 0), length_image - 1)
-        x_max = min(max(math.ceil(x_max), 0), length_image - 1)
-        y_min = min(max(math.floor(y_min), 0), height_image - 1)
-        y_max = min(max(math.ceil(y_max), 0), height_image - 1)
-
-        img[y_min:y_max + 1, x_min:x_max + 1] = 255
-
-    return img
-
-
 def reconstruction_3d(images, projection, radius,
+                      error_tolerance=0,
                       origin_point=(0.0, 0.0, 0.0),
                       points_3d=None,
                       verbose=False):
@@ -304,7 +264,7 @@ def reconstruction_3d(images, projection, radius,
             print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(points_3d),
 
         points_3d = octree_builder(
-            images, points_3d, radius, projection)
+            images, points_3d, radius, projection, error_tolerance)
 
         if verbose is True:
             print ' - ', len(points_3d)
@@ -312,28 +272,56 @@ def reconstruction_3d(images, projection, radius,
     return points_3d
 
 
-def build_groups(images, points_3d, index_image, projection, radius):
-    height_image, length_image = numpy.shape(images.itervalues().next())
+def project_points_on_image(my_points, radius, shape_image, projection, angle):
 
-    import time
+    height_image, length_image = shape_image
+    img = numpy.zeros((height_image, length_image))
 
-    # angle_selected = range(0, 360, 30)
-    angle_selected = [120, 0]
+    for point in my_points:
+        x_min, x_max, y_min, y_max = bbox_projection(point,
+                                                     radius,
+                                                     projection,
+                                                     angle)
 
-    start = time.time()
+        x_min = min(max(math.floor(x_min), 0), length_image - 1)
+        x_max = min(max(math.ceil(x_max), 0), length_image - 1)
+        y_min = min(max(math.floor(y_min), 0), height_image - 1)
+        y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+
+        img[y_min:y_max + 1, x_min:x_max + 1] = 255
+
+    return img
+
+# ==============================================================================
+
+
+def create_groups(images, angle_selected):
     groups = dict()
     for angle in angle_selected:
-        for i in xrange(len(index_image[angle][0])):
-            x, y = (index_image[angle][0][i], index_image[angle][1][i])
+        index = numpy.where(images[angle] > 0)
+        for i in xrange(len(index[0])):
+            x, y = (index[0][i], index[1][i])
             groups[(angle, x, y)] = [list(), 0, angle]
 
-    print "Time : ", time.time() - start
-    start = time.time()
+    return groups
+
+
+def fill_groups(images, points_3d, groups, projection, radius, angle_selected):
+    height_image, length_image = numpy.shape(images.itervalues().next())
+
+    angle_selected = [120, 300]
+
+    # ==========================================================================
+    # Clear groups
+    for key in groups:
+        groups[key][0] = list()
+        groups[key][1] = 0
 
     new_points_3d = collections.deque()
     while True:
         try:
             pt3d = points_3d.popleft()
+
             list_group = list()
             stats = 0
 
@@ -356,7 +344,6 @@ def build_groups(images, points_3d, index_image, projection, radius):
                     x, y = (index[0][i] + y_min, index[1][i] + x_min)
 
                     groups[(angle, x, y)][0].append(new_point)
-                    # groups[(angle, x, y)][1] = len(groups[(angle, x, y)][0])
                     list_group.append(groups[(angle, x, y)])
 
         except IndexError:
@@ -364,8 +351,6 @@ def build_groups(images, points_3d, index_image, projection, radius):
 
     for key in groups:
         groups[key][1] = len(groups[key][0])
-
-    print "Time : ", time.time() - start
 
     return new_points_3d, groups
 
@@ -375,12 +360,12 @@ def octree_builder_2(images, pts, groups, radius, projection):
 
     height_image, length_image = numpy.shape(images.itervalues().next())
 
-    error_tolerance = len(images)
+    error_tolerance = 0
     if len(images) >= 10:
         error_tolerance = 0
-
     acceptation_criteria = len(images) - error_tolerance
 
+    mymat = dict()
     while True:
         try:
             point, point_group, stats = pts.popleft()
@@ -401,17 +386,18 @@ def octree_builder_2(images, pts, groups, radius, projection):
                 for g in point_group:
                     g[1] -= 1
 
+            mymat[point] = stats
+
         except IndexError:
             break
 
-    inf = float('inf')
     for key in groups:
         group, nb, angle = groups[key]
         if nb <= 0:
-            min_dist = inf
+            min_dist = 0
             save_pt = list()
             for pt3D, list_group, sum_dist in group:
-                if sum_dist < min_dist:
+                if sum_dist > min_dist:
                     min_dist = sum_dist
                     save_pt = list()
                     save_pt.append((pt3D, list_group))
@@ -428,13 +414,40 @@ def octree_builder_2(images, pts, groups, radius, projection):
                 for pt3d in save_for_sure_pt:
                     kept.append(pt3d)
             else:
+
+                save_for_sure_pt = list()
+                max_dist = 0
                 for pt3d, list_group in save_pt:
+                    x, y, z = pt3d
+                    r = radius * 2
+                    dist = 0
+
+                    ll = list()
+                    for i in range(-2, 2, 1):
+                        ll.append(i * r)
+
+                    for i in ll:
+                        for j in ll:
+                            for k in ll:
+                                newpt = (x + i, y + j, z + k)
+                                if newpt in mymat:
+                                    if mymat[newpt] == 12:
+                                        dist += 2000
+                                    dist += mymat[newpt]
+                    if dist > max_dist:
+                        max_dist = dist
+                        save_for_sure_pt = list()
+                        save_for_sure_pt.append(pt3d)
+                    if dist == max_dist:
+                        save_for_sure_pt.append(pt3d)
+
+                for pt3d in save_for_sure_pt:
                     kept.append(pt3d)
 
     return collections.deque(set(kept))
 
 
-def reconstruction_3d_2(images, angle_ref, projection, radius,
+def reconstruction_3d_2(images, projection, radius,
                         origin_point=(0.0, 0.0, 0.0),
                         points_3d=None,
                         verbose=False):
@@ -453,9 +466,12 @@ def reconstruction_3d_2(images, angle_ref, projection, radius,
         radius *= 2.0
         nb_iteration += 1
 
-    index_image = dict()
-    for angle in images:
-        index_image[angle] = numpy.where(images[angle] > 0)
+    # ==========================================================================
+    # Create Groups
+    angle_selected = [120, 300]
+    groups = create_groups(images, angle_selected)
+
+    # ==========================================================================
 
     for i in range(nb_iteration):
 
@@ -468,11 +484,12 @@ def reconstruction_3d_2(images, angle_ref, projection, radius,
 
         # ======================================================================
 
-        pts, groups = build_groups(images,
-                                   points_3d,
-                                   index_image,
-                                   projection,
-                                   radius)
+        pts, groups = fill_groups(images,
+                                  points_3d,
+                                  groups,
+                                  projection,
+                                  radius,
+                                  angle_selected)
 
         # ======================================================================
 
