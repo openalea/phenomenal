@@ -100,8 +100,8 @@ def multi_view_reconstruction(images_binarize, file_path):
         if 0 <= angle <= 360:
             images_selected[angle] = images_binarize[angle]
 
-    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images_selected, projection, precision=radius, verbose=True)
+    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d_2(
+        images_selected, projection, radius, verbose=True)
 
     # Write
     alinea.phenomenal.misc.write_xyz(points_3d, file_path)

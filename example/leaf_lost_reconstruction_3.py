@@ -15,8 +15,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
-
 import multiprocessing
 import gc
 import math
@@ -29,9 +27,8 @@ import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.viewer
 import alinea.phenomenal.misc
 import alinea.phenomenal.data_transformation
-
-
 # ==============================================================================
+
 
 def show_image(image):
     im = image.copy()
@@ -64,8 +61,7 @@ def create_points_3d_leaf(points_3d, projection, im, angle, verbose=False, ):
         print i
         dict_point_3d_leaf[
             i], err = alinea.phenomenal.multi_view_reconstruction. \
-            reconstruction_3d(images_selected, projection,
-                              precision=radius,
+            reconstruction_3d(images_selected, projection, radius,
                               origin_point=(float(i), 0.0, 0.0))
 
     if verbose:
@@ -133,7 +129,7 @@ if __name__ == '__main__':
     # ==========================================================================
     # Define parameters of reconstruction
 
-    radius = 10
+    radius = 4
     verbose = True
 
     # ==========================================================================
@@ -163,7 +159,7 @@ if __name__ == '__main__':
         images_selected[angle] = images[angle]
 
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d_2(
-        images_selected, 150, projection, radius, verbose=True)
+        images_selected, projection, radius, verbose=True)
 
     if verbose:
         alinea.phenomenal.viewer.show_points_3d(points_3d)
@@ -289,7 +285,7 @@ if __name__ == '__main__':
                                      height_image, length_image,
                                      pt, projection, angle, radius)
 
-            if not b:
+            if b:
                 sum_dist += 1
 
             # pt_x, pt_y = projection.project_point(pt, angle)
@@ -335,10 +331,10 @@ if __name__ == '__main__':
     inf = float('inf')
     mypt3d = list()
     for pt2d in groups:
-        min_dist = inf
+        min_dist = 0
         save_pt = None
         for pt3D, sum_dist in groups[pt2d]:
-            if sum_dist < min_dist:
+            if sum_dist > min_dist:
                 min_dist = sum_dist
                 save_pt = pt3D
         if save_pt is not None:
