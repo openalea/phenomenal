@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       test_data_transformation.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,18 +12,12 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import numpy
+import collections
 
-#       ========================================================================
-#       Local Import 
 import alinea.phenomenal.data_transformation
-
-#       ========================================================================
-#       Code
+# ==============================================================================
 
 
 def test_data_transformation_1():
@@ -137,6 +129,17 @@ def test_data_transformation_3():
     assert len(points_3d) == 1
     assert points_3d[0] == (1, 42, 1)
 
+
+def test_remove_internal_points_3d_1():
+
+    radius = 4
+    points_3d = collections.deque()
+
+    points_3d = alinea.phenomenal.data_transformation.remove_internal_points_3d(
+        points_3d, radius)
+
+    assert points_3d == collections.deque()
+
 #       ========================================================================
 #       LOCAL TEST
 
@@ -147,3 +150,4 @@ if __name__ == "__main__":
     test_limit_points_many_values()
     test_data_transformation_2()
     test_data_transformation_3()
+    test_remove_internal_points_3d_1()
