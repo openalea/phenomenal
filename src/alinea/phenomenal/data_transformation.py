@@ -15,12 +15,10 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 import os
 import collections
 import numpy
 import cv2
-
 # ==============================================================================
 
 
@@ -113,10 +111,10 @@ def matrix_to_points_3d(matrix, radius, origin=(0, 0, 0)):
 
 def points_3d_to_matrix(points_3d, radius):
 
-    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
-
-    if x_min is None:
+    if not points_3d:
         return numpy.zeros((0, 0, 0)), list(), (None, None, None)
+
+    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
 
     r = radius * 2.0
 
@@ -142,6 +140,9 @@ def points_3d_to_matrix(points_3d, radius):
 
 
 def remove_internal_points_3d(points_3d, radius):
+
+    if not points_3d:
+        return points_3d
 
     matrix, index, origin = points_3d_to_matrix(points_3d, radius)
 
