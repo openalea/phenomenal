@@ -14,23 +14,21 @@
 #
 # ==============================================================================
 
-""" Module to visualize via Mayavi and Matplotlib plant data
-"""
-# ==============================================================================
+""" Module to visualize via Mayavi and Matplotlib plant data """
 
+# ==============================================================================
 import cv2
 import numpy
 import random
 import mayavi.mlab
 import matplotlib.cm
 import matplotlib.pyplot
-
-
 # ==============================================================================
-# Show reconstruction 3d
+
 
 def show_points_3d(points_3d,
-                   color=None, scale_factor=5,
+                   color=None,
+                   scale_factor=5,
                    figure_name=""):
 
     mayavi.mlab.figure(figure_name)
@@ -42,22 +40,17 @@ def show_points_3d(points_3d,
 
 
 def plot_points_3d(points_3d, color=None, scale_factor=5):
-    x = list()
-    y = list()
-    z = list()
+
+    pts = numpy.array(points_3d)
+    pts = pts.astype(int)
 
     if color is None:
         color = (random.uniform(0, 1),
                  random.uniform(0, 1),
                  random.uniform(0, 1))
 
-    for point_3d in points_3d:
-        x.append(int(round(point_3d[0])))
-        y.append(int(round(point_3d[1])))
-        z.append(int(round(point_3d[2])))
-
     if len(points_3d) > 0:
-        mayavi.mlab.points3d(x, y, z,
+        mayavi.mlab.points3d(pts[:, 0], pts[:, 1], pts[:, 2],
                              mode='cube',
                              color=color,
                              scale_factor=scale_factor)
@@ -115,7 +108,7 @@ def plot_segments(segments,
 
 
 def show_images(images,
-                name_windows='Image Comparison',
+                name_windows='',
                 names_axes=None):
 
     matplotlib.pyplot.title(name_windows)
@@ -130,7 +123,7 @@ def show_images(images,
         else:
             ax.set_title(names_axes[i])
 
-        if len(numpy.shape(image)) == 2:
+        if image.ndim == 2:
             img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
             ax.imshow(img)
         else:
@@ -142,11 +135,12 @@ def show_images(images,
     matplotlib.pyplot.show()
 
 
-def show_image(image, name_windows='Image'):
+def show_image(image,
+               name_windows=''):
 
     matplotlib.pyplot.title(name_windows)
 
-    if len(numpy.shape(image)) == 2:
+    if image.ndim == 2:
         img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         matplotlib.pyplot.imshow(img)
     else:
@@ -156,7 +150,9 @@ def show_image(image, name_windows='Image'):
     matplotlib.pyplot.show()
 
 
-def show_mesh(vertices, faces, normals=None, centers=None):
+def show_mesh(vertices, faces,
+              normals=None,
+              centers=None):
 
     if normals is not None and centers is not None:
         mayavi.mlab.quiver3d(centers[:, 0], centers[:, 1], centers[:, 2],
@@ -175,9 +171,8 @@ def show_mesh(vertices, faces, normals=None, centers=None):
     mayavi.mlab.show()
 
 
-def show_image_with_chessboard_corners(image,
-                                       corners,
-                                       name_windows="Chessboard corners"):
+def show_image_with_chessboard_corners(image, corners,
+                                       name_windows=""):
     img = image.copy()
 
     corners = corners.astype(int)
@@ -188,12 +183,9 @@ def show_image_with_chessboard_corners(image,
     matplotlib.pyplot.show()
 
 
-def show_chessboard_3d_projection_on_image(image,
-                                           angle,
-                                           chessboard,
-                                           chessboard_params,
-                                           projection,
-                                           name_windows="Chessboard corners"):
+def show_chessboard_3d_projection_on_image(image, angle, chessboard,
+                                           chessboard_params, projection,
+                                           name_windows=""):
     img = image.copy()
 
     # Plot Corners detect by OpenCv

@@ -140,13 +140,12 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
 
     def project_points(self, points, angle):
 
-        projection_point, _ = cv2.projectPoints(points,
+        projection_point, _ = cv2.projectPoints(numpy.array(points),
                                                 self.rotation_vectors[angle],
                                                 self.translation_vectors[angle],
                                                 self.focal_matrix,
                                                 self.distortion_coefficient)
-
-        return projection_point
+        return projection_point[:, 0, :]
 
     def project_point(self, point, angle):
 

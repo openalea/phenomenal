@@ -23,6 +23,8 @@ import collections
 #       ========================================================================
 #       Local Import
 import alinea.phenomenal.multi_view_reconstruction
+import alinea.phenomenal.data_load
+import alinea.phenomenal.calibration_model
 
 #       ========================================================================
 #       Code
@@ -70,9 +72,34 @@ def test_split_cubes():
     assert l[6] == (-4., 4., 4.)
     assert l[7] == (4., 4., 4.)
 
-#       ========================================================================
-#       LOCAL TEST
+
+def test_bbox_projection():
+    # Load camera model parameters
+    params_camera_path, _ = alinea.phenomenal.data_load.\
+        test_plant_1_calibration_params_path()
+
+    cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
+        params_camera_path)
+
+    # Create model projection object
+    projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
+
+    point_3d = (0, 0, 0)
+    radius = 4
+    angle = 0
+
+    res = alinea.phenomenal.multi_view_reconstruction.bbox_projection(
+        point_3d, radius, projection, angle)
+
+    assert res == (1016.657969220734,
+                   1026.3381434879657,
+                   1258.4181735951754,
+                   1265.3138726030732)
+
+# ==============================================================================
+# LOCAL TEST
 
 if __name__ == "__main__":
     test_oct_split()
     test_split_cubes()
+    test_bbox_projection()

@@ -65,15 +65,3 @@ def skeletonize_erode_dilate(image):
         img = eroded.copy()
 
     return skeleton
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    do_nothing = None
-
-
-
-
-
-

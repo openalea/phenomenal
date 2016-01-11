@@ -230,6 +230,15 @@ class ModelProjection(object):
                 y_rotation,
                 z_rotation)
 
+    def compute_point(self, point, angle):
+        return self._frame[angle].local_point(point)
+
+    def project_points(self, points, angle):
+        pts_2d = self._camera.pixel_coordinates(
+            self._frame[angle].local_points(points))
+
+        return numpy.transpose(pts_2d)
+
     def project_point(self, point, angle):
         return self._camera.pixel_coordinates(
             self._frame[angle].local_point(point))
