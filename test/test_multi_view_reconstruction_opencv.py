@@ -45,7 +45,7 @@ def test_multi_view_reconstruction_opencv_1():
         points, radius, calibration, step=30)
 
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, precision=radius, verbose=True)
+        images, calibration, radius, verbose=True)
 
     mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
@@ -62,7 +62,7 @@ def test_multi_view_reconstruction_opencv_2():
         Calibration.read_calibration('tests/test_calibration_opencv')
 
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, precision=radius, verbose=True)
+        images, calibration, radius, verbose=True)
 
     assert len(points_3d) == 6096
 
@@ -70,7 +70,7 @@ def test_multi_view_reconstruction_opencv_2():
         image = alinea.phenomenal.multi_view_reconstruction.\
             project_points_on_image(points_3d,
                                     radius,
-                                    images[angle],
+                                    images[angle].shape,
                                     calibration,
                                     angle)
 
@@ -83,5 +83,5 @@ def test_multi_view_reconstruction_opencv_2():
 #       LOCAL TEST
 
 if __name__ == "__main__":
-    # test_multi_view_reconstruction_opencv_1()
+    test_multi_view_reconstruction_opencv_1()
     test_multi_view_reconstruction_opencv_2()

@@ -15,7 +15,10 @@
 # ==============================================================================
 import collections
 import math
+
 import numpy
+
+
 # ==============================================================================
 
 
@@ -295,9 +298,9 @@ def project_points_on_image(my_points, radius, shape_image, projection, angle):
 # ==============================================================================
 
 
-def create_groups(images, angle_selected):
+def create_groups(images, angles_ref):
     groups = dict()
-    for angle in angle_selected:
+    for angle in angles_ref:
         index = numpy.where(images[angle] > 0)
         for i in xrange(len(index[0])):
             x, y = (index[0][i], index[1][i])
@@ -306,10 +309,8 @@ def create_groups(images, angle_selected):
     return groups
 
 
-def fill_groups(images, points_3d, groups, projection, radius, angle_selected):
+def fill_groups(images, points_3d, groups, projection, radius, angles_ref):
     height_image, length_image = numpy.shape(images.itervalues().next())
-
-    angle_selected = [120, 300]
 
     # ==========================================================================
     # Clear groups
@@ -328,7 +329,7 @@ def fill_groups(images, points_3d, groups, projection, radius, angle_selected):
             new_point = [pt3d, list_group, stats]
             new_points_3d.append(new_point)
 
-            for angle in angle_selected:
+            for angle in angles_ref:
                 x_min, x_max, y_min, y_max = bbox_projection(
                     pt3d, radius, projection, angle)
 
@@ -355,20 +356,16 @@ def fill_groups(images, points_3d, groups, projection, radius, angle_selected):
     return new_points_3d, groups
 
 
-def octree_builder_2(images, pts, groups, radius, projection):
+def kept_points_3d(images, pts, radius, projection, error_tolerance):
+
     kept = collections.deque()
-
     height_image, length_image = numpy.shape(images.itervalues().next())
-
-    error_tolerance = 0
-    if len(images) >= 10:
-        error_tolerance = 0
     acceptation_criteria = len(images) - error_tolerance
+    weight_points = dict()
 
-    mymat = dict()
     while True:
         try:
-            point, point_group, stats = pts.popleft()
+            point, groups, weight = pts.popleft()
 
             for angle in images:
                 if point_3d_is_in_image(images[angle],
@@ -378,79 +375,130 @@ def octree_builder_2(images, pts, groups, radius, projection):
                                         projection,
                                         angle,
                                         radius):
-                    stats += 1
+                    weight += 1
 
-            if stats >= acceptation_criteria:
+            if weight >= acceptation_criteria:
                 kept.append(point)
             else:
-                for g in point_group:
-                    g[1] -= 1
+                for group in groups:
+                    group[1] -= 1
 
-            mymat[point] = stats
+            weight_points[point] = weight
 
         except IndexError:
             break
 
+    return kept, weight_points
+
+
+def compute_sum_weight_of_neighbort(point,
+                                    weight_points,
+                                    radius,
+                                    distance_to_neighbort):
+
+    weight = 0
+    diameter = radius * 2
+    x, y, z = point
+    range_neighbort = list()
+
+    for i in range(-distance_to_neighbort, distance_to_neighbort, 1):
+        range_neighbort.append(i * diameter)
+
+    for i in range_neighbort:
+        for j in range_neighbort:
+            for k in range_neighbort:
+                pt = (x + i, y + j, z + k)
+                if pt in weight_points:
+                    if weight_points[pt] == 12:
+                        weight += 312
+                    weight += weight_points[pt]
+
+    return weight
+
+
+def compute_list_max_weight(group):
+
+    max_weight = 0
+    list_max_weight = list()
+
+    for pt3D, list_group, weight in group:
+        if weight > max_weight:
+            max_weight = weight
+            save_pt = list()
+            save_pt.append((pt3D, list_group, weight))
+        elif weight == max_weight:
+            list_max_weight.append((pt3D, list_group, weight))
+
+    return list_max_weight
+
+
+def compute_list_different_angle(list_max_weight, angle):
+
+    list_different_angle = list()
+
+    for pt3d, list_group, weight in list_max_weight:
+        for pts_2, nb_2, angle_2 in list_group:
+            if nb_2 <= 0 and angle != angle_2:
+                list_different_angle.append(pt3d)
+
+    return list_different_angle
+
+
+def compute_list_max_neighbort_weigh(list_max_weight,
+                                     weight_points,
+                                     radius,
+                                     distance_to_neighbort):
+    max_sum_weight = 0
+    list_max_neighbort_weigh = list()
+    for pt3d, list_group, weight in list_max_weight:
+
+        sum_weight_of_neighbort = compute_sum_weight_of_neighbort(
+            pt3d, weight_points, radius, distance_to_neighbort)
+
+        if sum_weight_of_neighbort > max_sum_weight:
+            max_sum_weight = sum_weight_of_neighbort
+            list_max_neighbort_weigh = list()
+            list_max_neighbort_weigh.append(pt3d)
+
+        if sum_weight_of_neighbort == max_sum_weight:
+            list_max_neighbort_weigh.append(pt3d)
+
+    return list_max_neighbort_weigh
+
+
+def check_groups(kept, groups, weight_points, radius, distance_to_neighbort=2):
+
     for key in groups:
         group, nb, angle = groups[key]
         if nb <= 0:
-            min_dist = 0
-            save_pt = list()
-            for pt3D, list_group, sum_dist in group:
-                if sum_dist > min_dist:
-                    min_dist = sum_dist
-                    save_pt = list()
-                    save_pt.append((pt3D, list_group))
-                elif sum_dist == min_dist:
-                    save_pt.append((pt3D, list_group))
 
-            save_for_sure_pt = list()
-            for pt3d, list_group in save_pt:
-                for pts_2, nb_2, angle_2 in list_group:
-                    if nb_2 <= 0 and angle != angle_2:
-                        save_for_sure_pt.append(pt3d)
+            list_max_weight = compute_list_max_weight(group)
 
-            if save_for_sure_pt:
-                for pt3d in save_for_sure_pt:
+            list_different_angle = compute_list_different_angle(
+                list_max_weight, angle)
+
+            if list_different_angle:
+                for pt3d in list_different_angle:
                     kept.append(pt3d)
             else:
 
-                save_for_sure_pt = list()
-                max_dist = 0
-                for pt3d, list_group in save_pt:
-                    x, y, z = pt3d
-                    r = radius * 2
-                    dist = 0
+                list_max_neighbort_weigh = compute_list_max_neighbort_weigh(
+                    list_max_weight,
+                    weight_points,
+                    radius,
+                    distance_to_neighbort)
 
-                    ll = list()
-                    for i in range(-2, 2, 1):
-                        ll.append(i * r)
-
-                    for i in ll:
-                        for j in ll:
-                            for k in ll:
-                                newpt = (x + i, y + j, z + k)
-                                if newpt in mymat:
-                                    if mymat[newpt] == 12:
-                                        dist += 2000
-                                    dist += mymat[newpt]
-                    if dist > max_dist:
-                        max_dist = dist
-                        save_for_sure_pt = list()
-                        save_for_sure_pt.append(pt3d)
-                    if dist == max_dist:
-                        save_for_sure_pt.append(pt3d)
-
-                for pt3d in save_for_sure_pt:
+                for pt3d in list_max_neighbort_weigh:
                     kept.append(pt3d)
 
     return collections.deque(set(kept))
 
 
-def reconstruction_3d_2(images, projection, radius,
-                        origin_point=(0.0, 0.0, 0.0),
-                        points_3d=None,
-                        verbose=False):
+def new_reconstruction_3d(images, projection, radius, angles_ref,
+                          error_tolerance=0,
+                          origin_point=(0.0, 0.0, 0.0),
+                          points_3d=None,
+                          verbose=False):
 
     if len(images) == 0:
         return
@@ -468,8 +516,7 @@ def reconstruction_3d_2(images, projection, radius,
 
     # ==========================================================================
     # Create Groups
-    angle_selected = [120, 300]
-    groups = create_groups(images, angle_selected)
+    groups = create_groups(images, angles_ref)
 
     # ==========================================================================
 
@@ -484,20 +531,22 @@ def reconstruction_3d_2(images, projection, radius,
 
         # ======================================================================
 
-        pts, groups = fill_groups(images,
-                                  points_3d,
-                                  groups,
-                                  projection,
-                                  radius,
-                                  angle_selected)
+        pts, groups = fill_groups(
+            images, points_3d, groups, projection, radius, angles_ref)
 
         # ======================================================================
 
         if verbose is True:
             print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(pts),
 
-        points_3d = octree_builder_2(
-            images, pts, groups, radius, projection)
+        # ======================================================================
+
+        points_3d, weight_points = kept_points_3d(
+            images, pts, radius, projection, error_tolerance)
+
+        points_3d = check_groups(points_3d, groups, weight_points, radius)
+
+        # ======================================================================
 
         if verbose is True:
             print ' - ', len(points_3d)

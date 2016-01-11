@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       leaf_lost_error_2.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -15,38 +13,23 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
-import matplotlib.pyplot
-import numpy
-
 import alinea.phenomenal.data_load
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.viewer
 import alinea.phenomenal.misc
 import alinea.phenomenal.data_transformation
-
 # ==============================================================================
-
-
-def show_image(image):
-    matplotlib.pyplot.imshow(image)
-    matplotlib.pyplot.show()
-
-
-# ==============================================================================
-
-radius = 2
-angle = 120
+# Define parameters of reconstruction
+radius = 4
 verbose = True
 
 # ==============================================================================
-
 # Load images binarize
 images = alinea.phenomenal.data_load.test_plant_1_images_binarize()
 
 # Load camera model parameters
-params_camera_path, _ = alinea.phenomenal.data_load.\
+params_camera_path, _ = alinea.phenomenal.data_load. \
     test_plant_1_calibration_params_path()
 
 cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
@@ -55,28 +38,19 @@ cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
 # Create model projection object
 projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
 
-
-# ==============================================================================
+# ==========================================================================
+# Load Point_3D of the reference plant
 
 points_3d_path = alinea.phenomenal.data_load.test_plant_1_points_3d_path(
     radius=radius)
 
-points_3d = alinea.phenomenal.misc.read_xyz(points_3d_path)
+images_selected = dict()
+for angle in range(0, 360, 30):
+    images_selected[angle] = images[angle]
+
+points_3d = alinea.phenomenal.multi_view_reconstruction. \
+    new_reconstruction_3d(images_selected, projection, radius, [150],
+                          verbose=True)
 
 if verbose:
-    alinea.phenomenal.viewer.show_points_3d(points_3d, scale_factor=20)
-
-# Build image projection of points_3d cloud
-img = alinea.phenomenal.multi_view_reconstruction.project_points_on_image(
-    points_3d, radius, images[angle], projection, angle)
-
-if verbose:
-    show_image(img)
-
-img_diff = numpy.subtract(images[angle], img)
-img_diff[img_diff == -255] = 0
-
-if verbose:
-    show_image(img_diff)
-
-print "Angle : ", angle, ' Err : ', numpy.count_nonzero(img_diff)
+    alinea.phenomenal.viewer.show_points_3d(points_3d)
