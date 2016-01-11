@@ -16,8 +16,6 @@
 #
 #       ========================================================================
 
-#       ========================================================================
-#       External Import
 import numpy
 
 #       ========================================================================
@@ -59,7 +57,7 @@ def test_multi_view_reconstruction_model_1():
     # alinea.phenomenal.result_viewer.show_image(images[0])
 
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, projection, precision=8, verbose=True)
+        images, projection, 8, verbose=True)
 
     mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
@@ -86,7 +84,7 @@ def test_multi_view_reconstruction_model_2():
     projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
 
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, projection, precision=radius, verbose=True)
+        images, projection, radius, verbose=True)
 
     assert len(points_3d) == 7272
 
@@ -94,7 +92,7 @@ def test_multi_view_reconstruction_model_2():
         image = alinea.phenomenal.multi_view_reconstruction.\
             project_points_on_image(points_3d,
                                     radius,
-                                    images[angle],
+                                    images[angle].shape,
                                     projection,
                                     angle)
 
@@ -106,8 +104,8 @@ def test_multi_view_reconstruction_model_2():
         assert numpy.count_nonzero(img) < 4000
 
 
-#       ========================================================================
-#       LOCAL TEST
+# ==============================================================================
+# LOCAL TEST
 
 if __name__ == "__main__":
     test_multi_view_reconstruction_model_1()

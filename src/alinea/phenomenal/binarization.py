@@ -21,11 +21,10 @@
 import numpy
 import cv2
 
-
 import alinea.phenomenal.opencv_wrapping as ocv2
-from alinea.phenomenal.binarization_factor import BinarizationFactor
 import alinea.phenomenal.binarization_post_processing
 import alinea.phenomenal.binarization_algorithm
+from alinea.phenomenal.binarization_factor import BinarizationFactor
 # ==============================================================================
 
 
@@ -89,7 +88,8 @@ def side_binarization_hsv(image, factor):
     :param image: BGR image
     :param factor: Object BinarizationConfig
     :return: Binary image
-    """  # elementMorph = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    """
+    # elementMorph = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
 
     # ==========================================================================
     # Check Parameters
