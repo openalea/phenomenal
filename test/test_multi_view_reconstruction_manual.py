@@ -14,21 +14,15 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import numpy
 
-#       ========================================================================
-#       Local Import
 import alinea.phenomenal.calibration_manual
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
+# ==============================================================================
 
-#       ========================================================================
-#       Code
 
 
 def test_multi_view_reconstruction_manual_1():
@@ -45,7 +39,7 @@ def test_multi_view_reconstruction_manual_1():
         points, radius, calibration, step=30)
 
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, precision=radius, verbose=True)
+        images, calibration, radius, verbose=True)
 
     mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
@@ -62,7 +56,7 @@ def test_multi_view_reconstruction_manual_2():
     calibration = alinea.phenomenal.calibration_manual.Calibration()
 
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, precision=radius, verbose=True)
+        images, calibration, radius, verbose=True)
 
     print len(points_3d)
 
@@ -70,7 +64,7 @@ def test_multi_view_reconstruction_manual_2():
         image = alinea.phenomenal.multi_view_reconstruction.\
             project_points_on_image(points_3d,
                                     radius,
-                                    images[angle],
+                                    images[angle].shape,
                                     calibration,
                                     angle)
 

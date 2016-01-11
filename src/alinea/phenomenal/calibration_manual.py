@@ -14,14 +14,11 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import math
+import numpy
 
-#       ========================================================================
-
+# ==============================================================================
 
 class CameraConfiguration(object):
     def __init__(self):
@@ -176,3 +173,20 @@ class Calibration(CameraConfiguration, object):
             x, y = self.side_projection(point)
 
             return x, y
+
+    def project_points(self, points, angle):
+
+        result = list()
+
+        if angle == -1:
+
+            for point in points:
+                result.append(self.top_projection(point))
+        else:
+            for point in points:
+                if angle != 0:
+                    point = self.side_rotation(point, angle)
+
+                result.append(self.side_projection(point))
+
+            return numpy.array(result)

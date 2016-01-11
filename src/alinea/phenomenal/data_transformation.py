@@ -61,7 +61,7 @@ def limit_points_3d(points_3d):
     z_max = - float("inf")
 
     for point_3d in points_3d:
-        x, y, z = point_3d[0], point_3d[1], point_3d[2]
+        x, y, z = point_3d
 
         x_min = min(x_min, x)
         y_min = min(y_min, y)
@@ -98,7 +98,7 @@ def matrix_to_points_3d(matrix, radius, origin=(0, 0, 0)):
     points_3d = list()
     d = radius * 2.0
     for (x, y, z), value in numpy.ndenumerate(matrix):
-        if value == 1:
+        if value == 1 or value == 111:
 
             pt_3d = (origin[0] + x * d,
                      origin[1] + y * d,
@@ -107,6 +107,32 @@ def matrix_to_points_3d(matrix, radius, origin=(0, 0, 0)):
             points_3d.append(pt_3d)
 
     return points_3d
+
+
+def matrix_to_points_3d_2(matrix, radius, origin=(0, 0, 0)):
+
+    points_3d = list()
+    points_3d_leaf = list()
+    d = radius * 2.0
+    for (x, y, z), value in numpy.ndenumerate(matrix):
+        if value == 1:
+
+            pt_3d = (origin[0] + x * d,
+                     origin[1] + y * d,
+                     origin[2] + z * d)
+
+            points_3d.append(pt_3d)
+
+    for (x, y, z), value in numpy.ndenumerate(matrix):
+        if value == 111:
+
+            pt_3d = (origin[0] + x * d,
+                     origin[1] + y * d,
+                     origin[2] + z * d)
+
+            points_3d_leaf.append(pt_3d)
+
+    return points_3d, points_3d_leaf
 
 
 def points_3d_to_matrix(points_3d, radius):
@@ -135,6 +161,54 @@ def points_3d_to_matrix(points_3d, radius):
         mat[x_new, y_new, z_new] = 1
 
         index.append((x_new, y_new, z_new))
+
+    return mat, index, (x_min, y_min, z_min)
+
+
+def points_3d_to_matrix_2(points_3d, points_3d_leaf, radius):
+    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
+
+    for i in points_3d_leaf:
+        x, y, z, xm, ym, zm = limit_points_3d(points_3d_leaf[i])
+
+        x_min = min(x_min, x)
+        y_min = min(y_min, y)
+        z_min = min(z_min, z)
+        x_max = max(x_max, xm)
+        y_max = max(y_max, ym)
+        z_max = max(z_max, zm)
+
+    r = radius * 2.0
+
+    x_r_min = x_min / r
+    y_r_min = y_min / r
+    z_r_min = z_min / r
+
+    mat = numpy.zeros((round((x_max - x_min) / r) + 1,
+                       round((y_max - y_min) / r) + 1,
+                       round((z_max - z_min) / r) + 1), dtype=numpy.uint8)
+
+    index = collections.deque()
+    for point_3d in points_3d:
+        x_new = (point_3d[0] / r) - x_r_min
+        y_new = (point_3d[1] / r) - y_r_min
+        z_new = (point_3d[2] / r) - z_r_min
+
+        mat[x_new, y_new, z_new] = 1
+
+        # index.append((x_new, y_new, z_new))
+
+    nb = 2
+    for i in points_3d_leaf:
+        for point_3d in points_3d_leaf[i]:
+            x_new = (point_3d[0] / r) - x_r_min
+            y_new = (point_3d[1] / r) - y_r_min
+            z_new = (point_3d[2] / r) - z_r_min
+
+            mat[x_new, y_new, z_new] = nb
+
+            index.append((x_new, y_new, z_new))
+        nb += 1
 
     return mat, index, (x_min, y_min, z_min)
 
