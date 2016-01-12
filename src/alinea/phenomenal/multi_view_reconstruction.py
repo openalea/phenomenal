@@ -496,7 +496,6 @@ def new_reconstruction_3d(images, projection, radius, angles_ref,
                           origin_point=(0.0, 0.0, 0.0),
                           points_3d=None,
                           verbose=False):
-
     if len(images) == 0:
         return
 
@@ -518,12 +517,10 @@ def new_reconstruction_3d(images, projection, radius, angles_ref,
     # ==========================================================================
 
     for i in range(nb_iteration):
-
         if len(images) == 1:
             points_3d = split_points_3d_plan(points_3d, radius)
         else:
             points_3d = split_points_3d(points_3d, radius)
-
         radius /= 2.0
 
         # ======================================================================
