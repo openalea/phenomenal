@@ -33,7 +33,9 @@ def test_multi_view_reconstruction_manual_1():
     points = alinea.phenomenal.data_creation.build_object_1(
         size, radius, point_3d)
 
-    calibration = alinea.phenomenal.calibration_manual.Calibration()
+    env_feat = alinea.phenomenal.calibration_manual.EnvironmentFeature()
+
+    calibration = alinea.phenomenal.calibration_manual.Calibration(env_feat)
 
     images = alinea.phenomenal.data_creation.build_image_from_points_3d(
         points, radius, calibration, step=30)
@@ -53,7 +55,9 @@ def test_multi_view_reconstruction_manual_2():
 
     images = alinea.phenomenal.data_creation.build_images_1()
 
-    calibration = alinea.phenomenal.calibration_manual.Calibration()
+    env_feat = alinea.phenomenal.calibration_manual.EnvironmentFeature()
+
+    calibration = alinea.phenomenal.calibration_manual.Calibration(env_feat)
 
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images, calibration, radius, verbose=True)
