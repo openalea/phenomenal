@@ -13,24 +13,29 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import abc
+import numpy
 
+from alinea.phenomenal.chessboard import Chessboard
 # ==============================================================================
 
 
-class Calibration(object):
+def test_chessboard_1():
+    chess = Chessboard(50, (8, 6))
 
-    __metaclass__ = abc.ABCMeta
+    assert chess.square_size == 50
+    assert chess.shape == (8, 6)
+    assert chess.corners_points == dict()
 
-    @abc.abstractmethod
-    def project_point(self, point, angle):
-        pass
 
-    @abc.abstractmethod
-    def write_calibration(self, filename):
-        pass
+def test_chessboard_2():
+    chess = Chessboard(50, (8, 6))
 
-    @staticmethod
-    @abc.abstractmethod
-    def read_calibration(filename):
-        pass
+    result = chess.local_corners_position_3d()
+
+    print numpy.array(result)
+    print result
+    print result[0]
+
+if __name__ == "__main__":
+    test_chessboard_1()
+    test_chessboard_2()

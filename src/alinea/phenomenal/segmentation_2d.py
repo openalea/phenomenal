@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       pipeline_segmentation_2d.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,20 +12,10 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import math
 import numpy
-
-#       ========================================================================
-#       Local Import
-
-#       ========================================================================
-#       Class
-
+# ==============================================================================
 
 class Segment(object):
     def __init__(self, id_number, first_point):
@@ -170,8 +158,8 @@ class Leaf(Organ):
         Organ.__init__(self)
 
 
-# ========================================================================
-#       Segments plants
+# ==============================================================================
+# Segments plants
 
 
 def neighbors_is_tagged(skeleton_image, y, x):
@@ -302,8 +290,8 @@ def segment_skeleton(skeleton_image):
     return segments
 
 
-#       ========================================================================
-#       Segment Stem
+# ==============================================================================
+# Segment Stem
 
 def compute_orientation(vector1, vector2):
     x1, y1 = vector1
@@ -445,8 +433,8 @@ def segment_stem(segments):
     return stem
 
 
-#       ========================================================================
-#       Segment Leaves
+# ==============================================================================
+# Segment Leaves
 
 
 def segment_leaves(segments, stem):
@@ -487,8 +475,8 @@ def segment_leaves(segments, stem):
     return leaves, segments
 
 
-#       ========================================================================
-#       Segment Organs
+# ==============================================================================
+# Segment Organs
 
 
 def compute_inclination(segments):
@@ -522,10 +510,3 @@ def segment_organs_skeleton_image(skeleton_image):
     leaves, segments = segment_leaves(segments, stem)
 
     return stem, leaves, segments
-
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    do_nothing = None

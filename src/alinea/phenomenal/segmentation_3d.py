@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       segmentation_3d.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,16 +12,10 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import math
 import numpy
-
-
-#       ========================================================================
-#       Class
+# ==============================================================================
 
 
 class Segment(object):
@@ -228,9 +220,7 @@ class Leaf(Organ):
                 return True
         return False
 
-
-# ========================================================================
-#       Code
+# ==============================================================================
 
 
 def compute_orientation(vector_1, vector_2):
@@ -369,10 +359,3 @@ def segment_organs_from_skeleton_3d(skeleton_3d):
     leaves, segments = build_leaf(segments, stem)
 
     return stem, leaves, segments
-
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    do_nothing = None

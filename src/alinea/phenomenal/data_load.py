@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       data_load.py : Function for load data
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,21 +12,13 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import cv2
 import glob
-import os
 
-#       ========================================================================
-#       Local Import
 import openalea.deploy.shared_data
 import alinea.phenomenal
-
-#       ========================================================================
+# ==============================================================================
 
 
 def test_plant_1_images_binarize():
