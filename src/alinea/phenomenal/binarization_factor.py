@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       binarization_factor.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,13 +12,14 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 
 """ Include definition class for object parameter of binarization """
 
-#       ========================================================================
-
+# ==============================================================================
 import types
+# ==============================================================================
+
 
 def dict_factor_value(dict_factor, key_1, key_2):
     try:

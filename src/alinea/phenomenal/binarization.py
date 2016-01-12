@@ -14,9 +14,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 """ Binarization routines for PhenoArch/ images """
-
 # ==============================================================================
 import numpy
 import cv2

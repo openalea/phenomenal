@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       calibration_manuel.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -17,7 +15,6 @@
 # ==============================================================================
 import math
 import numpy
-
 # ==============================================================================
 
 class CameraConfiguration(object):

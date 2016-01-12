@@ -15,8 +15,8 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.binarization import (
-    side_binarization_mean_shift, get_mean_image)
+from alinea.phenomenal.binarization import (side_binarization_mean_shift,
+                                            get_mean_image)
 from alinea.phenomenal.configuration import binarization_factor
 # ==============================================================================
 

@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       calibration_tools.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,21 +12,15 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import numpy
 import pylab
 import mpl_toolkits.mplot3d.axes3d
 import scipy.optimize
 
-#       ========================================================================
-#       Local Import 
-import transformations as tf
 
-#       ========================================================================
-#       Code
+import transformations as tf
+# ==============================================================================
 
 
 def compute_rotation_vectors(rotation_vectors, angles):

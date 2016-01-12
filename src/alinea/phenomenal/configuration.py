@@ -15,23 +15,17 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import os
 import glob
 import ConfigParser
 import cv2
 
-#       ========================================================================
-#       Local Import
-
 import openalea.deploy.shared_data
 import alinea.phenomenal
 import alinea.phenomenal.binarization_factor
+# ==============================================================================
 
-#       ========================================================================
 
 def convert_value(value):
         try:

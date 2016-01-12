@@ -26,6 +26,7 @@ def imreads(image_path_seq, flag='IMREAD_UNCHANGED', real_reading = False):
         g = (cv2.imread(f,flag) for f in image_path_seq)
     return g, l
 
+
 def image_size(image):
     """Return the width, height, number of chanel and number of pixels of an image
     """

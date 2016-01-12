@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       chessboard.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -15,14 +13,11 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 import cv2
 import numpy
 import json
 
-
 import alinea.phenomenal.calibration_model
-
 # ==============================================================================
 
 
@@ -34,17 +29,7 @@ class Chessboard(object):
         self.shape = shape
         self.corners_points = dict()
 
-        self.object_points = numpy.zeros((self.shape[0] * self.shape[1], 3), numpy.float32)
-
-        # Build Chessboard
-        self.object_points[:, :2] = numpy.mgrid[0:self.shape[0], 0:self.shape[1]].T.reshape(-1, 2) * self.square_size
-
-        # 48 points are stored in an 48x3 array obj
-        # choose bottom-left corner as origin, to match australian convention
-        self.object_points = self.object_points - self.object_points[40, :]
-
     def __str__(self):
-
         my_str = ''
         my_str += 'Chessboard Object Values :\n'
         my_str += 'Square size (mm): ' + str(self.square_size) + '\n'
@@ -81,7 +66,6 @@ class Chessboard(object):
 
     def find_corners(self, image):
         try:
-
             found, corners = cv2.findChessboardCorners(
                 image,
                 tuple(self.shape),
@@ -107,7 +91,6 @@ class Chessboard(object):
     def find_and_add_corners(self, angle, image):
         corners_points = self.find_corners(image)
         if corners_points is not None:
-            # self.corners_points[angle] = corners_points[:, 0, :]
             self.corners_points[angle] = corners_points
 
     def write(self, file_path):
