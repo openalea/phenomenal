@@ -20,15 +20,26 @@ import numpy
 
 def clean_noise(image, mask=None):
     """
-    Goal: Cleaning orange band noise with mask
+    clean_noise(numpy.array, mask=None)
 
-    Applied mask on image then erode and dilate on 3 iteration.
-    Applied subtract image and mask and add to image modify before
-    And finally, erode and dilate again
+        Cleaning orange band noise with mask
 
-    :param image: Binary Image
-    :param mask:
-    :return: Binary image
+        Applied mask on image then erode and dilate on 3 iteration.
+        Applied subtract image and mask and add to image modify before
+        And finally, erode and dilate again
+
+        Parameters
+        ----------
+
+        image : numpy.array
+            Binary Image
+
+        mask : numpy.array
+
+        Returns
+        -------
+        out : numpy.array
+            Binary Image
     """
     # ==========================================================================
     # Check Parameters
@@ -68,7 +79,24 @@ def clean_noise(image, mask=None):
 
 
 def remove_plant_support(image, mask=None):
+    """
+    remove_plant_support(numpy.array, mask=None)
 
+        Remove plant support from image with mask.
+
+        Parameters
+        ----------
+
+        image : numpy.array
+            Binary Image
+
+        mask : numpy.array
+
+        Returns
+        -------
+        out : numpy.array
+            Binary Image
+    """
     # ==========================================================================
     # Check Parameters
     if not isinstance(image, numpy.ndarray):

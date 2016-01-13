@@ -19,7 +19,6 @@ import re
 
 import openalea.deploy.shared_data
 import alinea.phenomenal
-import alinea.phenomenal.calibration
 #  =============================================================================
 
 

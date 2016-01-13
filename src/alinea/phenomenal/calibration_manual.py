@@ -17,11 +17,9 @@ import math
 import numpy
 # ==============================================================================
 
-class CameraConfiguration(object):
-    def __init__(self):
-        #   ===================================================================
-        #   Default value
 
+class EnvironmentFeature(object):
+    def __init__(self):
         # Dimension image
         self.w = 2056
         self.h = 2454
@@ -66,46 +64,56 @@ class CameraConfiguration(object):
         self.convSide = 30 / 3.95
 
 
-class Calibration(CameraConfiguration, object):
-    def __init__(self):
+class Calibration(object):
+    def __init__(self, env_feat):
 
-        super(Calibration, self).__init__()
-
+        # ======================================================================
         # Dimension image
-        # self.w = camera_config.w
-        # self.h = camera_config.h
+        self.width_image = env_feat.w
+        self.height_image = env_feat.h
 
+        w = self.width_image
+        h = self.height_image
+        w2 = w / 2
+        h2 = h / 2
+
+        # ======================================================================
         # Box
-        self.hbox = self.hSide / self.convSide
-        self.cbox = self.cSide / self.convSide
+        self.hbox = env_feat.hSide / env_feat.convSide
+        self.cbox = env_feat.cSide / env_feat.convSide
 
+        # ======================================================================
         # X0, Y0, Z0
-        self.xo = ((self.w / 2 - self.dleft) / self.convSide)
+        self.xo = ((w2 - env_feat.dleft) / env_feat.convSide)
         self.yo = self.cbox / 2
-        self.zo = ((self.h / 2 - (self.h - self.hSide)) / self.convSide)
+        self.zo = ((h2 - (h - env_feat.hSide)) / env_feat.convSide)
 
-        # echelle top au niveau du sol (pix / cm)
-        convTop = self.convSide / self.cSide * self.cTop
+        # ======================================================================
+        # Top scale ground level (pix / cm)
+        conv_top = env_feat.convSide / env_feat.cSide * env_feat.cTop
 
         # XT, YT, ZT
-        self.xt = (self.h / 2 - self.dleft_top) / convTop
-        self.yt = (self.w / 2 - (self.w - self.dback - self.cTop)) / convTop
+        self.xt = (h2 - env_feat.dleft_top) / conv_top
+        self.yt = ((w2 - (w - env_feat.dback - env_feat.cTop)) / conv_top)
         self.zt = self.zo
 
-        # facteur grandissement
-        gamma = self.lcSide[1] / self.lcSide[0]
-        self.pSide = self.convSide * (gamma - 1) / self.cbox
+        # ======================================================================
+        # Enlargement factor
+        gamma = env_feat.lcSide[1] / env_feat.lcSide[0]
+        self.pSide = env_feat.convSide * (gamma - 1) / self.cbox
 
-        gamma = self.lcTop[1] / self.lcTop[0]
-        # echelle au niveau hcTop[1]
-        cTop = self.lcTop[0] / self.lcSide[0] * self.convSide
+        # ======================================================================
+        # hcTop[1] scale level
+        cTop = (env_feat.lcTop[0] / env_feat.lcSide[0] * env_feat.convSide)
+        gamma = env_feat.lcTop[1] / env_feat.lcTop[0]
 
-        self.pTop = cTop * (gamma - 1) / (self.hcTop[0] - self.hcTop[1])
+        self.pTop = cTop * (gamma - 1) / (env_feat.hcTop[0] - env_feat.hcTop[1])
 
-        # echelle au niveau 0
-        self.convTopref = convTop + self.pTop * self.zo
-        self.convSideref = self.convSide + self.pSide * self.cbox / 2
-        self.rotationTop = - self.angTop
+        # ======================================================================
+        # Scale level 0
+        self.conv_top_ref = conv_top + self.pTop * self.zo
+        self.conv_side_ref = env_feat.convSide + self.pSide * self.cbox / 2
+        self.rotationTop = - env_feat.angTop
 
     def top_projection(self, position):
         # coordinates / optical center in real world
@@ -114,16 +122,17 @@ class Calibration(CameraConfiguration, object):
         z = position[2] - self.zt
 
         # scale at this distance
-        conv = self.convTopref + z * self.pTop
+        conv = self.conv_top_ref + z * self.pTop
 
         # image coordinates / optical center and real world oriented  axes
         ximo = x * conv
         yimo = y * conv
         # image coordinates
-        xim = round(self.h / 2 + ximo)
-        yim = round(self.w / 2 - yimo)
+        xim = round(self.height_image / 2 + ximo)
+        yim = round(self.width_image / 2 - yimo)
 
-        return min(self.h, max(1, xim)), min(self.w, max(1, yim))
+        return (min(self.height_image, max(1, xim)),
+                min(self.width_image, max(1, yim)))
 
     def side_projection(self, position):
         # coordinates / optical center in real world
@@ -132,17 +141,18 @@ class Calibration(CameraConfiguration, object):
         z = position[2] - self.zo
 
         # scale at this distance
-        conv = self.convSideref - y * self.pSide
+        conv = self.conv_side_ref - y * self.pSide
 
         # image coordinates / optical center and real world oriented axes
         ximo = x * conv
         yimo = z * conv
 
         # EBI image coordinates
-        xim = round(self.w / 2.0 + ximo)
-        yim = round(self.h / 2.0 - yimo)
+        xim = round(self.width_image / 2.0 + ximo)
+        yim = round(self.height_image / 2.0 - yimo)
 
-        return min(self.w, max(0, xim)), min(self.h, max(0, yim))
+        return (min(self.width_image, max(0, xim)),
+                min(self.height_image, max(0, yim)))
 
     def side_rotation(self, position, angle):
 
