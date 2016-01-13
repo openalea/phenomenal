@@ -13,24 +13,26 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import abc
+import collections
 
+from alinea.phenomenal.multi_view_reconstruction import split_points_3d_plan
 # ==============================================================================
 
 
-class Calibration(object):
+def test_split_points_3d_plan_1():
+    point_3d = (0.0, 0.0, 0.0)
+    radius = 8
 
-    __metaclass__ = abc.ABCMeta
+    points_3d = collections.deque()
+    points_3d.append(point_3d)
 
-    @abc.abstractmethod
-    def project_point(self, point, angle):
-        pass
+    l = split_points_3d_plan(points_3d, radius)
 
-    @abc.abstractmethod
-    def write_calibration(self, filename):
-        pass
+    assert len(l) == 4
+    assert l[0] == (0., -4., -4.)
+    assert l[1] == (0., -4., 4.)
+    assert l[2] == (0., 4., -4.)
+    assert l[3] == (0., 4., 4.)
 
-    @staticmethod
-    @abc.abstractmethod
-    def read_calibration(filename):
-        pass
+if __name__ == "__main__":
+    test_split_points_3d_plan_1()
