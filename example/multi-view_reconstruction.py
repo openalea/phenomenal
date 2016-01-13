@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       multi-view_reconstruction.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -43,7 +41,7 @@ for angle in range(0, 360, 30):
 radius = 4
 # Multi-view reconstruction
 points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-    images_selected, projection, precision=radius, verbose=True)
+    images_selected, projection, radius, verbose=True)
 
 # Write
 alinea.phenomenal.misc.write_xyz(points_3d, 'points_3d_radius_' + str(radius))

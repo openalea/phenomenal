@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       test_multi_view_reconstruction_model.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,20 +12,15 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
+# ==============================================================================
 import numpy
 
-#       ========================================================================
-#       Local Import
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
 import alinea.phenomenal.data_load
-
-#       ========================================================================
-#       Code
+# ==============================================================================
 
 
 def test_multi_view_reconstruction_model_1():

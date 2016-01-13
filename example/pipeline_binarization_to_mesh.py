@@ -70,9 +70,16 @@ def binarization_post_processing(binarize_images,
     mask_path = os.path.join(share_data_directory, 'roi_stem.png')
     mask_image = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
 
-    post_processing_images = alinea.phenomenal. \
-        binarization_post_processing. \
-        remove_plant_support_from_images(binarize_images, mask=mask_image)
+    post_processing_images = dict()
+    for angle in binarize_images:
+        if angle == -1:
+            mask = None
+        else:
+            mask = mask_image
+
+        post_processing_images[angle] = alinea.phenomenal.\
+            binarization_post_processing.remove_plant_support(
+            binarize_images[angle], mask=mask)
 
     alinea.phenomenal.misc.write_images(
         images_directory + 'post_processing_images/',
@@ -100,7 +107,7 @@ def multi_view_reconstruction(images_binarize, file_path):
         if 0 <= angle <= 360:
             images_selected[angle] = images_binarize[angle]
 
-    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d_2(
+    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
         images_selected, projection, radius, verbose=True)
 
     # Write

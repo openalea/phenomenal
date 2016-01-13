@@ -26,7 +26,7 @@ def bbox_projection(point_3d, radius, projection, angle):
 
     Parameters
     ----------
-    point_3d : collections.deque
+    point_3d : (x, y, z)
 
     radius : float
 
@@ -36,16 +36,19 @@ def bbox_projection(point_3d, radius, projection, angle):
 
     Returns
     -------
-    Tuple
+    out : tuple
         Containing min and max value of point_3d projection in x and y axes.
     """
 
     corners = corners_point_3d(point_3d, radius)
 
-    res = projection.project_points(corners, angle)
+    lx = list()
+    ly = list()
+    for pt3d in corners:
+        x, y = projection.project_point(pt3d, angle)
 
-    lx = res[:, 0]
-    ly = res[:, 1]
+        lx.append(x)
+        ly.append(y)
 
     return min(lx), max(lx), min(ly), max(ly)
 
@@ -131,7 +134,6 @@ def corners_point_3d(point_3d, radius):
     z_plus = point_3d[2] + radius
 
     l = list()
-
     l.append((x_minus, y_minus, z_minus))
     l.append((x_plus, y_minus, z_minus))
     l.append((x_minus, y_plus, z_minus))
