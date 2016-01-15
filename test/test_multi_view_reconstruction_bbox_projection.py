@@ -13,7 +13,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.data_load import test_plant_1_calibration_params_path
+from alinea.phenomenal.plant_1 import plant_1_calibration_params_path
 from alinea.phenomenal.calibration_model import (CameraModelParameters,
                                                  ModelProjection)
 
@@ -43,7 +43,7 @@ def test_bbox_projection_1():
 
 
 def test_bbox_projection_2():
-    params_camera_path, _ = test_plant_1_calibration_params_path()
+    params_camera_path, _ = plant_1_calibration_params_path()
     cam_params = CameraModelParameters.read(params_camera_path)
     projection = ModelProjection(cam_params)
 
