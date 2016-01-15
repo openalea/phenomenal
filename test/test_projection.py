@@ -16,7 +16,7 @@
 #
 # ==============================================================================
 import alinea.phenomenal.calibration_model
-import alinea.phenomenal.data_load
+import alinea.phenomenal.plant_1
 import alinea.phenomenal.frame
 # ==============================================================================
 
@@ -24,8 +24,8 @@ import alinea.phenomenal.frame
 def test_projection_1():
 
     # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.data_load.\
-        test_plant_1_calibration_params_path()
+    params_camera_path, _ = alinea.phenomenal.plant_1.\
+        plant_1_calibration_params_path()
 
     cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
         params_camera_path)
@@ -49,8 +49,8 @@ def test_projection_1():
 
 def test_local_point():
     # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.data_load.\
-        test_plant_1_calibration_params_path()
+    params_camera_path, _ = alinea.phenomenal.plant_1.\
+        plant_1_calibration_params_path()
 
     cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
         params_camera_path)

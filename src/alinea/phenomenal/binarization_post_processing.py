@@ -20,26 +20,25 @@ import numpy
 
 def clean_noise(image, mask=None):
     """
-    clean_noise(numpy.array, mask=None)
+    Cleaning orange band noise with mask
 
-        Cleaning orange band noise with mask
+    Applied mask on image then erode and dilate on 3 iteration.
+    Applied subtract image and mask and add to image modify before
+    And finally, erode and dilate again
 
-        Applied mask on image then erode and dilate on 3 iteration.
-        Applied subtract image and mask and add to image modify before
-        And finally, erode and dilate again
+    Parameters
+    ----------
 
-        Parameters
-        ----------
+    image : numpy.array
+    Binary Image
 
-        image : numpy.array
-            Binary Image
+    mask : numpy.array
 
-        mask : numpy.array
+    Returns
+    -------
+    out : numpy.array
+    Binary Image
 
-        Returns
-        -------
-        out : numpy.array
-            Binary Image
     """
     # ==========================================================================
     # Check Parameters

@@ -14,9 +14,19 @@
 #
 # ==============================================================================
 import numpy
+import cv2
 
-from alinea.phenomenal.binarization import (side_binarization_mean_shift,
-                                            get_mean_image)
+
+from alinea.phenomenal.plant_1 import (plant_1_images,
+                                       plant_1_mask_mean_shift,
+                                       plant_1_mask_hsv,
+                                       plant_1_mask_clean_noise)
+
+from alinea.phenomenal.binarization import (
+    side_binarization_mean_shift,
+    side_binarization_routine_mean_shift)
+from alinea.phenomenal.binarization_algorithm import get_mean_image
+
 from alinea.phenomenal.configuration import binarization_factor
 # ==============================================================================
 
@@ -119,7 +129,7 @@ def test_wrong_parameters_7():
         assert False
 
 
-def test_side_binarization_mean_shift_1():
+def test_simply_working_1():
     factor = binarization_factor('factor_image_basic.cfg')
 
     img_1 = numpy.ones((2454, 2056, 3), dtype=numpy.uint8)
@@ -132,6 +142,71 @@ def test_side_binarization_mean_shift_1():
     assert img_binarize_1.ndim == 2
     assert img_binarize_1.shape == (2454, 2056)
 
+
+def test_no_regression_1():
+
+    factor = binarization_factor('factor_image_basic.cfg')
+
+    images = plant_1_images()
+    images.pop(-1)
+    mean_image = get_mean_image(images.values())
+
+    refs = [(0, 125523),
+            (30, 107976),
+            (60, 149982),
+            (90, 136723),
+            (120, 123908),
+            (150, 127905),
+            (180, 124630),
+            (210, 85217),
+            (240, 146001),
+            (270, 128843),
+            (300, 114866),
+            (330, 121175)]
+
+    for angle, ref in refs:
+
+        img_bin = side_binarization_mean_shift(
+            images[angle], mean_image, factor)
+
+        assert numpy.count_nonzero(img_bin) == ref
+
+
+def test_no_regression_2():
+
+    mask_mean_shift = plant_1_mask_mean_shift()
+    mask_hsv = plant_1_mask_hsv()
+    mask_clean_noise = plant_1_mask_clean_noise()
+
+    images = plant_1_images()
+    images.pop(-1)
+    mean_image = get_mean_image(images.values())
+
+    refs = [(0, 125523),
+            (30, 107976),
+            (60, 149982),
+            (90, 136723),
+            (120, 123908),
+            (150, 127905),
+            (180, 124630),
+            (210, 85217),
+            (240, 146001),
+            (270, 128843),
+            (300, 114866),
+            (330, 121175)]
+
+    for angle, ref in refs:
+        img_bin = side_binarization_routine_mean_shift(
+            images[angle],
+            mean_image,
+            hsv_min=(30, 11, 0),
+            hsv_max=(129, 254, 141),
+            mask_mean_shift=mask_mean_shift,
+            mask_hsv=mask_hsv,
+            mask_clean_noise=mask_clean_noise)
+
+        assert numpy.count_nonzero(img_bin) == ref
+
 # ==============================================================================
 
 if __name__ == "__main__":
@@ -143,4 +218,7 @@ if __name__ == "__main__":
     test_wrong_parameters_6()
     test_wrong_parameters_7()
 
-    test_side_binarization_mean_shift_1()
+    test_simply_working_1()
+
+    test_no_regression_1()
+    test_no_regression_2()
