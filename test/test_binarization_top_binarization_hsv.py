@@ -15,7 +15,11 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.binarization import top_binarization_hsv
+
+from alinea.phenomenal.plant_1 import plant_1_images
+from alinea.phenomenal.binarization import (top_binarization_hsv,
+                                            top_binarization_routine_hsv)
+
 from alinea.phenomenal.configuration import binarization_factor
 # ==============================================================================
 
@@ -73,6 +77,19 @@ def test_top_binarization_hsv_1():
     assert binarize_image.shape == (2454, 2056)
 
 
+def test_no_regression_1():
+    images = plant_1_images()
+    image_top = images[-1]
+
+    ref = 378897
+
+    hsv_min = (42, 75, 28)
+    hsv_max = (80, 250, 134)
+
+    img_bin = top_binarization_routine_hsv(image_top, hsv_min, hsv_max)
+
+    assert numpy.count_nonzero(img_bin) == ref
+
 # ==============================================================================
 
 if __name__ == "__main__":
@@ -81,3 +98,5 @@ if __name__ == "__main__":
     test_wrong_parameters_3()
 
     test_top_binarization_hsv_1()
+
+    test_no_regression_1()

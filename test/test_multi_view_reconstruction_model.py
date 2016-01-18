@@ -19,7 +19,7 @@ import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
-import alinea.phenomenal.data_load
+import alinea.phenomenal.plant_1
 # ==============================================================================
 
 
@@ -35,8 +35,8 @@ def test_multi_view_reconstruction_model_1():
     # alinea.phenomenal.result_viewer.show_points_3d(points)
 
     # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.data_load.\
-        test_plant_1_calibration_params_path()
+    params_camera_path, _ = alinea.phenomenal.plant_1.\
+        plant_1_calibration_params_path()
 
     cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
         params_camera_path)
@@ -67,8 +67,8 @@ def test_multi_view_reconstruction_model_2():
     images = alinea.phenomenal.data_creation.build_images_1()
 
     # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.data_load.\
-        test_plant_1_calibration_params_path()
+    params_camera_path, _ = alinea.phenomenal.plant_1.\
+        plant_1_calibration_params_path()
 
     cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
         params_camera_path)
