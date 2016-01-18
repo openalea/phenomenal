@@ -13,7 +13,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import alinea.phenomenal.data_load
+import alinea.phenomenal.plant_1
 import alinea.phenomenal.misc
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
@@ -23,7 +23,7 @@ import alinea.phenomenal.viewer
 
 radius = 2
 
-points_3d_path = alinea.phenomenal.data_load.test_plant_1_points_3d_path(
+points_3d_path = alinea.phenomenal.plant_1.plant_1_points_3d_path(
     radius=radius)
 
 points_3d = alinea.phenomenal.misc.read_xyz(points_3d_path)

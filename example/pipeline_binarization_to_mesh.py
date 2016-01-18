@@ -26,10 +26,12 @@ import alinea.phenomenal.binarization_post_processing
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
 import alinea.phenomenal.viewer
-import alinea.phenomenal.data_load
-from alinea.phenomenal.binarization import (get_mean_image,
-                                            top_binarization_hsv,
+import alinea.phenomenal.plant_1
+from alinea.phenomenal.binarization import (top_binarization_hsv,
                                             side_binarization_mean_shift)
+from alinea.phenomenal.binarization_algorithm import get_mean_image
+
+
 # ==============================================================================
 
 
@@ -93,8 +95,8 @@ def multi_view_reconstruction(images_binarize, file_path):
 
     radius = 5
     # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.data_load.\
-        test_plant_1_calibration_params_path()
+    params_camera_path, _ = alinea.phenomenal.plant_1.\
+        plant_1_calibration_params_path()
 
     cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
         params_camera_path)

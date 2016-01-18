@@ -15,17 +15,23 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.binarization import side_binarization_adaptive_thresh
-from alinea.phenomenal.configuration import binarization_factor
+
+from alinea.phenomenal.plant_1 import (plant_1_images,
+                                       plant_1_mask_adaptive_threshold)
+
+from alinea.phenomenal.binarization import (
+    side_binarization_routine_adaptive_threshold)
+
 # ==============================================================================
 
 
 def test_wrong_parameters_1():
 
-    factor_side_binarization = binarization_factor('factor_image_basic.cfg')
+    image = None
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        side_binarization_adaptive_thresh(None, factor_side_binarization)
+        side_binarization_routine_adaptive_threshold(image, mask)
     except Exception, e:
         assert e.message == 'image should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -35,41 +41,98 @@ def test_wrong_parameters_1():
 
 def test_wrong_parameters_2():
 
-    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    image = numpy.zeros((25, 25), dtype=numpy.uint8)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        side_binarization_adaptive_thresh(image, None)
+        side_binarization_routine_adaptive_threshold(image, mask)
     except Exception, e:
-        assert e.message == 'factor should be a BinarizationFactor object'
-        assert type(e) == TypeError
+        assert e.message == 'image should be 3D array'
+        assert type(e) == ValueError
     else:
         assert False
 
 
 def test_wrong_parameters_3():
 
-    factor_side_binarization = binarization_factor('factor_image_basic.cfg')
-    image = numpy.zeros((25, 25), dtype=numpy.uint8)
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    mask = 42
 
     try:
-        side_binarization_adaptive_thresh(image, factor_side_binarization)
+        side_binarization_routine_adaptive_threshold(image, mask)
     except Exception, e:
-        assert e.message == 'image should be 3D array'
+        assert e.message == 'mask should be a numpy.ndarray'
+        assert type(e) == TypeError
+    else:
+        print False
+
+
+def test_wrong_parameters_4():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+
+    try:
+        side_binarization_routine_adaptive_threshold(image, mask)
+    except Exception, e:
+        assert e.message == 'image should be 2D array'
         assert type(e) == ValueError
     else:
         print False
 
 
-def test_side_binarization_adaptive_thresh_1():
-    factor_side_binarization = binarization_factor('factor_image_basic.cfg')
-    image = numpy.zeros((2454, 2056, 3), dtype=numpy.uint8)
+def test_wrong_parameters_5():
 
-    binarize_image = side_binarization_adaptive_thresh(
-        image, factor_side_binarization)
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    mask = numpy.zeros((50, 50), dtype=numpy.uint8)
+
+    try:
+        side_binarization_routine_adaptive_threshold(image, mask)
+    except Exception, e:
+        assert e.message == 'image and mask should have the same shape'
+        assert type(e) == ValueError
+    else:
+        print False
+
+
+def test_simply_working_1():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    binarize_image = side_binarization_routine_adaptive_threshold(image, mask)
 
     assert (binarize_image == 0).all()
     assert binarize_image.ndim == 2
-    assert binarize_image.shape == (2454, 2056)
+    assert binarize_image.shape == (25, 25)
+
+
+def test_no_regression_1():
+
+    images = plant_1_images()
+    images.pop(-1)
+
+    mask = plant_1_mask_adaptive_threshold()
+
+    refs = [(0, 125245),
+            (30, 107389),
+            (60, 150358),
+            (90, 135745),
+            (120, 123639),
+            (150, 128801),
+            (180, 122822),
+            (210, 84861),
+            (240, 144506),
+            (270, 128615),
+            (300, 116146),
+            (330, 121870)]
+
+    for angle, ref in refs:
+
+        img_bin = side_binarization_routine_adaptive_threshold(
+            images[angle], mask)
+
+        assert numpy.count_nonzero(img_bin) == ref
 
 # ==============================================================================
 
@@ -78,6 +141,9 @@ if __name__ == "__main__":
     test_wrong_parameters_1()
     test_wrong_parameters_2()
     test_wrong_parameters_3()
+    test_wrong_parameters_4()
+    test_wrong_parameters_5()
 
-    test_side_binarization_adaptive_thresh_1()
+    test_simply_working_1()
 
+    test_no_regression_1()

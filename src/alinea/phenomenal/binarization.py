@@ -23,69 +23,237 @@ import alinea.phenomenal.opencv_wrapping as ocv2
 import alinea.phenomenal.binarization_post_processing
 import alinea.phenomenal.binarization_algorithm
 from alinea.phenomenal.binarization_factor import BinarizationFactor
+from alinea.phenomenal.binarization_algorithm import (mean_shift_binarization,
+                                                      hsv_binarization)
+
+
 # ==============================================================================
 
 
-def binarization(image, factor,
-                 methods='side_mean_shift',
-                 mean_image=None,
-                 empties_top=None):
-    if methods == 'side_binarization_hsv':
-        return side_binarization_hsv(image, factor)
-    if methods == 'side_binarization_mean_shift':
-        return side_binarization_mean_shift(image, mean_image, factor)
-    if methods == 'side_binarization_elcom':
-        return side_binarization_elcom(image, mean_image, factor)
-    if methods == 'side_binarization_adaptive_thresh':
-        return side_binarization_adaptive_thresh(image, factor)
-    if methods == 'top_binarization_hsv':
-        return top_binarization_hsv(image, factor)
-    if methods == 'top_binarization_elcom':
-        return top_binarization_elcom(image, factor, empties_top)
+def side_binarization_routine_mean_shift(image,
+                                         mean_image,
+                                         threshold=0.3,
+                                         dark_background=False,
+                                         hsv_min=(30, 11, 0),
+                                         hsv_max=(129, 254, 141),
+                                         mask_mean_shift=None,
+                                         mask_hsv=None,
+                                         mask_clean_noise=None):
+
+    binary_hsv_image = hsv_binarization(image, hsv_min, hsv_max, mask_hsv)
+
+    binary_mean_shift_image = mean_shift_binarization(
+        image, mean_image, threshold, dark_background, mask_mean_shift)
+
+    result = cv2.add(binary_hsv_image, binary_mean_shift_image * 255)
+
+    result = alinea.phenomenal.binarization_post_processing.clean_noise(
+        result, mask_clean_noise)
+
+    return result
 
 
-def get_mean_image(images):
+def side_binarization_routine_elcom(image,
+                                    mean_image,
+                                    threshold=0.3,
+                                    dark_background=False,
+                                    hsv_min=(30, 25, 0),
+                                    hsv_max=(150, 254, 165),
+                                    mask_mean_shift=None,
+                                    mask_hsv=None):
+
+    binary_hsv_image = hsv_binarization(image, hsv_min, hsv_max, mask_hsv)
+
+    binary_mean_shift_image = mean_shift_binarization(
+        image, mean_image, threshold, dark_background, mask_mean_shift)
+
+    result = cv2.add(binary_hsv_image, binary_mean_shift_image * 255)
+
+    result = cv2.medianBlur(result, 3)
+
+    return result
+
+
+def side_binarization_routine_hsv(image,
+                                  cubicle_domain,
+                                  cubicle_background,
+                                  main_hsv_min,
+                                  main_hsv_max,
+                                  main_mask,
+                                  orange_band_mask,
+                                  pot_hsv_min,
+                                  pot_hsv_max,
+                                  pot_mask):
     """
-    Compute the mean image of a image list.
+    Binarization of side image for Lemnatech cabin based on hsv segmentation.
 
-    :param images: A list of image.
-    :return: A image who is the mean of the list image
+    Based on Michael pipeline
+    """
+    # elementMorph = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+
+    # ==========================================================================
+    # Check Parameters
+    if not isinstance(image, numpy.ndarray):
+        raise TypeError('image should be a numpy.ndarray')
+
+    if image.ndim != 3:
+        raise ValueError('image should be 3D array')
+    # ==========================================================================
+
+    c = cubicle_domain
+    image_cropped = image[c[0]:c[1], c[2]:c[3]]
+    hsv_image = cv2.cvtColor(image_cropped, cv2.COLOR_BGR2HSV)
+
+    # ==========================================================================
+    # Main area segmentation
+    main_area_seg = cv2.medianBlur(hsv_image, ksize=9)
+    main_area_seg = cv2.inRange(main_area_seg, main_hsv_min, main_hsv_max)
+
+    element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    main_area_seg = cv2.dilate(main_area_seg, element, iterations=2)
+    main_area_seg = cv2.erode(main_area_seg, element, iterations=2)
+
+    mask_cropped = main_mask[c[0]:c[1], c[2]:c[3]]
+    main_area_seg = cv2.bitwise_and(main_area_seg,
+                                    main_area_seg,
+                                    mask=mask_cropped)
+
+    # ==========================================================================
+    # Band area segmentation
+    background_cropped = cubicle_background[c[0]:c[1], c[2]:c[3]]
+    hsv_background = cv2.cvtColor(background_cropped, cv2.COLOR_BGR2HSV)
+    grayscale_background = hsv_background[:, :, 0]
+
+    grayscale_image = hsv_image[:, :, 0]
+
+    band_area_seg = cv2.subtract(grayscale_image, grayscale_background)
+    retval, band_area_seg = cv2.threshold(band_area_seg,
+                                          122,
+                                          255,
+                                          cv2.THRESH_BINARY)
+
+    mask_cropped = orange_band_mask[c[0]:c[1], c[2]:c[3]]
+    band_area_seg = cv2.bitwise_and(band_area_seg,
+                                    band_area_seg,
+                                    mask=mask_cropped)
+
+    element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    band_area_seg = cv2.dilate(band_area_seg, element, iterations=5)
+    band_area_seg = cv2.erode(band_area_seg, element, iterations=5)
+
+    # ==========================================================================
+    # Pot area segmentation
+    pot_area_seg = cv2.inRange(hsv_image, pot_hsv_min, pot_hsv_max)
+
+    mask_cropped = pot_mask[c[0]:c[1], c[2]:c[3]]
+    pot_area_seg = cv2.bitwise_and(pot_area_seg,
+                                   pot_area_seg,
+                                   mask=mask_cropped)
+
+    # ==========================================================================
+    # Full segmented image
+    image_seg = cv2.add(main_area_seg, band_area_seg)
+    image_seg = cv2.add(image_seg, pot_area_seg)
+
+    image_out = numpy.zeros([image.shape[0], image.shape[1]], 'uint8')
+    image_out[c[0]:c[1], c[2]:c[3]] = image_seg
+
+    return image_out
+
+
+def side_binarization_routine_adaptive_threshold(image, mask):
+    """
+    Binarization of side image based on adaptive threshold algorithm of cv2
     """
     # ==========================================================================
     # Check Parameters
-    if not isinstance(images, list):
-        raise TypeError('images is not a list')
-    if not images:
-        raise ValueError('images is empty')
+    if not isinstance(image, numpy.ndarray):
+        raise TypeError('image should be a numpy.ndarray')
+    if image.ndim != 3:
+        raise ValueError('image should be 3D array')
 
-    shape_image_ref = None
-    for image in images:
-        if not isinstance(image, numpy.ndarray):
-            raise TypeError('image in list images is not a ndarray')
+    if mask is not None:
+        if not isinstance(mask, numpy.ndarray):
+            raise TypeError('mask should be a numpy.ndarray')
+        if mask.ndim != 2:
+            raise ValueError('image should be 2D array')
 
-        if shape_image_ref is None:
-            shape_image_ref = numpy.shape(image)
-        elif numpy.shape(image) != shape_image_ref:
-            raise ValueError('Shape of ndarray image in list is different')
+        if image.shape[0:2] != mask.shape:
+            raise ValueError('image and mask should have the same shape')
     # ==========================================================================
 
-    length = len(images)
-    weight = 1. / length
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    start = cv2.addWeighted(images[0], weight, images[1], weight, 0)
-    function = lambda x, y: cv2.addWeighted(x, 1, y, weight, 0)
+    if mask is not None:
+        img = cv2.bitwise_and(img, img, mask=mask)
 
-    return reduce(function, images[2:], start)
+    block_size, c = (41, 20)
+    result1 = cv2.adaptiveThreshold(img,
+                                    255,
+                                    cv2.ADAPTIVE_THRESH_MEAN_C,
+                                    cv2.THRESH_BINARY_INV,
+                                    block_size,
+                                    c)
+
+    block_size, c = (399, 45)
+    result2 = cv2.adaptiveThreshold(img,
+                                    255,
+                                    cv2.ADAPTIVE_THRESH_MEAN_C,
+                                    cv2.THRESH_BINARY_INV,
+                                    block_size,
+                                    c)
+
+    block_size, c = (41, 20)
+    result3 = cv2.adaptiveThreshold(img,
+                                    255,
+                                    cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                    cv2.THRESH_BINARY_INV,
+                                    block_size,
+                                    c)
+
+    result = cv2.add(result1, result2)
+    result = cv2.add(result, result3)
+
+    if mask is not None:
+        result = cv2.bitwise_and(result, result, mask=mask)
+
+    return result
 
 
+def top_binarization_routine_hsv(image, hsv_min, hsv_max):
+    """
+    Binarization of top image for Lemnatech cabin based on hsv segmentation.
+    """
+    # ==========================================================================
+    # Check Parameters
+    if not isinstance(image, numpy.ndarray):
+        raise TypeError('image should be a numpy.ndarray')
+
+    if image.ndim != 3:
+        raise ValueError('image should be 3D array')
+    # ==========================================================================
+
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    #   =======================================================================
+    #   Main area segmentation
+    main_area_seg = cv2.medianBlur(hsv_image, ksize=9)
+    main_area_seg = cv2.inRange(main_area_seg, hsv_min, hsv_max)
+
+    element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    main_area_seg = cv2.dilate(main_area_seg, element, iterations=5)
+    main_area_seg = cv2.erode(main_area_seg, element, iterations=5)
+
+    return main_area_seg
+
+# ==============================================================================
+
+#deprecated
 def side_binarization_hsv(image, factor):
     """
     Binarization of side image for Lemnatech cabin based on hsv segmentation.
-    
+
     Based on Michael pipeline
-    :param image: BGR image
-    :param factor: Object BinarizationConfig
-    :return: Binary image
     """
     # elementMorph = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
 
@@ -103,14 +271,14 @@ def side_binarization_hsv(image, factor):
     c = factor.side_cubicle_domain
     image_cropped = image[c[0]:c[1], c[2]:c[3]]
     hsv_image = cv2.cvtColor(image_cropped, cv2.COLOR_BGR2HSV)
-    
+
     #   =======================================================================
     #   Main area segmentation
     main_area_seg = cv2.medianBlur(hsv_image, ksize=9)
     main_area_seg = cv2.inRange(main_area_seg,
                                 factor.side_roi_main.hsv_min,
                                 factor.side_roi_main.hsv_max)
-    
+
     element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
     main_area_seg = cv2.dilate(main_area_seg, element, iterations=2)
     main_area_seg = cv2.erode(main_area_seg, element, iterations=2)
@@ -119,61 +287,53 @@ def side_binarization_hsv(image, factor):
     main_area_seg = cv2.bitwise_and(main_area_seg,
                                     main_area_seg,
                                     mask=mask_cropped)
-    
+
     #   =======================================================================
     #   Band area segmentation
     background_cropped = factor.side_cubicle_background[c[0]:c[1], c[2]:c[3]]
     hsv_background = cv2.cvtColor(background_cropped, cv2.COLOR_BGR2HSV)
     grayscale_background = hsv_background[:, :, 0]
-    
+
     grayscale_image = hsv_image[:, :, 0]
-    
+
     band_area_seg = cv2.subtract(grayscale_image, grayscale_background)
     retval, band_area_seg = cv2.threshold(band_area_seg,
                                           122,
                                           255,
                                           cv2.THRESH_BINARY)
-    
+
     mask_cropped = factor.side_roi_orange_band.mask[c[0]:c[1], c[2]:c[3]]
     band_area_seg = cv2.bitwise_and(band_area_seg,
                                     band_area_seg,
                                     mask=mask_cropped)
-    
+
     element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
     band_area_seg = cv2.dilate(band_area_seg, element, iterations=5)
     band_area_seg = cv2.erode(band_area_seg, element, iterations=5)
-    
+
     #   =======================================================================
     #   Pot area segmentation
     pot_area_seg = cv2.inRange(hsv_image,
                                factor.side_roi_pot.hsv_min,
                                factor.side_roi_pot.hsv_max)
-    
+
     mask_cropped = factor.side_roi_pot.mask[c[0]:c[1], c[2]:c[3]]
     pot_area_seg = cv2.bitwise_and(pot_area_seg,
                                    pot_area_seg,
                                    mask=mask_cropped)
-    
+
     #   =======================================================================
     #   Full segmented image
     image_seg = cv2.add(main_area_seg, band_area_seg)
     image_seg = cv2.add(image_seg, pot_area_seg)
-    
+
     image_out = numpy.zeros([image.shape[0], image.shape[1]], 'uint8')
     image_out[c[0]:c[1], c[2]:c[3]] = image_seg
-    
+
     return image_out
 
-
+#deprecated
 def side_binarization_mean_shift(image, mean_image, factor):
-    """
-    Binarization of side image based on mean shift difference
-    
-    :param image: BGR image
-    :param mean_image: Mean image
-    :param factor: Object BinarizeConfiguration
-    :return: Binary image
-    """
     # ==========================================================================
     # Check Parameters
     if not isinstance(image, numpy.ndarray):
@@ -194,17 +354,21 @@ def side_binarization_mean_shift(image, mean_image, factor):
                    factor.side_roi_orange_band.mask)
     
     mask = cv2.add(mask, factor.side_roi_panel.mask)
-    
-    result = alinea.phenomenal.binarization_algorithm.mixed_binarization(
+
+    binary_hsv_image = hsv_binarization(image,
+                                        factor.side_roi_main.hsv_min,
+                                        factor.side_roi_main.hsv_max,
+                                        factor.side_roi_main.mask)
+
+    binary_mean_shift_image = mean_shift_binarization(
         image,
         mean_image,
-        factor.side_roi_main.hsv_min,
-        factor.side_roi_main.hsv_max,
-        factor.mean_shift_binarization_factor.threshold,
+        float(factor.mean_shift_binarization_factor.threshold),
         factor.mean_shift_binarization_factor.dark_background,
-        mask,
-        factor.side_roi_main.mask)
-    
+        mask)
+
+    result = cv2.add(binary_hsv_image, binary_mean_shift_image * 255)
+
     mask_clean_noise = cv2.add(factor.side_roi_orange_band.mask,
                                factor.side_roi_panel.mask)
 
@@ -213,17 +377,8 @@ def side_binarization_mean_shift(image, mean_image, factor):
     
     return result
 
-
+#deprecated
 def side_binarization_elcom(image, mean_image, factor):
-    """
-    Binarization of side image based on mean shift difference
-    
-    :param image: BGR image
-    :param mean_image: Mean image
-    :param factor: Object BinarizeConfiguration
-    :return: Binary image
-    """
-
     # ==========================================================================
     # Check Parameters
     if not isinstance(image, numpy.ndarray):
@@ -241,64 +396,28 @@ def side_binarization_elcom(image, mean_image, factor):
         raise ValueError('image and mean_image should have the same shape')
     # ==========================================================================
 
-    result = alinea.phenomenal.binarization_algorithm.mixed_binarization(
+    binary_hsv_image = hsv_binarization(image,
+                                        factor.side_roi_stem.hsv_min,
+                                        factor.side_roi_stem.hsv_max,
+                                        factor.side_roi_stem.mask)
+
+    binary_mean_shift_image = mean_shift_binarization(
         image,
         mean_image,
-        factor.side_roi_stem.hsv_min,
-        factor.side_roi_stem.hsv_max,
         float(factor.mean_shift_binarization_factor.threshold),
         factor.mean_shift_binarization_factor.dark_background,
-        factor.side_roi_main.mask,
-        factor.side_roi_stem.mask)
-    
+        factor.side_roi_main.mask)
+
+    result = cv2.add(binary_hsv_image, binary_mean_shift_image * 255)
+
     result = cv2.medianBlur(result, 3)
     
     return result
 
-
-def side_binarization_adaptive_thresh(image, factor):
-    """
-    Binarization of side image based on adaptive threshold algorithm of cv2
-    
-    :param image: numpy.ndarray
-    :param factor: BinarizationFactor object
-    :return: Binary image
-    """
-    # ==========================================================================
-    # Check Parameters
-    if not isinstance(image, numpy.ndarray):
-        raise TypeError('image should be a numpy.ndarray')
-    if not isinstance(factor, BinarizationFactor):
-        raise TypeError('factor should be a BinarizationFactor object')
-
-    if image.ndim != 3:
-        raise ValueError('image should be 3D array')
-    # ==========================================================================
-
-    img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-    result1 = alinea.phenomenal.binarization_algorithm.\
-        adaptive_thresh_mean_c(img, 41, 20, mask=factor.side_roi_main.mask)
-    
-    result2 = alinea.phenomenal.binarization_algorithm.\
-        adaptive_thresh_mean_c(img, 399, 45, mask=factor.side_roi_main.mask)
-    
-    result3 = alinea.phenomenal.binarization_algorithm.\
-        adaptive_thresh_gaussian_c(img, 41, 20, mask=factor.side_roi_main.mask)
-    
-    result = cv2.add(result1, result2)
-    result = cv2.add(result, result3)
-    
-    return result
-
-
+#deprecated
 def top_binarization_hsv(image, factor):
     """
     Binarization of top image for Lemnatech cabin based on hsv segmentation.
-
-    :param image: BGR image
-    :param factor: Object BinarizeConfiguration
-    :return: Binary image
     """
     # ==========================================================================
     # Check Parameters
@@ -311,8 +430,6 @@ def top_binarization_hsv(image, factor):
         raise ValueError('image should be 3D array')
     # ==========================================================================
 
-    # c = factor.top_cubicle_domain
-    # image_cropped = image[c[0]:c[1], c[2]:c[3]]
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     #   =======================================================================
@@ -326,19 +443,14 @@ def top_binarization_hsv(image, factor):
     main_area_seg = cv2.dilate(main_area_seg, element, iterations=5)
     main_area_seg = cv2.erode(main_area_seg, element, iterations=5)
 
-    # mask_cropped = factor.top_roi_main.mask[c[0]:c[1], c[2]:c[3]]
-    # main_area_seg = cv2.bitwise_and(main_area_seg,
-    #                                 main_area_seg,
-    #                                 mask=mask_cropped)
-
-    # image_out = numpy.zeros([image.shape[0], image.shape[1]], 'uint8')
-    # image_out[c[0]:c[1], c[2]:c[3]] = main_area_seg
-
     return main_area_seg
 
 
+# ==============================================================================
+
+
 def top_binarization_elcom(bgr, factor, emptiesTop, useEmpty=True):
-    # TODO Write test of tis function
+    # TODO Write test and documentation of tis function
 
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     luv = cv2.cvtColor(bgr, cv2.COLOR_BGR2LUV)
