@@ -98,6 +98,71 @@ def plant_1_mask_adaptive_threshold():
     return mask_adaptive_threshold
 
 
+def plant_1_mask_elcom_mean_shift():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    file_path = shared_directory + '/plant_1/mask/mask_elcom_mean_shift.png'
+
+    mask_elcom_mean_shift = cv2.imread(file_path, flags=cv2.IMREAD_UNCHANGED)
+
+    return mask_elcom_mean_shift
+
+
+def plant_1_mask_elcom_hsv():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    file_path = shared_directory + '/plant_1/mask/mask_elcom_hsv.png'
+
+    mask_elcom_hsv = cv2.imread(file_path, flags=cv2.IMREAD_UNCHANGED)
+
+    return mask_elcom_hsv
+
+
+def plant_1_mask_hsv_roi_main():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    file_path = shared_directory + '/plant_1/mask/mask_hsv_roi_main.png'
+
+    mask_hsv_roi_main = cv2.imread(file_path, flags=cv2.IMREAD_GRAYSCALE)
+
+    return mask_hsv_roi_main
+
+
+def plant_1_mask_hsv_roi_band():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    file_path = shared_directory + '/plant_1/mask/mask_hsv_roi_band.png'
+
+    mask_hsv_roi_band = cv2.imread(file_path, flags=cv2.IMREAD_GRAYSCALE)
+
+    return mask_hsv_roi_band
+
+
+def plant_1_mask_hsv_roi_pot():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    file_path = shared_directory + '/plant_1/mask/mask_hsv_roi_pot.png'
+
+    mask_hsv_roi_pot = cv2.imread(file_path, flags=cv2.IMREAD_GRAYSCALE)
+
+    return mask_hsv_roi_pot
+
+
+def plant_1_background_hsv():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    file_path = shared_directory + '/plant_1/mask/background_hsv.png'
+
+    background_hsv = cv2.imread(file_path, flags=cv2.IMREAD_COLOR)
+
+    return background_hsv
+
 def plant_1_chessboards_path():
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)

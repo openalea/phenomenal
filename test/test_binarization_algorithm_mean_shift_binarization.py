@@ -18,8 +18,6 @@ import numpy
 from alinea.phenomenal.plant_1 import plant_1_images
 from alinea.phenomenal.binarization_algorithm import (mean_shift_binarization,
                                                       get_mean_image)
-
-
 # ==============================================================================
 
 
@@ -100,7 +98,18 @@ def test_wrong_parameters_6():
         assert False
 
 
-def test_mean_shift_binarization_1():
+def test_simply_working_1():
+    images = list()
+    images.append(numpy.zeros((25, 25, 3), numpy.uint8))
+    images.append(numpy.zeros((25, 25, 3), numpy.uint8))
+    mean_image = get_mean_image(images)
+
+    assert mean_image.shape == (25, 25, 3)
+    assert mean_image.ndim == 3
+    assert numpy.count_nonzero(mean_image) == 0
+
+
+def test_no_regression_1():
     images = plant_1_images()
     images.pop(-1)
     mean_image = get_mean_image(images.values())
@@ -133,4 +142,7 @@ if __name__ == "__main__":
     test_wrong_parameters_5()
     test_wrong_parameters_6()
 
-    test_mean_shift_binarization_1()
+    test_simply_working_1()
+
+    test_no_regression_1()
+
