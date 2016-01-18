@@ -123,9 +123,6 @@ def test_mean_shift_binarization_1():
         image_0_binarize *= 255
         assert numpy.count_nonzero(image_0_binarize) == ref
 
-        import alinea.phenomenal.viewer
-        alinea.phenomenal.viewer.show_image(image_0_binarize)
-
 # ==============================================================================
 
 if __name__ == "__main__":

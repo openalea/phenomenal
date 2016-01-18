@@ -248,7 +248,7 @@ def top_binarization_routine_hsv(image, hsv_min, hsv_max):
 
 # ==============================================================================
 
-
+#deprecated
 def side_binarization_hsv(image, factor):
     """
     Binarization of side image for Lemnatech cabin based on hsv segmentation.
@@ -332,7 +332,7 @@ def side_binarization_hsv(image, factor):
 
     return image_out
 
-
+#deprecated
 def side_binarization_mean_shift(image, mean_image, factor):
     # ==========================================================================
     # Check Parameters
@@ -377,7 +377,7 @@ def side_binarization_mean_shift(image, mean_image, factor):
     
     return result
 
-
+#deprecated
 def side_binarization_elcom(image, mean_image, factor):
     # ==========================================================================
     # Check Parameters
@@ -414,7 +414,7 @@ def side_binarization_elcom(image, mean_image, factor):
     
     return result
 
-
+#deprecated
 def top_binarization_hsv(image, factor):
     """
     Binarization of top image for Lemnatech cabin based on hsv segmentation.
@@ -447,7 +447,6 @@ def top_binarization_hsv(image, factor):
 
 
 # ==============================================================================
-
 
 
 def top_binarization_elcom(bgr, factor, emptiesTop, useEmpty=True):
