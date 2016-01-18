@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       example_tools.py.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,19 +12,14 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import glob
 import os
 import re
 import cv2
 import json
 import numpy
-
-#       ========================================================================
-#       Code
+# ==============================================================================
 
 
 def load_files(data_directory):
@@ -151,9 +144,3 @@ def read_mesh(file_path):
         load_mesh = json.load(infile)
 
     return numpy.array(load_mesh['vertices']), numpy.array(load_mesh['faces'])
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    do_nothing = None

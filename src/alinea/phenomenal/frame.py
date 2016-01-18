@@ -12,7 +12,7 @@
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 # 
 #       VPlants WebSite : https://gforge.inria.fr/projects/vplants/
-#
+# ==============================================================================
 """
 This module defines a frame or coordinate system in space
 """

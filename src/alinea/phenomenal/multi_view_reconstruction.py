@@ -15,10 +15,7 @@
 # ==============================================================================
 import collections
 import math
-
 import numpy
-
-
 # ==============================================================================
 
 
@@ -29,7 +26,7 @@ def bbox_projection(point_3d, radius, projection, angle):
 
     Parameters
     ----------
-    point_3d : collections.deque
+    point_3d : (x, y, z)
 
     radius : float
 
@@ -39,16 +36,19 @@ def bbox_projection(point_3d, radius, projection, angle):
 
     Returns
     -------
-    Tuple
+    out : tuple
         Containing min and max value of point_3d projection in x and y axes.
     """
 
     corners = corners_point_3d(point_3d, radius)
 
-    res = projection.project_points(corners, angle)
+    lx = list()
+    ly = list()
+    for pt3d in corners:
+        x, y = projection.project_point(pt3d, angle)
 
-    lx = res[:, 0]
-    ly = res[:, 1]
+        lx.append(x)
+        ly.append(y)
 
     return min(lx), max(lx), min(ly), max(ly)
 
@@ -134,7 +134,6 @@ def corners_point_3d(point_3d, radius):
     z_plus = point_3d[2] + radius
 
     l = list()
-
     l.append((x_minus, y_minus, z_minus))
     l.append((x_plus, y_minus, z_minus))
     l.append((x_minus, y_plus, z_minus))
@@ -255,12 +254,10 @@ def reconstruction_3d(images, projection, radius,
         nb_iteration += 1
 
     for i in range(nb_iteration):
-
         if len(images) == 1:
             points_3d = split_points_3d_plan(points_3d, radius)
         else:
             points_3d = split_points_3d(points_3d, radius)
-
         radius /= 2.0
 
         if verbose is True:
@@ -499,7 +496,6 @@ def new_reconstruction_3d(images, projection, radius, angles_ref,
                           origin_point=(0.0, 0.0, 0.0),
                           points_3d=None,
                           verbose=False):
-
     if len(images) == 0:
         return
 
@@ -521,12 +517,10 @@ def new_reconstruction_3d(images, projection, radius, angles_ref,
     # ==========================================================================
 
     for i in range(nb_iteration):
-
         if len(images) == 1:
             points_3d = split_points_3d_plan(points_3d, radius)
         else:
             points_3d = split_points_3d(points_3d, radius)
-
         radius /= 2.0
 
         # ======================================================================

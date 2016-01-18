@@ -18,25 +18,18 @@
 """ This module contains a calibration model for phenoarch experiment
 where a chessboard is rotating instead of a plant in a picture cabin.
 """
-#       ========================================================================
-#       External Import
+# ==============================================================================
 
 import json
 from math import radians, cos, pi, sin
-
 import numpy
 import numpy.random
 import scipy.optimize
 
-#       ========================================================================
-#       Local Import
-
 from frame import Frame, x_axis, y_axis, z_axis
 from transformations import concatenate_matrices, rotation_matrix
 from camera import Camera
-
-#       ========================================================================
-#       Code
+# ==============================================================================
 
 
 class ChessboardModelParameters(object):

@@ -13,7 +13,7 @@
 #
 #       VPlants WebSite : https://gforge.inria.fr/projects/vplants/
 #
-
+# ==============================================================================
 """ This module defines a typical pinhole camera """
 
 __all__ = ["Camera"]

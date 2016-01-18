@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       data_transformation.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>

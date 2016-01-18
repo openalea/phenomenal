@@ -17,7 +17,7 @@
 # ==============================================================================
 import time
 
-import alinea.phenomenal.data_load
+import alinea.phenomenal.plant_1
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.viewer
@@ -32,11 +32,11 @@ verbose = True
 # ==============================================================================
 
 # Load images binarize
-images = alinea.phenomenal.data_load.test_plant_1_images_binarize()
+images = alinea.phenomenal.plant_1.plant_1_images_binarize()
 
 # Load camera model parameters
-params_camera_path, _ = alinea.phenomenal.data_load.\
-    test_plant_1_calibration_params_path()
+params_camera_path, _ = alinea.phenomenal.plant_1.\
+    plant_1_calibration_params_path()
 
 cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
     params_camera_path)

@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       calibration_opencv.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,26 +12,17 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import cv2
 import numpy
 import re
 
-#       ========================================================================
-#       Local Import
 import openalea.deploy.shared_data
 import alinea.phenomenal
-import alinea.phenomenal.calibration
-
-#       ========================================================================
-#       Code
+#  =============================================================================
 
 
-class Calibration(alinea.phenomenal.calibration.Calibration, object):
+class Calibration(object):
     def __init__(self):
         self.focal_matrix = None
         self.rotation_vectors = dict()
@@ -159,6 +148,23 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
 
         return projection_point[0, 0, 0], projection_point[0, 0, 1]
 
+    def build_object_points(self, chessboard):
+
+        shape = chessboard.shape
+        square_size = chessboard.square_size
+
+        object_points = numpy.zeros((shape[0] * shape[1], 3), numpy.float32)
+
+        # Build Chessboard
+        grid = numpy.mgrid[0:shape[0], 0:shape[1]].T.reshape(-1, 2)
+        object_points[:, :2] = grid * square_size
+
+        # 48 points are stored in an 48x3 array obj
+        # choose bottom-left corner as origin, to match australian convention
+        object_points = object_points - object_points[40, :]
+
+        return object_points
+
     def calibrate(self, images, chessboard, verbose=False):
 
         image_points = list()
@@ -180,7 +186,8 @@ class Calibration(alinea.phenomenal.calibration.Calibration, object):
         # Clean possibly None corners
         image_points = [corners for corners in image_points if corners is not None]
 
-        object_points = [chessboard.object_points] * len(image_points)
+        obj_pts = self.build_object_points(chessboard)
+        object_points = [obj_pts] * len(image_points)
 
         # create initial cameraMatrix and distortion coefficient
         camera_matrix = numpy.zeros((3, 3), dtype=numpy.float32)
