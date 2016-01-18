@@ -15,88 +15,10 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import os
 import glob
-import ConfigParser
-import cv2
-
-#       ========================================================================
-#       Local Import
-
-import openalea.deploy.shared_data
-import alinea.phenomenal
-import alinea.phenomenal.binarization_factor
-
-#       ========================================================================
-
-def convert_value(value):
-        try:
-            v = int(value)
-        except ValueError:
-            if value.startswith('('):
-                v = tuple(map(int,
-                              value.split('(')[1].split(')')[0].split(',')))
-            else:
-                v = value
-        return v
-
-
-def load_configuration_file(file_name, file_is_in_share_directory=True):
-
-    share_data_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
-
-    parser = ConfigParser.ConfigParser()
-
-    if file_is_in_share_directory is True:
-        parser.read(share_data_directory / file_name)
-    else:
-        parser.read(file_name)
-
-    dict_config = dict()
-    for sect in parser.sections():
-
-            if sect not in dict_config:
-                dict_config[sect] = dict()
-
-            for it in parser.items(sect):
-                dict_config[sect][it[0]] = convert_value(it[1])
-
-    for key in dict_config:
-        for sub_key in dict_config[key]:
-            if str(sub_key).startswith('mask'):
-                dict_config[key][sub_key] = cv2.imread(
-                    share_data_directory / str(dict_config[key][sub_key]),
-                    cv2.IMREAD_GRAYSCALE)
-
-            if str(sub_key).startswith('background'):
-                dict_config[key][sub_key] = cv2.imread(
-                    share_data_directory / str(dict_config[key][sub_key]),
-                    cv2.IMREAD_UNCHANGED)
-
-    return dict_config
-
-
-def binarization_factor(file_name, file_is_in_share_directory=True):
-
-    dict_config = load_configuration_file(file_name, file_is_in_share_directory)
-
-    factor = alinea.phenomenal.binarization_factor.BinarizationFactor()
-    factor.fill_config(dict_config)
-
-    return factor
-
-
-def binarization_factor_free(file_name, file_is_in_share_directory=True):
-    dict_config = load_configuration_file(file_name, file_is_in_share_directory)
-    factor = alinea.phenomenal.binarization_factor.BinarizationFactorFree()
-    factor.fill_config(dict_config)
-
-    return factor
+# ==============================================================================
 
 
 def import_images(image_directory, genotype_name, plant_id):

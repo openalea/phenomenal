@@ -15,17 +15,13 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.binarization import top_binarization_hsv
-from alinea.phenomenal.configuration import binarization_factor
+from alinea.phenomenal.binarization_post_processing import remove_plant_support
 # ==============================================================================
 
 
 def test_wrong_parameters_1():
-
-    factor_side_binarization = binarization_factor('factor_image_basic.cfg')
-
     try:
-        top_binarization_hsv(None, factor_side_binarization)
+        remove_plant_support(None)
     except Exception, e:
         assert e.message == 'image should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -36,48 +32,54 @@ def test_wrong_parameters_1():
 def test_wrong_parameters_2():
 
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
-
     try:
-        top_binarization_hsv(image, None)
+        remove_plant_support(image)
     except Exception, e:
-        assert e.message == 'factor should be a BinarizationFactor object'
-        assert type(e) == TypeError
+        assert e.message == 'image should be 2D array'
+        assert type(e) == ValueError
     else:
         assert False
 
 
 def test_wrong_parameters_3():
 
-    factor_side_binarization = binarization_factor('factor_image_basic.cfg')
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
-
+    mask = 42
     try:
-        top_binarization_hsv(image, factor_side_binarization)
+        remove_plant_support(image, mask=mask)
     except Exception, e:
-        assert e.message == 'image should be 3D array'
+        assert e.message == 'mask should be a numpy.ndarray'
+        assert type(e) == TypeError
+    else:
+        assert False
+
+
+def test_wrong_parameters_4():
+
+    image = numpy.zeros((25, 25), dtype=numpy.uint8)
+    mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    try:
+        remove_plant_support(image, mask=mask)
+    except Exception, e:
+        assert e.message == 'mask should be 2D array'
         assert type(e) == ValueError
     else:
-        print False
+        assert False
 
 
-def test_top_binarization_hsv_1():
+def test_remove_plant_support_1():
 
-    factor_side_binarization = binarization_factor('factor_image_basic.cfg')
-    image = numpy.zeros((2454, 2056, 3), dtype=numpy.uint8)
+    image = numpy.zeros((25, 25), dtype=numpy.uint8)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    binarize_image = top_binarization_hsv(
-        image, factor_side_binarization)
+    image_cleaning = remove_plant_support(image, mask=mask)
 
-    assert (binarize_image == 0).all()
-    assert binarize_image.ndim == 2
-    assert binarize_image.shape == (2454, 2056)
-
-
-# ==============================================================================
+    assert isinstance(image_cleaning, numpy.ndarray)
+    assert image_cleaning.ndim == 2
 
 if __name__ == "__main__":
     test_wrong_parameters_1()
     test_wrong_parameters_2()
     test_wrong_parameters_3()
-
-    test_top_binarization_hsv_1()
+    test_wrong_parameters_4()
+    test_remove_plant_support_1()

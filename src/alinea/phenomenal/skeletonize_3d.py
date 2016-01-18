@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       skeletonize_3d.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,22 +12,15 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import math
 import numpy
 
-#       ========================================================================
-#       Local Import
 import vplants.treeeditor3d.mtgeditor
 import openalea.plantgl.algo
 import openalea.plantgl.scenegraph
 import openalea.plantgl.math
-
-#       ========================================================================
-#       Code
+# ==============================================================================
 
 
 def points_3d_to_point3array(points_3d):

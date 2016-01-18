@@ -15,7 +15,7 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.binarization import get_mean_image
+from alinea.phenomenal.binarization_algorithm import get_mean_image
 # ==============================================================================
 
 

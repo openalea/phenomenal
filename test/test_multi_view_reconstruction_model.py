@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       test_multi_view_reconstruction_model.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,20 +12,15 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
+# ==============================================================================
 import numpy
 
-#       ========================================================================
-#       Local Import
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
-import alinea.phenomenal.data_load
-
-#       ========================================================================
-#       Code
+import alinea.phenomenal.plant_1
+# ==============================================================================
 
 
 def test_multi_view_reconstruction_model_1():
@@ -42,8 +35,8 @@ def test_multi_view_reconstruction_model_1():
     # alinea.phenomenal.result_viewer.show_points_3d(points)
 
     # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.data_load.\
-        test_plant_1_calibration_params_path()
+    params_camera_path, _ = alinea.phenomenal.plant_1.\
+        plant_1_calibration_params_path()
 
     cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
         params_camera_path)
@@ -74,8 +67,8 @@ def test_multi_view_reconstruction_model_2():
     images = alinea.phenomenal.data_creation.build_images_1()
 
     # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.data_load.\
-        test_plant_1_calibration_params_path()
+    params_camera_path, _ = alinea.phenomenal.plant_1.\
+        plant_1_calibration_params_path()
 
     cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
         params_camera_path)

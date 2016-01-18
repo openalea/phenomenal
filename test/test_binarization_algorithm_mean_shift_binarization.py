@@ -15,18 +15,16 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.binarization import (
-    side_binarization_mean_shift, get_mean_image)
-from alinea.phenomenal.configuration import binarization_factor
+from alinea.phenomenal.plant_1 import plant_1_images
+from alinea.phenomenal.binarization_algorithm import (mean_shift_binarization,
+                                                      get_mean_image)
 # ==============================================================================
 
 
 def test_wrong_parameters_1():
-
-    factor = binarization_factor('factor_image_basic.cfg')
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        side_binarization_mean_shift(None, mean_image, factor)
+        mean_shift_binarization(None, mean_image)
     except Exception, e:
         assert e.message == 'image should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -35,11 +33,9 @@ def test_wrong_parameters_1():
 
 
 def test_wrong_parameters_2():
-
-    factor = binarization_factor('factor_image_basic.cfg')
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        side_binarization_mean_shift(image, None, factor)
+        mean_shift_binarization(image, None)
     except Exception, e:
         assert e.message == 'mean_image should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -49,25 +45,25 @@ def test_wrong_parameters_2():
 
 def test_wrong_parameters_3():
 
-    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+
     try:
-        side_binarization_mean_shift(image, mean_image, None)
+        mean_shift_binarization(image, mean_image)
     except Exception, e:
-        assert e.message == 'factor should be a BinarizationFactor object'
-        assert type(e) == TypeError
+        assert e.message == 'image should be 3D array'
+        assert type(e) == ValueError
     else:
         assert False
 
 
 def test_wrong_parameters_4():
 
-    factor = binarization_factor('factor_image_basic.cfg')
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        side_binarization_mean_shift(image, mean_image, factor)
+        mean_shift_binarization(image, mean_image)
     except Exception, e:
         assert e.message == 'image should be 3D array'
         assert type(e) == ValueError
@@ -77,27 +73,11 @@ def test_wrong_parameters_4():
 
 def test_wrong_parameters_5():
 
-    factor = binarization_factor('factor_image_basic.cfg')
-    image = numpy.zeros((25, 25), dtype=numpy.uint8)
-    mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
-
-    try:
-        side_binarization_mean_shift(image, mean_image, factor)
-    except Exception, e:
-        assert e.message == 'image should be 3D array'
-        assert type(e) == ValueError
-    else:
-        assert False
-
-
-def test_wrong_parameters_6():
-
-    factor = binarization_factor('factor_image_basic.cfg')
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        side_binarization_mean_shift(image, mean_image, factor)
+        mean_shift_binarization(image, mean_image)
     except Exception, e:
         assert e.message == 'mean_image should be 3D array'
         assert type(e) == ValueError
@@ -105,13 +85,12 @@ def test_wrong_parameters_6():
         assert False
 
 
-def test_wrong_parameters_7():
-    factor = binarization_factor('factor_image_basic.cfg')
+def test_wrong_parameters_6():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((10, 10, 3), dtype=numpy.uint8)
 
     try:
-        side_binarization_mean_shift(image, mean_image, factor)
+        mean_shift_binarization(image, mean_image)
     except Exception, e:
         assert e.message == 'image and mean_image should have the same shape'
         assert type(e) == ValueError
@@ -119,18 +98,39 @@ def test_wrong_parameters_7():
         assert False
 
 
-def test_side_binarization_mean_shift_1():
-    factor = binarization_factor('factor_image_basic.cfg')
+def test_simply_working_1():
+    images = list()
+    images.append(numpy.zeros((25, 25, 3), numpy.uint8))
+    images.append(numpy.zeros((25, 25, 3), numpy.uint8))
+    mean_image = get_mean_image(images)
 
-    img_1 = numpy.ones((2454, 2056, 3), dtype=numpy.uint8)
-    img_2 = numpy.ones((2454, 2056, 3), dtype=numpy.uint8)
-    mean_image = get_mean_image([img_1, img_2])
+    assert mean_image.shape == (25, 25, 3)
+    assert mean_image.ndim == 3
+    assert numpy.count_nonzero(mean_image) == 0
 
-    img_binarize_1 = side_binarization_mean_shift(img_1, mean_image, factor)
 
-    assert (img_binarize_1 == 0).all()
-    assert img_binarize_1.ndim == 2
-    assert img_binarize_1.shape == (2454, 2056)
+def test_no_regression_1():
+    images = plant_1_images()
+    images.pop(-1)
+    mean_image = get_mean_image(images.values())
+
+    refs = [(0, 129070),
+            (30, 116665),
+            (60, 163168),
+            (90, 144319),
+            (120, 135900),
+            (150, 140360),
+            (180, 131963),
+            (210, 92803),
+            (240, 155876),
+            (270, 134983),
+            (300, 124941),
+            (330, 131898)]
+
+    for angle, ref in refs:
+        image_0_binarize = mean_shift_binarization(images[angle], mean_image)
+        image_0_binarize *= 255
+        assert numpy.count_nonzero(image_0_binarize) == ref
 
 # ==============================================================================
 
@@ -141,6 +141,8 @@ if __name__ == "__main__":
     test_wrong_parameters_4()
     test_wrong_parameters_5()
     test_wrong_parameters_6()
-    test_wrong_parameters_7()
 
-    test_side_binarization_mean_shift_1()
+    test_simply_working_1()
+
+    test_no_regression_1()
+

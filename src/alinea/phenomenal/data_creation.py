@@ -1,6 +1,5 @@
 # -*- python -*-
 #
-#       data_creation.py : 
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
@@ -14,20 +13,14 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import numpy
 
-#       ========================================================================
-#       Local Import 
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.multi_view_reconstruction
+# ==============================================================================
 
 
-#       ========================================================================
-#       Code
 def write_circle_on_image(image, y_position, x_position, size):
 
     for i in range(0, size):
@@ -86,9 +79,3 @@ def build_image_from_points_3d(points_3d, radius, projection, step=30):
 
     return images
 
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    pass
