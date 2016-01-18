@@ -58,6 +58,7 @@ def mean_shift_binarization(image,
     if not isinstance(threshold, float):
         raise TypeError('threshold should be a float')
     if not isinstance(dark_background, bool):
+        print dark_background
         raise TypeError('dark_background should be a bool')
 
     if image.ndim != 3:
@@ -111,13 +112,39 @@ def hsv_binarization(image,
 
     If mask is not None :
     => cv2.bitwise_and(binary_hsv_image, mask)
-
-    :param image: BGR image
-    :param hsv_min: min hsv value for threshold
-    :param hsv_max: max hsv value for threshold
-    :param mask: Binary image
-    :return: Binary image
     """
+    # ==========================================================================
+    # Check Parameters
+    if not isinstance(image, numpy.ndarray):
+        raise TypeError('image should be a numpy.ndarray')
+    if image.ndim != 3:
+        raise ValueError('image should be 3D array')
+
+    if not isinstance(hsv_min, tuple):
+        raise TypeError('hsv_min should be a Tuple')
+    if len(hsv_min) != 3:
+        raise ValueError('hsv_min should be of size 3')
+    for value in hsv_min:
+        if not isinstance(value, int):
+            raise ValueError('hsv_min value should be a integer')
+
+    if not isinstance(hsv_max, tuple):
+        raise TypeError('hsv_max should be a Tuple')
+    if len(hsv_max) != 3:
+        raise ValueError('hsv_max should be of size 3')
+    for value in hsv_max:
+        if not isinstance(value, int):
+            raise ValueError('hsv_max value should be a integer')
+
+    if mask is not None:
+        if not isinstance(mask, numpy.ndarray):
+            raise TypeError('mask should be a numpy.ndarray')
+        if mask.ndim != 2:
+            raise ValueError('mask should be 2D array')
+        if image.shape[0:2] != mask.shape:
+            raise ValueError('image and mask should have the same shape')
+    # ==========================================================================
+
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     binary_hsv_image = cv2.inRange(hsv_image, hsv_min, hsv_max)
