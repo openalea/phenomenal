@@ -74,6 +74,8 @@ def mean_shift_binarization(image,
             raise TypeError('mask should be a numpy.ndarray')
         if mask.ndim != 2:
             raise ValueError('image should be 2D array')
+        if image.shape[0:2] != mask.shape:
+            raise ValueError('image and mask should have the same shape')
     # ==========================================================================
 
     image_f32 = numpy.float32(image)
