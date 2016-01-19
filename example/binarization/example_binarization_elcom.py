@@ -22,7 +22,7 @@ import cv2
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.binarization
+import alinea.phenomenal.binarization_routine
 import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
 import alinea.phenomenal.viewer
@@ -48,7 +48,7 @@ def run_example(data_directory):
             factor_binarization_elcom = alinea.phenomenal.configuration.\
                 binarization_factor('factor_cubicle_6_elcom.cfg')
 
-            images_binarize_elcom = alinea.phenomenal.binarization.binarization(
+            images_binarize_elcom = alinea.phenomenal.binarization_routine.binarization(
                 images_elcom, factor_binarization_elcom, methods='elcom')
 
             # print pot_id, date

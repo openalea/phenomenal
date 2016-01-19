@@ -22,7 +22,7 @@ import cv2
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.binarization
+import alinea.phenomenal.binarization_routine
 import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
 import alinea.phenomenal.viewer
@@ -47,7 +47,7 @@ def run_example(data_directory):
                 binarization_factor('factor_image_basic.cfg')
 
             images_binarize_adaptive_threshold = alinea.phenomenal.\
-                binarization.binarization(
+                binarization_routine.binarization(
                     images, factor_binarization, methods='adaptive_threshold')
 
             print pot_id, date

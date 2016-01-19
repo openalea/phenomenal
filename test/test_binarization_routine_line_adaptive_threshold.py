@@ -19,9 +19,7 @@ import numpy
 from alinea.phenomenal.plant_1 import (plant_1_images,
                                        plant_1_mask_adaptive_threshold)
 
-from alinea.phenomenal.binarization import (
-    side_binarization_routine_adaptive_threshold)
-
+from alinea.phenomenal.binarization_routine import line_adaptive_threshold
 # ==============================================================================
 
 
@@ -31,7 +29,7 @@ def test_wrong_parameters_1():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        side_binarization_routine_adaptive_threshold(image, mask)
+        line_adaptive_threshold(image, mask)
     except Exception, e:
         assert e.message == 'image should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -45,7 +43,7 @@ def test_wrong_parameters_2():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        side_binarization_routine_adaptive_threshold(image, mask)
+        line_adaptive_threshold(image, mask)
     except Exception, e:
         assert e.message == 'image should be 3D array'
         assert type(e) == ValueError
@@ -59,7 +57,7 @@ def test_wrong_parameters_3():
     mask = 42
 
     try:
-        side_binarization_routine_adaptive_threshold(image, mask)
+        line_adaptive_threshold(image, mask)
     except Exception, e:
         assert e.message == 'mask should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -73,7 +71,7 @@ def test_wrong_parameters_4():
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        side_binarization_routine_adaptive_threshold(image, mask)
+        line_adaptive_threshold(image, mask)
     except Exception, e:
         assert e.message == 'image should be 2D array'
         assert type(e) == ValueError
@@ -87,7 +85,7 @@ def test_wrong_parameters_5():
     mask = numpy.zeros((50, 50), dtype=numpy.uint8)
 
     try:
-        side_binarization_routine_adaptive_threshold(image, mask)
+        line_adaptive_threshold(image, mask)
     except Exception, e:
         assert e.message == 'image and mask should have the same shape'
         assert type(e) == ValueError
@@ -100,7 +98,7 @@ def test_simply_working_1():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    binarize_image = side_binarization_routine_adaptive_threshold(image, mask)
+    binarize_image = line_adaptive_threshold(image, mask)
 
     assert (binarize_image == 0).all()
     assert binarize_image.ndim == 2
@@ -129,7 +127,7 @@ def test_no_regression_1():
 
     for angle, ref in refs:
 
-        img_bin = side_binarization_routine_adaptive_threshold(
+        img_bin = line_adaptive_threshold(
             images[angle], mask)
 
         assert numpy.count_nonzero(img_bin) == ref

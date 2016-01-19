@@ -22,7 +22,7 @@ import cv2
 
 #       ========================================================================
 #       Local Import
-import alinea.phenomenal.binarization
+import alinea.phenomenal.binarization_routine
 import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
 import alinea.phenomenal.viewer
@@ -47,7 +47,7 @@ def run_example(data_directory):
                 factor_binarization = alinea.phenomenal.configuration. \
                     binarization_factor('factor_image_basic.cfg')
 
-                images_binarize_mean_shift = alinea.phenomenal.binarization.\
+                images_binarize_mean_shift = alinea.phenomenal.binarization_routine.\
                     binarization(images,
                                  factor_binarization,
                                  methods='mean_shift')

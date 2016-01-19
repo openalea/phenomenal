@@ -48,7 +48,7 @@ class Chessboard(object):
         chessboard_pts = []
         for j in range(height):
             for i in range(width):
-                v = numpy.array([i * square_size, j * square_size, 0.])
+                v = numpy.array([i * square_size, j * square_size, 0.0])
                 chessboard_pts.append(v)
 
         return chessboard_pts

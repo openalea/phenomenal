@@ -19,7 +19,7 @@ from alinea.phenomenal.plant_1 import (plant_1_images,
                                        plant_1_mask_elcom_mean_shift,
                                        plant_1_mask_elcom_hsv)
 
-from alinea.phenomenal.binarization import side_binarization_routine_elcom
+from alinea.phenomenal.binarization_routine import meanshift_hsv_elcom
 from alinea.phenomenal.binarization_algorithm import get_mean_image
 # ==============================================================================
 
@@ -33,7 +33,7 @@ def test_simply_working_1():
     mask_mean_shift = numpy.ones((25, 25), dtype=numpy.uint8)
     mask_hsv = numpy.ones((25, 25), dtype=numpy.uint8)
 
-    img_bin = side_binarization_routine_elcom(
+    img_bin = meanshift_hsv_elcom(
         image,
         mean_image,
         hsv_min=hsv_min,
@@ -73,7 +73,7 @@ def test_no_regression_1():
 
         img = images[angle][0:2448, 0:2048, :]
 
-        img_bin = side_binarization_routine_elcom(
+        img_bin = meanshift_hsv_elcom(
             img,
             mean_image,
             hsv_min=(30, 25, 0),
