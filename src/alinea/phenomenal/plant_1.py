@@ -163,6 +163,7 @@ def plant_1_background_hsv():
 
     return background_hsv
 
+
 def plant_1_chessboards_path():
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
@@ -190,6 +191,16 @@ def plant_1_calibration_params_path():
 
     return params_camera_path, params_chessboards_path
 
+
+def plant_1_params_camera_opencv_path():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    data_directory = shared_directory + '/plant_1/'
+
+    params_camera_opencv_path = data_directory + 'params_camera_opencv'
+
+    return params_camera_opencv_path
 
 def plant_1_points_3d_path(radius=2):
     shared_directory = openalea.deploy.shared_data.shared_data(

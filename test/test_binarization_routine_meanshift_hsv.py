@@ -19,7 +19,7 @@ from alinea.phenomenal.plant_1 import (plant_1_images,
                                        plant_1_mask_mean_shift,
                                        plant_1_mask_hsv,
                                        plant_1_mask_clean_noise)
-from alinea.phenomenal.binarization import side_binarization_routine_mean_shift
+from alinea.phenomenal.binarization_routine import meanshift_hsv
 from alinea.phenomenal.binarization_algorithm import get_mean_image
 
 # ==============================================================================
@@ -35,7 +35,7 @@ def test_simply_working_1():
     mask_hsv = numpy.ones((25, 25), dtype=numpy.uint8)
     mask_clean_noise = numpy.ones((25, 25), dtype=numpy.uint8)
 
-    img_bin = side_binarization_routine_mean_shift(
+    img_bin = meanshift_hsv(
         image,
         mean_image,
         hsv_min=hsv_min,
@@ -75,7 +75,7 @@ def test_no_regression_1():
             (330, 121175)]
 
     for angle, ref in refs:
-        img_bin = side_binarization_routine_mean_shift(
+        img_bin = meanshift_hsv(
             images[angle],
             mean_image,
             hsv_min=hsv_min,
