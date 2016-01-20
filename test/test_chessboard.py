@@ -31,8 +31,9 @@ def test_chessboard_2():
     chess = Chessboard(50, (8, 6))
 
     result = chess.local_corners_position_3d()
+    print numpy.array(result)
 
-    numpy.array(chess.local_corners_position_3d())
+    
 
 if __name__ == "__main__":
     test_chessboard_1()
