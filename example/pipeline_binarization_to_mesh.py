@@ -21,13 +21,13 @@ import alinea.phenomenal.configuration
 import alinea.phenomenal.misc
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
-import alinea.phenomenal.binarization
+import alinea.phenomenal.binarization_routine
 import alinea.phenomenal.binarization_post_processing
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
 import alinea.phenomenal.viewer
 import alinea.phenomenal.plant_1
-from alinea.phenomenal.binarization import (top_binarization_hsv,
+from alinea.phenomenal.binarization_routine import (top_binarization_hsv,
                                             side_binarization_mean_shift)
 from alinea.phenomenal.binarization_algorithm import get_mean_image
 

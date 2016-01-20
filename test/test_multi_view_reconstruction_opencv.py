@@ -1,7 +1,5 @@
 # -*- python -*-
-#
-#       test_multi_view_reconstruction_opencv.py :
-#
+
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,22 +12,22 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import numpy
 
-#       ========================================================================
-#       Local Import
 import alinea.phenomenal.calibration_opencv
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.data_creation
 
+from alinea.phenomenal.calibration_opencv import (CameraParameters,
+                                                  Projection)
+from alinea.phenomenal.viewer import show_points_3d
+from alinea.phenomenal.plant_1 import (plant_1_images_binarize,
+                                       plant_1_params_camera_opencv_path)
+# ==============================================================================
 
-#       ========================================================================
-#       Code
+
 def test_multi_view_reconstruction_opencv_1():
     size = 10
     radius = 8
@@ -38,19 +36,24 @@ def test_multi_view_reconstruction_opencv_1():
     points = alinea.phenomenal.data_creation.build_object_1(
         size, radius, point_3d)
 
-    calibration = alinea.phenomenal.calibration_opencv.\
-        Calibration.read_calibration('tests/test_calibration_opencv')
+    cp = CameraParameters.read(plant_1_params_camera_opencv_path())
+    p = Projection(cp)
 
     images = alinea.phenomenal.data_creation.build_image_from_points_3d(
-        points, radius, calibration, step=30)
+        points, radius, p, stop=120, step=30)
+
+    images_selected = dict()
+    for angle in [0, 30, 60, 90]:
+        images_selected[angle] = images[angle]
 
     points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, radius, verbose=True)
+        images_selected, p, radius, verbose=True)
 
     mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
         points, radius)
 
-    assert mat.size == 2184
+    print mat.size
+    assert mat.size == 5236
     print numpy.shape(mat)
 
 
@@ -58,26 +61,44 @@ def test_multi_view_reconstruction_opencv_2():
     radius = 4
     images = alinea.phenomenal.data_creation.build_images_1()
 
-    calibration = alinea.phenomenal.calibration_opencv.\
-        Calibration.read_calibration('tests/test_calibration_opencv')
+    cp = CameraParameters.read(plant_1_params_camera_opencv_path())
+    p = Projection(cp)
+
+    images_selected = dict()
+    for angle in [0, 30, 60, 90]:
+        images_selected[angle] = images[angle]
 
     points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, radius, verbose=True)
+        images_selected, p, radius, verbose=True)
 
-    assert len(points_3d) == 6096
-
-    for angle in images:
+    for angle in [0, 30, 60, 90]:
         image = alinea.phenomenal.multi_view_reconstruction.\
             project_points_on_image(points_3d,
                                     radius,
-                                    images[angle].shape,
-                                    calibration,
+                                    images_selected[angle].shape,
+                                    p,
                                     angle)
 
-        img = numpy.subtract(image, images[0])
+        img = numpy.subtract(image, images_selected[0])
         img[img == -255] = 255
         print "Angle : ", angle, ' Err : ', numpy.count_nonzero(img)
-        assert numpy.count_nonzero(img) < 8000
+        assert numpy.count_nonzero(img) < 9000
+
+
+def test_multi_view_reconstruction_opencv_3():
+    radius = 10
+
+    cp = CameraParameters.read(plant_1_params_camera_opencv_path())
+    p = Projection(cp)
+
+    images_binarize = plant_1_images_binarize()
+    images_selected = dict()
+    for angle in [0, 30, 60, 90]:
+        images_selected[angle] = images_binarize[angle]
+
+    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
+        images_selected, p, radius, verbose=True)
+
 
 #       ========================================================================
 #       LOCAL TEST
@@ -85,3 +106,4 @@ def test_multi_view_reconstruction_opencv_2():
 if __name__ == "__main__":
     test_multi_view_reconstruction_opencv_1()
     test_multi_view_reconstruction_opencv_2()
+    test_multi_view_reconstruction_opencv_3()
