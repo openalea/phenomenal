@@ -13,8 +13,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import numpy
-
 import alinea.phenomenal.calibration_model
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.data_transformation
@@ -43,6 +41,11 @@ def test_multi_view_reconstruction_model_1():
 
     function = projection.get_function_projection(angle)
     print function(point_3d)
+
+    function = alinea.phenomenal.calibration_model.get_function_projection(
+        cam_params, angle)
+    print function(point_3d)
+
 
 # ==============================================================================
 # LOCAL TEST
