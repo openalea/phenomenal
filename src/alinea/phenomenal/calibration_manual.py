@@ -18,7 +18,7 @@ import numpy
 # ==============================================================================
 
 
-class EnvironmentFeature(object):
+class EnvironmentCamera(object):
     def __init__(self):
         # Dimension image
         self.w = 2056

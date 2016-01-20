@@ -67,7 +67,7 @@ def test_wrong_parameters_4():
         assert False
 
 
-def test_remove_plant_support_1():
+def test_simply_working_1():
 
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
@@ -82,4 +82,5 @@ if __name__ == "__main__":
     test_wrong_parameters_2()
     test_wrong_parameters_3()
     test_wrong_parameters_4()
-    test_remove_plant_support_1()
+
+    test_simply_working_1()

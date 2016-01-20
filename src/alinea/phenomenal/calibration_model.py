@@ -22,6 +22,7 @@ where a chessboard is rotating instead of a plant in a picture cabin.
 
 import json
 from math import radians, cos, pi, sin
+
 import numpy
 import numpy.random
 import scipy.optimize
@@ -235,6 +236,30 @@ class ModelProjection(object):
     def project_point(self, point, angle):
         return self._camera.pixel_coordinates(
             self._frame[angle].local_point(point))
+
+
+def get_function_projection(camera_model_parameters, angle):
+        parameters = camera_model_parameters.get_parameters()
+
+        size_image = parameters[0]
+        focal_length_x = parameters[1]
+        focal_length_y = parameters[2]
+        distance_to_rotation_axe = parameters[3]
+        zero_offset = parameters[4]
+        x_rotation = parameters[5]
+        y_rotation = parameters[6]
+        z_rotation = parameters[7]
+
+        camera = Camera(size_image, (focal_length_x, focal_length_y))
+
+        frame = camera_frame(distance_to_rotation_axe,
+                             zero_offset,
+                             radians(angle),
+                             x_rotation,
+                             y_rotation,
+                             z_rotation)
+
+        return lambda pt3d: camera.pixel_coordinates(frame.local_point(pt3d))
 
 
 class Calibration(object):

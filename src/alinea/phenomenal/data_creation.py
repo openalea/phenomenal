@@ -55,10 +55,13 @@ def build_object_1(size, radius, origin):
     return points_3d
 
 
-def build_image_from_points_3d(points_3d, radius, projection, step=30):
+def build_image_from_points_3d(points_3d, radius, projection,
+                               start=0,
+                               stop=360,
+                               step=30):
 
     images = dict()
-    for angle in range(0, 360, step):
+    for angle in range(start, stop, step):
         img = numpy.zeros((2454, 2056), dtype=numpy.uint8)
         h, l = numpy.shape(img)
 

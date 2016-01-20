@@ -16,7 +16,7 @@
 import numpy
 
 from alinea.phenomenal.plant_1 import plant_1_images
-from alinea.phenomenal.binarization_algorithm import (mean_shift_binarization,
+from alinea.phenomenal.binarization_algorithm import (threshold_meanshift,
                                                       get_mean_image)
 # ==============================================================================
 
@@ -24,7 +24,7 @@ from alinea.phenomenal.binarization_algorithm import (mean_shift_binarization,
 def test_wrong_parameters_1():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        mean_shift_binarization(None, mean_image)
+        threshold_meanshift(None, mean_image)
     except Exception, e:
         assert e.message == 'image should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -35,7 +35,7 @@ def test_wrong_parameters_1():
 def test_wrong_parameters_2():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        mean_shift_binarization(image, None)
+        threshold_meanshift(image, None)
     except Exception, e:
         assert e.message == 'mean_image should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -49,7 +49,7 @@ def test_wrong_parameters_3():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        mean_shift_binarization(image, mean_image)
+        threshold_meanshift(image, mean_image)
     except Exception, e:
         assert e.message == 'image should be 3D array'
         assert type(e) == ValueError
@@ -63,7 +63,7 @@ def test_wrong_parameters_4():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        mean_shift_binarization(image, mean_image)
+        threshold_meanshift(image, mean_image)
     except Exception, e:
         assert e.message == 'image should be 3D array'
         assert type(e) == ValueError
@@ -77,7 +77,7 @@ def test_wrong_parameters_5():
     mean_image = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        mean_shift_binarization(image, mean_image)
+        threshold_meanshift(image, mean_image)
     except Exception, e:
         assert e.message == 'mean_image should be 3D array'
         assert type(e) == ValueError
@@ -90,7 +90,7 @@ def test_wrong_parameters_6():
     mean_image = numpy.zeros((10, 10, 3), dtype=numpy.uint8)
 
     try:
-        mean_shift_binarization(image, mean_image)
+        threshold_meanshift(image, mean_image)
     except Exception, e:
         assert e.message == 'image and mean_image should have the same shape'
         assert type(e) == ValueError
@@ -128,7 +128,7 @@ def test_no_regression_1():
             (330, 131898)]
 
     for angle, ref in refs:
-        image_0_binarize = mean_shift_binarization(images[angle], mean_image)
+        image_0_binarize = threshold_meanshift(images[angle], mean_image)
         image_0_binarize *= 255
         assert numpy.count_nonzero(image_0_binarize) == ref
 

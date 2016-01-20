@@ -32,9 +32,7 @@ def test_chessboard_2():
 
     result = chess.local_corners_position_3d()
 
-    print numpy.array(result)
-    print result
-    print result[0]
+    numpy.array(chess.local_corners_position_3d())
 
 if __name__ == "__main__":
     test_chessboard_1()

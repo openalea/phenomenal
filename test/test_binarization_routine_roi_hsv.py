@@ -21,7 +21,7 @@ from alinea.phenomenal.plant_1 import (plant_1_images,
                                        plant_1_mask_hsv_roi_pot,
                                        plant_1_background_hsv)
 
-from alinea.phenomenal.binarization import side_binarization_routine_hsv
+from alinea.phenomenal.binarization_routine import roi_hsv
 # ==============================================================================
 
 
@@ -66,7 +66,7 @@ def test_no_regression_1():
             (330, 113243)]
 
     for angle, ref in refs:
-        image_0_binarize = side_binarization_routine_hsv(
+        image_0_binarize = roi_hsv(
             images[angle],
             cubicle_domain,
             cubicle_background,

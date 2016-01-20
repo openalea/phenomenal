@@ -18,11 +18,10 @@ import cv2
 # ==============================================================================
 
 
-def mean_shift_binarization(image,
-                            mean_image,
-                            threshold=0.3,
-                            dark_background=False,
-                            mask=None):
+def threshold_meanshift(image, mean_image,
+                        threshold=0.3,
+                        dark_background=False,
+                        mask=None):
     """
 
     Threshold pixels in image such as :
@@ -102,10 +101,8 @@ def mean_shift_binarization(image,
     return dd
 
 
-def hsv_binarization(image,
-                     hsv_min,
-                     hsv_max,
-                     mask=None):
+def threshold_hsv(image, hsv_min, hsv_max,
+                  mask=None):
     """
     Binarize image with hsv_min and hsv_max parameters.
     => cv2.inRange(hsv_image, hsv_min, hsv_max)
@@ -147,12 +144,12 @@ def hsv_binarization(image,
 
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    binary_hsv_image = cv2.inRange(hsv_image, hsv_min, hsv_max)
+    bin_img = cv2.inRange(hsv_image, hsv_min, hsv_max)
 
     if mask is not None:
-        binary_hsv_image = cv2.bitwise_and(binary_hsv_image, mask)
+        bin_img = cv2.bitwise_and(bin_img, mask)
 
-    return binary_hsv_image
+    return bin_img
 
 
 def get_mean_image(images):

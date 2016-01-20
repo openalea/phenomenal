@@ -15,7 +15,7 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.binarization_algorithm import hsv_binarization
+from alinea.phenomenal.binarization_algorithm import threshold_hsv
 # ==============================================================================
 
 
@@ -27,7 +27,7 @@ def test_wrong_parameters_1():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'image should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -43,7 +43,7 @@ def test_wrong_parameters_2():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'image should be 3D array'
         assert type(e) == ValueError
@@ -59,7 +59,7 @@ def test_wrong_parameters_3():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'hsv_min should be a Tuple'
         assert type(e) == TypeError
@@ -75,7 +75,7 @@ def test_wrong_parameters_4():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'hsv_min should be of size 3'
         assert type(e) == ValueError
@@ -91,7 +91,7 @@ def test_wrong_parameters_5():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'hsv_min value should be a integer'
         assert type(e) == ValueError
@@ -107,7 +107,7 @@ def test_wrong_parameters_6():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'hsv_max should be a Tuple'
         assert type(e) == TypeError
@@ -123,7 +123,7 @@ def test_wrong_parameters_7():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'hsv_max should be of size 3'
         assert type(e) == ValueError
@@ -139,7 +139,7 @@ def test_wrong_parameters_8():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'hsv_max value should be a integer'
         assert type(e) == ValueError
@@ -155,7 +155,7 @@ def test_wrong_parameters_9():
     mask = 42
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'mask should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -171,7 +171,7 @@ def test_wrong_parameters_10():
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'mask should be 2D array'
         assert type(e) == ValueError
@@ -187,7 +187,7 @@ def test_wrong_parameters_11():
     mask = numpy.zeros((25, 26), dtype=numpy.uint8)
 
     try:
-        hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert e.message == 'image and mask should have the same shape'
         assert type(e) == ValueError
@@ -201,7 +201,7 @@ def test_simply_working_1():
     hsv_max = (80, 250, 134)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    img_bin = hsv_binarization(image, hsv_min, hsv_max, mask=mask)
+    img_bin = threshold_hsv(image, hsv_min, hsv_max, mask=mask)
 
     assert img_bin.ndim == 2
     assert numpy.count_nonzero(img_bin) == 0

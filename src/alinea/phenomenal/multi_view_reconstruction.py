@@ -499,7 +499,7 @@ def new_reconstruction_3d(images, projection, radius, angles_ref,
     if len(images) == 0:
         return
 
-    origin_radius = 2048 * 2
+    origin_radius = 1024 * 2
 
     if points_3d is None:
         points_3d = collections.deque()

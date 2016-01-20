@@ -28,7 +28,7 @@ def test_bbox_projection_1():
 
     class Projection(object):
         def __init__(self):
-            self.project_point = lambda pt, angle : (pt[0], pt[1])
+            self.project_point = lambda pt, angle: (pt[0], pt[1])
 
     projection = Projection()
     angle = 10
