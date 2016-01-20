@@ -70,7 +70,7 @@ class Chessboard(object):
                 image,
                 tuple(self.shape),
                 flags=cv2.CALIB_CB_ADAPTIVE_THRESH +
-                      cv2.CALIB_CB_NORMALIZE_IMAGE)
+                cv2.CALIB_CB_NORMALIZE_IMAGE)
 
             if found:
                 cv2.cornerSubPix(image, corners, (11, 11), (-1, -1),
@@ -79,7 +79,7 @@ class Chessboard(object):
                                            30,
                                            0.001))
             else:
-                print "Error : Corners not find"
+                print "Corners not find"
                 return None
 
         except cv2.error:

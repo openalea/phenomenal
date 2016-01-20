@@ -39,9 +39,6 @@ def test_multi_view_reconstruction_model_1():
     pt_2d = projection.project_point(point_3d, angle)
     assert pt_2d == (1584.369708483704, 1094.5132593357166)
 
-    function = projection.get_function_projection(angle)
-    print function(point_3d)
-
     function = alinea.phenomenal.calibration_model.get_function_projection(
         cam_params, angle)
     print function(point_3d)
