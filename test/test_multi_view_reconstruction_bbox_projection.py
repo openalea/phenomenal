@@ -17,7 +17,7 @@ from alinea.phenomenal.plant_1 import plant_1_calibration_params_path
 from alinea.phenomenal.calibration_model import (CameraModelParameters,
                                                  ModelProjection)
 
-from alinea.phenomenal.multi_view_reconstruction import bbox_projection
+from alinea.phenomenal.multi_view_reconstruction import get_bounding_box_voxel_projected
 # ==============================================================================
 
 
@@ -33,7 +33,7 @@ def test_bbox_projection_1():
     projection = Projection()
     angle = 10
 
-    res = bbox_projection(point_3d, radius, projection, angle)
+    res = get_bounding_box_voxel_projected(point_3d, radius, projection, angle)
     x_min, x_max, y_min, y_max = res
 
     assert x_min == -10
@@ -51,7 +51,7 @@ def test_bbox_projection_2():
     radius = 4
     angle = 0
 
-    res = bbox_projection(point_3d, radius, projection, angle)
+    res = get_bounding_box_voxel_projected(point_3d, radius, projection, angle)
 
     assert res == (1016.657969220734,
                    1026.3381434879657,

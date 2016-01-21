@@ -68,7 +68,7 @@ def build_image_from_points_3d(points_3d, radius, projection,
         print 'Build image angle : ', angle
         for point_3d in points_3d:
             x_min, x_max, y_min, y_max = \
-                alinea.phenomenal.multi_view_reconstruction.bbox_projection(
+                alinea.phenomenal.multi_view_reconstruction.get_bounding_box_voxel_projected(
                     point_3d, radius, projection, angle)
 
             x_min = min(max(x_min, 0), l - 1)
