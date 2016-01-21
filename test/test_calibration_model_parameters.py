@@ -15,14 +15,15 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import os
 
-import alinea.phenomenal.calibration_model
-
+from alinea.phenomenal.calibration_model import (ChessboardModelParameters,
+                                                 CameraModelParameters)
 # =============================================================================
 
 
 def test_chessboard_model_parameters():
-    obj = alinea.phenomenal.calibration_model.ChessboardModelParameters()
+    obj = ChessboardModelParameters()
 
     parameters = obj.get_parameters()
     assert parameters[0] is None
@@ -55,9 +56,8 @@ def test_chessboard_model_parameters():
     assert parameters[3] == 3
     assert parameters[4] == 4
 
-    obj.write('test')
-    obj = alinea.phenomenal.calibration_model.ChessboardModelParameters.read(
-        'test')
+    obj.write('test_chessboard_model_parameters')
+    obj = ChessboardModelParameters.read('test_chessboard_model_parameters')
 
     parameters = obj.get_parameters()
 
@@ -67,9 +67,10 @@ def test_chessboard_model_parameters():
     assert parameters[3] == 3
     assert parameters[4] == 4
 
+    os.remove('test_chessboard_model_parameters.json')
 
 def test_camera_model_parameters():
-    obj = alinea.phenomenal.calibration_model.CameraModelParameters((0, 0))
+    obj = CameraModelParameters((0, 0))
 
     parameters = obj.get_parameters()
     assert parameters[0] == (0, 0)
@@ -114,8 +115,8 @@ def test_camera_model_parameters():
     assert parameters[6] == 6
     assert parameters[7] == 7
 
-    obj.write('test')
-    obj = alinea.phenomenal.calibration_model.CameraModelParameters.read('test')
+    obj.write('test_camera_model_parameters')
+    obj = CameraModelParameters.read('test_camera_model_parameters')
     parameters = obj.get_parameters()
 
     assert parameters[0] == (0, 0)
@@ -127,6 +128,7 @@ def test_camera_model_parameters():
     assert parameters[6] == 6
     assert parameters[7] == 7
 
+    os.remove('test_camera_model_parameters.json')
 
 #       ========================================================================
 #       LOCAL TEST

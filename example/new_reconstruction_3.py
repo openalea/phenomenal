@@ -15,13 +15,13 @@
 # ==============================================================================
 import alinea.phenomenal.plant_1
 import alinea.phenomenal.calibration_model
-import alinea.phenomenal.multi_view_reconstruction
+import alinea.phenomenal.multi_view_reconstruction_new
 import alinea.phenomenal.viewer
 import alinea.phenomenal.misc
 import alinea.phenomenal.data_transformation
 # ==============================================================================
 # Define parameters of reconstruction
-radius = 4
+voxel_size = 4
 verbose = True
 
 # ==============================================================================
@@ -42,14 +42,23 @@ projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
 # Load Point_3D of the reference plant
 
 points_3d_path = alinea.phenomenal.plant_1.plant_1_points_3d_path(
-    radius=radius)
+    radius=voxel_size)
 
-images_selected = dict()
+images_projections_refs = list()
 for angle in range(0, 360, 30):
-    images_selected[angle] = images[angle]
+    img = images[angle]
+    function = alinea.phenomenal.calibration_model.\
+        get_function_projection(cam_params, angle)
 
-points_3d = alinea.phenomenal.multi_view_reconstruction. \
-    new_reconstruction_3d(images_selected, projection, radius, [150],
+    ref = False
+    if angle == 150:
+        ref = True
+    images_projections_refs.append((img, function, ref))
+
+
+points_3d = alinea.phenomenal.multi_view_reconstruction_new.\
+    new_reconstruction_3d(images_projections_refs,
+                          voxel_size=voxel_size,
                           verbose=True)
 
 if verbose:

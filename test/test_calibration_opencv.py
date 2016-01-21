@@ -14,7 +14,7 @@
 #
 # ==============================================================================
 import numpy
-
+import os
 
 from alinea.phenomenal.multi_view_reconstruction import reconstruction_3d
 from alinea.phenomenal.chessboard import Chessboard
@@ -26,7 +26,7 @@ from alinea.phenomenal.calibration_opencv import (CameraParameters,
 # ==============================================================================
 
 
-def test_calibration():
+def test_calibration_opencv():
     chessboards_path = plant_1_chessboards_path()
 
     # Load Chessboard
@@ -34,8 +34,8 @@ def test_calibration():
 
     c = Calibration()
     cp = c.calibrate(chessboard_1, (2056, 2454))
-    cp.write('camera_parameters_opencv')
-    cp = CameraParameters.read('camera_parameters_opencv')
+    cp.write('test_calibration_opencv')
+    cp = CameraParameters.read('test_calibration_opencv')
 
     p = Projection(cp)
 
@@ -48,8 +48,9 @@ def test_calibration():
 
     assert len(points) == 11054
 
+    os.remove('test_calibration_opencv.json')
 
-def test_camera_parameters():
+def test_camera_opencv_parameters():
     cp = CameraParameters()
 
     assert (cp.focal_matrix == 0).all()
@@ -73,8 +74,8 @@ def test_camera_parameters():
     cp.translation_vectors[10] = numpy.ones((3, 1))
     cp.translation_vectors[80] = numpy.zeros((3, 1))
 
-    cp.write('test_file')
-    new_cp = CameraParameters.read('test_file')
+    cp.write('test_camera_opencv_parameters')
+    new_cp = CameraParameters.read('test_camera_opencv_parameters')
 
     assert new_cp.focal_matrix[0][0] == 42
     assert new_cp.focal_matrix[1][1] == 1
@@ -92,6 +93,8 @@ def test_camera_parameters():
     assert (new_cp.translation_vectors[10] == 1).all()
     assert (new_cp.translation_vectors[80] == 0).all()
 
+    os.remove('test_camera_opencv_parameters.json')
+
 if __name__ == "__main__":
-    test_camera_parameters()
-    test_calibration()
+    test_camera_opencv_parameters()
+    test_calibration_opencv()

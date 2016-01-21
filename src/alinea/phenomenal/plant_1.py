@@ -38,6 +38,24 @@ def plant_1_images():
     return images
 
 
+def plant_1_images_chessboard():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    data_directory = shared_directory + '/plant_1/images_chessboard/'
+    files_path = glob.glob(data_directory + '*.png')
+
+    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]),
+                 files_path)
+
+    images_chessboard = dict()
+    for i in range(len(files_path)):
+        images_chessboard[angles[i]] = cv2.imread(
+            files_path[i], cv2.IMREAD_UNCHANGED)
+
+    return images_chessboard
+
+
 def plant_1_images_binarize():
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
@@ -201,6 +219,7 @@ def plant_1_params_camera_opencv_path():
     params_camera_opencv_path = data_directory + 'params_camera_opencv'
 
     return params_camera_opencv_path
+
 
 def plant_1_points_3d_path(radius=2):
     shared_directory = openalea.deploy.shared_data.shared_data(

@@ -15,7 +15,7 @@
 # ==============================================================================
 import collections
 
-from alinea.phenomenal.multi_view_reconstruction import split_points_3d
+from alinea.phenomenal.multi_view_reconstruction import split_voxel_centers_in_eight
 # ==============================================================================
 
 
@@ -26,7 +26,7 @@ def test_split_points_3d_1():
     points_3d = collections.deque()
     points_3d.append(point_3d)
 
-    l = split_points_3d(points_3d, radius)
+    l = split_voxel_centers_in_eight(points_3d, radius)
 
     assert len(l) == 8
     assert l[0] == (-4., -4., -4.)
