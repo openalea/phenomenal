@@ -14,25 +14,35 @@
 #
 # ==============================================================================
 import collections
-
-from alinea.phenomenal.multi_view_reconstruction import split_points_3d_plan
+import time
 # ==============================================================================
 
 
-def test_split_points_3d_plan_1():
-    point_3d = (0.0, 0.0, 0.0)
-    radius = 8
+def function_1(values=10000):
+    d = collections.deque(range(values))
 
-    points_3d = collections.deque()
-    points_3d.append(point_3d)
+    for element in d:
+        pass
 
-    l = split_points_3d_plan(points_3d, radius)
 
-    assert len(l) == 4
-    assert l[0] == (0., -4., -4.)
-    assert l[1] == (0., -4., 4.)
-    assert l[2] == (0., 4., -4.)
-    assert l[3] == (0., 4., 4.)
+def function_2(values=10000):
+    d = collections.deque(range(values))
+    while True:
+        try:
+            element = d.popleft()
+        except IndexError:
+            break
 
-if __name__ == "__main__":
-    test_split_points_3d_plan_1()
+if __name__ == '__main__':
+
+    v = 10000000
+
+    t0 = time.time()
+    function_1(values=v)
+    print time.time() - t0
+
+    t0 = time.time()
+    function_2(values=v)
+    print time.time() - t0
+
+

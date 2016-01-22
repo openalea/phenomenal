@@ -15,7 +15,7 @@
 # ==============================================================================
 import alinea.phenomenal.plant_1
 import alinea.phenomenal.calibration_model
-import alinea.phenomenal.multi_view_reconstruction_new
+import alinea.phenomenal.multi_view_reconstruction_without_loss
 import alinea.phenomenal.viewer
 import alinea.phenomenal.misc
 import alinea.phenomenal.data_transformation
@@ -56,10 +56,14 @@ for angle in range(0, 360, 30):
     images_projections_refs.append((img, function, ref))
 
 
-points_3d = alinea.phenomenal.multi_view_reconstruction_new.\
-    new_reconstruction_3d(images_projections_refs,
+points_3d = alinea.phenomenal.multi_view_reconstruction_without_loss.\
+    reconstruction_without_loss(images_projections_refs,
                           voxel_size=voxel_size,
+                          error_tolerance=0,
                           verbose=True)
+
+if voxel_size == voxel_size:
+    assert len(points_3d) == 23976
 
 if verbose:
     alinea.phenomenal.viewer.show_points_3d(points_3d)

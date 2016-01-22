@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       test_multi_view_reconstruction_manual.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -15,71 +13,84 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import numpy
+from alinea.phenomenal.calibration_manual import (
+    EnvironmentCamera,
+    Calibration)
 
-import alinea.phenomenal.calibration_manual
-import alinea.phenomenal.multi_view_reconstruction
-import alinea.phenomenal.data_transformation
-import alinea.phenomenal.data_creation
+from alinea.phenomenal.data_creation import (
+    build_object_1,
+    build_images_1)
+
+from alinea.phenomenal.multi_view_reconstruction import (
+    project_voxel_centers_on_image,
+    reconstruction_3d,
+    error_projection)
 # ==============================================================================
 
 
-
 def test_multi_view_reconstruction_manual_1():
+    # ==========================================================================
     size = 10
-    radius = 1
-    point_3d = (68, 68, 100)
+    voxel_size = 5
+    voxel_center = (0, 0, 0)
+    voxel_centers = build_object_1(size, voxel_size, voxel_center)
 
-    points = alinea.phenomenal.data_creation.build_object_1(
-        size, radius, point_3d)
+    # ==========================================================================
+    env_feat = EnvironmentCamera()
+    calibration = Calibration(env_feat)
 
-    env_feat = alinea.phenomenal.calibration_manual.EnvironmentCamera()
+    images_projections = list()
+    shape_image = (2454, 2056)
+    for angle in range(0, 360, 30):
 
-    calibration = alinea.phenomenal.calibration_manual.Calibration(env_feat)
+        projection = calibration.get_function_projection(angle)
 
-    images = alinea.phenomenal.data_creation.build_image_from_points_3d(
-        points, radius, calibration, step=30)
+        img = project_voxel_centers_on_image(voxel_centers,
+                                             voxel_size,
+                                             shape_image,
+                                             projection)
 
-    points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, radius, verbose=True)
+        images_projections.append((img, projection))
 
-    mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
-        points, radius)
+    # ==========================================================================
+    voxel_size = 10
+    voxel_centers = reconstruction_3d(images_projections,
+                                      voxel_size=voxel_size,
+                                      verbose=True)
 
-    assert mat.size == 1331
-    print numpy.shape(mat)
+    assert len(voxel_centers) == 216
+    volume = len(voxel_centers) * (voxel_size * 2)**3
+    assert volume == 1728000
 
 
 def test_multi_view_reconstruction_manual_2():
-    radius = 0.5
 
-    images = alinea.phenomenal.data_creation.build_images_1()
+    voxel_size = 0.5
 
-    env_feat = alinea.phenomenal.calibration_manual.EnvironmentCamera()
+    env_feat = EnvironmentCamera()
+    calibration = Calibration(env_feat)
 
-    calibration = alinea.phenomenal.calibration_manual.Calibration(env_feat)
+    images = build_images_1()
 
-    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, radius, verbose=True)
+    images_projections = list()
+    for angle in range(0, 360, 30):
+        projection = calibration.get_function_projection(angle)
+        img = images[angle]
+        images_projections.append((img, projection))
 
-    print len(points_3d)
+    voxel_centers = reconstruction_3d(
+        images_projections, voxel_size=voxel_size, verbose=True)
 
-    for angle in images:
-        image = alinea.phenomenal.multi_view_reconstruction.\
-            project_points_on_image(points_3d,
-                                    radius,
-                                    images[angle].shape,
-                                    calibration,
-                                    angle)
+    print len(voxel_centers)
 
-        img = numpy.subtract(image, images[0])
-        img[img == -255] = 255
-        print numpy.count_nonzero(img)
-        assert numpy.count_nonzero(img) < 6000
+    for image, projection in images_projections:
+        err = error_projection(
+            image, projection, voxel_centers, voxel_size)
 
+        print 'err : ', err
+        assert err < 6000
 
-#       ========================================================================
-#       LOCAL TEST
+# ==============================================================================
 
 if __name__ == "__main__":
     test_multi_view_reconstruction_manual_1()

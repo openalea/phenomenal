@@ -22,7 +22,7 @@ from alinea.phenomenal.plant_1 import (plant_1_chessboards_path,
                                        plant_1_images_binarize)
 from alinea.phenomenal.calibration_opencv import (CameraParameters,
                                                   Calibration,
-                                                  Projection)
+                                                  get_function_projection)
 # ==============================================================================
 
 
@@ -35,20 +35,24 @@ def test_calibration_opencv():
     c = Calibration()
     cp = c.calibrate(chessboard_1, (2056, 2454))
     cp.write('test_calibration_opencv')
-    cp = CameraParameters.read('test_calibration_opencv')
-
-    p = Projection(cp)
+    cam_params = CameraParameters.read('test_calibration_opencv')
 
     images_binarize = plant_1_images_binarize()
-    images_selected = dict()
+    images_projections = list()
     for angle in [0, 30, 60, 90]:
-        images_selected[angle] = images_binarize[angle]
+        img = images_binarize[angle]
+        projection = get_function_projection(cam_params, angle)
+        images_projections.append((img, projection))
 
-    points = reconstruction_3d(images_selected, p, 8, verbose=True)
+    voxel_size = 8
+    points = reconstruction_3d(images_projections,
+                               voxel_size=voxel_size,
+                               verbose=True)
 
     assert len(points) == 11054
 
     os.remove('test_calibration_opencv.json')
+
 
 def test_camera_opencv_parameters():
     cp = CameraParameters()

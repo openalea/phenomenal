@@ -15,25 +15,22 @@
 # ==============================================================================
 from alinea.phenomenal.plant_1 import plant_1_calibration_params_path
 from alinea.phenomenal.calibration_model import (CameraModelParameters,
-                                                 ModelProjection)
+                                                 ModelProjection,
+                                                 get_function_projection)
 
-from alinea.phenomenal.multi_view_reconstruction import get_bounding_box_voxel_projected
+from alinea.phenomenal.multi_view_reconstruction import (
+    get_bounding_box_voxel_projected)
 # ==============================================================================
 
 
 def test_bbox_projection_1():
 
-    point_3d = (0, 0, 0)
-    radius = 10
+    voxel_center = (0, 0, 0)
+    voxel_size = 10
 
-    class Projection(object):
-        def __init__(self):
-            self.project_point = lambda pt, angle: (pt[0], pt[1])
+    projection = lambda pt: (pt[0], pt[1])
 
-    projection = Projection()
-    angle = 10
-
-    res = get_bounding_box_voxel_projected(point_3d, radius, projection, angle)
+    res = get_bounding_box_voxel_projected(voxel_center, voxel_size, projection)
     x_min, x_max, y_min, y_max = res
 
     assert x_min == -10
@@ -45,13 +42,14 @@ def test_bbox_projection_1():
 def test_bbox_projection_2():
     params_camera_path, _ = plant_1_calibration_params_path()
     cam_params = CameraModelParameters.read(params_camera_path)
-    projection = ModelProjection(cam_params)
 
-    point_3d = (0, 0, 0)
-    radius = 4
     angle = 0
+    projection = get_function_projection(cam_params, angle)
 
-    res = get_bounding_box_voxel_projected(point_3d, radius, projection, angle)
+    voxel_center = (0, 0, 0)
+    voxel_size = 4
+
+    res = get_bounding_box_voxel_projected(voxel_center, voxel_size, projection)
 
     assert res == (1016.657969220734,
                    1026.3381434879657,
