@@ -66,7 +66,7 @@ def run_example(data_directory, calibration_name):
 
             for angle in images_selected:
                 image = alinea.phenomenal.multi_view_reconstruction.\
-                    project_points_on_image(points_3d,
+                    project_voxel_centers_on_image(points_3d,
                                             2,
                                             images_selected[angle],
                                             calibration,

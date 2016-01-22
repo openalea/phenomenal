@@ -14,7 +14,7 @@
 #
 # ==============================================================================
 import numpy
-
+import os
 
 from alinea.phenomenal.multi_view_reconstruction import reconstruction_3d
 from alinea.phenomenal.chessboard import Chessboard
@@ -22,11 +22,11 @@ from alinea.phenomenal.plant_1 import (plant_1_chessboards_path,
                                        plant_1_images_binarize)
 from alinea.phenomenal.calibration_opencv import (CameraParameters,
                                                   Calibration,
-                                                  Projection)
+                                                  get_function_projection)
 # ==============================================================================
 
 
-def test_calibration():
+def test_calibration_opencv():
     chessboards_path = plant_1_chessboards_path()
 
     # Load Chessboard
@@ -34,22 +34,27 @@ def test_calibration():
 
     c = Calibration()
     cp = c.calibrate(chessboard_1, (2056, 2454))
-    cp.write('camera_parameters_opencv')
-    cp = CameraParameters.read('camera_parameters_opencv')
-
-    p = Projection(cp)
+    cp.write('test_calibration_opencv')
+    cam_params = CameraParameters.read('test_calibration_opencv')
 
     images_binarize = plant_1_images_binarize()
-    images_selected = dict()
+    images_projections = list()
     for angle in [0, 30, 60, 90]:
-        images_selected[angle] = images_binarize[angle]
+        img = images_binarize[angle]
+        projection = get_function_projection(cam_params, angle)
+        images_projections.append((img, projection))
 
-    points = reconstruction_3d(images_selected, p, 8, verbose=True)
+    voxel_size = 8
+    points = reconstruction_3d(images_projections,
+                               voxel_size=voxel_size,
+                               verbose=True)
 
     assert len(points) == 11054
 
+    os.remove('test_calibration_opencv.json')
 
-def test_camera_parameters():
+
+def test_camera_opencv_parameters():
     cp = CameraParameters()
 
     assert (cp.focal_matrix == 0).all()
@@ -73,8 +78,8 @@ def test_camera_parameters():
     cp.translation_vectors[10] = numpy.ones((3, 1))
     cp.translation_vectors[80] = numpy.zeros((3, 1))
 
-    cp.write('test_file')
-    new_cp = CameraParameters.read('test_file')
+    cp.write('test_camera_opencv_parameters')
+    new_cp = CameraParameters.read('test_camera_opencv_parameters')
 
     assert new_cp.focal_matrix[0][0] == 42
     assert new_cp.focal_matrix[1][1] == 1
@@ -92,6 +97,8 @@ def test_camera_parameters():
     assert (new_cp.translation_vectors[10] == 1).all()
     assert (new_cp.translation_vectors[80] == 0).all()
 
+    os.remove('test_camera_opencv_parameters.json')
+
 if __name__ == "__main__":
-    test_camera_parameters()
-    test_calibration()
+    test_camera_opencv_parameters()
+    test_calibration_opencv()

@@ -75,8 +75,6 @@ def test_local_point():
 
     print pts_2d_0[0]
 
-
-
 if __name__ == '__main__':
     test_projection_1()
     test_local_point()

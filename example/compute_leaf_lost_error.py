@@ -56,7 +56,7 @@ images_diff = dict()
 for angle in range(0, 360, 30):
     # Build image projection of points_3d cloud
     img = alinea.phenomenal.multi_view_reconstruction.\
-        project_points_on_image(points_3d,
+        project_voxel_centers_on_image(points_3d,
                                 radius,
                                 images[angle].shape,
                                 projection,

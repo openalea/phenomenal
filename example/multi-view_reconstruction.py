@@ -38,16 +38,18 @@ images_selected = dict()
 for angle in range(0, 360, 30):
     images_selected[angle] = images[angle]
 
-radius = 4
+radius = 2
 # Multi-view reconstruction
 points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
     images_selected, projection, radius, verbose=True)
 
-# Write
-alinea.phenomenal.misc.write_xyz(points_3d, 'points_3d_radius_' + str(radius))
+# # Write
+# alinea.phenomenal.misc.write_xyz(points_3d, 'points_3d_radius_' + str(radius))
+#
+# # Read
+# points_3d = alinea.phenomenal.misc.read_xyz('points_3d_radius_' + str(radius))
 
-# Read
-points_3d = alinea.phenomenal.misc.read_xyz('points_3d_radius_' + str(radius))
+print len(points_3d)
 
 # Viewing
-alinea.phenomenal.viewer.show_points_3d(points_3d, scale_factor=2)
+alinea.phenomenal.viewer.show_points_3d(points_3d, scale_factor=10)
