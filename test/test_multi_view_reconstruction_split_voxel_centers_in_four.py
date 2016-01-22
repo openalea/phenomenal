@@ -15,18 +15,19 @@
 # ==============================================================================
 import collections
 
-from alinea.phenomenal.multi_view_reconstruction import split_points_3d_plan
+from alinea.phenomenal.multi_view_reconstruction import (
+    split_voxel_centers_in_four)
 # ==============================================================================
 
 
 def test_split_points_3d_plan_1():
-    point_3d = (0.0, 0.0, 0.0)
-    radius = 8
+    voxel_center = (0.0, 0.0, 0.0)
+    voxel_size = 8
 
-    points_3d = collections.deque()
-    points_3d.append(point_3d)
+    voxel_centers = collections.deque()
+    voxel_centers.append(voxel_center)
 
-    l = split_points_3d_plan(points_3d, radius)
+    l = split_voxel_centers_in_four(voxel_centers, voxel_size)
 
     assert len(l) == 4
     assert l[0] == (0., -4., -4.)

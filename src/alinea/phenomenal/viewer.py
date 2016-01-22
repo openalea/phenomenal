@@ -141,7 +141,8 @@ def show_image(image,
     matplotlib.pyplot.title(name_windows)
 
     if image.ndim == 2:
-        img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        img = image.astype(numpy.uint8)
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
         matplotlib.pyplot.imshow(img)
     else:
         img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)

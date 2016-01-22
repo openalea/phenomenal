@@ -109,21 +109,22 @@ class CameraParameters(object):
         return my_str
 
 
-class Projection(object):
-    def __init__(self, camera_parameters):
-        self.cp = camera_parameters
+def get_function_projection(camera_parameters, angle):
 
-    def project_point(self, point, angle):
+    def project_point(point):
         pt = numpy.reshape(point, (1, 3))
         pt = pt.astype(numpy.float32)
+
         projection_point, _ = cv2.projectPoints(
             pt,
-            self.cp.rotation_vectors[angle],
-            self.cp.translation_vectors[angle],
-            self.cp.focal_matrix,
-            self.cp.distortion_coefficient)
+            camera_parameters.rotation_vectors[angle],
+            camera_parameters.translation_vectors[angle],
+            camera_parameters.focal_matrix,
+            camera_parameters.distortion_coefficient)
 
         return projection_point[0, 0, 0], projection_point[0, 0, 1]
+
+    return lambda pt3d: project_point(pt3d)
 
 
 class Calibration(object):

@@ -64,17 +64,14 @@ def get_voxel_corners(voxel_center, voxel_size):
     z_minus = voxel_center[2] - voxel_size
     z_plus = voxel_center[2] + voxel_size
 
-    l = list()
-    l.append((x_minus, y_minus, z_minus))
-    l.append((x_plus, y_minus, z_minus))
-    l.append((x_minus, y_plus, z_minus))
-    l.append((x_minus, y_minus, z_plus))
-    l.append((x_plus, y_plus, z_minus))
-    l.append((x_plus, y_minus, z_plus))
-    l.append((x_minus, y_plus, z_plus))
-    l.append((x_plus, y_plus, z_plus))
-
-    return l
+    return [(x_minus, y_minus, z_minus),
+            (x_plus, y_minus, z_minus),
+            (x_minus, y_plus, z_minus),
+            (x_minus, y_minus, z_plus),
+            (x_plus, y_plus, z_minus),
+            (x_plus, y_minus, z_plus),
+            (x_minus, y_plus, z_plus),
+            (x_plus, y_plus, z_plus)]
 
 # ==============================================================================
 
@@ -87,31 +84,25 @@ def split_voxel_centers_in_eight(voxel_centers, voxel_size):
     r = voxel_size / 2.0
 
     l = collections.deque()
-    while True:
-        try:
+    for voxel_center in voxel_centers:
 
-            voxel_center = voxel_centers.popleft()
+        x_minus = voxel_center[0] - r
+        x_plus = voxel_center[0] + r
 
-            x_minus = voxel_center[0] - r
-            x_plus = voxel_center[0] + r
+        y_minus = voxel_center[1] - r
+        y_plus = voxel_center[1] + r
 
-            y_minus = voxel_center[1] - r
-            y_plus = voxel_center[1] + r
+        z_minus = voxel_center[2] - r
+        z_plus = voxel_center[2] + r
 
-            z_minus = voxel_center[2] - r
-            z_plus = voxel_center[2] + r
-
-            l.append((x_minus, y_minus, z_minus))
-            l.append((x_plus, y_minus, z_minus))
-            l.append((x_minus, y_plus, z_minus))
-            l.append((x_minus, y_minus, z_plus))
-            l.append((x_plus, y_plus, z_minus))
-            l.append((x_plus, y_minus, z_plus))
-            l.append((x_minus, y_plus, z_plus))
-            l.append((x_plus, y_plus, z_plus))
-
-        except IndexError:
-            break
+        l.extend([(x_minus, y_minus, z_minus),
+                  (x_plus, y_minus, z_minus),
+                  (x_minus, y_plus, z_minus),
+                  (x_minus, y_minus, z_plus),
+                  (x_plus, y_plus, z_minus),
+                  (x_plus, y_minus, z_plus),
+                  (x_minus, y_plus, z_plus),
+                  (x_plus, y_plus, z_plus)])
 
     return l
 
@@ -124,26 +115,19 @@ def split_voxel_centers_in_four(voxel_centers, voxel_size):
     r = voxel_size / 2.0
 
     l = collections.deque()
-    while True:
-        try:
+    for voxel_center in voxel_centers:
+        x = voxel_center[0]
 
-            voxel_center = voxel_centers.popleft()
+        y_minus = voxel_center[1] - r
+        y_plus = voxel_center[1] + r
 
-            x = voxel_center[0]
+        z_minus = voxel_center[2] - r
+        z_plus = voxel_center[2] + r
 
-            y_minus = voxel_center[1] - r
-            y_plus = voxel_center[1] + r
-
-            z_minus = voxel_center[2] - r
-            z_plus = voxel_center[2] + r
-
-            l.append((x, y_minus, z_minus))
-            l.append((x, y_minus, z_plus))
-            l.append((x, y_plus, z_minus))
-            l.append((x, y_plus, z_plus))
-
-        except IndexError:
-            break
+        l.extend([(x, y_minus, z_minus),
+                  (x, y_minus, z_plus),
+                  (x, y_plus, z_minus),
+                  (x, y_plus, z_plus)])
 
     return l
 
@@ -207,23 +191,17 @@ def kept_visible_voxel(voxel_centers,
                        error_tolerance):
 
     kept = collections.deque()
-    while True:
-        try:
-            voxel_center = voxel_centers.popleft()
+    for voxel_center in voxel_centers:
+        negative_weight = 0
+        for image, projection in images_projections:
+            if not voxel_is_visible_in_image(
+                    voxel_center, voxel_size, image, projection):
+                negative_weight += 1
+                if negative_weight > error_tolerance:
+                    break
 
-            negative_weight = 0
-            for image, projection in images_projections:
-                if not voxel_is_visible_in_image(
-                        voxel_center, voxel_size, image, projection):
-                    negative_weight += 1
-                    if negative_weight > error_tolerance:
-                        break
-
-            if negative_weight <= error_tolerance:
-                kept.append(voxel_center)
-
-        except IndexError:
-            break
+        if negative_weight <= error_tolerance:
+            kept.append(voxel_center)
 
     return kept
 
@@ -277,10 +255,13 @@ def reconstruction_3d(images_projections,
 # ==============================================================================
 
 
-def project_points_on_image(voxel_centers, voxel_size, shape_image, projection):
+def project_voxel_centers_on_image(voxel_centers,
+                                   voxel_size,
+                                   shape_image,
+                                   projection):
 
     height_image, length_image = shape_image
-    img = numpy.zeros((height_image, length_image))
+    img = numpy.zeros((height_image, length_image), dtype=numpy.uint8)
 
     for voxel_center in voxel_centers:
         x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
@@ -295,3 +276,16 @@ def project_points_on_image(voxel_centers, voxel_size, shape_image, projection):
 
     return img
 
+
+def error_projection(image,
+                     projection,
+                     voxel_centers,
+                     voxel_size):
+
+    img = project_voxel_centers_on_image(
+        voxel_centers, voxel_size, image.shape, projection)
+
+    img = numpy.subtract(img, image)
+    img[img == -255] = 255
+
+    return numpy.count_nonzero(img)

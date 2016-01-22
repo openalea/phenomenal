@@ -15,6 +15,7 @@
 # ==============================================================================
 import collections
 import math
+
 import numpy
 
 from alinea.phenomenal.multi_view_reconstruction import (
@@ -22,6 +23,7 @@ from alinea.phenomenal.multi_view_reconstruction import (
     split_voxel_centers_in_eight,
     get_bounding_box_voxel_projected,
     voxel_is_visible_in_image)
+
 
 # ==============================================================================
 
@@ -52,43 +54,37 @@ def fill_groups(images_projections_refs, groups, voxel_centers, voxel_size):
         groups[key][1] = 0
 
     kept = collections.deque()
-    while True:
-        try:
-            voxel_center = voxel_centers.popleft()
+    for voxel_center in voxel_centers:
+        list_group = list()
+        stats = 0
 
-            list_group = list()
-            stats = 0
+        new_point = [voxel_center, list_group, stats]
+        kept.append(new_point)
 
-            new_point = [voxel_center, list_group, stats]
-            kept.append(new_point)
+        group_id = 0
+        for image, projection, ref in images_projections_refs:
+            if ref is True:
 
-            group_id = 0
-            for image, projection, ref in images_projections_refs:
-                if ref is True:
+                height_image, length_image = image.shape
 
-                    height_image, length_image = image.shape
+                x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
+                    voxel_center, voxel_size, projection)
 
-                    x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
-                        voxel_center, voxel_size, projection)
+                x_min = min(max(math.floor(x_min), 0), length_image - 1)
+                x_max = min(max(math.ceil(x_max), 0), length_image - 1)
+                y_min = min(max(math.floor(y_min), 0), height_image - 1)
+                y_max = min(max(math.ceil(y_max), 0), height_image - 1)
 
-                    x_min = min(max(math.floor(x_min), 0), length_image - 1)
-                    x_max = min(max(math.ceil(x_max), 0), length_image - 1)
-                    y_min = min(max(math.floor(y_min), 0), height_image - 1)
-                    y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+                img = image[y_min:y_max + 1, x_min:x_max + 1]
+                index = numpy.where(img > 0)
 
-                    img = image[y_min:y_max + 1, x_min:x_max + 1]
-                    index = numpy.where(img > 0)
+                for i in xrange(len(index[0])):
+                    x, y = (index[0][i] + y_min, index[1][i] + x_min)
 
-                    for i in xrange(len(index[0])):
-                        x, y = (index[0][i] + y_min, index[1][i] + x_min)
+                    groups[(group_id, x, y)][0].append(new_point)
+                    list_group.append(groups[(group_id, x, y)])
 
-                        groups[(group_id, x, y)][0].append(new_point)
-                        list_group.append(groups[(group_id, x, y)])
-
-                group_id += 1
-
-        except IndexError:
-            break
+            group_id += 1
 
     for key in groups:
         groups[key][1] = len(groups[key][0])
@@ -102,25 +98,20 @@ def kept_points_3d(images_projections_refs, pts, voxel_size, error_tolerance):
     acceptation_criteria = len(images_projections_refs) - error_tolerance
 
     weight_points = dict()
-    while True:
-        try:
-            voxel_center, groups, weight = pts.popleft()
+    for voxel_center, groups, weight in pts:
 
-            for image, projection, ref in images_projections_refs:
-                if voxel_is_visible_in_image(
-                        voxel_center, voxel_size, image, projection):
-                    weight += 1
+        for image, projection, ref in images_projections_refs:
+            if voxel_is_visible_in_image(
+                    voxel_center, voxel_size, image, projection):
+                weight += 1
 
-            if weight >= acceptation_criteria:
-                kept.append(voxel_center)
-            else:
-                for group in groups:
-                    group[1] -= 1
+        if weight >= acceptation_criteria:
+            kept.append(voxel_center)
+        else:
+            for group in groups:
+                group[1] -= 1
 
-            weight_points[voxel_center] = weight
-
-        except IndexError:
-            break
+        weight_points[voxel_center] = weight
 
     return kept, weight_points
 
@@ -200,7 +191,8 @@ def compute_list_max_neighbort_weigh(list_max_weight,
     return list_max_neighbort_weigh
 
 
-def check_groups(kept, groups, weight_points, voxel_size, distance_to_neighbort=2):
+def check_groups(kept, groups, weight_points, voxel_size,
+                 distance_to_neighbort=2):
 
     for key in groups:
         group, nb, angle = groups[key]
@@ -228,12 +220,12 @@ def check_groups(kept, groups, weight_points, voxel_size, distance_to_neighbort=
     return collections.deque(set(kept))
 
 
-def new_reconstruction_3d(images_projections_refs,
-                          voxel_size=4,
-                          error_tolerance=0,
-                          origin_point=(0.0, 0.0, 0.0),
-                          voxel_centers=None,
-                          verbose=False):
+def reconstruction_without_loss(images_projections_refs,
+                                voxel_size=4,
+                                error_tolerance=0,
+                                origin_point=(0.0, 0.0, 0.0),
+                                voxel_centers=None,
+                                verbose=False):
 
     if len(images_projections_refs) == 0:
         return
@@ -272,7 +264,8 @@ def new_reconstruction_3d(images_projections_refs,
         # ======================================================================
 
         if verbose is True:
-            print 'Iteration', i + 1, '/', nb_iteration, ' : ', len(voxel_centers),
+            print 'Iteration', i + 1, '/', nb_iteration,
+            print ' : ', len(voxel_centers),
 
         # ======================================================================
 
