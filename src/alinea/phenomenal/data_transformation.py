@@ -45,9 +45,9 @@ def save_matrix_like_stack_image(matrix, data_directory):
         cv2.imwrite(data_directory + '%d.png' % i, mat)
 
 
-def limit_points_3d(points_3d):
+def limit_points_3d(voxel_centers):
 
-    if not points_3d:
+    if not voxel_centers:
         return None, None, None, None, None, None
 
     x_min = float("inf")
@@ -58,8 +58,7 @@ def limit_points_3d(points_3d):
     y_max = - float("inf")
     z_max = - float("inf")
 
-    for point_3d in points_3d:
-        x, y, z = point_3d
+    for x, y, z in voxel_centers:
 
         x_min = min(x_min, x)
         y_min = min(y_min, y)
@@ -72,17 +71,16 @@ def limit_points_3d(points_3d):
     return x_min, y_min, z_min, x_max, y_max, z_max
 
 
-def index_to_points_3d(index, radius, origin=(0, 0, 0)):
+def index_to_points_3d(index, voxel_size, origin=(0, 0, 0)):
 
     points_3d = collections.deque()
     ind = index.__copy__()
-    d = radius * 2.0
     while True:
         try:
             x, y, z = ind.popleft()
-            pt_3d = (x * d + origin[0],
-                     y * d + origin[1],
-                     z * d + origin[2])
+            pt_3d = (x * voxel_size + origin[0],
+                     y * voxel_size + origin[1],
+                     z * voxel_size + origin[2])
             points_3d.append(pt_3d)
 
         except IndexError:
@@ -91,70 +89,67 @@ def index_to_points_3d(index, radius, origin=(0, 0, 0)):
     return points_3d
 
 
-def matrix_to_points_3d(matrix, radius, origin=(0, 0, 0)):
+def matrix_to_points_3d(matrix, voxel_size, origin=(0, 0, 0)):
 
     points_3d = list()
-    d = radius * 2.0
     for (x, y, z), value in numpy.ndenumerate(matrix):
         if value == 1 or value == 111:
 
-            pt_3d = (origin[0] + x * d,
-                     origin[1] + y * d,
-                     origin[2] + z * d)
+            pt_3d = (origin[0] + x * voxel_size,
+                     origin[1] + y * voxel_size,
+                     origin[2] + z * voxel_size)
 
             points_3d.append(pt_3d)
 
     return points_3d
 
 
-def matrix_to_points_3d_2(matrix, radius, origin=(0, 0, 0)):
+def matrix_to_points_3d_2(matrix, voxel_size, origin=(0, 0, 0)):
 
     points_3d = list()
     points_3d_leaf = list()
-    d = radius * 2.0
     for (x, y, z), value in numpy.ndenumerate(matrix):
         if value == 1:
 
-            pt_3d = (origin[0] + x * d,
-                     origin[1] + y * d,
-                     origin[2] + z * d)
+            pt_3d = (origin[0] + x * voxel_size,
+                     origin[1] + y * voxel_size,
+                     origin[2] + z * voxel_size)
 
             points_3d.append(pt_3d)
 
     for (x, y, z), value in numpy.ndenumerate(matrix):
         if value == 111:
 
-            pt_3d = (origin[0] + x * d,
-                     origin[1] + y * d,
-                     origin[2] + z * d)
+            pt_3d = (origin[0] + x * voxel_size,
+                     origin[1] + y * voxel_size,
+                     origin[2] + z * voxel_size)
 
             points_3d_leaf.append(pt_3d)
 
     return points_3d, points_3d_leaf
 
 
-def points_3d_to_matrix(points_3d, radius):
+def points_3d_to_matrix(voxel_centers, voxel_size):
 
-    if not points_3d:
+    if not voxel_centers:
         return numpy.zeros((0, 0, 0)), list(), (None, None, None)
 
-    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
+    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(voxel_centers)
 
-    r = radius * 2.0
+    x_r_min = x_min / voxel_size
+    y_r_min = y_min / voxel_size
+    z_r_min = z_min / voxel_size
 
-    x_r_min = x_min / r
-    y_r_min = y_min / r
-    z_r_min = z_min / r
-
-    mat = numpy.zeros((round((x_max - x_min) / r) + 1,
-                       round((y_max - y_min) / r) + 1,
-                       round((z_max - z_min) / r) + 1), dtype=numpy.uint8)
+    mat = numpy.zeros((round((x_max - x_min) / voxel_size) + 1,
+                       round((y_max - y_min) / voxel_size) + 1,
+                       round((z_max - z_min) / voxel_size) + 1),
+                      dtype=numpy.uint8)
 
     index = collections.deque()
-    for point_3d in points_3d:
-        x_new = (point_3d[0] / r) - x_r_min
-        y_new = (point_3d[1] / r) - y_r_min
-        z_new = (point_3d[2] / r) - z_r_min
+    for x, y, z in voxel_centers:
+        x_new = (x / voxel_size) - x_r_min
+        y_new = (y / voxel_size) - y_r_min
+        z_new = (z / voxel_size) - z_r_min
 
         mat[x_new, y_new, z_new] = 1
 
@@ -163,8 +158,8 @@ def points_3d_to_matrix(points_3d, radius):
     return mat, index, (x_min, y_min, z_min)
 
 
-def points_3d_to_matrix_2(points_3d, points_3d_leaf, radius):
-    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
+def points_3d_to_matrix_2(voxel_centers, points_3d_leaf, voxel_size):
+    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(voxel_centers)
 
     for i in points_3d_leaf:
         x, y, z, xm, ym, zm = limit_points_3d(points_3d_leaf[i])
@@ -176,21 +171,20 @@ def points_3d_to_matrix_2(points_3d, points_3d_leaf, radius):
         y_max = max(y_max, ym)
         z_max = max(z_max, zm)
 
-    r = radius * 2.0
+    x_r_min = x_min / voxel_size
+    y_r_min = y_min / voxel_size
+    z_r_min = z_min / voxel_size
 
-    x_r_min = x_min / r
-    y_r_min = y_min / r
-    z_r_min = z_min / r
-
-    mat = numpy.zeros((round((x_max - x_min) / r) + 1,
-                       round((y_max - y_min) / r) + 1,
-                       round((z_max - z_min) / r) + 1), dtype=numpy.uint8)
+    mat = numpy.zeros((round((x_max - x_min) / voxel_size) + 1,
+                       round((y_max - y_min) / voxel_size) + 1,
+                       round((z_max - z_min) / voxel_size) + 1),
+                      dtype=numpy.uint8)
 
     index = collections.deque()
-    for point_3d in points_3d:
-        x_new = (point_3d[0] / r) - x_r_min
-        y_new = (point_3d[1] / r) - y_r_min
-        z_new = (point_3d[2] / r) - z_r_min
+    for x, y, z in voxel_centers:
+        x_new = (x / voxel_size) - x_r_min
+        y_new = (y / voxel_size) - y_r_min
+        z_new = (z / voxel_size) - z_r_min
 
         mat[x_new, y_new, z_new] = 1
 
@@ -198,10 +192,10 @@ def points_3d_to_matrix_2(points_3d, points_3d_leaf, radius):
 
     nb = 2
     for i in points_3d_leaf:
-        for point_3d in points_3d_leaf[i]:
-            x_new = (point_3d[0] / r) - x_r_min
-            y_new = (point_3d[1] / r) - y_r_min
-            z_new = (point_3d[2] / r) - z_r_min
+        for x, y, z in points_3d_leaf[i]:
+            x_new = (x / voxel_size) - x_r_min
+            y_new = (y / voxel_size) - y_r_min
+            z_new = (z / voxel_size) - z_r_min
 
             mat[x_new, y_new, z_new] = nb
 
@@ -211,12 +205,12 @@ def points_3d_to_matrix_2(points_3d, points_3d_leaf, radius):
     return mat, index, (x_min, y_min, z_min)
 
 
-def remove_internal_points_3d(points_3d, radius):
+def remove_internal_points_3d(voxel_centers, voxel_size):
 
-    if not points_3d:
-        return points_3d
+    if not voxel_centers:
+        return voxel_centers
 
-    matrix, index, origin = points_3d_to_matrix(points_3d, radius)
+    matrix, index, origin = points_3d_to_matrix(voxel_centers, voxel_size)
 
     index_new = collections.deque()
     mat = matrix.copy()
@@ -264,4 +258,4 @@ def remove_internal_points_3d(points_3d, radius):
             else:
                 break
 
-    return index_to_points_3d(index_new, radius, origin=origin)
+    return index_to_points_3d(index_new, voxel_size, origin=origin)

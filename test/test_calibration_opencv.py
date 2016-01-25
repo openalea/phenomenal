@@ -44,7 +44,7 @@ def test_calibration_opencv():
         projection = get_function_projection(cam_params, angle)
         images_projections.append((img, projection))
 
-    voxel_size = 8
+    voxel_size = 16
     points = reconstruction_3d(images_projections,
                                voxel_size=voxel_size,
                                verbose=True)
