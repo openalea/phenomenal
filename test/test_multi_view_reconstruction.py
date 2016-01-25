@@ -46,11 +46,11 @@ def test_1():
                           voxel_size=voxel_size,
                           verbose=True)
 
-    if voxel_size == 4:
+    if voxel_size == 8:
         assert len(voxel_centers) == 22965
-    if voxel_size == 2:
+    if voxel_size == 4:
         assert len(voxel_centers) == 120276
-    if voxel_size == 1:
+    if voxel_size == 2:
         assert len(voxel_centers) == 750529
 
     # # Viewing

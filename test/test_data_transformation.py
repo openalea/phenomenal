@@ -22,18 +22,18 @@ import alinea.phenomenal.data_transformation
 
 def test_data_transformation_1():
     matrix = numpy.ones((10, 10, 10), dtype=numpy.uint8)
-    radius = 8
+    voxel_size = 16
     origin = (1, 2, 3)
 
     points_3d = alinea.phenomenal.data_transformation.\
-        matrix_to_points_3d(matrix, radius, origin)
+        matrix_to_points_3d(matrix, voxel_size, origin)
 
     assert points_3d[0] == (1., 2., 3.)
     assert points_3d[1] == (1., 2., 19.)
     assert len(points_3d) == matrix.size
 
     mat, index, origin = alinea.phenomenal.data_transformation.\
-        points_3d_to_matrix(points_3d, radius)
+        points_3d_to_matrix(points_3d, voxel_size)
 
     assert mat.ndim == 3
     assert mat.size == matrix.size
@@ -95,36 +95,36 @@ def test_limit_points_many_values():
 
 def test_data_transformation_2():
 
-    radius = 8
+    voxel_size = 16
     points_3d = list()
 
     mat, index, origin = alinea.phenomenal.data_transformation.\
-        points_3d_to_matrix(points_3d, radius)
+        points_3d_to_matrix(points_3d, voxel_size)
 
     assert index == list()
     assert origin == (None, None, None)
 
     points_3d = alinea.phenomenal.data_transformation.\
-        matrix_to_points_3d(mat, radius, origin)
+        matrix_to_points_3d(mat, voxel_size, origin)
 
     assert points_3d == list()
 
 
 def test_data_transformation_3():
 
-    radius = 8
+    voxel_size = 16
     points_3d = list()
     points_3d.append((1, 42, 1))
 
     mat, index, origin = alinea.phenomenal.data_transformation.\
-        points_3d_to_matrix(points_3d, radius)
+        points_3d_to_matrix(points_3d, voxel_size)
 
     assert mat == [[[1]]]
     assert index[0] == (0, 0, 0)
     assert origin == (1, 42, 1)
 
     points_3d = alinea.phenomenal.data_transformation.\
-        matrix_to_points_3d(mat, radius, origin)
+        matrix_to_points_3d(mat, voxel_size, origin)
 
     assert len(points_3d) == 1
     assert points_3d[0] == (1, 42, 1)
@@ -132,11 +132,11 @@ def test_data_transformation_3():
 
 def test_remove_internal_points_3d_1():
 
-    radius = 4
+    voxel_size = 8
     points_3d = collections.deque()
 
     points_3d = alinea.phenomenal.data_transformation.remove_internal_points_3d(
-        points_3d, radius)
+        points_3d, voxel_size)
 
     assert points_3d == collections.deque()
 

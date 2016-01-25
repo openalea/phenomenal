@@ -22,7 +22,7 @@ from alinea.phenomenal.multi_view_reconstruction import (
 
 def test_split_points_3d_plan_1():
     voxel_center = (0.0, 0.0, 0.0)
-    voxel_size = 8
+    voxel_size = 16
 
     voxel_centers = collections.deque()
     voxel_centers.append(voxel_center)
