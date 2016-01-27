@@ -21,7 +21,7 @@ from alinea.phenomenal.multi_view_reconstruction import (get_voxel_corners)
 
 def test_get_voxel_corners_1():
     voxel_center = (0.0, 0.0, 0.0)
-    voxel_size = 8
+    voxel_size = 16
 
     voxel_corners = get_voxel_corners(voxel_center, voxel_size / 2)
 

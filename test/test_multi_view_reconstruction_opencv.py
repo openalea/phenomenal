@@ -35,7 +35,7 @@ from alinea.phenomenal.multi_view_reconstruction import (
 def test_multi_view_reconstruction_opencv_1():
     # ==========================================================================
     size = 10
-    voxel_size = 5
+    voxel_size = 10
     voxel_center = (0, 0, 0)
     voxel_centers = build_object_1(size, voxel_size, voxel_center)
 
@@ -56,18 +56,18 @@ def test_multi_view_reconstruction_opencv_1():
         images_projections.append((img, projection))
 
     # ==========================================================================
-    voxel_size = 10
+    voxel_size = 20
     voxel_centers = reconstruction_3d(images_projections,
                                       voxel_size=voxel_size,
                                       verbose=True)
 
-    print len(voxel_centers) == 465
-    volume = len(voxel_centers) * (voxel_size * 2)**3
-    print volume == 3720000
+    assert len(voxel_centers) == 465
+    volume = len(voxel_centers) * voxel_size**3
+    assert volume == 3720000
 
 
 def test_multi_view_reconstruction_opencv_2():
-    voxel_size = 4
+    voxel_size = 8
     cam_params = CameraParameters.read(plant_1_params_camera_opencv_path())
     images = build_images_1()
 

@@ -26,17 +26,15 @@ def get_bounding_box_voxel_projected(voxel_center, voxel_size, projection):
 
     Parameters
     ----------
-    point_3d : (x, y, z)
+    voxel_center : (x, y, z)
 
-    radius : float
+    voxel_size : float
 
-    calibration : object with project_point function
-
-    angle : float
+    projection : function ((x, y, z)) -> (x, y)
 
     Returns
     -------
-    out : tuple
+    out : (x_min, x_max, y_min, y_max)
         Containing min and max value of point_3d projection in x and y axes.
     """
 
@@ -54,15 +52,20 @@ def get_bounding_box_voxel_projected(voxel_center, voxel_size, projection):
 
 
 def get_voxel_corners(voxel_center, voxel_size):
+    """
 
-    x_minus = voxel_center[0] - voxel_size
-    x_plus = voxel_center[0] + voxel_size
+    """
 
-    y_minus = voxel_center[1] - voxel_size
-    y_plus = voxel_center[1] + voxel_size
+    r = voxel_size / 2.0
 
-    z_minus = voxel_center[2] - voxel_size
-    z_plus = voxel_center[2] + voxel_size
+    x_minus = voxel_center[0] - r
+    x_plus = voxel_center[0] + r
+
+    y_minus = voxel_center[1] - r
+    y_plus = voxel_center[1] + r
+
+    z_minus = voxel_center[2] - r
+    z_plus = voxel_center[2] + r
 
     return [(x_minus, y_minus, z_minus),
             (x_plus, y_minus, z_minus),
@@ -81,7 +84,7 @@ def split_voxel_centers_in_eight(voxel_centers, voxel_size):
     if len(voxel_centers) == 0:
         return voxel_centers
 
-    r = voxel_size / 2.0
+    r = voxel_size / 4.0
 
     l = collections.deque()
     for voxel_center in voxel_centers:
@@ -112,7 +115,7 @@ def split_voxel_centers_in_four(voxel_centers, voxel_size):
     if len(voxel_centers) == 0:
         return voxel_centers
 
-    r = voxel_size / 2.0
+    r = voxel_size / 4.0
 
     l = collections.deque()
     for voxel_center in voxel_centers:
