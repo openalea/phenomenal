@@ -1,5 +1,5 @@
-alinea.phenomenal.binarization_post_processing
-==============================================
+binarization_post_processing
+============================
 
 .. automodule:: alinea.phenomenal.binarization_post_processing
     :members: threshold_meanshift, threshold_hsv

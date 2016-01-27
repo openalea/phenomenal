@@ -21,6 +21,7 @@ Phenomenal
    ./modules/binarization_algorithm
    ./modules/binarization_routine
    ./modules/binarization_post_processing
+   ./modules/multi_view_reconstruction
 
 .. _about-docs:
 
