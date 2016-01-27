@@ -225,10 +225,3 @@ def test_skeletonize_3d(cubes,
     w.mtgeditor.updateMTGView()
     w.mtgeditor.updateGL()
     qapp.exec_()
-
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    do_nothing = None

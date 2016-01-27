@@ -24,7 +24,7 @@ from alinea.phenomenal.data_creation import (
 from alinea.phenomenal.multi_view_reconstruction import (
     project_voxel_centers_on_image,
     reconstruction_3d,
-    error_projection)
+    error_reconstruction)
 # ==============================================================================
 
 
@@ -85,7 +85,7 @@ def test_multi_view_reconstruction_manual_2():
     print len(voxel_centers)
 
     for image, projection in images_projections:
-        err = error_projection(
+        err = error_reconstruction(
             image, projection, voxel_centers, voxel_size)
 
         print 'err : ', err

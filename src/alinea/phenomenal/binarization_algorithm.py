@@ -28,10 +28,12 @@ def threshold_meanshift(image,
                         reverse=False,
                         mask=None):
     """
-    Threshold pixels in numpy array such as :
+    Threshold pixels in numpy array such as::
+
         image / mean <= (1.0 - threshold)
 
-    If reverse is True (Inequality is reversed) :
+    If reverse is True (Inequality is reversed)::
+
         image / mean <= (1.0 + threshold
 
     Parameters
