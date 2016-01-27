@@ -1,5 +1,5 @@
-alinea.phenomenal.binarization_routine
-======================================
+binarization_routine
+====================
 
 .. automodule:: alinea.phenomenal.binarization_routine
     :members: threshold_meanshift, threshold_hsv
