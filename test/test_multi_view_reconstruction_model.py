@@ -35,13 +35,13 @@ def test_multi_view_reconstruction_model_1():
     # ==========================================================================
     # Create object
     cube_size = 10
-    voxel_size = 5
+    voxel_size = 10
     voxel_center = (0, 0, 0)
 
     voxel_centers = build_object_1(cube_size, voxel_size, voxel_center)
 
     assert len(voxel_centers) == 1000
-    volume = len(voxel_centers) * (voxel_size * 2)**3
+    volume = len(voxel_centers) * voxel_size**3
     assert volume == 1000000
 
     # ==========================================================================
@@ -61,15 +61,14 @@ def test_multi_view_reconstruction_model_1():
         images_projections.append((img, projection))
 
     # ==========================================================================
-    voxel_size = 10
+    voxel_size = 20
     voxel_centers = reconstruction_3d(images_projections,
                                       voxel_size=voxel_size,
                                       verbose=True)
 
     assert len(voxel_centers) == 272
-    volume = len(voxel_centers) * (voxel_size * 2)**3
+    volume = len(voxel_centers) * voxel_size**3
     assert volume == 2176000
-
 
 def test_multi_view_reconstruction_model_2():
 
@@ -89,11 +88,12 @@ def test_multi_view_reconstruction_model_2():
 
     # ==========================================================================
 
-    voxel_size = 4
+    voxel_size = 8
     voxel_centers = reconstruction_3d(images_projections,
                                       voxel_size=voxel_size,
                                       verbose=True)
 
+    print len(voxel_centers)
     assert len(voxel_centers) == 7272
 
     for image, projection in images_projections:
@@ -104,7 +104,6 @@ def test_multi_view_reconstruction_model_2():
 
 
 # ==============================================================================
-# LOCAL TEST
 
 if __name__ == "__main__":
     test_multi_view_reconstruction_model_1()

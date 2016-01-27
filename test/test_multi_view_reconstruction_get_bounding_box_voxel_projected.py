@@ -26,7 +26,7 @@ from alinea.phenomenal.multi_view_reconstruction import (
 def test_bbox_projection_1():
 
     voxel_center = (0, 0, 0)
-    voxel_size = 10
+    voxel_size = 20
 
     projection = lambda pt: (pt[0], pt[1])
 
@@ -47,7 +47,7 @@ def test_bbox_projection_2():
     projection = get_function_projection(cam_params, angle)
 
     voxel_center = (0, 0, 0)
-    voxel_size = 4
+    voxel_size = 8
 
     res = get_bounding_box_voxel_projected(voxel_center, voxel_size, projection)
 

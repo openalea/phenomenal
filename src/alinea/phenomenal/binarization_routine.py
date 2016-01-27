@@ -14,14 +14,18 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-""" Binarization routines for PhenoArch/ images """
+""" Binarization routines for binarize image """
 # ==============================================================================
 import numpy
 import cv2
 
-from alinea.phenomenal.binarization_post_processing import clean_noise
-from alinea.phenomenal.binarization_algorithm import (threshold_meanshift,
-                                                      threshold_hsv)
+from alinea.phenomenal.binarization_post_processing import (
+    erode_dilate,
+    dilate_erode)
+
+from alinea.phenomenal.binarization_algorithm import (
+    threshold_meanshift,
+    threshold_hsv)
 # ==============================================================================
 
 
@@ -34,14 +38,17 @@ def meanshift_hsv(image,
                   mask_mean_shift=None,
                   mask_hsv=None,
                   mask_clean_noise=None):
-    binary_hsv_image = threshold_hsv(image, hsv_min, hsv_max, mask_hsv)
+
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    binary_hsv_image = threshold_hsv(hsv_image, hsv_min, hsv_max, mask_hsv)
 
     binary_mean_shift_image = threshold_meanshift(
         image, mean_image, threshold, dark_background, mask_mean_shift)
 
     result = cv2.add(binary_hsv_image, binary_mean_shift_image * 255)
 
-    result = clean_noise(result, mask_clean_noise)
+    result = erode_dilate(result, iterations=3, mask=mask_clean_noise)
+    result = erode_dilate(result, iterations=1)
 
     return result
 
@@ -55,7 +62,8 @@ def meanshift_hsv_elcom(image,
                         mask_mean_shift=None,
                         mask_hsv=None):
 
-    binary_hsv_image = threshold_hsv(image, hsv_min, hsv_max, mask_hsv)
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    binary_hsv_image = threshold_hsv(hsv_image, hsv_min, hsv_max, mask_hsv)
 
     binary_mean_shift_image = threshold_meanshift(
         image, mean_image, threshold, dark_background, mask_mean_shift)
@@ -215,8 +223,7 @@ def line_adaptive_threshold(image, mask):
 
 def blur_hsv_erode_dilate(image, hsv_min, hsv_max,
                           median_blur_size=9,
-                          dilate_iterations=5,
-                          erode_iterations=5,
+                          iterations=5,
                           mask=None):
     """
     Binarization of top image for Lemnatech cabin based on hsv segmentation.
@@ -254,17 +261,13 @@ def blur_hsv_erode_dilate(image, hsv_min, hsv_max,
     # ==========================================================================
 
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv_image = cv2.medianBlur(hsv_image, ksize=median_blur_size)
 
-    #   =======================================================================
-    #   Main area segmentation
-    bin_img = cv2.medianBlur(hsv_image, ksize=median_blur_size)
-    bin_img = cv2.inRange(bin_img, hsv_min, hsv_max)
+    bin_img = threshold_hsv(hsv_image, hsv_min, hsv_max, mask=mask)
 
-    element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
-    bin_img = cv2.dilate(bin_img, element, iterations=dilate_iterations)
-    bin_img = cv2.erode(bin_img, element, iterations=erode_iterations)
-
-    if mask is not None:
-        bin_img = cv2.bitwise_and(bin_img, mask)
+    bin_img = dilate_erode(bin_img,
+                           kernel_shape=(3, 3),
+                           iterations=iterations,
+                           mask=mask)
 
     return bin_img

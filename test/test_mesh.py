@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       test_mesh.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s): Simon Artzet <simon.artzet@gmail.com>
@@ -14,19 +12,12 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import numpy
 
-#       ========================================================================
-#       Local Import
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
-
-#       ========================================================================
-#       Code
+# ==============================================================================
 
 
 def test_mesh_1():
@@ -65,8 +56,7 @@ def test_mesh_3():
 
     vertices, faces = alinea.phenomenal.mesh.meshing(mat, origin, radius)
 
-#       ========================================================================
-#       LOCAL TEST
+# ==============================================================================
 
 if __name__ == "__main__":
     test_mesh_1()

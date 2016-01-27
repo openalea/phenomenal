@@ -1,7 +1,5 @@
 # -*- python -*-
 #
-#       setup.py : Module Description
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
 #       File author(s):
@@ -14,7 +12,7 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+# ==============================================================================
 
 """
 Write the doc here...
@@ -22,15 +20,13 @@ Write the doc here...
 
 __revision__ = "$Id: $"
 
-#       =======================================================================
-#       External Import
+# ==============================================================================
 import sys
 import os
 
-#       =======================================================================
-#       Local Import
 from setuptools import setup, find_packages
 from openalea.deploy.metainfo import read_metainfo
+# ==============================================================================
 
 # Reads the metainfo file
 metadata = read_metainfo('metainfo.ini', verbose=True)

@@ -1,7 +1,7 @@
 numpy
 matplotlib
 ipython
-##ipython[notebook]
+ipython[notebook]
 scikit-image
 nose
 scons
