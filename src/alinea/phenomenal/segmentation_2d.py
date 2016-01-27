@@ -17,6 +17,7 @@ import math
 import numpy
 # ==============================================================================
 
+
 class Segment(object):
     def __init__(self, id_number, first_point):
         self.id_number = id_number

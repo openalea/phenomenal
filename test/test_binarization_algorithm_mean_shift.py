@@ -37,7 +37,7 @@ def test_wrong_parameters_2():
     try:
         threshold_meanshift(image, None)
     except Exception, e:
-        assert e.message == 'mean_image should be a numpy.ndarray'
+        assert e.message == 'mean should be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -79,7 +79,7 @@ def test_wrong_parameters_5():
     try:
         threshold_meanshift(image, mean_image)
     except Exception, e:
-        assert e.message == 'mean_image should be 3D array'
+        assert e.message == 'mean should be 3D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -92,7 +92,7 @@ def test_wrong_parameters_6():
     try:
         threshold_meanshift(image, mean_image)
     except Exception, e:
-        assert e.message == 'image and mean_image should have the same shape'
+        assert e.message == 'image and mean must have equal sizes'
         assert type(e) == ValueError
     else:
         assert False

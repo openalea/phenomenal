@@ -14,6 +14,7 @@
 #
 # ==============================================================================
 import numpy
+import cv2
 
 from alinea.phenomenal.binarization_algorithm import threshold_hsv
 # ==============================================================================

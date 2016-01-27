@@ -15,15 +15,15 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.binarization_post_processing import remove_plant_support
+from alinea.phenomenal.binarization_post_processing import morphology_close
 # ==============================================================================
 
 
 def test_wrong_parameters_1():
     try:
-        remove_plant_support(None)
+        morphology_close(None)
     except Exception, e:
-        assert e.message == 'image should be a numpy.ndarray'
+        assert e.message == 'image must be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -33,9 +33,9 @@ def test_wrong_parameters_2():
 
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        remove_plant_support(image)
+        morphology_close(image)
     except Exception, e:
-        assert e.message == 'image should be 2D array'
+        assert e.message == 'image must be 2D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -46,9 +46,9 @@ def test_wrong_parameters_3():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = 42
     try:
-        remove_plant_support(image, mask=mask)
+        morphology_close(image, mask=mask)
     except Exception, e:
-        assert e.message == 'mask should be a numpy.ndarray'
+        assert e.message == 'mask must be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -59,9 +59,9 @@ def test_wrong_parameters_4():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        remove_plant_support(image, mask=mask)
+        morphology_close(image, mask=mask)
     except Exception, e:
-        assert e.message == 'mask should be 2D array'
+        assert e.message == 'mask must be 2D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -72,7 +72,7 @@ def test_simply_working_1():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    image_cleaning = remove_plant_support(image, mask=mask)
+    image_cleaning = morphology_close(image, mask=mask)
 
     assert isinstance(image_cleaning, numpy.ndarray)
     assert image_cleaning.ndim == 2

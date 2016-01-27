@@ -13,112 +13,170 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+"""
+Post processing algorithms to improve binarization of a image
+"""
+# ==============================================================================
 import cv2
 import numpy
 # ==============================================================================
 
 
-def clean_noise(image, mask=None):
+def dilate_erode(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
     """
-    Cleaning orange band noise with mask
-
-    Applied mask on image then erode and dilate on 3 iteration.
-    Applied subtract image and mask and add to image modify before
-    And finally, erode and dilate again
+    Applied a (dilate & erode) on binary_image on a ROI.
 
     Parameters
     ----------
+    binary_image : numpy.ndarray
+        2-D array
 
-    image : numpy.array
-    Binary Image
+    kernel_shape: (N, M) of integers, optional
+        kernel shape of (dilate & erode) applied to binary_image
 
-    mask : numpy.array
+    iterations: int, optional
+        number of successive iteration of (dilate & erode)
+
+    mask : numpy.ndarray, optional
+        Array of same shape as `image`. Only points at which mask == True
+        will be processed.
 
     Returns
     -------
-    out : numpy.array
-    Binary Image
-
+    out : numpy.ndarray
+        Binary Image
     """
     # ==========================================================================
     # Check Parameters
-    if not isinstance(image, numpy.ndarray):
-        raise TypeError('image should be a numpy.ndarray')
+    if not isinstance(binary_image, numpy.ndarray):
+        raise TypeError('binary_image must be a numpy.ndarray')
 
-    if image.ndim != 2:
-        raise ValueError('image should be 2D array')
+    if binary_image.ndim != 2:
+        raise ValueError('image must be 2D array')
 
     if mask is not None:
         if not isinstance(mask, numpy.ndarray):
-            raise TypeError('mask should be a numpy.ndarray')
+            raise TypeError('mask must be a numpy.ndarray')
         if mask.ndim != 2:
-            raise ValueError('mask should be 2D array')
+            raise ValueError('mask must be 2D array')
     # ==========================================================================
 
     if mask is not None:
-        image_modify = cv2.bitwise_and(image, mask)
+        out = cv2.bitwise_and(binary_image, mask)
     else:
-        image_modify = image
+        out = binary_image.copy()
 
-    element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
-    image_modify = cv2.erode(image_modify, element, iterations=3)
-    image_modify = cv2.dilate(image_modify, element, iterations=3)
+    element = cv2.getStructuringElement(cv2.MORPH_CROSS, kernel_shape)
+    out = cv2.dilate(out, element, iterations=iterations)
+    out = cv2.erode(out, element, iterations=iterations)
 
     if mask is not None:
-        res = cv2.subtract(image, mask)
-    else:
-        res = image
+        res = cv2.subtract(binary_image, mask)
+        out = cv2.add(res, out)
 
-    res = cv2.add(res, image_modify)
-
-    res = cv2.erode(res, element, iterations=1)
-    res = cv2.dilate(res, element, iterations=1)
-
-    return res
+    return out
 
 
-def remove_plant_support(image, mask=None):
+def erode_dilate(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
     """
-    remove_plant_support(numpy.array, mask=None)
+    Applied a (erode & dilate) on binary_image on mask ROI.
 
-        Remove plant support from image with mask.
+    Parameters
+    ----------
+    binary_image : numpy.ndarray
+        2-D array
 
-        Parameters
-        ----------
+    kernel_shape: (N, M) of integers, optional
+        kernel shape of (erode & dilate) applied to binary_image
 
-        image : numpy.array
-            Binary Image
+    iterations: int, optional
+        number of successive iteration of (erode & dilate)
 
-        mask : numpy.array
+    mask : numpy.ndarray, optional
+        Array of same shape as `image`. Only points at which mask == True
+        will be processed.
 
-        Returns
-        -------
-        out : numpy.array
-            Binary Image
+    Returns
+    -------
+    out : numpy.ndarray
+        Binary Image
     """
     # ==========================================================================
     # Check Parameters
-    if not isinstance(image, numpy.ndarray):
-        raise TypeError('image should be a numpy.ndarray')
+    if not isinstance(binary_image, numpy.ndarray):
+        raise TypeError('binary_image must be a numpy.ndarray')
 
-    if image.ndim != 2:
-        raise ValueError('image should be 2D array')
+    if binary_image.ndim != 2:
+        raise ValueError('binary_image must be 2D array')
 
     if mask is not None:
         if not isinstance(mask, numpy.ndarray):
-            raise TypeError('mask should be a numpy.ndarray')
+            raise TypeError('mask must be a numpy.ndarray')
         if mask.ndim != 2:
-            raise ValueError('mask should be 2D array')
+            raise ValueError('mask must be 2D array')
     # ==========================================================================
-    img = image.copy()
 
     if mask is not None:
-        img = cv2.bitwise_and(image, image, mask=mask)
+        out = cv2.bitwise_and(binary_image, mask)
+    else:
+        out = binary_image.copy()
 
-    kernel = numpy.ones((7, 7), numpy.uint8)
+    element = cv2.getStructuringElement(cv2.MORPH_CROSS, kernel_shape)
+    out = cv2.erode(out, element, iterations=iterations)
+    out = cv2.dilate(out, element, iterations=iterations)
 
-    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
-    img = cv2.add(image, img)
+    if mask is not None:
+        res = cv2.subtract(binary_image, mask)
+        out = cv2.add(res, out)
 
-    return img
+    return out
+
+
+def morphology_close(binary_image, kernel_shape=(7, 7), mask=None):
+    """
+    Applied a morphology close on binary_image on mask ROI.
+
+    Parameters
+    ----------
+    binary_image : numpy.ndarray
+        2-D array
+
+    kernel_shape: (N, M) of integers
+        kernel shape of morphology close applied to binary_image
+
+    mask : numpy.ndarray, optional
+        Array of same shape as `image`. Only points at which mask == True
+        will be processed.
+
+    Returns
+    -------
+    out : numpy.ndarray
+        Binary Image
+    """
+    # ==========================================================================
+    # Check Parameters
+    if not isinstance(binary_image, numpy.ndarray):
+        raise TypeError('image must be a numpy.ndarray')
+    if binary_image.ndim != 2:
+        raise ValueError('image must be 2D array')
+
+    if mask is not None:
+        if not isinstance(mask, numpy.ndarray):
+            raise TypeError('mask must be a numpy.ndarray')
+        if mask.ndim != 2:
+            raise ValueError('mask must be 2D array')
+    # ==========================================================================
+
+    if mask is not None:
+        out = cv2.bitwise_and(binary_image, mask)
+    else:
+        out = binary_image.copy()
+
+    kernel = numpy.ones(kernel_shape, numpy.uint8)
+    out = cv2.morphologyEx(out, cv2.MORPH_CLOSE, kernel)
+
+    if mask is not None:
+        out = cv2.add(binary_image, out)
+
+    return out
 

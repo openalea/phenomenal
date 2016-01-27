@@ -1,10 +1,8 @@
 # -*- python -*-
 #
-#       __init__.py:
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
+#       File author(s):
 #
 #       File contributor(s):
 #
@@ -14,7 +12,7 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+# ==============================================================================
 
 # from distutils.core import setup
 # from distutils.extension import Extension
