@@ -53,10 +53,7 @@ def get_bounding_box_voxel_projected(voxel_center, voxel_size, projection):
 
 def get_voxel_corners(voxel_center, voxel_size):
     """
-    
-    :param voxel_center:
-    :param voxel_size:
-    :return:
+
     """
 
     r = voxel_size / 2.0
