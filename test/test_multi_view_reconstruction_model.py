@@ -27,7 +27,7 @@ from alinea.phenomenal.calibration_model import (
 from alinea.phenomenal.multi_view_reconstruction import (
     project_voxel_centers_on_image,
     reconstruction_3d,
-    error_projection)
+    error_reconstruction)
 # ==============================================================================
 
 
@@ -97,7 +97,7 @@ def test_multi_view_reconstruction_model_2():
     assert len(voxel_centers) == 7272
 
     for image, projection in images_projections:
-        err = error_projection(
+        err = error_reconstruction(
             image, projection, voxel_centers, voxel_size)
 
         assert err < 4000

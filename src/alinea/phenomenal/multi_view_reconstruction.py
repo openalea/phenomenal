@@ -15,7 +15,10 @@
 # ==============================================================================
 import collections
 import math
+
 import numpy
+
+
 # ==============================================================================
 
 
@@ -27,10 +30,14 @@ def get_bounding_box_voxel_projected(voxel_center, voxel_size, projection):
     Parameters
     ----------
     voxel_center : (x, y, z)
+        Center position of voxel
 
     voxel_size : float
+        Size of side geometry of voxel
 
     projection : function ((x, y, z)) -> (x, y)
+        Function of projection who take 1 argument (tuple of position (x, y, z))
+         and return this position 2D (x, y)
 
     Returns
     -------
@@ -53,6 +60,21 @@ def get_bounding_box_voxel_projected(voxel_center, voxel_size, projection):
 
 def get_voxel_corners(voxel_center, voxel_size):
     """
+    According center voxel position and this size, return a list of 8 corners
+    of this voxel.
+
+    Parameters
+    ----------
+    voxel_center : (x, y, z)
+        Center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    Returns
+    -------
+    [(x, y, z), ...] : numpy.ndarray
+         List of 8 tuple position
 
     """
 
@@ -80,7 +102,38 @@ def get_voxel_corners(voxel_center, voxel_size):
 
 
 def split_voxel_centers_in_eight(voxel_centers, voxel_size):
+    """
+    Split each voxel in the collections.deque in 8 en return a collections.deque
+    of this new center position of voxel splited::
 
+          _ _ _ _ _ _ _ _ _                              _ _ _ _ _ _ _ _ _
+        /                  /|                          /        /         /|
+       /                  / |                         /--------/---------/ |
+      /_ _ _ _ _ _ _ _ _ /  |                        /_ _ _ _ / _ _ _ _ /| |
+     |                  |   |                       |        |         | |/|
+     |                  |   |       =======>        |        |         | / |
+     |                  |   |                       |_ _ _ _ | _ _ _ _ |/| |
+     |                  |  /                        |        |         | |/
+     |                  | /                         |        |         | /
+     | _ _ _ _ _ _ _ _ _|/                          |_ _ _ _ | _ _ _ _ |/
+
+
+
+    Parameters
+    ----------
+    voxel_centers : [(x, y, z)]
+        collections.deque of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of the voxels
+
+    Returns
+    -------
+    [(x, y, z), ...] : collections.deque
+         New collections.deque of new tuple position splited of each
+         voxel_center in voxel_centers
+
+    """
     if len(voxel_centers) == 0:
         return voxel_centers
 
@@ -111,7 +164,37 @@ def split_voxel_centers_in_eight(voxel_centers, voxel_size):
 
 
 def split_voxel_centers_in_four(voxel_centers, voxel_size):
+    """
+    Split each voxel in the collections.deque in 4 en return a collections.deque
+    of this new center position of voxel splited::
 
+          _ _ _ _ _ _ _ _ _                              _ _ _ _ _ _ _ _ _
+        /                  /|                          /        /         /|
+       /                  / |                         /        /         / |
+      /_ _ _ _ _ _ _ _ _ /  |                        /_ _ _ _ / _ _ _ _ /  |
+     |                  |   |                       |        |         |  /|
+     |                  |   |       =======>        |        |         | / |
+     |                  |   |                       |_ _ _ _ | _ _ _ _ |/  |
+     |                  |  /                        |        |         |  /
+     |                  | /                         |        |         | /
+     | _ _ _ _ _ _ _ _ _|/                          |_ _ _ _ | _ _ _ _ |/
+
+
+    Parameters
+    ----------
+    voxel_centers : [(x, y, z)]
+        collections.deque of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of the voxels
+
+    Returns
+    -------
+    [(x, y, z), ...] : collections.deque
+         New collections.deque of new tuple position splited of each
+         voxel_center in voxel_centers
+
+    """
     if len(voxel_centers) == 0:
         return voxel_centers
 
@@ -142,20 +225,45 @@ def voxel_is_visible_in_image(voxel_center,
                               image,
                               projection):
     """
-    Algorithm
-    =========
+    Return True or False if the voxel projected on image with the function
+    projection (projection) have positive value on image.
 
-    For each cube in cubes :
-        - Project center cube position on image:
-        - Kept the cube and pass to the next if :
-            + The pixel value of center position projected is > 0
+    **Algorithm**
 
-        - Compute the bounding box and project the positions on image
-        - Kept the cube and pass to the next if :
-            + The pixel value of extremity of bounding box projected is > 0
+    1. Project the center voxel position on image if the position projected
+       (x, y) is positive on image return True
 
-        - Kept the cube and pass to the next if :
-            + Any pixel value in the bounding box projected is > 0
+    |
+
+    2. Project the bounding box of voxel in image, if one of the 4 corners
+       position of the bounding box projected have positive value on image
+       return True
+
+    |
+
+    3. Check if one pixel containing in the bounding box projected on image
+       have positive value, if yes return True else return False
+
+    Parameters
+    ----------
+    voxel_center : (x, y, z)
+        Center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    image: numpy.ndarray
+        binary image
+
+    projection : function ((x, y, z)) -> (x, y)
+        Function of projection who take 1 argument (tuple of position (x, y, z))
+         and return this position 2D (x, y)
+
+    Returns
+    -------
+    out : bool
+        True if voxel have a positive correspondence on image otherwise return
+        False
     """
 
     height_image, length_image = image.shape
@@ -187,12 +295,41 @@ def voxel_is_visible_in_image(voxel_center,
     if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
         return True
 
+    return False
+
 
 def kept_visible_voxel(voxel_centers,
                        voxel_size,
                        images_projections,
-                       error_tolerance):
+                       error_tolerance=0):
+    """
+    Kept in a new collections.deque the voxel who is visible on each image of
+    images_projections according the error_tolerance
 
+    Parameters
+    ----------
+    voxel_centers : [(x, y, z)]
+        cList (collections.deque) of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    images_projections : [(image, projection), ...]
+        List of tuple (image, projection) where image is a binary image
+        (numpy.ndarray) and function projection (function (x, y, z) -> (x, y))
+        who take (x, y, z) position on return (x, y) position according space
+        representation of this image
+
+    error_tolerance : int, optional
+        Number of image will be ignored if the projected voxel is not visible.
+
+    Returns
+    -------
+    out : collections.deque
+        List of visible voxel projected on each image according
+        the error_tolerance
+
+    """
     kept = collections.deque()
     for voxel_center in voxel_centers:
         negative_weight = 0
@@ -215,21 +352,57 @@ def reconstruction_3d(images_projections,
                       voxel_size=4,
                       error_tolerance=0,
                       voxel_center_origin=(0.0, 0.0, 0.0),
+                      world_size=4096,
                       voxel_centers=None,
                       verbose=False):
+    """
+    Construct a list of voxel represented object with positive value on binary
+    image in images of images_projections.
+
+    Parameters
+    ----------
+    images_projections : [(image, projection), ...]
+        List of tuple (image, projection) where image is a binary image
+        (numpy.ndarray) and function projection (function (x, y, z) -> (x, y))
+        who take (x, y, z) position on return (x, y) position according space
+        representation of this image
+
+    voxel_size : float, optional
+        Size of side geometry of voxel that each voxel will have
+
+    error_tolerance : int, optional
+
+
+    voxel_center_origin : (x, y, z), optional
+        Center position of the first original voxel, who will be split.
+
+    world_size: int, optional
+        Minimum size that the origin voxel size must include at beginning
+
+    voxel_centers : collections.deque, optional
+        List of first original voxel who will be split. If None, a list is
+        create with the voxel_center_origin value.
+
+    verbose : bool, optional
+        If True, print for each iteration of split, number of voxel before and
+        after projection on images
+
+    Returns
+    -------
+    out : collections.deque
+        List of visible voxel projected on each image according
+        the error_tolerance
+    """
 
     if len(images_projections) == 0:
         return
-
-    origin_radius = 2048 * 2
 
     if voxel_centers is None:
         voxel_centers = collections.deque()
         voxel_centers.append(voxel_center_origin)
 
     nb_iteration = 0
-
-    while voxel_size < origin_radius:
+    while voxel_size < world_size:
         voxel_size *= 2.0
         nb_iteration += 1
 
@@ -262,7 +435,30 @@ def project_voxel_centers_on_image(voxel_centers,
                                    voxel_size,
                                    shape_image,
                                    projection):
+    """
+    Create a image with same shape that shape_image and project each voxel on
+    image and write positive value (255) on it.
 
+    Parameters
+    ----------
+    voxel_centers : [(x, y, z)]
+        cList (collections.deque) of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    image: numpy.ndarray
+        binary image
+
+    projection : function ((x, y, z)) -> (x, y)
+        Function of projection who take 1 argument (tuple of position (x, y, z))
+         and return this position 2D (x, y)
+
+    Returns
+    -------
+    out : numpy.ndarray
+        Binary image
+    """
     height_image, length_image = shape_image
     img = numpy.zeros((height_image, length_image), dtype=numpy.uint8)
 
@@ -280,15 +476,131 @@ def project_voxel_centers_on_image(voxel_centers,
     return img
 
 
-def error_projection(image,
-                     projection,
-                     voxel_centers,
-                     voxel_size):
+def error_reconstruction(image_binary_ref, projection, voxel_centers, voxel_size):
+    """
+    Project voxel_centers on a binary image and compare this image with
+    image_binary_ref. Error is the number of all different pixel.
 
+    Parameters
+    ----------
+    image_binary_ref: numpy.ndarray
+        binary image reference
+
+    projection : function ((x, y, z)) -> (x, y)
+        Function of projection who take 1 argument (tuple of position (x, y, z))
+         and return this position 2D (x, y)
+
+    voxel_centers : [(x, y, z)]
+        cList (collections.deque) of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    Returns
+    -------
+    out : int
+        Error value
+    """
     img = project_voxel_centers_on_image(
-        voxel_centers, voxel_size, image.shape, projection)
+        voxel_centers, voxel_size, image_binary_ref.shape, projection)
 
-    img = numpy.subtract(img, image)
+    img = numpy.subtract(img, image_binary_ref)
     img[img == -255] = 255
 
     return numpy.count_nonzero(img)
+
+
+def error_reconstruction_lost(image_binary_ref,
+                              projection,
+                              voxel_centers,
+                              voxel_size):
+    """
+    Project voxel_centers on a binary image and compare this image with
+    image_binary_ref. Error lost is the number of different pixel of
+    image_binary_ref.
+
+    Parameters
+    ----------
+    image_binary_ref: numpy.ndarray
+        binary image reference
+
+    projection : function ((x, y, z)) -> (x, y)
+        Function of projection who take 1 argument (tuple of position (x, y, z))
+         and return this position 2D (x, y)
+
+    voxel_centers : [(x, y, z)]
+        cList (collections.deque) of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    Returns
+    -------
+    out : int
+        Error value
+    """
+    img = project_voxel_centers_on_image(
+    voxel_centers, voxel_size, image_binary_ref.shape, projection)
+
+    img = numpy.subtract(image_binary_ref, img)
+    img[img == -255] = 0
+
+    return numpy.count_nonzero(img)
+
+
+def error_reconstruction_precision(image_binary_ref,
+                                   projection,
+                                   voxel_centers,
+                                   voxel_size):
+    """
+    Project voxel_centers on a binary image and compare this image with
+    image_binary_ref. Error precision is the number of different pixel of
+    build binary image.
+
+    Parameters
+    ----------
+    image_binary_ref: numpy.ndarray
+        binary image reference
+
+    projection : function ((x, y, z)) -> (x, y)
+        Function of projection who take 1 argument (tuple of position (x, y, z))
+         and return this position 2D (x, y)
+
+    voxel_centers : [(x, y, z)]
+        cList (collections.deque) of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    Returns
+    -------
+    out : int
+        Error value
+    """
+    img = project_voxel_centers_on_image(
+        voxel_centers, voxel_size, image_binary_ref.shape, projection)
+
+    img = numpy.subtract(img, image_binary_ref)
+    img[img == -255] = 0
+
+    return numpy.count_nonzero(img)
+
+
+def volume(voxel_centers, voxel_size):
+    """
+    Compute the volume of voxel list.
+
+    Parameters
+    ----------
+    voxel_centers : [(x, y, z)]
+        cList (collections.deque) of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    Returns
+    -------
+    out : int
+        Error value
+    """
+    return len(voxel_centers) * voxel_size**3
