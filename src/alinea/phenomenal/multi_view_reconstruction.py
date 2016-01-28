@@ -459,17 +459,17 @@ def project_voxel_centers_on_image(voxel_centers,
     out : numpy.ndarray
         Binary image
     """
-    height_image, length_image = shape_image
-    img = numpy.zeros((height_image, length_image), dtype=numpy.uint8)
+    height, length = shape_image
+    img = numpy.zeros((height, length), dtype=numpy.uint8)
 
     for voxel_center in voxel_centers:
         x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
             voxel_center, voxel_size, projection)
 
-        x_min = min(max(math.floor(x_min), 0), length_image - 1)
-        x_max = min(max(math.ceil(x_max), 0), length_image - 1)
-        y_min = min(max(math.floor(y_min), 0), height_image - 1)
-        y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+        x_min = min(max(math.floor(x_min), 0), length - 1)
+        x_max = min(max(math.ceil(x_max), 0), length - 1)
+        y_min = min(max(math.floor(y_min), 0), height - 1)
+        y_max = min(max(math.ceil(y_max), 0), height - 1)
 
         img[y_min:y_max + 1, x_min:x_max + 1] = 255
 
