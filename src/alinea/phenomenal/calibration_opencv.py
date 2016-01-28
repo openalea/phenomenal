@@ -130,7 +130,7 @@ def get_function_projection(camera_parameters, angle):
 class Calibration(object):
 
     @staticmethod
-    def calibrate(chessboard, size_image):
+    def calibrate(chessboard, shape_image):
         image_points = list()
         object_points = list()
         for angle in chessboard.corners_points:
@@ -151,7 +151,7 @@ class Calibration(object):
         ret, focal_matrix, distortion_coefficient, rvecs, tvecs = \
             cv2.calibrateCamera(object_points,
                                 image_points,
-                                size_image,
+                                shape_image,
                                 camera_matrix,
                                 distortion_coefficient,
                                 flags=cv2.CALIB_ZERO_TANGENT_DIST +
