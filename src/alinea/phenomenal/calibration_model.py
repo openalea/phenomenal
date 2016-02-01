@@ -14,12 +14,11 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
 """ This module contains a calibration model for phenoarch experiment
 where a chessboard is rotating instead of a plant in a picture cabin.
 """
 # ==============================================================================
-
 import json
 from math import radians, cos, pi, sin
 
@@ -563,9 +562,3 @@ def camera_frame_light(dist, zero_offset, alpha):
     rot = concatenate_matrices(shift, rot_y)
 
     return Frame(rot[:3, :3].T, origin)
-
-#       ========================================================================
-#       LOCAL TEST
-
-if __name__ == "__main__":
-    do_nothing = None

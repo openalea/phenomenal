@@ -64,6 +64,31 @@ class Chessboard(object):
 
         return pts
 
+    def find_corners_with_bgr(self, image, bgr):
+
+        img1_bin = image[:, :, 0] == bgr[0]
+        img2_bin = image[:, :, 1] == bgr[1]
+        img3_bin = image[:, :, 2] == bgr[2]
+
+        imm = numpy.bitwise_and(img1_bin, img2_bin)
+        imm = numpy.bitwise_and(imm, img3_bin)
+
+        index = numpy.where(imm == True)
+
+        corners = list()
+        for i in xrange(len(index[0])):
+            x, y = (index[0][i], index[1][i])
+            corners.append([x, y])
+
+        len_corners = self.shape[0] * self.shape[1]
+        if len(corners) != len_corners:
+            return None
+
+        corners = numpy.array([corners], dtype=float)
+        corners = numpy.reshape(corners, (len_corners, 1, 2))
+
+        return corners
+
     def find_corners(self, image):
         try:
             found, corners = cv2.findChessboardCorners(
@@ -88,10 +113,10 @@ class Chessboard(object):
 
         return corners
 
-    def find_and_add_corners(self, angle, image):
+    def find_and_add_corners(self, key_corners, image):
         corners_points = self.find_corners(image)
         if corners_points is not None:
-            self.corners_points[angle] = corners_points
+            self.corners_points[key_corners] = corners_points
 
     def write(self, file_path):
 

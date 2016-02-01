@@ -19,7 +19,6 @@ import glob
 import alinea.phenomenal.chessboard
 # ==============================================================================
 
-
 data_directory = '../local/CHESSBOARD_1/'
 
 # Load files
@@ -43,4 +42,3 @@ chessboard.write('chessboard_1')
 
 # Read
 chessboard = alinea.phenomenal.chessboard.Chessboard.read('chessboard_1')
-
