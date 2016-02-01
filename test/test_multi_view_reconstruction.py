@@ -39,7 +39,7 @@ def test_1():
 
         images_and_projections.append((img, function))
 
-    voxel_size = 4
+    voxel_size = 10
     # Multi-view reconstruction
     voxel_centers = alinea.phenomenal.multi_view_reconstruction.\
         reconstruction_3d(images_and_projections,
@@ -53,8 +53,8 @@ def test_1():
     if voxel_size == 2:
         assert len(voxel_centers) == 750529
 
-    # # Viewing
-    # alinea.phenomenal.viewer.show_points_3d(voxel_centers, scale_factor=20)
+    # Viewing
+    alinea.phenomenal.viewer.show_points_3d(voxel_centers, scale_factor=20)
 
 if __name__ == "__main__":
     test_1()
