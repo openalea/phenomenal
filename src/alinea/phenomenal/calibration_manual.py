@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -14,7 +10,6 @@
 #
 # ==============================================================================
 import math
-import numpy
 # ==============================================================================
 
 
@@ -181,5 +176,5 @@ class Calibration(object):
 
             return x, y
 
-    def get_function_projection(self, angle):
+    def get_projection(self, angle):
         return lambda pt3d: self.project_point(pt3d, angle)

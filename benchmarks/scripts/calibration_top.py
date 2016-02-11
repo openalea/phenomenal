@@ -14,7 +14,6 @@
 #
 # ==============================================================================
 import cv2
-import numpy
 
 from alinea.phenomenal.multi_view_reconstruction import (
     reconstruction_3d)
@@ -53,7 +52,6 @@ projection0 = get_function_projection(cpSide, 0)
 projection90 = get_function_projection(cpSide, 90)
 
 images = plant_1_images_binarize()
-
 images_and_projections = list()
 images_and_projections.append((images[-1], projectionTop))
 images_and_projections.append((images[0], projection0))

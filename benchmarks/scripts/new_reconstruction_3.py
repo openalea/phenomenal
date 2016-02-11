@@ -35,8 +35,7 @@ params_camera_path, _ = alinea.phenomenal.plant_1. \
 cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
     params_camera_path)
 
-# Create model projection object
-projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
+print cam_params
 
 # ==========================================================================
 # Load Point_3D of the reference plant
@@ -56,11 +55,11 @@ for angle in range(0, 360, 30):
     images_projections_refs.append((img, function, ref))
 
 
-points_3d = alinea.phenomenal.multi_view_reconstruction_without_loss.\
+points_3d = alinea.phenomenal.multi_view_reconstruction_without_loss. \
     reconstruction_without_loss(images_projections_refs,
-                          voxel_size=voxel_size,
-                          error_tolerance=0,
-                          verbose=True)
+                                voxel_size=voxel_size,
+                                error_tolerance=0,
+                                verbose=True)
 
 if voxel_size == voxel_size:
     assert len(points_3d) == 23976
