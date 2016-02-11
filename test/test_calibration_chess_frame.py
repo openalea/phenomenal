@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -14,6 +10,7 @@
 #
 # ==============================================================================
 from math import cos, sin, radians
+import numpy
 
 from alinea.phenomenal.frame import Frame, x_axis, y_axis, z_axis
 from alinea.phenomenal.transformations import (
@@ -36,12 +33,14 @@ def compute_frame(origin, x_rotation, y_rotation, z_rotation):
     mat_rot_y = rotation_matrix(radians(y_rotation), y_axis)
     mat_rot_z = rotation_matrix(radians(z_rotation), z_axis)
 
-    rot = concatenate_matrices(mat_rot_y, mat_rot_x, mat_rot_z)
+    rot = concatenate_matrices(mat_rot_y, mat_rot_z, mat_rot_x)
 
     return Frame(rot[:3, :3].T, origin)
 
+
 def test_chess_frame():
 
+    origin = (0.0, 0.0, 0.0)
     origin_0 = rotation_point(100, 0, 50, 0)
     origin_90 = rotation_point(100, 0, 50, 90)
     print origin_0
@@ -54,14 +53,31 @@ def test_chess_frame():
     print pt_110_90
     print '\n ========================== \n'
 
-    f_0 = compute_frame(origin_0, 0, 0, 0)
+    f_0 = compute_frame(origin, 0.0, 0.0, 0.0)
+    f_1 = compute_frame(origin, 270, 180.0, 90)
+
+    print 'TEST'
+    print f_0.local_point((100, 0, 0))
+    print f_1.local_point((100, 0, 0))
+    print f_0.local_point((0, 100, 0))
+    print f_1.local_point((0, 100, 0))
+    print f_0.local_point((0, 0, 100))
+    print f_1.local_point((0, 0, 100))
+
     f_90 = compute_frame(origin_90, 0, 0, 90)
     f_900 = compute_frame(origin_90, 0, 0, -90)
+
+    camera_0 = compute_frame((500, 0, 0), -numpy.pi / 2., 0, 0)
+    camera_90 = compute_frame((0, 500, 0), -numpy.pi / 2., 0, 90)
+
 
     print 'Point Local :'
     print f_0.local_point(pt_110_0)
     print f_90.local_point(pt_110_90)
     print f_900.local_point(pt_110_90)
+
+    print camera_0.local_point(pt_110_0)
+    print camera_90.local_point(pt_110_90)
 
     print '\n ========================== \n'
 

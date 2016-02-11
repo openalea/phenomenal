@@ -1,12 +1,6 @@
 # -*- python -*-
 #
-#       __init__.py : Module Description
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
-#
-#       File author(s):
-#
-#       File contributor(s):
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -14,7 +8,7 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       =======================================================================
+# ==============================================================================
 
 try:
     import pkg_resources
