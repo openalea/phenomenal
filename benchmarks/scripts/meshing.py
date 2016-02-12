@@ -21,27 +21,26 @@ import alinea.phenomenal.viewer
 # ==============================================================================
 
 
-radius = 2
+voxel_size = 5
+voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
+    voxel_size=voxel_size)
 
-points_3d_path = alinea.phenomenal.plant_1.plant_1_points_3d_path(
-    radius=radius)
-
-points_3d = alinea.phenomenal.misc.read_xyz(points_3d_path)
 
 matrix, index, origin = alinea.phenomenal.data_transformation.\
-    points_3d_to_matrix(points_3d, radius)
+    points_3d_to_matrix(voxel_centers, voxel_size)
 
-vertices, faces = alinea.phenomenal.mesh.meshing(matrix, origin, radius)
+vertices, faces = alinea.phenomenal.mesh.meshing(matrix, origin, voxel_size)
 
-# Write
-alinea.phenomenal.misc.write_mesh(vertices, faces, 'mesh_radius_' + str(radius))
+# # Write
+# alinea.phenomenal.misc.write_mesh(vertices, faces, 'mesh_radius_' + str(voxel_size))
+#
+# # Read
+# vertices, faces = alinea.phenomenal.misc.read_mesh('mesh_radius_' + str(voxel_size))
 
-# Read
-vertices, faces = alinea.phenomenal.misc.read_mesh('mesh_radius_' + str(radius))
+# normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
+# centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
 
-normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
-centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
+# alinea.phenomenal.viewer.show_mesh(
+#     vertices, faces, normals=normals, centers=centers)
 
-alinea.phenomenal.viewer.show_mesh(
-    vertices, faces, normals=normals, centers=centers)
-
+alinea.phenomenal.viewer.show_mesh(vertices, faces)

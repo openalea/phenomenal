@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -18,7 +14,7 @@ import numpy
 # ==============================================================================
 
 
-def meshing(matrix, origin, radius):
+def meshing(matrix, origin, voxel_size):
 
     if len(matrix.shape) != 3 or matrix.shape < (2, 2, 2):
         return list(), list()
@@ -28,7 +24,7 @@ def meshing(matrix, origin, radius):
     faces = skimage.measure.correct_mesh_orientation(
         matrix, vertices, faces, gradient_direction='descent')
 
-    vertices = vertices * radius * 2 + origin
+    vertices = vertices * voxel_size + origin
 
     return vertices, faces
 

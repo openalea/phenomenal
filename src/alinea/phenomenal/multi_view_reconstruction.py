@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s):
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -15,10 +11,7 @@
 # ==============================================================================
 import collections
 import math
-
 import numpy
-
-
 # ==============================================================================
 
 
@@ -459,24 +452,27 @@ def project_voxel_centers_on_image(voxel_centers,
     out : numpy.ndarray
         Binary image
     """
-    height_image, length_image = shape_image
-    img = numpy.zeros((height_image, length_image), dtype=numpy.uint8)
+    height, length = shape_image
+    img = numpy.zeros((height, length), dtype=numpy.uint8)
 
     for voxel_center in voxel_centers:
         x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
             voxel_center, voxel_size, projection)
 
-        x_min = min(max(math.floor(x_min), 0), length_image - 1)
-        x_max = min(max(math.ceil(x_max), 0), length_image - 1)
-        y_min = min(max(math.floor(y_min), 0), height_image - 1)
-        y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+        x_min = min(max(math.floor(x_min), 0), length - 1)
+        x_max = min(max(math.ceil(x_max), 0), length - 1)
+        y_min = min(max(math.floor(y_min), 0), height - 1)
+        y_max = min(max(math.ceil(y_max), 0), height - 1)
 
         img[y_min:y_max + 1, x_min:x_max + 1] = 255
 
     return img
 
 
-def error_reconstruction(image_binary_ref, projection, voxel_centers, voxel_size):
+def error_reconstruction(image_binary_ref,
+                         projection,
+                         voxel_centers,
+                         voxel_size):
     """
     Project voxel_centers on a binary image and compare this image with
     image_binary_ref. Error is the number of all different pixel.
@@ -504,8 +500,12 @@ def error_reconstruction(image_binary_ref, projection, voxel_centers, voxel_size
     img = project_voxel_centers_on_image(
         voxel_centers, voxel_size, image_binary_ref.shape, projection)
 
-    img = numpy.subtract(img, image_binary_ref)
+    img_src = img.astype(numpy.int32)
+    img_ref = image_binary_ref.astype(numpy.int32)
+
+    img = numpy.subtract(img_src, img_ref)
     img[img == -255] = 255
+    img = img.astype(numpy.uint8)
 
     return numpy.count_nonzero(img)
 
@@ -540,10 +540,14 @@ def error_reconstruction_lost(image_binary_ref,
         Error value
     """
     img = project_voxel_centers_on_image(
-    voxel_centers, voxel_size, image_binary_ref.shape, projection)
+        voxel_centers, voxel_size, image_binary_ref.shape, projection)
 
-    img = numpy.subtract(image_binary_ref, img)
+    img_src = img.astype(numpy.int32)
+    img_ref = image_binary_ref.astype(numpy.int32)
+
+    img = numpy.subtract(img_ref, img_src)
     img[img == -255] = 0
+    img = img.astype(numpy.uint8)
 
     return numpy.count_nonzero(img)
 
@@ -580,8 +584,12 @@ def error_reconstruction_precision(image_binary_ref,
     img = project_voxel_centers_on_image(
         voxel_centers, voxel_size, image_binary_ref.shape, projection)
 
-    img = numpy.subtract(img, image_binary_ref)
+    img_src = img.astype(numpy.int32)
+    img_ref = image_binary_ref.astype(numpy.int32)
+
+    img = numpy.subtract(img_src, img_ref)
     img[img == -255] = 0
+    img = img.astype(numpy.uint8)
 
     return numpy.count_nonzero(img)
 
