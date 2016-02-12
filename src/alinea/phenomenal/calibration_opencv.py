@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -19,66 +15,13 @@ import numpy
 #  =============================================================================
 
 
-class CameraParameters(object):
+class Calibration(object):
     def __init__(self):
         self.focal_matrix = numpy.zeros((3, 3))
         self.distortion_coefficient = numpy.zeros((5, 1))
 
         self.rotation_vectors = dict()
         self.translation_vectors = dict()
-
-    def write(self, file_path):
-        save_class = dict()
-
-        fm = self.focal_matrix.reshape((9, )).tolist()
-        save_class['focal_matrix'] = fm
-
-        dc = self.distortion_coefficient.reshape((5, )).tolist()
-        save_class['distortion_coefficient'] = dc
-
-        rv = dict()
-        for angle in self.rotation_vectors:
-            rv[angle] = self.rotation_vectors[angle].reshape((3, )).tolist()
-        save_class['rotation_vectors'] = rv
-
-        tv = dict()
-        for angle in self.translation_vectors:
-            tv[angle] = self.translation_vectors[angle].reshape((3, )).tolist()
-        save_class['translation_vectors'] = tv
-
-        with open(file_path + '.json', 'w') as output_file:
-            json.dump(save_class, output_file)
-
-    @staticmethod
-    def read(file_path):
-        with open(file_path + '.json', 'r') as input_file:
-            save_class = json.load(input_file)
-
-            fm = numpy.array(save_class['focal_matrix']).reshape(
-                (3, 3)).astype(numpy.float32)
-
-            dc = numpy.array(save_class['distortion_coefficient']).reshape(
-                (5, 1)).astype(numpy.float32)
-
-            rv = dict()
-            for angle in save_class['rotation_vectors']:
-                rv[float(angle)] = numpy.array(
-                    save_class['rotation_vectors'][angle]).reshape(
-                        (3, 1)).astype(numpy.float32)
-
-            tv = dict()
-            for angle in save_class['translation_vectors']:
-                tv[float(angle)] = numpy.array(
-                    save_class['translation_vectors'][angle]).reshape(
-                        (3, 1)).astype(numpy.float32)
-
-            cp = CameraParameters()
-            cp.focal_matrix = fm
-            cp.rotation_vectors = rv
-            cp.translation_vectors = tv
-            cp.distortion_coefficient = dc
-
-        return cp
 
     def __str__(self):
         my_str = ''
@@ -108,35 +51,16 @@ class CameraParameters(object):
 
         return my_str
 
-
-def get_function_projection(camera_parameters, angle):
-
-    def project_point(point):
-        pt = numpy.reshape(point, (1, 3))
-        pt = pt.astype(numpy.float32)
-
-        projection_point, _ = cv2.projectPoints(
-            pt,
-            camera_parameters.rotation_vectors[angle],
-            camera_parameters.translation_vectors[angle],
-            camera_parameters.focal_matrix,
-            camera_parameters.distortion_coefficient)
-
-        return projection_point[0, 0, 0], projection_point[0, 0, 1]
-
-    return lambda pt3d: project_point(pt3d)
-
-
-class Calibration(object):
-
-    @staticmethod
-    def calibrate(chessboard, size_image):
+    def calibrate(self,
+                  ref_target_points_2d,
+                  ref_target_points_local_3d,
+                  size_image):
         image_points = list()
         object_points = list()
-        for angle in chessboard.corners_points:
-            corners = chessboard.corners_points[angle].astype(numpy.float32)
+        for angle in ref_target_points_2d:
+            corners = ref_target_points_2d[angle].astype(numpy.float32)
             image_points.append(corners)
-            pts_3d = numpy.array(chessboard.local_corners_position_3d())
+            pts_3d = numpy.array(ref_target_points_local_3d)
             pts_3d = pts_3d.astype(numpy.float32)
             object_points.append(pts_3d)
 
@@ -155,21 +79,84 @@ class Calibration(object):
                                 camera_matrix,
                                 distortion_coefficient,
                                 flags=cv2.CALIB_ZERO_TANGENT_DIST +
-                                cv2.CALIB_FIX_K1 +
-                                cv2.CALIB_FIX_K2 +
-                                cv2.CALIB_FIX_K3 +
-                                cv2.CALIB_FIX_K4 +
-                                cv2.CALIB_FIX_K5 +
-                                cv2.CALIB_FIX_K6)
+                                cv2.CALIB_FIX_K1 + cv2.CALIB_FIX_K2 +
+                                cv2.CALIB_FIX_K3 + cv2.CALIB_FIX_K4 +
+                                cv2.CALIB_FIX_K5 + cv2.CALIB_FIX_K6)
 
-        cp = CameraParameters()
-        cp.focal_matrix = focal_matrix
-        cp.distortion_coefficient = distortion_coefficient
+        self.focal_matrix = focal_matrix
+        self.distortion_coefficient = distortion_coefficient
 
         i = 0
-        for angle in chessboard.corners_points:
-            cp.rotation_vectors[angle] = rvecs[i]
-            cp.translation_vectors[angle] = tvecs[i]
+        for angle in ref_target_points_2d:
+            self.rotation_vectors[angle] = rvecs[i]
+            self.translation_vectors[angle] = tvecs[i]
             i += 1
 
-        return cp
+    def get_projection(self, angle):
+        def project_point(point):
+            pt = numpy.reshape(point, (1, 3))
+            pt = pt.astype(numpy.float32)
+
+            projection_point, _ = cv2.projectPoints(
+                pt,
+                self.rotation_vectors[angle],
+                self.translation_vectors[angle],
+                self.focal_matrix,
+                self.distortion_coefficient)
+
+            return projection_point[0, 0, 0], projection_point[0, 0, 1]
+
+        return lambda pt3d: project_point(pt3d)
+
+    def dump(self, file_path):
+        save_class = dict()
+
+        fm = self.focal_matrix.reshape((9, )).tolist()
+        save_class['focal_matrix'] = fm
+
+        dc = self.distortion_coefficient.reshape((5, )).tolist()
+        save_class['distortion_coefficient'] = dc
+
+        rv = dict()
+        for angle in self.rotation_vectors:
+            rv[angle] = self.rotation_vectors[angle].reshape((3, )).tolist()
+        save_class['rotation_vectors'] = rv
+
+        tv = dict()
+        for angle in self.translation_vectors:
+            tv[angle] = self.translation_vectors[angle].reshape((3, )).tolist()
+        save_class['translation_vectors'] = tv
+
+        with open(file_path + '.json', 'w') as output_file:
+            json.dump(save_class, output_file)
+
+    @staticmethod
+    def load(file_path):
+        with open(file_path + '.json', 'r') as input_file:
+            save_class = json.load(input_file)
+
+            fm = numpy.array(save_class['focal_matrix']).reshape(
+                (3, 3)).astype(numpy.float32)
+
+            dc = numpy.array(save_class['distortion_coefficient']).reshape(
+                (5, 1)).astype(numpy.float32)
+
+            rv = dict()
+            for angle in save_class['rotation_vectors']:
+                rv[float(angle)] = numpy.array(
+                    save_class['rotation_vectors'][angle]).reshape(
+                        (3, 1)).astype(numpy.float32)
+
+            tv = dict()
+            for angle in save_class['translation_vectors']:
+                tv[float(angle)] = numpy.array(
+                    save_class['translation_vectors'][angle]).reshape(
+                        (3, 1)).astype(numpy.float32)
+
+            c = Calibration()
+            c.focal_matrix = fm
+            c.rotation_vectors = rv
+            c.translation_vectors = tv
+            c.distortion_coefficient = dc
+
+        return c

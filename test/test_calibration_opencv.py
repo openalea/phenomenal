@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -16,32 +12,35 @@
 import numpy
 import os
 
-from alinea.phenomenal.multi_view_reconstruction import reconstruction_3d
-from alinea.phenomenal.chessboard import Chessboard
-from alinea.phenomenal.plant_1 import (plant_1_chessboards_path,
-                                       plant_1_images_binarize)
-from alinea.phenomenal.calibration_opencv import (CameraParameters,
-                                                  Calibration,
-                                                  get_function_projection)
+from alinea.phenomenal.multi_view_reconstruction import (
+    reconstruction_3d)
+
+from alinea.phenomenal.plant_1 import (
+    plant_1_chessboards,
+    plant_1_images_binarize)
+
+from alinea.phenomenal.calibration_opencv import (
+    Calibration)
 # ==============================================================================
 
 
 def test_calibration_opencv():
-    chessboards_path = plant_1_chessboards_path()
 
-    # Load Chessboard
-    chessboard_1 = Chessboard.read(chessboards_path[0])
+    chess_1, chess_2 = plant_1_chessboards()
 
-    c = Calibration()
-    cp = c.calibrate(chessboard_1, (2056, 2454))
-    cp.write('test_calibration_opencv')
-    cam_params = CameraParameters.read('test_calibration_opencv')
+    calibration = Calibration()
+    calibration.calibrate(chess_1.corners_points,
+                          chess_1.get_corners_local_3d(),
+                          (2056, 2454))
+
+    calibration.dump('test_calibration_opencv')
+    calibration = Calibration.load('test_calibration_opencv')
 
     images_binarize = plant_1_images_binarize()
     images_projections = list()
     for angle in [0, 30, 60, 90]:
         img = images_binarize[angle]
-        projection = get_function_projection(cam_params, angle)
+        projection = calibration.get_projection(angle)
         images_projections.append((img, projection))
 
     voxel_size = 16
@@ -55,7 +54,7 @@ def test_calibration_opencv():
 
 
 def test_camera_opencv_parameters():
-    cp = CameraParameters()
+    cp = Calibration()
 
     assert (cp.focal_matrix == 0).all()
     assert (cp.distortion_coefficient == 0).all()
@@ -78,8 +77,8 @@ def test_camera_opencv_parameters():
     cp.translation_vectors[10] = numpy.ones((3, 1))
     cp.translation_vectors[80] = numpy.zeros((3, 1))
 
-    cp.write('test_camera_opencv_parameters')
-    new_cp = CameraParameters.read('test_camera_opencv_parameters')
+    cp.dump('test_camera_opencv_parameters')
+    new_cp = Calibration.load('test_camera_opencv_parameters')
 
     assert new_cp.focal_matrix[0][0] == 42
     assert new_cp.focal_matrix[1][1] == 1
