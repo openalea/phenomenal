@@ -39,7 +39,7 @@ def test_multi_view_reconstruction_manual_1():
     shape_image = (2454, 2056)
     for angle in range(0, 360, 30):
 
-        projection = calibration.get_function_projection(angle)
+        projection = calibration.get_projection(angle)
 
         img = project_voxel_centers_on_image(voxel_centers,
                                              voxel_size,
@@ -71,7 +71,7 @@ def test_multi_view_reconstruction_manual_2():
 
     images_projections = list()
     for angle in range(0, 360, 30):
-        projection = calibration.get_function_projection(angle)
+        projection = calibration.get_projection(angle)
         img = images[angle]
         images_projections.append((img, projection))
 

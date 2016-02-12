@@ -469,7 +469,10 @@ def project_voxel_centers_on_image(voxel_centers,
     return img
 
 
-def error_reconstruction(image_binary_ref, projection, voxel_centers, voxel_size):
+def error_reconstruction(image_binary_ref,
+                         projection,
+                         voxel_centers,
+                         voxel_size):
     """
     Project voxel_centers on a binary image and compare this image with
     image_binary_ref. Error is the number of all different pixel.
@@ -497,8 +500,12 @@ def error_reconstruction(image_binary_ref, projection, voxel_centers, voxel_size
     img = project_voxel_centers_on_image(
         voxel_centers, voxel_size, image_binary_ref.shape, projection)
 
-    img = numpy.subtract(img, image_binary_ref)
+    img_src = img.astype(numpy.int32)
+    img_ref = image_binary_ref.astype(numpy.int32)
+
+    img = numpy.subtract(img_src, img_ref)
     img[img == -255] = 255
+    img = img.astype(numpy.uint8)
 
     return numpy.count_nonzero(img)
 
@@ -533,10 +540,14 @@ def error_reconstruction_lost(image_binary_ref,
         Error value
     """
     img = project_voxel_centers_on_image(
-    voxel_centers, voxel_size, image_binary_ref.shape, projection)
+        voxel_centers, voxel_size, image_binary_ref.shape, projection)
 
-    img = numpy.subtract(image_binary_ref, img)
+    img_src = img.astype(numpy.int32)
+    img_ref = image_binary_ref.astype(numpy.int32)
+
+    img = numpy.subtract(img_ref, img_src)
     img[img == -255] = 0
+    img = img.astype(numpy.uint8)
 
     return numpy.count_nonzero(img)
 
@@ -573,8 +584,12 @@ def error_reconstruction_precision(image_binary_ref,
     img = project_voxel_centers_on_image(
         voxel_centers, voxel_size, image_binary_ref.shape, projection)
 
-    img = numpy.subtract(img, image_binary_ref)
+    img_src = img.astype(numpy.int32)
+    img_ref = image_binary_ref.astype(numpy.int32)
+
+    img = numpy.subtract(img_src, img_ref)
     img[img == -255] = 0
+    img = img.astype(numpy.uint8)
 
     return numpy.count_nonzero(img)
 

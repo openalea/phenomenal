@@ -9,7 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-""" Module to visualize via Mayavi and Matplotlib plant data """
+""" Module to visualize plant data via Mayavi and Matplotlib"""
 # ==============================================================================
 import cv2
 import numpy
@@ -98,7 +98,7 @@ def plot_segments(segments,
 
     return color
 
-#       ========================================================================
+# ==============================================================================
 
 
 def show_images(images,
@@ -178,23 +178,16 @@ def show_image_with_chessboard_corners(image, corners,
     matplotlib.pyplot.show()
 
 
-def show_chessboard_3d_projection_on_image(image, angle, chessboard,
-                                           chessboard_params, projection,
+def show_chessboard_3d_projection_on_image(image,
+                                           points_2d_1,
+                                           points_2d_2,
                                            name_windows=""):
     img = image.copy()
 
-    # Plot Corners detect by OpenCv
-    corners = chessboard.corners_points[angle]
-    corners = corners.astype(int)
-    img[corners[:, 0, 1], corners[:, 0, 0]] = [0, 0, 255]
+    points_2d_1 = points_2d_1.astype(int)
+    img[points_2d_1[:, 0, 1], points_2d_1[:, 0, 0]] = [0, 0, 255]
 
-    # Plot projection of position conners of chessboard 3d
-    chessboard_pts = chessboard.global_corners_position_3d(
-        *chessboard_params.get_parameters())
-
-    corners = [projection.project_point(pt, angle) for pt in chessboard_pts]
-    for corner in corners:
-        x, y = corner
+    for x, y in points_2d_2:
         img[int(y), int(x)] = [255, 0, 0]
 
     # Show image

@@ -10,8 +10,7 @@
 #
 # ==============================================================================
 from alinea.phenomenal.calibration_opencv import (
-    CameraParameters,
-    get_function_projection)
+    Calibration)
 
 from alinea.phenomenal.plant_1 import (
     plant_1_params_camera_opencv_path)
@@ -36,13 +35,13 @@ def test_multi_view_reconstruction_opencv_1():
     voxel_centers = build_object_1(size, voxel_size, voxel_center)
 
     # ==========================================================================
-    cam_params = CameraParameters.read(plant_1_params_camera_opencv_path())
+    calibration = Calibration.load(plant_1_params_camera_opencv_path())
 
     images_projections = list()
     shape_image = (2454, 2056)
     for angle in [0, 30, 60, 90]:
 
-        projection = get_function_projection(cam_params, angle)
+        projection = calibration.get_projection(angle)
 
         img = project_voxel_centers_on_image(voxel_centers,
                                              voxel_size,
@@ -64,12 +63,12 @@ def test_multi_view_reconstruction_opencv_1():
 
 def test_multi_view_reconstruction_opencv_2():
     voxel_size = 8
-    cam_params = CameraParameters.read(plant_1_params_camera_opencv_path())
+    calibration = Calibration.load(plant_1_params_camera_opencv_path())
     images = build_images_1()
 
     images_projections = list()
     for angle in [0, 30, 60, 90]:
-        projection = get_function_projection(cam_params, angle)
+        projection = calibration.get_projection(angle)
         img = images[angle]
         images_projections.append((img, projection))
 
