@@ -9,10 +9,8 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.plant_1 import plant_1_calibration_params_path
-from alinea.phenomenal.calibration_model import (CameraModelParameters,
-                                                 ModelProjection,
-                                                 get_function_projection)
+from alinea.phenomenal.plant_1 import (
+    plant_1_calibration_camera_side_2_target)
 
 from alinea.phenomenal.multi_view_reconstruction import (
     get_bounding_box_voxel_projected)
@@ -36,21 +34,19 @@ def test_bbox_projection_1():
 
 
 def test_bbox_projection_2():
-    params_camera_path, _ = plant_1_calibration_params_path()
-    cam_params = CameraModelParameters.read(params_camera_path)
-
     angle = 0
-    projection = get_function_projection(cam_params, angle)
+    calibration = plant_1_calibration_camera_side_2_target()
+    projection = calibration.get_projection(angle)
 
     voxel_center = (0, 0, 0)
     voxel_size = 8
 
     res = get_bounding_box_voxel_projected(voxel_center, voxel_size, projection)
 
-    assert res == (1016.657969220734,
-                   1026.3381434879657,
-                   1258.4181735951754,
-                   1265.3138726030732)
+    assert res == (1018.058444183795,
+                   1024.9521441659995,
+                   1257.5202770509525,
+                   1264.4101621922243)
 
 if __name__ == "__main__":
     test_bbox_projection_1()

@@ -14,6 +14,10 @@ import glob
 
 import openalea.deploy.shared_data
 import alinea.phenomenal
+
+from alinea.phenomenal.chessboard import Chessboard
+from alinea.phenomenal.calibration import CalibrationCameraSideWith2Target
+from alinea.phenomenal.misc import read_xyz
 # ==============================================================================
 
 
@@ -63,7 +67,7 @@ def plant_1_images_binarize():
 
     images = dict()
     for i in range(len(files_path)):
-        images[angles[i]] = cv2.imread(files_path[i], cv2.IMREAD_UNCHANGED)
+        images[angles[i]] = cv2.imread(files_path[i], cv2.IMREAD_GRAYSCALE)
 
     return images
 
@@ -178,32 +182,26 @@ def plant_1_background_hsv():
     return background_hsv
 
 
-def plant_1_chessboards_path():
+def plant_1_chessboards():
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
 
     data_directory = shared_directory + '/plant_1/'
 
-    chessboards_path = list()
-    chessboards_path.append(data_directory + 'chessboard_1')
-    chessboards_path.append(data_directory + 'chessboard_2')
+    chess_1 = Chessboard.load(data_directory + 'chessboard_1')
+    chess_2 = Chessboard.load(data_directory + 'chessboard_2')
 
-    return chessboards_path
+    return chess_1, chess_2
 
 
-def plant_1_calibration_params_path():
+def plant_1_calibration_camera_side_2_target():
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
 
     data_directory = shared_directory + '/plant_1/'
+    file_path = data_directory + 'calibration_camera_side_2_target'
 
-    params_camera_path = data_directory + 'params_camera'
-
-    params_chessboards_path = list()
-    params_chessboards_path.append(data_directory + 'params_chessboard_1')
-    params_chessboards_path.append(data_directory + 'params_chessboard_2')
-
-    return params_camera_path, params_chessboards_path
+    return CalibrationCameraSideWith2Target.load(file_path)
 
 
 def plant_1_params_camera_opencv_path():
@@ -217,14 +215,15 @@ def plant_1_params_camera_opencv_path():
     return params_camera_opencv_path
 
 
-def plant_1_points_3d_path(radius=2):
+def plant_1_voxel_centers(voxel_size=10):
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
 
     data_directory = shared_directory + '/plant_1/'
 
-    if 1 <= int(radius) <= 15:
-        return data_directory + 'points_3d_radius_' + str(int(radius))
+    if 3 <= int(voxel_size) <= 20:
+        path = data_directory + 'voxel_centers_size_' + str(int(voxel_size))
+        return read_xyz(path)
 
     return None
 

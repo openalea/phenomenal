@@ -1,12 +1,6 @@
 # -*- python -*-
 #
-#       script_validation.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
-#
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -14,10 +8,7 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
+# ==============================================================================
 import glob
 import random
 import matplotlib.pyplot
@@ -26,12 +17,7 @@ import cv2
 import json
 
 import alinea.phenomenal.chessboard
-
-#       ========================================================================
-#       Code
-#       ========================================================================
-#       Local Import
-
+# ==============================================================================
 
 def load_chessboard(data_directory, nb_image):
     import alinea.phenomenal.chessboard

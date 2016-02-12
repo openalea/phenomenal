@@ -27,7 +27,7 @@ def test_chessboard_1():
 def test_chessboard_2():
     chess = Chessboard(50, (8, 6))
 
-    result = chess.local_corners_position_3d()
+    result = chess.get_corners_local_3d()
 
     assert numpy.array_equal(result[8 * 0 + 0], [0., 0., 0.])
     assert numpy.array_equal(result[8 * 0 + 1], [50., 0., 0.])

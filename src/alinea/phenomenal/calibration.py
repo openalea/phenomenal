@@ -13,19 +13,20 @@ where a target is rotating instead of a plant in a picture cabin.
 # ==============================================================================
 from math import radians, cos, sin, pi
 import json
+
 import numpy
 import scipy.optimize
-
 
 from alinea.phenomenal.frame import (
     Frame,
     x_axis,
     y_axis,
     z_axis)
-
 from alinea.phenomenal.transformations import (
     concatenate_matrices,
     rotation_matrix)
+
+
 # ==============================================================================
 
 
@@ -43,6 +44,28 @@ class CalibrationCamera(object):
         self._cam_rot_y = None
         self._cam_rot_z = None
         self._cam_origin_axis = None
+
+    def __str__(self):
+        out = ''
+        out += 'Camera Parameters : \n'
+        out += '\tFocal length X : ' + str(self._cam_focal_length_x) + '\n'
+        out += '\tFocal length Y : ' + str(self._cam_focal_length_y) + '\n'
+        out += '\tOptical Center X : ' + str(self._cam_width_image / 2.0) + '\n'
+        out += '\tOptical Center Y : ' + str(self._cam_height_image / 2.0)
+        out += '\n\n'
+
+        out += '\tPosition X : ' + str(self._cam_pos_x) + '\n'
+        out += '\tPosition Y : ' + str(self._cam_pos_y) + '\n'
+        out += '\tPosition Z : ' + str(self._cam_pos_z) + '\n\n'
+
+        out += '\tRotation X : ' + str(self._cam_rot_x) + '\n'
+        out += '\tRotation Y : ' + str(self._cam_rot_y) + '\n'
+        out += '\tRotation Z : ' + str(self._cam_rot_z) + '\n'
+
+        out += '\tOrigin rotation position : \n'
+        out += str(self._cam_origin_axis) + '\n\n'
+
+        return out
 
     @staticmethod
     def pixel_coordinates(point_3d,
@@ -110,6 +133,7 @@ class CalibrationCamera(object):
             radians(alpha))
 
         return map(lambda pt: fr_target.global_point(pt), ref_points_local_3d)
+
 
     def get_projection(self, alpha):
 
@@ -288,12 +312,13 @@ class CalibrationCameraTopWith1Target(CalibrationCamera):
         self._cam_rot_y = parameters[4]
         self._cam_rot_z = parameters[5]
 
+        err = self.fit_function(parameters)
         if self._verbose:
-            err = self.fit_function(parameters)
             print 'Result : ', parameters
             print 'Err : ', err, ' -- ', err / self._ref_number
-
         self._verbose = False
+
+        return err / self._ref_number
 
 
 class CalibrationCameraSideWith1Target(CalibrationCamera):
@@ -317,6 +342,20 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
         self._target_rot_x = None
         self._target_rot_y = None
         self._target_rot_z = None
+
+    def __str__(self):
+        out = ''
+        out += CalibrationCamera.__str__(self)
+
+        out += 'Target : \n'
+        out += '\tPosition X : ' + str(self._target_pos_x) + '\n'
+        out += '\tPosition Y : ' + str(self._target_pos_y) + '\n'
+        out += '\tPosition Z : ' + str(self._target_pos_z) + '\n\n'
+        out += '\tRotation X : ' + str(self._target_rot_x) + '\n'
+        out += '\tRotation Y : ' + str(self._target_rot_y) + '\n'
+        out += '\tRotation Z : ' + str(self._target_rot_z) + '\n\n'
+
+        return out
 
     def fit_function(self, x0):
         err = 0
@@ -443,12 +482,13 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
         self._target_rot_y = parameters[10]
         self._target_rot_z = parameters[11]
 
+        err = self.fit_function(parameters)
         if self._verbose:
-            err = self.fit_function(parameters)
             print 'Result : ', parameters
             print 'Err : ', err, ' -- ', err / self._ref_number
 
         self._verbose = False
+        return err / self._ref_number
 
     @staticmethod
     def load(file_path):
@@ -518,6 +558,33 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
 
         return map(lambda pt: fr_target.global_point(pt), ref_points_local_3d)
 
+    def get_target_projected(self, alpha, ref_target_1_points_local_3d):
+
+        fr_cam = self.camera_frame(
+            self._cam_pos_x, self._cam_pos_y, self._cam_pos_z,
+            self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
+            self._cam_origin_axis)
+
+        fr_target = self.target_frame(self._target_pos_x,
+                                      self._target_pos_y,
+                                      self._target_pos_z,
+                                      self._target_rot_x,
+                                      self._target_rot_y,
+                                      self._target_rot_z,
+                                      radians(alpha))
+
+        target_pts = map(lambda pt: fr_target.global_point(pt),
+                         ref_target_1_points_local_3d)
+
+        pts = map(lambda pt: self.pixel_coordinates(
+            fr_cam.local_point(pt),
+            self._cam_width_image,
+            self._cam_height_image,
+            self._cam_focal_length_x,
+            self._cam_focal_length_y), target_pts)
+
+        return pts
+
 
 class CalibrationCameraSideWith2Target(CalibrationCamera):
     def __init__(self):
@@ -549,6 +616,28 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         self._target_2_rot_x = None
         self._target_2_rot_y = None
         self._target_2_rot_z = None
+
+    def __str__(self):
+        out = ''
+        out += CalibrationCamera.__str__(self)
+
+        out += 'Target 1: \n'
+        out += '\tPosition X : ' + str(self._target_1_pos_x) + '\n'
+        out += '\tPosition Y : ' + str(self._target_1_pos_y) + '\n'
+        out += '\tPosition Z : ' + str(self._target_1_pos_z) + '\n\n'
+        out += '\tRotation X : ' + str(self._target_1_rot_x) + '\n'
+        out += '\tRotation Y : ' + str(self._target_1_rot_y) + '\n'
+        out += '\tRotation Z : ' + str(self._target_1_rot_z) + '\n\n'
+
+        out += 'Target 2: \n'
+        out += '\tPosition X : ' + str(self._target_2_pos_x) + '\n'
+        out += '\tPosition Y : ' + str(self._target_2_pos_y) + '\n'
+        out += '\tPosition Z : ' + str(self._target_2_pos_z) + '\n\n'
+        out += '\tRotation X : ' + str(self._target_2_rot_x) + '\n'
+        out += '\tRotation Y : ' + str(self._target_2_rot_y) + '\n'
+        out += '\tRotation Z : ' + str(self._target_2_rot_z) + '\n\n'
+
+        return out
 
     def fit_function(self, x0):
         err = 0
@@ -665,6 +754,60 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
 
         return best_parameters
 
+    def get_target_1_projected(self, alpha, ref_target_1_points_local_3d):
+
+        fr_cam = self.camera_frame(
+            self._cam_pos_x, self._cam_pos_y, self._cam_pos_z,
+            self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
+            self._cam_origin_axis)
+
+        fr_target = self.target_frame(self._target_1_pos_x,
+                                      self._target_1_pos_y,
+                                      self._target_1_pos_z,
+                                      self._target_1_rot_x,
+                                      self._target_1_rot_y,
+                                      self._target_1_rot_z,
+                                      radians(alpha))
+
+        target_pts = map(lambda pt: fr_target.global_point(pt),
+                         ref_target_1_points_local_3d)
+
+        pts = map(lambda pt: self.pixel_coordinates(
+            fr_cam.local_point(pt),
+            self._cam_width_image,
+            self._cam_height_image,
+            self._cam_focal_length_x,
+            self._cam_focal_length_y), target_pts)
+
+        return pts
+
+    def get_target_2_projected(self, alpha, ref_target_2_points_local_3d):
+
+        fr_cam = self.camera_frame(
+            self._cam_pos_x, self._cam_pos_y, self._cam_pos_z,
+            self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
+            self._cam_origin_axis)
+
+        fr_target = self.target_frame(self._target_2_pos_x,
+                                      self._target_2_pos_y,
+                                      self._target_2_pos_z,
+                                      self._target_2_rot_x,
+                                      self._target_2_rot_y,
+                                      self._target_2_rot_z,
+                                      radians(alpha))
+
+        target_pts = map(lambda pt: fr_target.global_point(pt),
+                         ref_target_2_points_local_3d)
+
+        pts = map(lambda pt: self.pixel_coordinates(
+            fr_cam.local_point(pt),
+            self._cam_width_image,
+            self._cam_height_image,
+            self._cam_focal_length_x,
+            self._cam_focal_length_y), target_pts)
+
+        return pts
+
     def calibrate(self,
                   ref_target_1_points_2d,
                   ref_target_1_points_local_3d,
@@ -727,12 +870,14 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         self._target_2_rot_y = parameters[16]
         self._target_2_rot_z = parameters[17]
 
+        err = self.fit_function(parameters)
         if self._verbose:
-            err = self.fit_function(parameters)
             print 'Result : ', parameters
             print 'Err : ', err, ' -- ', err / self._ref_number
 
         self._verbose = False
+
+        return err / self._ref_number
 
     def dump(self, file_path):
         save_class = dict()

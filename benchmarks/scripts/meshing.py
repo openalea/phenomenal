@@ -22,14 +22,12 @@ import alinea.phenomenal.viewer
 
 
 voxel_size = 5
+voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
+    voxel_size=voxel_size)
 
-points_3d_path = alinea.phenomenal.plant_1.plant_1_points_3d_path(
-    radius=voxel_size / 2)
-
-points_3d = alinea.phenomenal.misc.read_xyz(points_3d_path)
 
 matrix, index, origin = alinea.phenomenal.data_transformation.\
-    points_3d_to_matrix(points_3d, voxel_size)
+    points_3d_to_matrix(voxel_centers, voxel_size)
 
 vertices, faces = alinea.phenomenal.mesh.meshing(matrix, origin, voxel_size)
 
