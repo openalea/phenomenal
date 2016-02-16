@@ -21,20 +21,20 @@ import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.viewer
 # ==============================================================================
 # Load Chessboard
-chess_1, chess_2 = plant_1_chessboards()
+chess_1, _, _ = plant_1_chessboards()
 
 # ==============================================================================
 # Calibration
 
-# calibration = alinea.phenomenal.calibration.CalibrationCameraSideWith1Target()
-# calibration.calibrate(chess_1.get_corners_2d(),
-#                       chess_1.get_corners_local_3d(),
-#                       (2056, 2454),
-#                       number_of_repetition=2,
-#                       verbose=True)
-#
-# # Dump & Load
-# calibration.dump('benchmarks_calibration_1_target')
+calibration = alinea.phenomenal.calibration.CalibrationCameraSideWith1Target()
+calibration.calibrate(chess_1.get_corners_2d(),
+                      chess_1.get_corners_local_3d(),
+                      (2056, 2454),
+                      number_of_repetition=3,
+                      verbose=True)
+
+# Dump & Load
+calibration.dump('benchmarks_calibration_1_target')
 calibration = CalibrationCameraSideWith1Target.load(
     'benchmarks_calibration_1_target')
 
@@ -66,17 +66,17 @@ files_path = glob.glob(data_directory + '*.png')
 angles = map(lambda x: int((x.split('_sv')[1]).split('.png')[0]), files_path)
 
 for i in range(len(files_path)):
-
     angle = angles[i]
-    img = cv2.imread(files_path[i], cv2.IMREAD_UNCHANGED)
+    if angle in [0, 90]:
+        img = cv2.imread(files_path[i], cv2.IMREAD_UNCHANGED)
 
-    points_2d = calibration.get_target_projected(
-        angles[i], chess_1.get_corners_local_3d())
+        points_2d = calibration.get_target_projected(
+            angles[i], chess_1.get_corners_local_3d())
 
-    # Blue is pt ref
-    # Red is pt projected
-    alinea.phenomenal.viewer.show_chessboard_3d_projection_on_image(
-        img,
-        chess_1.corners_points[angle],
-        points_2d,
-        name_windows=str(angles[i]))
+        # Blue is pt ref
+        # Red is pt projected
+        alinea.phenomenal.viewer.show_chessboard_3d_projection_on_image(
+            img,
+            chess_1.corners_points[angle],
+            points_2d,
+            name_windows=str(angles[i]))

@@ -23,22 +23,22 @@ def test_projection_1():
     pt_3d = (-472, -472, 200)
     projection = calibration.get_projection(angle)
     pt_2d = projection(pt_3d)
-    assert pt_2d == (1465.5468883568233, 1074.736078031063)
+    assert pt_2d == (1337.425449561377, 1070.8621710384346)
 
     angle = 0
     projection = calibration.get_projection(angle)
     pt_3d = (0.0, 0.0, 0.0)
     pt_2d = projection(pt_3d)
-    assert pt_2d == (1021.5053162011903, 1260.9652045590892)
+    assert pt_2d == (1021.5504552422917, 1261.7274393727464)
 
     pt_3d = (100.0, 100.0, 0.0)
     pt_2d = projection(pt_3d)
-    assert pt_2d == (937.24706174348887, 1260.6718179928703)
+    assert pt_2d == (963.19212737191492, 1261.5234983629146)
 
     angle = 90
     projection = calibration.get_projection(angle)
     pt_2d = projection(pt_3d)
-    assert pt_2d == (1105.7594000551171, 1261.2585766032989)
+    assert pt_2d == (1125.9214666496891, 1262.0921778812051)
 
 # ==============================================================================
 # LOCAL TEST
