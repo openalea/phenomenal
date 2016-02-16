@@ -41,9 +41,7 @@ def test_1():
                                       verbose=True)
 
     if voxel_size == 8:
-        assert len(voxel_centers) == 22648
-    if voxel_size == 4:
-        assert len(voxel_centers) == 119330
+        assert len(voxel_centers) == 22993
 
     # # Viewing
     # show_points_3d(voxel_centers, scale_factor=20)
