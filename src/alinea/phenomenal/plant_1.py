@@ -191,7 +191,9 @@ def plant_1_chessboards():
     chess_1 = Chessboard.load(data_directory + 'chessboard_1')
     chess_2 = Chessboard.load(data_directory + 'chessboard_2')
 
-    return chess_1, chess_2
+    chess_top = Chessboard.load(data_directory + 'chessboard_top')
+
+    return chess_1, chess_2, chess_top
 
 
 def plant_1_calibration_camera_side_2_target():

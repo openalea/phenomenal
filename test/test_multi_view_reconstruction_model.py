@@ -57,9 +57,10 @@ def test_multi_view_reconstruction_model_1():
                                       voxel_size=voxel_size,
                                       verbose=True)
 
-    assert len(voxel_centers) == 216
+    assert len(voxel_centers) == 288
     volume = len(voxel_centers) * voxel_size**3
-    assert volume == 1728000
+    assert volume == 2304000
+
 
 def test_multi_view_reconstruction_model_2():
 
@@ -84,7 +85,7 @@ def test_multi_view_reconstruction_model_2():
                                       verbose=True)
 
     print len(voxel_centers)
-    assert len(voxel_centers) == 7320
+    assert len(voxel_centers) == 7280
 
     for image, projection in images_projections:
         err = error_reconstruction(

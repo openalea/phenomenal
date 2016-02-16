@@ -144,7 +144,7 @@ def mesh(points_3d, radius, file_path):
 
 def main():
 
-    images_directory = '../local/data_set_0962_A310_ARCH2013-05-13/'
+    images_directory = '../../local/data_set_0962_A310_ARCH2013-05-13/'
     file_images = alinea.phenomenal.misc.load_files(images_directory)
 
     for pot_id in file_images:

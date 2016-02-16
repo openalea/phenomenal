@@ -12,31 +12,25 @@
 import alinea.phenomenal.plant_1
 import alinea.phenomenal.multi_view_reconstruction
 import alinea.phenomenal.viewer
-from alinea.phenomenal.chessboard import (
-    Chessboard)
+
 from alinea.phenomenal.calibration import (
     CalibrationCameraSideWith2Target)
 # ==============================================================================
 
-chessboards_path = alinea.phenomenal.plant_1.plant_1_chessboards_path()
-
-# Load Chessboard
-chessboard_1 = Chessboard.load(chessboards_path[0])
-chessboard_2 = Chessboard.load(chessboards_path[1])
-
+chess_1, chess_2, _ = alinea.phenomenal.plant_1.plant_1_chessboards()
 size_image = (2056, 2454)
 calibration_side = CalibrationCameraSideWith2Target()
-calibration_side.calibrate(chessboard_1.get_corners_2d(),
-                           chessboard_1.get_corners_local_3d(),
-                           chessboard_2.get_corners_2d(),
-                           chessboard_2.get_corners_local_3d(),
+calibration_side.calibrate(chess_1.get_corners_2d(),
+                           chess_1.get_corners_local_3d(),
+                           chess_2.get_corners_2d(),
+                           chess_2.get_corners_local_3d(),
                            size_image,
-                           number_of_repetition=3,
+                           number_of_repetition=5,
                            verbose=True)
 
-calibration_side.dump('calibration_camera_side_2_target')
+calibration_side.dump('benchmarks_calibration_camera_side_2_target')
 calibration_side = CalibrationCameraSideWith2Target.load(
-    'calibration_camera_side_2_target')
+    'benchmarks_calibration_camera_side_2_target')
 
 
 # ==============================================================================
