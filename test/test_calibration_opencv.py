@@ -26,7 +26,7 @@ from alinea.phenomenal.calibration_opencv import (
 
 def test_calibration_opencv():
 
-    chess_1, chess_2 = plant_1_chessboards()
+    chess_1, chess_2, _ = plant_1_chessboards()
 
     calibration = Calibration()
     calibration.calibrate(chess_1.corners_points,

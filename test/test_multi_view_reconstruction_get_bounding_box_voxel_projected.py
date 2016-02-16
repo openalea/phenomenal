@@ -42,11 +42,10 @@ def test_bbox_projection_2():
     voxel_size = 8
 
     res = get_bounding_box_voxel_projected(voxel_center, voxel_size, projection)
-
-    assert res == (1018.058444183795,
-                   1024.9521441659995,
-                   1257.5202770509525,
-                   1264.4101621922243)
+    assert res == (1017.3089948473056,
+                   1025.7875288183795,
+                   1258.2799614482235,
+                   1265.171426935121)
 
 if __name__ == "__main__":
     test_bbox_projection_1()

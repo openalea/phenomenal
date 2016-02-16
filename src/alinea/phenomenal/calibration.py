@@ -43,6 +43,7 @@ class CalibrationCamera(object):
         self._cam_rot_x = None
         self._cam_rot_y = None
         self._cam_rot_z = None
+        self._angle_factor = None
         self._cam_origin_axis = None
 
     def __str__(self):
@@ -61,6 +62,8 @@ class CalibrationCamera(object):
         out += '\tRotation X : ' + str(self._cam_rot_x) + '\n'
         out += '\tRotation Y : ' + str(self._cam_rot_y) + '\n'
         out += '\tRotation Z : ' + str(self._cam_rot_z) + '\n'
+
+        out += '\t Angle Factor : ' + str(self._angle_factor) + '\n'
 
         out += '\tOrigin rotation position : \n'
         out += str(self._cam_origin_axis) + '\n\n'
@@ -122,19 +125,6 @@ class CalibrationCamera(object):
 
         return Frame(rot[:3, :3].T, origin)
 
-    @staticmethod
-    def get_ref_points_global_3d(alpha, ref_points_local_3d,
-                                 target_pos_x, target_pos_y, target_pos_z,
-                                 target_rot_x, target_rot_y, target_rot_z):
-
-        fr_target = CalibrationCamera.target_frame(
-            target_pos_x, target_pos_y, target_pos_z,
-            target_rot_x, target_rot_y, target_rot_z,
-            radians(alpha))
-
-        return map(lambda pt: fr_target.global_point(pt), ref_points_local_3d)
-
-
     def get_projection(self, alpha):
 
         fr_cam = self.camera_frame(
@@ -142,7 +132,7 @@ class CalibrationCamera(object):
             self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
             self._cam_origin_axis,)
 
-        angle = radians(alpha)
+        angle = radians(alpha * self._angle_factor)
 
         def projection(pt):
             # -pt[0] = x <=> For inverse X axis orientation
@@ -175,6 +165,7 @@ class CalibrationCamera(object):
             c._cam_rot_x = save_class['cam_rot_x']
             c._cam_rot_y = save_class['cam_rot_y']
             c._cam_rot_z = save_class['cam_rot_z']
+            c._angle_factor = save_class['angle_factor']
             c._cam_origin_axis = numpy.array(
                 save_class['cam_origin_axis']).reshape((4, 4)).astype(
                 numpy.float32)
@@ -194,6 +185,7 @@ class CalibrationCamera(object):
         save_class['cam_rot_x'] = self._cam_rot_x
         save_class['cam_rot_y'] = self._cam_rot_y
         save_class['cam_rot_z'] = self._cam_rot_z
+        save_class['angle_factor'] = self._angle_factor
         save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
             (16, )).tolist()
 
@@ -216,8 +208,6 @@ class CalibrationCameraTopWith1Target(CalibrationCamera):
 
         self._ref_number = None
 
-        self._cam_pos_x = 0.0
-        self._cam_pos_y = 0.0
         self._cam_origin_axis = numpy.array([[0., -1., 0., 0.],
                                              [1., 0., 0., 0.],
                                              [0., 0., 1., 0.],
@@ -227,23 +217,21 @@ class CalibrationCameraTopWith1Target(CalibrationCamera):
         err = 0
 
         cam_focal_length_x, cam_focal_length_y, \
-            cam_pos_z, \
-            cam_rot_x, cam_rot_z, cam_rot_z = x0
+            cam_pos_x, cam_pos_y, cam_pos_z, \
+            cam_rot_x, cam_rot_y, cam_rot_z = x0
 
         fr_cam = self.camera_frame(
-            self._cam_pos_x, self._cam_pos_y, cam_pos_z,
-            cam_rot_x, cam_rot_z, cam_rot_z,
+            cam_pos_x, cam_pos_y, cam_pos_z,
+            cam_rot_x, cam_rot_y, cam_rot_z,
             self._cam_origin_axis)
 
         for alpha, ref_pts in self._ref_target_points_2d.items():
-            target_pts = self._ref_target_points_global_3d[alpha]
-
             pts = map(lambda pt: self.pixel_coordinates(
                 fr_cam.local_point(pt),
                 self._cam_width_image,
                 self._cam_height_image,
                 cam_focal_length_x,
-                cam_focal_length_y), target_pts)
+                cam_focal_length_y), self._ref_target_points_global_3d[alpha])
 
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
@@ -259,13 +247,15 @@ class CalibrationCameraTopWith1Target(CalibrationCamera):
 
             cam_focal_length_x = numpy.random.uniform(0.0, 10000.0)
             cam_focal_length_y = numpy.random.uniform(0.0, 10000.0)
+            cam_pos_x = numpy.random.uniform(-500.0, 500.0)
+            cam_pos_y = numpy.random.uniform(-500.0, 500.0)
             cam_pos_z = numpy.random.uniform(0.0, 10000.0)
             cam_rot_x = 0.0
             cam_rot_y = 0.0
             cam_rot_z = 0.0
 
             parameters = [cam_focal_length_x, cam_focal_length_y,
-                          cam_pos_z,
+                          cam_pos_x, cam_pos_y, cam_pos_z,
                           cam_rot_x, cam_rot_y, cam_rot_z]
 
             # Optimization
@@ -284,14 +274,56 @@ class CalibrationCameraTopWith1Target(CalibrationCamera):
 
         return best_parameters
 
+    def get_global_point_projected(self, ref_target_points_global_3d):
+
+        fr_cam = self.camera_frame(
+            self._cam_pos_x, self._cam_pos_y, self._cam_pos_z,
+            self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
+            self._cam_origin_axis)
+
+        pts = map(lambda pt: self.pixel_coordinates(
+            fr_cam.local_point(pt),
+            self._cam_width_image,
+            self._cam_height_image,
+            self._cam_focal_length_x,
+            self._cam_focal_length_y), ref_target_points_global_3d)
+
+        return pts
+
+    @staticmethod
+    def load(file_path):
+        with open(file_path + '.json', 'r') as input_file:
+            save_class = json.load(input_file)
+
+            c = CalibrationCameraTopWith1Target()
+
+            c._cam_width_image = save_class['cam_width_image']
+            c._cam_height_image = save_class['cam_height_image']
+            c._cam_focal_length_x = save_class['cam_focal_length_x']
+            c._cam_focal_length_y = save_class['cam_focal_length_y']
+            c._cam_pos_x = save_class['cam_pos_x']
+            c._cam_pos_y = save_class['cam_pos_y']
+            c._cam_pos_z = save_class['cam_pos_z']
+            c._cam_rot_x = save_class['cam_rot_x']
+            c._cam_rot_y = save_class['cam_rot_y']
+            c._cam_rot_z = save_class['cam_rot_z']
+            c._angle_factor = save_class['angle_factor']
+            c._cam_origin_axis = numpy.array(
+                save_class['cam_origin_axis']).reshape((4, 4)).astype(
+                numpy.float32)
+
+        return c
+
     def calibrate(self,
                   ref_target_points_2d,
                   ref_target_points_global_3d,
                   size_image,
+                  angle_factor,
                   number_of_repetition=1,
                   verbose=False):
 
         self._verbose = verbose
+        self._angle_factor = angle_factor
 
         self._ref_target_points_2d = ref_target_points_2d.copy()
         self._ref_number = len(ref_target_points_2d)
@@ -302,20 +334,23 @@ class CalibrationCameraTopWith1Target(CalibrationCamera):
 
         parameters = self.find_parameters(number_of_repetition)
 
-        for i in [3, 4, 5]:
+        for i in [5, 6, 7]:
             parameters[i] %= pi * 2.0
 
         self._cam_focal_length_x = parameters[0]
         self._cam_focal_length_y = parameters[1]
-        self._cam_pos_z = parameters[2]
-        self._cam_rot_x = parameters[3]
-        self._cam_rot_y = parameters[4]
-        self._cam_rot_z = parameters[5]
+        self._cam_pos_x = parameters[2]
+        self._cam_pos_y = parameters[3]
+        self._cam_pos_z = parameters[4]
+        self._cam_rot_x = parameters[5]
+        self._cam_rot_y = parameters[6]
+        self._cam_rot_z = parameters[7]
 
         err = self.fit_function(parameters)
         if self._verbose:
             print 'Result : ', parameters
             print 'Err : ', err, ' -- ', err / self._ref_number
+
         self._verbose = False
 
         return err / self._ref_number
@@ -329,7 +364,6 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
         self._ref_number = None
         self._ref_target_points_2d = None
 
-        self._cam_pos_y = 0.0
         self._cam_pos_z = 0.0
         self._cam_origin_axis = numpy.array([[0., 0., 1., 0.],
                                              [1., 0., 0., 0.],
@@ -361,13 +395,14 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
         err = 0
 
         cam_focal_length_x, cam_focal_length_y, \
-            cam_pos_x, \
+            cam_pos_x, cam_pos_y, \
             cam_rot_x, cam_rot_y, cam_rot_z, \
+            angle_factor, \
             target_pos_x, target_pos_y, target_pos_z, \
             target_rot_x, target_rot_y, target_rot_z = x0
 
         fr_cam = self.camera_frame(
-            cam_pos_x, self._cam_pos_y, self._cam_pos_z,
+            cam_pos_x, cam_pos_y, self._cam_pos_z,
             cam_rot_x, cam_rot_y, cam_rot_z,
             self._cam_origin_axis,)
 
@@ -375,7 +410,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
             fr_target = self.target_frame(
                 target_pos_x, target_pos_y, target_pos_z,
                 target_rot_x, target_rot_y, target_rot_z,
-                radians(alpha))
+                radians(alpha * angle_factor))
 
             target_pts = map(lambda pt: fr_target.global_point(pt),
                              self._ref_target_points_local_3d)
@@ -403,9 +438,12 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
             cam_focal_length_x = numpy.random.uniform(1000.0, 10000.0)
             cam_focal_length_y = numpy.random.uniform(1000.0, 10000.0)
             cam_pos_x = numpy.random.uniform(1000.0, 10000.0)
+            cam_pos_y = 0.0
             cam_rot_x = 0.0
             cam_rot_y = 0.0
             cam_rot_z = 0.0
+
+            angle_factor = 1.0
 
             target_pos_x = numpy.random.uniform(-1000.0, 1000.0)
             target_pos_y = numpy.random.uniform(-1000.0, 1000.0)
@@ -415,8 +453,9 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
             target_rot_z = 0.0
 
             parameters = [cam_focal_length_x, cam_focal_length_y,
-                          cam_pos_x,
+                          cam_pos_x, cam_pos_y,
                           cam_rot_x, cam_rot_y, cam_rot_z,
+                          angle_factor,
                           target_pos_x, target_pos_y, target_pos_z,
                           target_rot_x, target_rot_y, target_rot_z]
 
@@ -463,24 +502,27 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
 
         parameters = self.find_parameters(number_of_repetition)
 
-        for i in [3, 4, 5, 9, 10, 11]:
+        for i in [4, 5, 6, 11, 12, 13]:
             parameters[i] %= pi * 2.0
 
         # Camera Parameters
         self._cam_focal_length_x = parameters[0]
         self._cam_focal_length_y = parameters[1]
         self._cam_pos_x = parameters[2]
-        self._cam_rot_x = parameters[3]
-        self._cam_rot_y = parameters[4]
-        self._cam_rot_z = parameters[5]
+        self._cam_pos_y = parameters[3]
+        self._cam_rot_x = parameters[4]
+        self._cam_rot_y = parameters[5]
+        self._cam_rot_z = parameters[6]
+
+        self._angle_factor = parameters[7]
 
         # Target Parameters
-        self._target_pos_x = parameters[6]
-        self._target_pos_y = parameters[7]
-        self._target_pos_z = parameters[8]
-        self._target_rot_x = parameters[9]
-        self._target_rot_y = parameters[10]
-        self._target_rot_z = parameters[11]
+        self._target_pos_x = parameters[8]
+        self._target_pos_y = parameters[9]
+        self._target_pos_z = parameters[10]
+        self._target_rot_x = parameters[11]
+        self._target_rot_y = parameters[12]
+        self._target_rot_z = parameters[13]
 
         err = self.fit_function(parameters)
         if self._verbose:
@@ -507,6 +549,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
             c._cam_rot_x = save_class['cam_rot_x']
             c._cam_rot_y = save_class['cam_rot_y']
             c._cam_rot_z = save_class['cam_rot_z']
+            c._angle_factor = save_class['angle_factor']
             c._cam_origin_axis = numpy.array(
                 save_class['cam_origin_axis']).reshape((4, 4)).astype(
                 numpy.float32)
@@ -533,6 +576,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
         save_class['cam_rot_x'] = self._cam_rot_x
         save_class['cam_rot_y'] = self._cam_rot_y
         save_class['cam_rot_z'] = self._cam_rot_z
+        save_class['angle_factor'] = self._angle_factor
         save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
             (16, )).tolist()
 
@@ -554,7 +598,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
         fr_target = CalibrationCamera.target_frame(
             self._target_pos_x, self._target_pos_y, self._target_pos_z,
             self._target_rot_x, self._target_rot_y, self._target_rot_z,
-            radians(alpha))
+            radians(alpha * self._angle_factor))
 
         return map(lambda pt: fr_target.global_point(pt), ref_points_local_3d)
 
@@ -571,7 +615,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
                                       self._target_rot_x,
                                       self._target_rot_y,
                                       self._target_rot_z,
-                                      radians(alpha))
+                                      radians(alpha * self._angle_factor))
 
         target_pts = map(lambda pt: fr_target.global_point(pt),
                          ref_target_1_points_local_3d)
@@ -596,7 +640,6 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         self._ref_target_1_points_2d = None
         self._ref_target_2_points_2d = None
 
-        self._cam_pos_y = 0.0
         self._cam_pos_z = 0.0
         self._cam_origin_axis = numpy.array([[0., 0., 1., 0.],
                                              [1., 0., 0., 0.],
@@ -643,15 +686,16 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         err = 0
 
         cam_focal_length_x, cam_focal_length_y, \
-            cam_pos_x, \
+            cam_pos_x, cam_pos_y, \
             cam_rot_x, cam_rot_y, cam_rot_z, \
+            angle_factor, \
             target_1_pos_x, target_1_pos_y, target_1_pos_z,\
             target_1_rot_x, target_1_rot_y, target_1_rot_z,\
             target_2_pos_x, target_2_pos_y, target_2_pos_z,\
             target_2_rot_x, target_2_rot_y, target_2_rot_z = x0
 
         fr_cam = self.camera_frame(
-            cam_pos_x, self._cam_pos_y, self._cam_pos_z,
+            cam_pos_x, cam_pos_y, self._cam_pos_z,
             cam_rot_x, cam_rot_y, cam_rot_z,
             self._cam_origin_axis)
 
@@ -663,7 +707,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                           target_1_rot_x,
                                           target_1_rot_y,
                                           target_1_rot_z,
-                                          radians(alpha))
+                                          radians(alpha * angle_factor))
 
             target_pts = map(lambda pt: fr_target.global_point(pt),
                              self._ref_target_1_points_local_3d)
@@ -685,7 +729,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                           target_2_rot_x,
                                           target_2_rot_y,
                                           target_2_rot_z,
-                                          radians(alpha))
+                                          radians(alpha * angle_factor))
 
             target_pts = map(lambda pt: fr_target.global_point(pt),
                              self._ref_target_2_points_local_3d)
@@ -713,9 +757,12 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
             cam_focal_length_x = numpy.random.uniform(1000.0, 10000.0)
             cam_focal_length_y = numpy.random.uniform(1000.0, 10000.0)
             cam_pos_x = numpy.random.uniform(1000.0, 10000.0)
+            cam_pos_y = 0.0
             cam_rot_x = 0.0
             cam_rot_y = 0.0
             cam_rot_z = 0.0
+
+            angle_factor = 1.0
 
             target_1_pos_x = numpy.random.uniform(-1000.0, 1000.0)
             target_1_pos_y = numpy.random.uniform(-1000.0, 1000.0)
@@ -732,8 +779,9 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
             target_2_rot_z = 0.0
 
             parameters = [cam_focal_length_x, cam_focal_length_y,
-                          cam_pos_x,
+                          cam_pos_x, cam_pos_y,
                           cam_rot_x, cam_rot_y, cam_rot_z,
+                          angle_factor,
                           target_1_pos_x, target_1_pos_y, target_1_pos_z,
                           target_1_rot_x, target_1_rot_y, target_1_rot_z,
                           target_2_pos_x, target_2_pos_y, target_2_pos_z,
@@ -767,7 +815,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                       self._target_1_rot_x,
                                       self._target_1_rot_y,
                                       self._target_1_rot_z,
-                                      radians(alpha))
+                                      radians(alpha * self._angle_factor))
 
         target_pts = map(lambda pt: fr_target.global_point(pt),
                          ref_target_1_points_local_3d)
@@ -794,7 +842,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                       self._target_2_rot_x,
                                       self._target_2_rot_y,
                                       self._target_2_rot_z,
-                                      radians(alpha))
+                                      radians(alpha * self._angle_factor))
 
         target_pts = map(lambda pt: fr_target.global_point(pt),
                          ref_target_2_points_local_3d)
@@ -807,6 +855,36 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
             self._cam_focal_length_y), target_pts)
 
         return pts
+
+    def get_target_1_ref_points_global_3d(self,
+                                          alpha,
+                                          ref_target_1_points_local_3d):
+
+        fr_target = self.target_frame(self._target_1_pos_x,
+                                      self._target_1_pos_y,
+                                      self._target_1_pos_z,
+                                      self._target_1_rot_x,
+                                      self._target_1_rot_y,
+                                      self._target_1_rot_z,
+                                      radians(alpha * self._angle_factor))
+
+        return map(lambda pt: fr_target.global_point(pt),
+                   ref_target_1_points_local_3d)
+
+    def get_target_2_ref_points_global_3d(self,
+                                          alpha,
+                                          ref_target_2_points_local_3d):
+
+        fr_target = self.target_frame(self._target_2_pos_x,
+                                      self._target_2_pos_y,
+                                      self._target_2_pos_z,
+                                      self._target_2_rot_x,
+                                      self._target_2_rot_y,
+                                      self._target_2_rot_z,
+                                      radians(alpha * self._angle_factor))
+
+        return map(lambda pt: fr_target.global_point(pt),
+                   ref_target_2_points_local_3d)
 
     def calibrate(self,
                   ref_target_1_points_2d,
@@ -843,32 +921,35 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
 
         parameters = self.find_parameters(number_of_repetition)
 
-        for i in [3, 4, 5, 9, 10, 11, 15, 16, 17]:
+        for i in [4, 5, 6, 11, 12, 13, 17, 18, 19]:
             parameters[i] %= pi * 2.0
 
         # Camera Parameters
         self._cam_focal_length_x = parameters[0]
         self._cam_focal_length_y = parameters[1]
         self._cam_pos_x = parameters[2]
-        self._cam_rot_x = parameters[3]
-        self._cam_rot_y = parameters[4]
-        self._cam_rot_z = parameters[5]
+        self._cam_pos_y = parameters[3]
+        self._cam_rot_x = parameters[4]
+        self._cam_rot_y = parameters[5]
+        self._cam_rot_z = parameters[6]
+
+        self._angle_factor = parameters[7]
 
         # Target 1 Parameters
-        self._target_1_pos_x = parameters[6]
-        self._target_1_pos_y = parameters[7]
-        self._target_1_pos_z = parameters[8]
-        self._target_1_rot_x = parameters[9]
-        self._target_1_rot_y = parameters[10]
-        self._target_1_rot_z = parameters[11]
+        self._target_1_pos_x = parameters[8]
+        self._target_1_pos_y = parameters[9]
+        self._target_1_pos_z = parameters[10]
+        self._target_1_rot_x = parameters[11]
+        self._target_1_rot_y = parameters[12]
+        self._target_1_rot_z = parameters[13]
 
         # Target 2 Parameters
-        self._target_2_pos_x = parameters[12]
-        self._target_2_pos_y = parameters[13]
-        self._target_2_pos_z = parameters[14]
-        self._target_2_rot_x = parameters[15]
-        self._target_2_rot_y = parameters[16]
-        self._target_2_rot_z = parameters[17]
+        self._target_2_pos_x = parameters[14]
+        self._target_2_pos_y = parameters[15]
+        self._target_2_pos_z = parameters[16]
+        self._target_2_rot_x = parameters[17]
+        self._target_2_rot_y = parameters[18]
+        self._target_2_rot_z = parameters[19]
 
         err = self.fit_function(parameters)
         if self._verbose:
@@ -892,6 +973,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         save_class['cam_rot_x'] = self._cam_rot_x
         save_class['cam_rot_y'] = self._cam_rot_y
         save_class['cam_rot_z'] = self._cam_rot_z
+        save_class['angle_factor'] = self._angle_factor
         save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
             (16, )).tolist()
 
@@ -932,6 +1014,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
             c._cam_rot_x = save_class['cam_rot_x']
             c._cam_rot_y = save_class['cam_rot_y']
             c._cam_rot_z = save_class['cam_rot_z']
+            c._angle_factor = save_class['angle_factor']
             c._cam_origin_axis = numpy.array(
                 save_class['cam_origin_axis']).reshape((4, 4)).astype(
                 numpy.float32)
@@ -950,6 +1033,4 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
             c._target_2_rot_y = save_class['target_2_rot_y']
             c._target_2_rot_z = save_class['target_2_rot_z']
 
-
         return c
-
