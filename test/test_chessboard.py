@@ -110,7 +110,7 @@ def test_chessboard_3():
     ref = numpy.around(ref, decimals=5)
     assert numpy.array_equiv(res, ref)
 
-if __name__ == "__main__":
-    test_chessboard_1()
-    test_chessboard_2()
-    test_chessboard_3()
+# if __name__ == "__main__":
+#     test_chessboard_1()
+#     test_chessboard_2()
+#     test_chessboard_3()
