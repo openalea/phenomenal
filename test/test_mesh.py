@@ -13,48 +13,52 @@ import numpy
 
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
+import alinea.phenomenal.plant_1
 # ==============================================================================
 
 
-def test_mesh_1():
-    size = 10
-    origin = (0.0, 0.0, 0.0)
-    radius = 5
+def test_mesh_empty_voxel_centers():
 
-    matrix = numpy.zeros((size, size, size), dtype=numpy.uint8)
-    matrix[1:9, 1:9, 1:9] = 1
-    vertices, faces = alinea.phenomenal.mesh.meshing(matrix, origin, radius)
+    voxel_size = 8
+    voxel_centers = list()
 
-
-def test_mesh_2():
-
-    radius = 8
-    points_3d = list()
-
-    mat, index, origin = alinea.phenomenal.data_transformation.\
-        points_3d_to_matrix(points_3d, radius)
-
-    vertices, faces = alinea.phenomenal.mesh.meshing(mat, origin, radius)
+    vertices, faces = alinea.phenomenal.mesh.meshing(
+        voxel_centers, voxel_size)
 
     assert vertices == list()
     assert faces == list()
 
 
-def test_mesh_3():
+def test_mesh_one_voxel_centers():
+    voxel_size = 1
+    voxel_centers = list()
+    voxel_centers.append((0, 0, 0))
 
-    radius = 1
-    points_3d = list()
-    points_3d.append((0, 0, 0))
-    points_3d.append((1, 1, 2))
+    vertices, faces = alinea.phenomenal.mesh.meshing(
+        voxel_centers, voxel_size)
 
-    mat, index, origin = alinea.phenomenal.data_transformation.\
-        points_3d_to_matrix(points_3d, radius)
+    assert vertices == list()
+    assert faces == list()
 
-    vertices, faces = alinea.phenomenal.mesh.meshing(mat, origin, radius)
 
-# ==============================================================================
+def test_mesh_two_voxel_center():
+    voxel_size = 5
+    voxel_centers = list()
+    voxel_centers.append((0, 0, 0))
+    voxel_centers.append((1, 1, 2))
 
-if __name__ == "__main__":
-    test_mesh_1()
-    test_mesh_2()
-    test_mesh_3()
+    vertices, faces = alinea.phenomenal.mesh.meshing(
+        voxel_centers, voxel_size)
+
+    assert vertices == list()
+    assert faces == list()
+
+
+def test_mesh_normal():
+    voxel_size = 20
+    voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
+        voxel_size=voxel_size)
+
+    vertices, faces = alinea.phenomenal.mesh.meshing(voxel_centers, voxel_size)
+
+    print vertices, faces

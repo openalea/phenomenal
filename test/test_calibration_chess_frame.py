@@ -10,11 +10,16 @@
 #
 # ==============================================================================
 from math import cos, sin, radians
+
 import numpy
 
 from alinea.phenomenal.frame import Frame, x_axis, y_axis, z_axis
 from alinea.phenomenal.transformations import (
     concatenate_matrices, rotation_matrix)
+from alinea.phenomenal.plant_1 import (
+    plant_1_calibration_camera_side_2_target)
+
+
 # ==============================================================================
 
 
@@ -85,6 +90,36 @@ def test_chess_frame():
     print f_90.global_point((10, 0, 0))
     print f_900.global_point((10, 0, 0))
 
+# ==============================================================================
+
+def test_frame():
+    c = plant_1_calibration_camera_side_2_target()
+
+    print c._cam_pos_x, c._cam_pos_y, c._cam_pos_z
+    print c._cam_rot_x, c._cam_rot_y, c._cam_rot_z
+
+    fr_cam = c.camera_frame(c._cam_pos_x, c._cam_pos_y, c._cam_pos_z,
+                            c._cam_rot_x, c._cam_rot_y, c._cam_rot_z,
+                            c._cam_origin_axis)
+
+    # print fr_cam.global_point((0, 0, 0))
+    # print fr_cam.global_point((-50, 0, -2500))
+    print fr_cam.global_point((-100, 0, -5000))
+    print fr_cam.local_point((0, 0, 0))
+
+    print c._cam_focal_length_x, c._cam_focal_length_y
+    print c._cam_width_image / 2.0, c._cam_height_image / 2.0
+
+    pt2d = c.pixel_coordinates(fr_cam.local_point((0, 0, 0)),
+                               c._cam_width_image,
+                               c._cam_height_image,
+                               c._cam_focal_length_x,
+                               c._cam_focal_length_y)
+
+    print pt2d
+    # print fr_cam.local_point((5000, 100, 0))
+
 
 if __name__ == "__main__":
-    test_chess_frame()
+    test_frame()
+    # test_chess_frame()

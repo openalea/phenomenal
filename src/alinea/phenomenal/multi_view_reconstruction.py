@@ -39,14 +39,8 @@ def get_bounding_box_voxel_projected(voxel_center, voxel_size, projection):
     """
 
     voxel_corners = get_voxel_corners(voxel_center, voxel_size)
-
-    lx = list()
-    ly = list()
-    for voxel_corner in voxel_corners:
-        x, y = projection(voxel_corner)
-
-        lx.append(x)
-        ly.append(y)
+    pt_projected = [projection(voxel_corner) for voxel_corner in voxel_corners]
+    lx, ly = zip(*pt_projected)
 
     return min(lx), max(lx), min(ly), max(ly)
 

@@ -54,7 +54,7 @@ def plot_points_3d(points_3d, color=None, scale_factor=5):
     return color
 
 
-def plot_vectors(vectors, color=None, tube_radius=8.0):
+def plot_vectors(vectors, color=None, tube_radius=5.0):
     if color is None:
         color = (random.uniform(0, 1),
                  random.uniform(0, 1),
@@ -231,7 +231,7 @@ def show_poly_data(poly_data, colored=True):
     renderer.AddActor(actor)
     renderer.SetActiveCamera(camera)
     renderer.ResetCamera()
-    renderer.SetBackground(1, 1, 1)
+    renderer.SetBackground(0, 0, 0)
 
     render_window.SetSize(600, 600)
 

@@ -694,6 +694,8 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
             target_2_pos_x, target_2_pos_y, target_2_pos_z,\
             target_2_rot_x, target_2_rot_y, target_2_rot_z = x0
 
+        # cam_pos_y = max(min(cam_pos_y, 500), -500)
+
         fr_cam = self.camera_frame(
             cam_pos_x, cam_pos_y, self._cam_pos_z,
             cam_rot_x, cam_rot_y, cam_rot_z,
