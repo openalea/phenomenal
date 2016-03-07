@@ -28,7 +28,7 @@ def test_data_transformation_1():
     assert points_3d[1] == (1., 2., 19.)
     assert len(points_3d) == matrix.size
 
-    mat, index, origin = alinea.phenomenal.data_transformation.\
+    mat, origin = alinea.phenomenal.data_transformation.\
         points_3d_to_matrix(points_3d, voxel_size)
 
     assert mat.ndim == 3
@@ -112,11 +112,10 @@ def test_data_transformation_3():
     points_3d = list()
     points_3d.append((1, 42, 1))
 
-    mat, index, origin = alinea.phenomenal.data_transformation.\
+    mat, origin = alinea.phenomenal.data_transformation.\
         points_3d_to_matrix(points_3d, voxel_size)
 
     assert mat == [[[1]]]
-    assert index[0] == (0, 0, 0)
     assert origin == (1, 42, 1)
 
     points_3d = alinea.phenomenal.data_transformation.\
