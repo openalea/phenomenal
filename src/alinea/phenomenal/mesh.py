@@ -9,29 +9,97 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import skimage.measure
 import numpy
 import vtk
 import vtk.util.numpy_support
+
+from alinea.phenomenal.data_transformation import \
+    (limit_points_3d, voxel_centers_to_vtk_image_data)
 # ==============================================================================
 
 
-def meshing(matrix, origin, voxel_size):
+def meshing(voxel_centers, voxel_size,
+            smoothing=False, reduction=0.0, verbose=False):
 
-    if len(matrix.shape) != 3 or matrix.shape < (2, 2, 2):
+    if not voxel_centers:
         return list(), list()
 
-    vertices, faces = skimage.measure.marching_cubes(matrix, 0.5)
+    vtk_image_data = voxel_centers_to_vtk_image_data(voxel_centers, voxel_size)
 
-    faces = skimage.measure.correct_mesh_orientation(
-        matrix, vertices, faces, gradient_direction='descent')
+    vtk_poly_data = marching_cubes(vtk_image_data)
 
-    vertices = vertices * voxel_size + origin
+    if smoothing:
+        vtk_poly_data = smoothing(vtk_poly_data)
+
+    if 0.0 < reduction < 1.0:
+        vtk_poly_data = decimation(
+            vtk_poly_data, reduction=reduction, verbose=verbose)
+
+    if vtk_poly_data.GetNumberOfPoints() == 0:
+        return list(), list()
+
+    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(voxel_centers)
+
+    vertices, faces = vtk_poly_data_to_vertices_faces(vtk_poly_data)
+
+    vertices = vertices * voxel_size + (x_min, y_min, z_min)
 
     return vertices, faces
 
 
-def create_poly_data(vertices, faces):
+def marching_cubes(vtk_image_data, iso_value=0.5):
+
+    surface = vtk.vtkMarchingCubes()
+    surface.SetInputData(vtk_image_data)
+    surface.ComputeNormalsOn()
+    surface.SetValue(0, iso_value)
+    surface.Update()
+
+    return surface.GetOutput()
+
+
+def smoothing(vtk_poly_data,
+                   feature_angle=120.0,
+                   number_of_iteration=5,
+                   pass_band=0.01):
+
+    smoother = vtk.vtkWindowedSincPolyDataFilter()
+    smoother.SetInputData(vtk_poly_data)
+    smoother.BoundarySmoothingOn()
+    smoother.SetFeatureAngle(feature_angle)
+    smoother.SetPassBand(pass_band)
+    smoother.SetNumberOfIterations(number_of_iteration)
+    smoother.Update()
+
+    return smoother.GetOutput()
+
+
+def decimation(vtk_poly_data, reduction=0.95, verbose=False):
+
+    if verbose:
+        print "Before decimation" \
+            "\n-----------------\n" \
+            "There are", vtk_poly_data.GetNumberOfPoints(), "points.\n" \
+            "There are", vtk_poly_data.GetNumberOfPolys(), "polygons.\n"
+
+    decimate = vtk.vtkQuadricDecimation()
+    decimate.SetTargetReduction(reduction)
+    decimate.SetInputData(vtk_poly_data)
+    decimate.Update()
+
+    vtk_poly_decimated = vtk.vtkPolyData()
+    vtk_poly_decimated.ShallowCopy(decimate.GetOutput())
+
+    if verbose:
+        print "After decimation" \
+            "\n----------------\n" \
+            "There are", vtk_poly_decimated.GetNumberOfPoints(), "points.\n" \
+            "There are", vtk_poly_decimated.GetNumberOfPolys(), "polygons.\n"
+
+    return vtk_poly_decimated
+
+
+def vertices_faces_to_vtk_poly_data(vertices, faces):
     # Makes a vtkIdList from a Python iterable. I'm kinda surprised that
     # this is necessary, since I assumed that this kind of thing would
     # have been built into the wrapper and happen transparently, but it
@@ -61,40 +129,16 @@ def create_poly_data(vertices, faces):
     return poly_data
 
 
-def create_vertices_faces(poly_data):
+def vtk_poly_data_to_vertices_faces(vtk_poly_data):
     vertices = vtk.util.numpy_support.vtk_to_numpy(
-        poly_data.GetPoints().GetData())
+        vtk_poly_data.GetPoints().GetData())
 
     faces = vtk.util.numpy_support.vtk_to_numpy(
-        poly_data.GetPolys().GetData())
+        vtk_poly_data.GetPolys().GetData())
 
     faces = faces.reshape((len(faces) / 4, 4))
 
     return vertices, faces[:, 1:]
-
-
-def mesh_decimation(poly_data, verbose=False):
-
-    if verbose is True:
-        print "Before decimation" \
-            "\n-----------------\n" \
-            "There are", poly_data.GetNumberOfPoints(), "points.\n" \
-            "There are", poly_data.GetNumberOfPolys(), "polygons.\n"
-
-    decimate = vtk.vtkQuadricDecimation()
-    decimate.SetTargetReduction(0.99)
-    decimate.SetInputData(poly_data)
-    decimate.Update()
-
-    poly_decimated = vtk.vtkPolyData()
-    poly_decimated.ShallowCopy(decimate.GetOutput())
-
-    print "After decimation" \
-        "\n----------------\n" \
-        "There are", poly_decimated.GetNumberOfPoints(), "points.\n" \
-        "There are", poly_decimated.GetNumberOfPolys(), "polygons.\n"
-
-    return poly_decimated
 
 
 def compute_normal(vertices, faces):

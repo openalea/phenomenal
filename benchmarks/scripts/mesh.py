@@ -20,19 +20,12 @@ import alinea.phenomenal.mesh
 import alinea.phenomenal.viewer
 # ==============================================================================
 
-
-voxel_size = 5
+voxel_size = 3
 voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
     voxel_size=voxel_size)
 
-
-matrix, index, origin = alinea.phenomenal.data_transformation.\
-    points_3d_to_matrix(voxel_centers, voxel_size)
-
-print 'Shape matrix', matrix.shape, matrix[0, :, :].shape
-# ==============================================================================
-
-vertices, faces = alinea.phenomenal.mesh.meshing(matrix, origin, voxel_size)
+vertices, faces = alinea.phenomenal.mesh.meshing(
+    voxel_centers, voxel_size, reduction=0.95, smoothing=True, verbose=True)
 
 # Write
 alinea.phenomenal.misc.write_mesh(
@@ -45,5 +38,5 @@ vertices, faces = alinea.phenomenal.misc.read_mesh(
 normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
 centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
 
-alinea.phenomenal.viewer.show_mesh(
-    vertices, faces, normals=normals, centers=centers)
+alinea.phenomenal.viewer.show_mesh(vertices, faces,
+                                   normals=normals, centers=centers)

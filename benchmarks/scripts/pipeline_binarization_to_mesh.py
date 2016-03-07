@@ -179,8 +179,8 @@ def main():
 
             # ==================================================================
             # Mesh
-            file_path = os.path.join(images_directory, 'mesh', file_name)
-            vertices, faces = mesh(points_3d, radius, file_path)
+            # file_path = os.path.join(images_directory, 'mesh', file_name)
+            # vertices, faces = mesh(points_3d, radius, file_path)
 
 #       ========================================================================
 #       LOCAL TEST
