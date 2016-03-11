@@ -71,9 +71,9 @@ setup(
     install_requires=[],
     dependency_links=['http://openalea.gforge.inria.fr/pi'],
 
-    # Eventually include data in your package
-    # (flowing is to include all versioned files other than .py)
-    include_package_data=True,
+    # # Eventually include data in your package
+    # # (flowing is to include all versioned files other than .py)
+    # include_package_data=True,
 
     # (you can provide an exclusion dictionary named exclude_package_data to remove parasites).
     # alternatively to global inclusion, list the file to include
