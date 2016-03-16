@@ -9,8 +9,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import numpy
-
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
 import alinea.phenomenal.plant_1
