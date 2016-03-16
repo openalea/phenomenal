@@ -13,41 +13,127 @@ import numpy
 import vtk
 import vtk.util.numpy_support
 
-from alinea.phenomenal.data_transformation import \
-    (limit_points_3d, voxel_centers_to_vtk_image_data)
+from alinea.phenomenal.data_transformation import (
+    voxel_centers_to_vtk_image_data,
+    vtk_poly_data_to_vertices_faces)
+
 # ==============================================================================
 
 
 def meshing(voxel_centers, voxel_size,
-            smoothing=False, reduction=0.0, verbose=False):
+            smoothing_iteration=0, reduction=0.0, verbose=False):
+    """
+    Build a  polygonal mesh representation (vertices and faces) from voxels.
+
+    Firstly :
+        A marching cubes algorithm is apply to compute the polygonal mesh.
+
+    Secondly :
+        A smoothing algorithm is apply according the number of iteration
+        indicate/
+
+    Thirdly :
+        A mesh decimation algorithm is apply according the percentage of
+        reduction indicate.
+
+    Parameters
+    ----------
+    voxel_centers : [(x, y, z)]
+        cList (collections.deque) of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    smoothing_iteration : int, optional
+
+
+    reduction : float, optional
+        Center position of the first original voxel, who will be split.
+
+    verbose : bool, optional
+        If True, print for some information of each part of the algorithms
+
+    Returns
+    -------
+    vertices : [(x, y, z), ...]
+        Spatial coordinates for unique mesh vertices.
+
+    faces : [(V1, V2, V3), ...]
+        Define triangular faces via referencing vertex indices from vertices.
+        This algorithm specifically outputs triangles, so each face has exactly
+        three indices
+    """
 
     if not voxel_centers:
         return list(), list()
 
-    vtk_image_data = voxel_centers_to_vtk_image_data(voxel_centers, voxel_size)
+    vtk_image_data, real_origin = voxel_centers_to_vtk_image_data(
+        voxel_centers, voxel_size)
 
-    vtk_poly_data = marching_cubes(vtk_image_data)
+    vtk_poly_data = marching_cubes(vtk_image_data, verbose=verbose)
 
-    if smoothing:
-        vtk_poly_data = smoothing(vtk_poly_data)
+    if 1 < smoothing_iteration:
+        vtk_poly_data = smoothing(
+            vtk_poly_data,
+            number_of_iteration=smoothing_iteration,
+            verbose=verbose)
 
     if 0.0 < reduction < 1.0:
         vtk_poly_data = decimation(
-            vtk_poly_data, reduction=reduction, verbose=verbose)
+            vtk_poly_data,
+            reduction=reduction,
+            verbose=verbose)
 
     if vtk_poly_data.GetNumberOfPoints() == 0:
         return list(), list()
 
-    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(voxel_centers)
-
     vertices, faces = vtk_poly_data_to_vertices_faces(vtk_poly_data)
-
-    vertices = vertices * voxel_size + (x_min, y_min, z_min)
+    vertices = vertices * voxel_size + real_origin
 
     return vertices, faces
 
 
-def marching_cubes(vtk_image_data, iso_value=0.5):
+def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
+    """
+    Call of vtkMarchingCubes on a vtk_image_data with iso_value
+
+    vtkMarchingCubes is a filter that takes as input a volume
+    (e.g., 3D structured point set) and generates on output one or more
+    isosurfaces.
+
+    One or more contour values must be specified to generate the isosurfaces.
+    Alternatively, you can specify a min/max scalar range and the number of
+    contours to generate a series of evenly spaced contour values.
+
+    Parameters
+    ----------
+    vtk_image_data : vtkImageData
+        vtkImageData is a data object that is a concrete implementation of
+        vtkDataSet. vtkImageData represents a geometric structure that is a
+        topological and geometrical regular array of points. Examples include
+        volumes (voxel data) and pixmaps.
+
+    iso_value : float, optional
+        Contour value to search for isosurfaces in volume.
+
+    verbose : bool, optional
+        If True, print for some information of each part of the algorithms
+
+    Returns
+    -------
+    put : vtkPolyData
+        vtkPolyData is a data object that is a concrete implementation of
+        vtkDataSet. vtkPolyData represents a geometric structure consisting
+        of vertices, lines, polygons, and/or triangle strips.
+        Point and cell attribute values (e.g., scalars, vectors, etc.)
+
+    """
+
+    if verbose:
+        print "================================================================"
+        print "Marching cubes :"
+        print "\tIso value :", iso_value
+        print ""
 
     surface = vtk.vtkMarchingCubes()
     surface.SetInputData(vtk_image_data)
@@ -55,13 +141,64 @@ def marching_cubes(vtk_image_data, iso_value=0.5):
     surface.SetValue(0, iso_value)
     surface.Update()
 
-    return surface.GetOutput()
+    vtk_poly_data = surface.GetOutput()
+
+    if verbose:
+        print "\tThere are", vtk_poly_data.GetNumberOfPoints(), "points."
+        print "\tThere are", vtk_poly_data.GetNumberOfPolys(), "polygons.\n"
+        print "================================================================"
+
+    return vtk_poly_data
 
 
 def smoothing(vtk_poly_data,
-                   feature_angle=120.0,
-                   number_of_iteration=5,
-                   pass_band=0.01):
+              feature_angle=120.0,
+              number_of_iteration=5,
+              pass_band=0.01,
+              verbose=False):
+    """
+    Call of vtkWindowedSincPolyDataFilter on a vtk_poly_data to smoothing the
+    edge of poly_data
+
+
+    Parameters
+    ----------
+    vtk_poly_data : vtkPolyData
+        vtkPolyData is a data object that is a concrete implementation of
+        vtkDataSet. vtkPolyData represents a geometric structure consisting
+        of vertices, lines, polygons, and/or triangle strips.
+        Point and cell attribute values (e.g., scalars, vectors, etc.)
+        also are represented.
+
+    feature_angle : float, optional
+        Feature angle for sharp edge identification.
+
+    number_of_iteration : float, optional
+        Number of iteration of smoothing
+
+    pass_band : float, optional
+        Passband value for the windowed sinc filter
+
+    verbose : bool, optional
+        If True, print for some information of each part of the algorithms
+
+    Returns
+    -------
+    out : vtkPolyData
+        vtkPolyData is a data object that is a concrete implementation of
+        vtkDataSet. vtkPolyData represents a geometric structure consisting
+        of vertices, lines, polygons, and/or triangle strips.
+        Point and cell attribute values (e.g., scalars, vectors, etc.)
+    """
+
+    if verbose:
+        print "================================================================"
+        print "Smoothing :"
+        print "\tFeature angle :", feature_angle
+        print "\tNumber of iteration :", number_of_iteration
+        print "\tPass band :", pass_band
+        print ""
+        print "================================================================"
 
     smoother = vtk.vtkWindowedSincPolyDataFilter()
     smoother.SetInputData(vtk_poly_data)
@@ -75,12 +212,42 @@ def smoothing(vtk_poly_data,
 
 
 def decimation(vtk_poly_data, reduction=0.95, verbose=False):
+    """
+    Call of vtkQuadricDecimation on a vtk_poly_data to decimate the mesh
 
+    Parameters
+    ----------
+    vtk_poly_data : vtkPolyData
+        vtkPolyData is a data object that is a concrete implementation of
+        vtkDataSet. vtkPolyData represents a geometric structure consisting
+        of vertices, lines, polygons, and/or triangle strips.
+        Point and cell attribute values (e.g., scalars, vectors, etc.)
+        also are represented.
+
+    reduction : float, optional
+        Percentage of reduction for the decimation 0.95 will reduce the
+        vtk_poly_date of 95%
+
+    verbose : bool, optional
+        If True, print for some information of each part of the algorithms
+
+    Returns
+    -------
+    out : vtkPolyData
+        vtkPolyData is a data object that is a concrete implementation of
+        vtkDataSet. vtkPolyData represents a geometric structure consisting
+        of vertices, lines, polygons, and/or triangle strips.
+        Point and cell attribute values (e.g., scalars, vectors, etc.)
+    """
     if verbose:
-        print "Before decimation" \
-            "\n-----------------\n" \
-            "There are", vtk_poly_data.GetNumberOfPoints(), "points.\n" \
-            "There are", vtk_poly_data.GetNumberOfPolys(), "polygons.\n"
+        print "================================================================"
+        print "Decimation :"
+        print "\tReduction (percentage) :", reduction
+        print ""
+        print "\tBefore decimation"
+        print "\t-----------------"
+        print "\tThere are", vtk_poly_data.GetNumberOfPoints(), "points."
+        print "\tThere are", vtk_poly_data.GetNumberOfPolys(), "polygons.\n"
 
     decimate = vtk.vtkQuadricDecimation()
     decimate.SetTargetReduction(reduction)
@@ -91,57 +258,36 @@ def decimation(vtk_poly_data, reduction=0.95, verbose=False):
     vtk_poly_decimated.ShallowCopy(decimate.GetOutput())
 
     if verbose:
-        print "After decimation" \
-            "\n----------------\n" \
-            "There are", vtk_poly_decimated.GetNumberOfPoints(), "points.\n" \
-            "There are", vtk_poly_decimated.GetNumberOfPolys(), "polygons.\n"
+        print "\tAfter decimation"
+        print "\t-----------------"
+        print "\tThere are", vtk_poly_decimated.GetNumberOfPoints(), "points."
+        print "\tThere are", vtk_poly_decimated.GetNumberOfPolys(),
+        print "polygons."
+        print "================================================================"
 
     return vtk_poly_decimated
 
 
-def vertices_faces_to_vtk_poly_data(vertices, faces):
-    # Makes a vtkIdList from a Python iterable. I'm kinda surprised that
-    # this is necessary, since I assumed that this kind of thing would
-    # have been built into the wrapper and happen transparently, but it
-    # seems not.
-    def make_vtk_id_list(it):
-        vil = vtk.vtkIdList()
-        for j in it:
-            vil.InsertNextId(int(j))
-        return vil
-
-    poly_data = vtk.vtkPolyData()
-    points = vtk.vtkPoints()
-    polys = vtk.vtkCellArray()
-
-    # Load the point, cell, and data attributes.
-    for i in range(len(vertices)):
-        points.InsertPoint(i, vertices[i])
-    for i in range(len(faces)):
-        polys.InsertNextCell(make_vtk_id_list(faces[i]))
-
-    # We now assign the pieces to the vtkPolyData.
-    poly_data.SetPoints(points)
-    del points
-    poly_data.SetPolys(polys)
-    del polys
-
-    return poly_data
-
-
-def vtk_poly_data_to_vertices_faces(vtk_poly_data):
-    vertices = vtk.util.numpy_support.vtk_to_numpy(
-        vtk_poly_data.GetPoints().GetData())
-
-    faces = vtk.util.numpy_support.vtk_to_numpy(
-        vtk_poly_data.GetPolys().GetData())
-
-    faces = faces.reshape((len(faces) / 4, 4))
-
-    return vertices, faces[:, 1:]
-
-
 def compute_normal(vertices, faces):
+    """
+    Compute normal of each faces
+
+    Parameters
+    ----------
+    vertices : [(x, y, z), ...]
+        Spatial coordinates for unique mesh vertices.
+
+    faces : [(V1, V2, V3), ...]
+        Define triangular faces via referencing vertex indices from vertices.
+        This algorithm specifically outputs triangles, so each face has exactly
+        three indices
+
+    Returns
+    -------
+    out : [(x, y, z), ...]
+        List of vector direction of the normal in the same order that faces
+    """
+
     # Fancy indexing to define two vector arrays from triangle vertices
     actual_vertices = vertices[faces]
     a = actual_vertices[:, 0, :] - actual_vertices[:, 1, :]
@@ -156,6 +302,24 @@ def compute_normal(vertices, faces):
 
 
 def center_of_vertices(vertices, faces):
+    """
+    Compute center of each faces
+
+    Parameters
+    ----------
+    vertices : [(x, y, z), ...]
+        Spatial coordinates for unique mesh vertices.
+
+    faces : [(V1, V2, V3), ...]
+        Define triangular faces via referencing vertex indices from vertices.
+        This algorithm specifically outputs triangles, so each face has exactly
+        three indices
+
+    Returns
+    -------
+    out : [(x, y, z), ...]
+        List of center of faces  in the same order that faces
+    """
     actual_vertices = vertices[faces]
 
     center = (actual_vertices[:, 0, :] +
