@@ -14,7 +14,8 @@ from alinea.phenomenal.plant_1 import (
     plant_1_calibration_camera_side_2_target)
 
 from alinea.phenomenal.multi_view_reconstruction import (
-    reconstruction_3d)
+    reconstruction_3d,
+    volume)
 
 import alinea.phenomenal.viewer
 import alinea.phenomenal.misc

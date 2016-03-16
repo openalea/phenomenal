@@ -13,7 +13,7 @@
 # ==============================================================================
 import cv2
 import vtk
-
+import gc
 import numpy
 import random
 import mayavi.mlab
@@ -50,6 +50,8 @@ def plot_points_3d(points_3d, color=None, scale_factor=5):
                              mode='cube',
                              color=color,
                              scale_factor=scale_factor)
+
+    del pts
 
     return color
 
@@ -126,8 +128,11 @@ def show_images(images,
             img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
             ax.imshow(img)
 
+        del img
+
         i += 1
 
+    gc.collect()
     matplotlib.pyplot.show()
 
 
@@ -182,8 +187,7 @@ def show_image_with_chessboard_corners(image, corners,
 
 def show_chessboard_3d_projection_on_image(image,
                                            points_2d_1,
-                                           points_2d_2,
-                                           name_windows=""):
+                                           points_2d_2):
     img = image.copy()
 
     points_2d_1 = points_2d_1.astype(int)
@@ -192,10 +196,11 @@ def show_chessboard_3d_projection_on_image(image,
     for x, y in points_2d_2:
         img[int(y), int(x)] = [255, 0, 0]
 
-    # Show image
-    matplotlib.pyplot.title(name_windows)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+    matplotlib.pyplot.figure()
     matplotlib.pyplot.imshow(img)
-    matplotlib.pyplot.show()
+    # matplotlib.pyplot.clf()
 
 # ==============================================================================
 

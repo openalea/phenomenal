@@ -10,17 +10,58 @@
 #
 # ==============================================================================
 import os
-import collections
-import numpy
 import cv2
 import numpy
 import vtk
+
 from vtk.util.numpy_support import get_vtk_array_type
 from operator import itemgetter
 
-
 # ==============================================================================
 # VTK Transformation
+
+
+def vertices_faces_to_vtk_poly_data(vertices, faces):
+    # Makes a vtkIdList from a Python iterable. I'm kinda surprised that
+    # this is necessary, since I assumed that this kind of thing would
+    # have been built into the wrapper and happen transparently, but it
+    # seems not.
+    def make_vtk_id_list(it):
+        vil = vtk.vtkIdList()
+        for j in it:
+            vil.InsertNextId(int(j))
+        return vil
+
+    poly_data = vtk.vtkPolyData()
+    points = vtk.vtkPoints()
+    polys = vtk.vtkCellArray()
+
+    # Load the point, cell, and data attributes.
+    for i in range(len(vertices)):
+        points.InsertPoint(i, vertices[i])
+    for i in range(len(faces)):
+        polys.InsertNextCell(make_vtk_id_list(faces[i]))
+
+    # We now assign the pieces to the vtkPolyData.
+    poly_data.SetPoints(points)
+    del points
+    poly_data.SetPolys(polys)
+    del polys
+
+    return poly_data
+
+
+def vtk_poly_data_to_vertices_faces(vtk_poly_data):
+    vertices = vtk.util.numpy_support.vtk_to_numpy(
+        vtk_poly_data.GetPoints().GetData())
+
+    faces = vtk.util.numpy_support.vtk_to_numpy(
+        vtk_poly_data.GetPolys().GetData())
+
+    faces = faces.reshape((len(faces) / 4, 4))
+
+    return vertices, faces[:, 1:]
+
 
 def voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
     x_min = min(voxel_centers, key=itemgetter(0))[0]
@@ -47,7 +88,7 @@ def voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
         image_data.SetScalarComponentFromDouble(
             nx, ny, nz, 0, 1)
 
-    return image_data
+    return image_data, (x_min, y_min, z_min)
 
 
 def numpy_matrix_to_vtk_image_data(data_matrix):
