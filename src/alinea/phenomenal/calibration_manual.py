@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -14,11 +10,10 @@
 #
 # ==============================================================================
 import math
-import numpy
 # ==============================================================================
 
 
-class EnvironmentFeature(object):
+class EnvironmentCamera(object):
     def __init__(self):
         # Dimension image
         self.w = 2056
@@ -181,19 +176,5 @@ class Calibration(object):
 
             return x, y
 
-    def project_points(self, points, angle):
-
-        result = list()
-
-        if angle == -1:
-
-            for point in points:
-                result.append(self.top_projection(point))
-        else:
-            for point in points:
-                if angle != 0:
-                    point = self.side_rotation(point, angle)
-
-                result.append(self.side_projection(point))
-
-            return numpy.array(result)
+    def get_projection(self, angle):
+        return lambda pt3d: self.project_point(pt3d, angle)

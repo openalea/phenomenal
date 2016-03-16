@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -14,29 +10,26 @@
 #
 # ==============================================================================
 import math
-import numpy
 
-import vplants.treeeditor3d.mtgeditor
+import numpy
 import openalea.plantgl.algo
 import openalea.plantgl.scenegraph
 import openalea.plantgl.math
+
+import vplants.treeeditor3d.mtgeditor
+
+
 # ==============================================================================
 
 
-def points_3d_to_point3array(points_3d):
+def voxel_centers_to_vectors(voxel_centers):
+
     vectors = list()
-
-    Vector3 = openalea.plantgl.math.Vector3
-
-    for point_3d in points_3d:
-
-        x = numpy.double(point_3d[0])
-        y = numpy.double(point_3d[1])
-        z = numpy.double(point_3d[2])
-
-        v = Vector3(x, y, z)
-
-        vectors.append(v)
+    for voxel_center in voxel_centers:
+        vectors.append(
+            openalea.plantgl.math.Vector3(numpy.double(voxel_center[0]),
+                                          numpy.double(voxel_center[1]),
+                                          numpy.double(voxel_center[2])))
 
     return vectors
 
@@ -67,16 +60,19 @@ def skeletonize_3d_xu_method(points,
 
 
 def skeletonize_3d_segment(points_3d,
-                           contraction_radius,
-                           bin_length,
+                           contraction_radius=0,
+                           bin_length=50,
                            k=20,
                            connect_all_points=True,
                            verbose=False):
 
-    vectors = points_3d_to_point3array(points_3d)
+    vectors = voxel_centers_to_vectors(points_3d)
 
     points = openalea.plantgl.scenegraph.Point3Array(vectors)
-    points = openalea.plantgl.algo.contract_point3(points, contraction_radius)
+
+    if contraction_radius != 0:
+        points = openalea.plantgl.algo.contract_point3(
+            points, contraction_radius)
 
     positions, parents, point_components, root = skeletonize_3d_xu_method(
         points,
@@ -102,23 +98,26 @@ def skeletonize_3d_segment(points_3d,
         for index_position in point_components[i]:
                 my_point.append(points[index_position])
 
+        print i, positions[i], parents[i], positions[parents[i]]
+
         segments.append([positions[i], positions[parents[i]], my_point])
 
     return segments
 
 
-def skeletonize_3d(cubes,
-                   contraction_radius,
-                   bin_ratio,
+def skeletonize_3d(voxel_centers,
+                   contraction_radius=0,
+                   bin_ratio=50,
                    k=20,
                    connect_all_points=True,
                    verbose=False):
 
-    vectors = points_3d_to_point3array(cubes)
+    vectors = voxel_centers_to_vectors(voxel_centers)
 
     points = openalea.plantgl.scenegraph.Point3Array(vectors)
-
-    points = openalea.plantgl.algo.contract_point3(points, contraction_radius)
+    if contraction_radius != 0:
+        points = openalea.plantgl.algo.contract_point3(
+            points, contraction_radius)
 
     positions, parents, point_components, root = skeletonize_3d_xu_method(
         points,
@@ -130,22 +129,22 @@ def skeletonize_3d(cubes,
     return positions, parents, point_components, root
 
 
-def test_skeletonize_3d(cubes,
-                        contraction_radius,
-                        bin_ratio,
+def test_skeletonize_3d(voxel_centers,
+                        contraction_radius=10,
+                        bin_ratio=50,
                         k=20,
                         connect_all_points=True,
                         verbose=True):
 
     positions, parents, pointcomponents, root_position = skeletonize_3d(
-        cubes,
+        voxel_centers,
         contraction_radius,
         bin_ratio,
         k=k,
         connect_all_points=connect_all_points,
         verbose=verbose)
 
-    vectors = points_3d_to_point3array(cubes)
+    vectors = voxel_centers_to_vectors(voxel_centers)
 
     points = openalea.plantgl.algo.contract_point3(
         openalea.plantgl.scenegraph.Point3Array(vectors), contraction_radius)
@@ -226,9 +225,12 @@ def test_skeletonize_3d(cubes,
     w.mtgeditor.updateGL()
     qapp.exec_()
 
+if __name__ == '__main__':
 
-#       ========================================================================
-#       LOCAL TEST
+    import alinea.phenomenal.plant_1
 
-if __name__ == "__main__":
-    do_nothing = None
+    voxel_size = 20
+    voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
+        voxel_size=voxel_size)
+
+    test_skeletonize_3d(voxel_centers)

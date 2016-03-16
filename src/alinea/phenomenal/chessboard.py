@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -16,53 +12,48 @@
 import cv2
 import numpy
 import json
-
-import alinea.phenomenal.calibration_model
 # ==============================================================================
 
 
 class Chessboard(object):
     def __init__(self, square_size, shape):
-
-        # Initialization
         self.square_size = square_size
         self.shape = shape
         self.corners_points = dict()
 
     def __str__(self):
         my_str = ''
-        my_str += 'Chessboard Object Values :\n'
+        my_str += 'Chessboard Attributes :\n'
         my_str += 'Square size (mm): ' + str(self.square_size) + '\n'
         my_str += 'Shape : ' + str(self.shape) + '\n'
 
+        my_str += 'Number of angle : ' + str(len(self.corners_points)) + '\n'
         for angle in self.corners_points:
-            my_str += str(angle) + '\n'
-            my_str += str(self.corners_points[angle]) + '\n'
+            my_str += str(angle) + ', '
+
+        if len(self.corners_points) > 0:
+            my_str += '\n'
 
         return my_str
 
-    def local_corners_position_3d(self):
+    def get_corners_local_3d(self):
         square_size = self.square_size
         width, height = self.shape
 
-        chessboard_pts = []
+        corners_local_3d = list()
         for j in range(height):
             for i in range(width):
-                v = numpy.array([i * square_size, j * square_size, 0.])
-                chessboard_pts.append(v)
+                v = numpy.array([i * square_size, j * square_size, 0.0])
+                corners_local_3d.append(v)
 
-        return chessboard_pts
+        return corners_local_3d
 
-    def global_corners_position_3d(self, x, y, z, elev, tilt, azim):
+    def get_corners_2d(self):
+        corners_2d = dict()
+        for angle in self.corners_points:
+            corners_2d[angle] = self.corners_points[angle][:, 0, :]
 
-        chessboard_pts = self.local_corners_position_3d()
-
-        fr_chess = alinea.phenomenal.calibration_model.chess_frame(
-            x, y, z, elev, tilt, azim)
-
-        pts = [fr_chess.global_point(pt) for pt in chessboard_pts]
-
-        return pts
+        return corners_2d
 
     def find_corners(self, image):
         try:
@@ -70,7 +61,7 @@ class Chessboard(object):
                 image,
                 tuple(self.shape),
                 flags=cv2.CALIB_CB_ADAPTIVE_THRESH +
-                      cv2.CALIB_CB_NORMALIZE_IMAGE)
+                cv2.CALIB_CB_NORMALIZE_IMAGE)
 
             if found:
                 cv2.cornerSubPix(image, corners, (11, 11), (-1, -1),
@@ -79,36 +70,45 @@ class Chessboard(object):
                                            30,
                                            0.001))
             else:
-                print "Error : Corners not find"
                 return None
 
         except cv2.error:
-            print "Error : cv2, get_corners, calibration.py"
             return None
 
         return corners
 
-    def find_and_add_corners(self, angle, image):
+    def add_corners(self, id_camera, angle, corners):
+        self.corners_points[id_camera][angle] = corners
+
+    def find_and_add_corners(self, angle, image, verbose=False):
         corners_points = self.find_corners(image)
         if corners_points is not None:
             self.corners_points[angle] = corners_points
+            if verbose:
+                print "Angle : " + str(angle) + "\tcorners detected"
+        else:
+            if verbose:
+                print "Angle : " + str(angle) + "\tcorners not find"
 
-    def write(self, file_path):
-
+    def dump(self, file_path):
         # Convert to json format
+        corners_points = dict()
         for angle in self.corners_points:
-            self.corners_points[angle] = self.corners_points[angle].tolist()
+            corners_points[angle] = self.corners_points[angle].tolist()
 
         save_class = dict()
         save_class['square_size'] = self.square_size
         save_class['shape'] = self.shape
-        save_class['corners_points'] = self.corners_points
+        save_class['corners_points'] = corners_points
 
         with open(file_path + '.json', 'w') as output_file:
-            json.dump(save_class, output_file)
+            json.dump(save_class, output_file,
+                      sort_keys=True,
+                      indent=4,
+                      separators=(',', ': '))
 
     @staticmethod
-    def read(file_path):
+    def load(file_path):
 
         with open(file_path + '.json', 'r') as input_file:
             save_class = json.load(input_file)

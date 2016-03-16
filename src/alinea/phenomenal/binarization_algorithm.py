@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s):
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -13,62 +9,76 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+"""
+Algorithms to threshold image
+"""
+# ==============================================================================
 import numpy
 import cv2
 # ==============================================================================
 
 
-def mean_shift_binarization(image,
-                            mean_image,
-                            threshold=0.3,
-                            dark_background=False,
-                            mask=None):
+def threshold_meanshift(image,
+                        mean,
+                        threshold=0.3,
+                        reverse=False,
+                        mask=None):
     """
+    Threshold pixels in numpy array such as::
 
-    Threshold pixels in image such as :
-        image / mean_image <= (1 - threshhold).
+        image / mean <= (1.0 - threshold)
 
-    If dark_background is True (Inequality is reversed) :
-        image / mean_image <= (1 + threshhold)
+    If reverse is True (Inequality is reversed)::
+
+        image / mean <= (1.0 + threshold
 
     Parameters
     ----------
+    image : numpy.ndarray of integers
+        3-D array
 
-    image : numpy.ndarray
+    mean : numpy.ndarray of the same shape as 'image'
+        3-D array 'mean'
 
-    mean_image : numpy.ndarray
+    threshold : float, optional
+        Threshold value. Must between 0.0 and 1.0
 
-    threshold : float
+    reverse : bool, optional
+       If True reverse inequality
 
-    dark_background : bool
-
-    mask = numpy.ndarray
+    mask : numpy.ndarray, optional
+        Array of same shape as `image`. Only points at which mask == True
+        will be thresholded.
 
     Returns
     -------
     out : numpy.ndarray
+        Thresholded binary image
+
+    See Also
+    --------
+    get_mean_image, threshold_hsv
 
     """
     # ==========================================================================
     # Check Parameters
     if not isinstance(image, numpy.ndarray):
         raise TypeError('image should be a numpy.ndarray')
-    if not isinstance(mean_image, numpy.ndarray):
-        raise TypeError('mean_image should be a numpy.ndarray')
+    if not isinstance(mean, numpy.ndarray):
+        raise TypeError('mean should be a numpy.ndarray')
     if not isinstance(threshold, float):
         raise TypeError('threshold should be a float')
-    if not isinstance(dark_background, bool):
-        print dark_background
-        raise TypeError('dark_background should be a bool')
+    if not isinstance(reverse, bool):
+        raise TypeError('reverse should be a bool')
 
     if image.ndim != 3:
         raise ValueError('image should be 3D array')
-    if mean_image.ndim != 3:
-        raise ValueError('mean_image should be 3D array')
-    if image.shape != mean_image.shape:
-        raise ValueError('image and mean_image should have the same shape')
+    if mean.ndim != 3:
+        raise ValueError('mean should be 3D array')
+    if image.shape != mean.shape:
+        raise ValueError('image and mean must have equal sizes')
     if not (0.0 <= threshold <= 1.0):
-        raise ValueError('threshold should between 0.0 and 1.0=')
+        raise ValueError('threshold must be between 0.0 and 1.0')
 
     if mask is not None:
         if not isinstance(mask, numpy.ndarray):
@@ -76,42 +86,60 @@ def mean_shift_binarization(image,
         if mask.ndim != 2:
             raise ValueError('image should be 2D array')
         if image.shape[0:2] != mask.shape:
-            raise ValueError('image and mask should have the same shape')
+            raise ValueError('mask and image must have equal sizes')
     # ==========================================================================
 
-    image_f32 = numpy.float32(image)
-    mean_image_f32 = numpy.float32(mean_image)
-
     with numpy.errstate(divide='ignore'):
-        d = image_f32 / mean_image_f32
+        img = numpy.divide(numpy.float32(image), numpy.float32(mean))
 
-    if dark_background:
-        if len(d.shape) > 2:  # color image
-            d = d.max(2)
-        dd = d >= (1. + threshold)
+    if reverse:
+        img = img.max(2)
+        out = img >= (1. + threshold)
     else:
-        if len(d.shape) > 2:  # color image
-            d = d.min(2)
-        dd = d <= (1. - threshold)
+        img = img.min(2)
+        out = img <= (1. - threshold)
 
-    dd = numpy.uint8(dd)
+    out = numpy.uint8(out)
 
     if mask is not None:
-        dd = cv2.bitwise_and(dd, mask)
+        out = cv2.bitwise_and(out, mask)
 
-    return dd
+    del img
+
+    return out
 
 
-def hsv_binarization(image,
-                     hsv_min,
-                     hsv_max,
-                     mask=None):
+def threshold_hsv(image, hsv_min, hsv_max, mask=None):
     """
-    Binarize image with hsv_min and hsv_max parameters.
+    Binarize HSV image with hsv_min and hsv_max parameters.
     => cv2.inRange(hsv_image, hsv_min, hsv_max)
 
     If mask is not None :
     => cv2.bitwise_and(binary_hsv_image, mask)
+
+    Parameters
+    ----------
+    image : numpy.ndarray of integers
+        3-D array of image RGB
+
+    hsv_min : tuple of integers
+        HSV value of minimum range
+
+    hsv_max : tuple of integers
+        HSV value of maximum range
+
+    mask : numpy.ndarray, optional
+        Array of same shape as `image`. Only points at which mask == True
+        will be thresholded.
+
+    Returns
+    -------
+    out : numpy.ndarray
+        Thresholded binary image
+
+    See Also
+    --------
+    threshold_meanshift
     """
     # ==========================================================================
     # Check Parameters
@@ -145,22 +173,31 @@ def hsv_binarization(image,
             raise ValueError('image and mask should have the same shape')
     # ==========================================================================
 
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-    binary_hsv_image = cv2.inRange(hsv_image, hsv_min, hsv_max)
+    out = cv2.inRange(image, hsv_min, hsv_max)
 
     if mask is not None:
-        binary_hsv_image = cv2.bitwise_and(binary_hsv_image, mask)
+        out = cv2.bitwise_and(out, mask)
 
-    return binary_hsv_image
+    return out
 
 
 def get_mean_image(images):
     """
-    Compute the mean image of a image list.
+    Compute the mean of a image list.
 
-    :param images: A list of image.
-    :return: A image who is the mean of the list image
+    Parameters
+    ----------
+    images : [ numpy.ndarray of integers ]
+        list of 3-D array
+
+    Returns
+    -------
+    out : numpy.ndarray
+         Mean of the list image
+
+    See Also
+    --------
+    threshold_meanshift
     """
     # ==========================================================================
     # Check Parameters
