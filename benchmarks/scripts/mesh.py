@@ -25,18 +25,23 @@ voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
     voxel_size=voxel_size)
 
 vertices, faces = alinea.phenomenal.mesh.meshing(
-    voxel_centers, voxel_size, reduction=0.95, smoothing=True, verbose=True)
+    voxel_centers, voxel_size,
+    reduction=0.95, smoothing_iteration=0, verbose=True)
 
-# Write
-alinea.phenomenal.misc.write_mesh(
-    vertices, faces, 'mesh_radius_' + str(voxel_size))
-
-# Read
-vertices, faces = alinea.phenomenal.misc.read_mesh(
-    'mesh_radius_' + str(voxel_size))
+# # Write
+# alinea.phenomenal.misc.write_mesh(
+#     vertices, faces, 'mesh_radius_' + str(voxel_size))
+#
+# # Read
+# vertices, faces = alinea.phenomenal.misc.read_mesh(
+#     'mesh_radius_' + str(voxel_size))
 
 normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
 centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
+
+print normals
+print centers
+exit()
 
 alinea.phenomenal.viewer.show_mesh(vertices, faces,
                                    normals=normals, centers=centers)

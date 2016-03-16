@@ -27,8 +27,10 @@ import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
 import alinea.phenomenal.viewer
 import alinea.phenomenal.plant_1
-from alinea.phenomenal.binarization_routine import (top_binarization_hsv,
-                                            side_binarization_mean_shift)
+
+from alinea.phenomenal.binarization_routine import \
+    (top_binarization_hsv, side_binarization_mean_shift)
+
 from alinea.phenomenal.binarization_algorithm import get_mean_image
 
 

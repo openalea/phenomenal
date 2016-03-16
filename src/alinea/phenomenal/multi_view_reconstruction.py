@@ -12,6 +12,7 @@
 import collections
 import math
 import numpy
+import gc
 # ==============================================================================
 
 
@@ -412,6 +413,8 @@ def reconstruction_3d(images_projections,
 
         if verbose is True:
             print ' - ', len(voxel_centers)
+
+    gc.collect()
 
     return voxel_centers
 

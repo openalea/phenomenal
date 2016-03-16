@@ -104,6 +104,8 @@ def threshold_meanshift(image,
     if mask is not None:
         out = cv2.bitwise_and(out, mask)
 
+    del img
+
     return out
 
 

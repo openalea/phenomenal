@@ -1,72 +1,74 @@
-====== Alinea.phenomenal ======
+==========
+Phenomenal
+==========
 
-**Authors** : Michael Mielewczik
+A software framework for model-assisted analysis of high throughput
+plant phenotyping data
 
-**Institutes** : INRA
+.. contents::
 
-**Status** : Python package 
+What is Phenomenal ?
+--------------------
 
-**License** : Cecill-C
+Plant high-throughput phenotyping aims at capturing the genetic variability
+of plant response to environmental factors for thousands of plants,
+hence identifying heritable traits for genomic selection and predicting
+the genetic values of allelic combinations in different environment.
 
-**URL** : 
+This first implies the automation of the measurement of a large number of
+traits to characterize plant growth, plant development and plant functioning.
+It also requires a fluent and versatile interaction between data and
+continuously evolving plant response models, that are essential in the analysis
+of the marker x environment interaction and in the integration of processes
+for predicting crop performance.
 
-===== About =====
+In the frame of the Phenome high throughput phenotyping infrastructure,
+we develop **Phenomenal**. A software framework dedicated to the analysis of
+high throughput phenotyping data and models.
 
-=== Description ===
-
-The Alinea.Phenomenal pipeline is designed to process and analyse images from the Phenoarch plattform.\
-The module allows to both analyse set of provided local images or to access whole sets of experiments from the\
-Phenoarch database system and process those. The module provides Alinea nodes for image segmentation, binarization,
-and image analyses as well as necessary bindings to the opencv2 and scipy python modules.
-
-
-=== Content ===
-
-The Alinea.phenomenal package contains :
-
-
-===== Installation =====
-
-* Download the egg and use Visualea Installer ? install other egg
-* Alternatively, if you're codeveloping the package, dowload the Phenomenal directory from openaleapkg and run 
-
-  python setup.py develop
-
-  from within the directory
-
-=== Download ===
-
-* This package will soon be released and available from this page.
-* sources are currently on the openaleapkg svn server
-
-=== Requirements ===
-
-#* Scons >= 0.96.93
-#* SconsX
-#* OpenAlea.Deploy
-#* Boost.Python
-* argparse
-* csv
-* paramiko
-* scp
-* skimage
-* cv2
-* numpy
+Phenomenal currently consists of 2D image analysis workflows built with
+standard image libraries (VTK, OpenCV, Scikit.Image), algorithms for 3D
+reconstruction, segmentation and tracking of plant organs for maize
+(under development), and workflows for estimation of light interception by
+plants during their growth.
 
 
-=== Installation ===
+Installation
+------------
+
+.. toctree::
+
+   ./install/install.rst
+
+Documentation
+-------------
+
+Tutorial
+''''''''
+
+.. toctree::
+    ./notebook/notebook.rst
 
 
-=== Utilisation ===
+Reference
+'''''''''
 
+.. toctree::
 
-<code>
-python setup.py install
-</code>
+    ./modules/documentation.rst
+
+Authors
+-------
+
+.. include:: ../../AUTHORS.rst
 
 
 
-===== Documentation =====
+License
+-------
 
-http://openalea.gforge.inria.fr/doc/alinea/phenomenal/doc/_build/html/contents.html
+**Phenomenal** is released under a Cecill-C license.
+
+.. note:: `Cecill-C <http://www.cecill.info/licences/
+    Licence_CeCILL-C_V1-en.html>`_ license is a LGPL compatible license.
 
