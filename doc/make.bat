@@ -72,6 +72,12 @@ if errorlevel 9009 (
 :sphinx_ok
 
 
+if "%1" == "notebook" (
+    jupyter nbconvert ..\benchmarks\notebook\*.ipynb --to rst
+    move /y *.rst source\notebook\
+	goto end
+)
+
 if "%1" == "html" (
 	%SPHINXBUILD% -b html %ALLSPHINXOPTS% %BUILDDIR%/html
 	if errorlevel 1 exit /b 1

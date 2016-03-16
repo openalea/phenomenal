@@ -23,15 +23,16 @@ class Chessboard(object):
 
     def __str__(self):
         my_str = ''
-        my_str += 'Chessboard Object Values :\n'
+        my_str += 'Chessboard Attributes :\n'
         my_str += 'Square size (mm): ' + str(self.square_size) + '\n'
         my_str += 'Shape : ' + str(self.shape) + '\n'
 
-        my_str += 'Number of angle :' + str(len(self.corners_points)) + '\n\n'
+        my_str += 'Number of angle : ' + str(len(self.corners_points)) + '\n'
         for angle in self.corners_points:
             my_str += str(angle) + ', '
 
-        my_str += '\n\n'
+        if len(self.corners_points) > 0:
+            my_str += '\n'
 
         return my_str
 
@@ -54,31 +55,6 @@ class Chessboard(object):
 
         return corners_2d
 
-    def find_corners_with_bgr(self, image, bgr):
-
-        img1_bin = image[:, :, 0] == bgr[0]
-        img2_bin = image[:, :, 1] == bgr[1]
-        img3_bin = image[:, :, 2] == bgr[2]
-
-        imm = numpy.bitwise_and(img1_bin, img2_bin)
-        imm = numpy.bitwise_and(imm, img3_bin)
-
-        index = numpy.where(imm == True)
-
-        corners = list()
-        for i in xrange(len(index[0])):
-            x, y = (index[0][i], index[1][i])
-            corners.append([y, x])
-
-        len_corners = self.shape[0] * self.shape[1]
-        if len(corners) != len_corners:
-            return None
-
-        corners = numpy.array([corners], dtype=float)
-        corners = numpy.reshape(corners, (len_corners, 1, 2))
-
-        return corners
-
     def find_corners(self, image):
         try:
             found, corners = cv2.findChessboardCorners(
@@ -94,12 +70,9 @@ class Chessboard(object):
                                            30,
                                            0.001))
             else:
-                print "Corners not find"
                 return None
 
-        except cv2.error, e:
-            print e
-            print "Error : cv2, get_corners, calibration.py"
+        except cv2.error:
             return None
 
         return corners
@@ -107,13 +80,17 @@ class Chessboard(object):
     def add_corners(self, id_camera, angle, corners):
         self.corners_points[id_camera][angle] = corners
 
-    def find_and_add_corners(self, angle, image):
+    def find_and_add_corners(self, angle, image, verbose=False):
         corners_points = self.find_corners(image)
         if corners_points is not None:
             self.corners_points[angle] = corners_points
+            if verbose:
+                print "Angle : " + str(angle) + "\tcorners detected"
+        else:
+            if verbose:
+                print "Angle : " + str(angle) + "\tcorners not find"
 
     def dump(self, file_path):
-
         # Convert to json format
         corners_points = dict()
         for angle in self.corners_points:

@@ -1,9 +1,17 @@
-binarization_post_processing
+============================
+Binarization Post Processing
 ============================
 
 .. automodule:: alinea.phenomenal.binarization_post_processing
-    :members: threshold_meanshift, threshold_hsv
-    :undoc-members: get_mean_image
+    :members:
     :inherited-members:
     :show-inheritance:
     :synopsis: doc todo
+
+    .. rubric:: Function
+
+    .. autosummary::
+
+        dilate_erode
+        erode_dilate
+        morphology_close
