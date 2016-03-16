@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -14,11 +10,106 @@
 #
 # ==============================================================================
 import os
-import collections
-import numpy
 import cv2
-# ==============================================================================
+import numpy
+import vtk
 
+from vtk.util.numpy_support import get_vtk_array_type
+from operator import itemgetter
+
+# ==============================================================================
+# VTK Transformation
+
+
+def vertices_faces_to_vtk_poly_data(vertices, faces):
+    # Makes a vtkIdList from a Python iterable. I'm kinda surprised that
+    # this is necessary, since I assumed that this kind of thing would
+    # have been built into the wrapper and happen transparently, but it
+    # seems not.
+    def make_vtk_id_list(it):
+        vil = vtk.vtkIdList()
+        for j in it:
+            vil.InsertNextId(int(j))
+        return vil
+
+    poly_data = vtk.vtkPolyData()
+    points = vtk.vtkPoints()
+    polys = vtk.vtkCellArray()
+
+    # Load the point, cell, and data attributes.
+    for i in range(len(vertices)):
+        points.InsertPoint(i, vertices[i])
+    for i in range(len(faces)):
+        polys.InsertNextCell(make_vtk_id_list(faces[i]))
+
+    # We now assign the pieces to the vtkPolyData.
+    poly_data.SetPoints(points)
+    del points
+    poly_data.SetPolys(polys)
+    del polys
+
+    return poly_data
+
+
+def vtk_poly_data_to_vertices_faces(vtk_poly_data):
+    vertices = vtk.util.numpy_support.vtk_to_numpy(
+        vtk_poly_data.GetPoints().GetData())
+
+    faces = vtk.util.numpy_support.vtk_to_numpy(
+        vtk_poly_data.GetPolys().GetData())
+
+    faces = faces.reshape((len(faces) / 4, 4))
+
+    return vertices, faces[:, 1:]
+
+
+def voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
+    x_min = min(voxel_centers, key=itemgetter(0))[0]
+    x_max = max(voxel_centers, key=itemgetter(0))[0]
+
+    y_min = min(voxel_centers, key=itemgetter(1))[1]
+    y_max = max(voxel_centers, key=itemgetter(1))[1]
+
+    z_min = min(voxel_centers, key=itemgetter(2))[2]
+    z_max = max(voxel_centers, key=itemgetter(2))[2]
+
+    image_data = vtk.vtkImageData()
+    image_data.SetDimensions(int((x_max - x_min) / voxel_size + 1),
+                             int((y_max - y_min) / voxel_size + 1),
+                             int((z_max - z_min) / voxel_size + 1))
+    image_data.SetSpacing(1.0, 1.0, 1.0)
+    image_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
+
+    for x, y, z in voxel_centers:
+        nx = int((x - x_min) / voxel_size)
+        ny = int((y - y_min) / voxel_size)
+        nz = int((z - z_min) / voxel_size)
+
+        image_data.SetScalarComponentFromDouble(
+            nx, ny, nz, 0, 1)
+
+    return image_data, (x_min, y_min, z_min)
+
+
+def numpy_matrix_to_vtk_image_data(data_matrix):
+    nx, ny, nz = data_matrix.shape
+
+    image_data = vtk.vtkImageData()
+    image_data.SetDimensions(nx, ny, nz)
+    image_data.SetSpacing(1.0, 1.0, 1.0)
+    image_data.AllocateScalars(get_vtk_array_type(data_matrix.dtype), 1)
+
+    lx, ly, lz = image_data.GetDimensions()
+    for i in xrange(0, lx):
+        for j in xrange(0, ly):
+            for k in xrange(0, lz):
+                image_data.SetScalarComponentFromDouble(
+                    i, j, k, 0, data_matrix[i, j, k])
+
+    return image_data
+
+
+# ==============================================================================
 
 def change_orientation(cubes):
     for cube in cubes:
@@ -45,9 +136,9 @@ def save_matrix_like_stack_image(matrix, data_directory):
         cv2.imwrite(data_directory + '%d.png' % i, mat)
 
 
-def limit_points_3d(points_3d):
+def limit_points_3d(voxel_centers):
 
-    if not points_3d:
+    if not voxel_centers:
         return None, None, None, None, None, None
 
     x_min = float("inf")
@@ -58,8 +149,7 @@ def limit_points_3d(points_3d):
     y_max = - float("inf")
     z_max = - float("inf")
 
-    for point_3d in points_3d:
-        x, y, z = point_3d
+    for x, y, z in voxel_centers:
 
         x_min = min(x_min, x)
         y_min = min(y_min, y)
@@ -72,196 +162,127 @@ def limit_points_3d(points_3d):
     return x_min, y_min, z_min, x_max, y_max, z_max
 
 
-def index_to_points_3d(index, radius, origin=(0, 0, 0)):
+def matrix_to_points_3d(matrix, voxel_size,
+                        origin=(0, 0, 0),
+                        voxel_value=1):
 
-    points_3d = collections.deque()
-    ind = index.__copy__()
-    d = radius * 2.0
-    while True:
-        try:
-            x, y, z = ind.popleft()
-            pt_3d = (x * d + origin[0],
-                     y * d + origin[1],
-                     z * d + origin[2])
-            points_3d.append(pt_3d)
+    xx, yy, zz = numpy.where(matrix == voxel_value)
 
-        except IndexError:
-            break
+    xxx = origin[0] + xx * voxel_size
+    yyy = origin[1] + yy * voxel_size
+    zzz = origin[2] + zz * voxel_size
+
+    points_3d = list()
+    for i in xrange(len(xxx)):
+        points_3d.append((xxx[i], yyy[i], zzz[i]))
 
     return points_3d
 
 
-def matrix_to_points_3d(matrix, radius, origin=(0, 0, 0)):
+def points_3d_to_matrix(voxel_centers, voxel_size):
 
-    points_3d = list()
-    d = radius * 2.0
-    for (x, y, z), value in numpy.ndenumerate(matrix):
-        if value == 1 or value == 111:
-
-            pt_3d = (origin[0] + x * d,
-                     origin[1] + y * d,
-                     origin[2] + z * d)
-
-            points_3d.append(pt_3d)
-
-    return points_3d
-
-
-def matrix_to_points_3d_2(matrix, radius, origin=(0, 0, 0)):
-
-    points_3d = list()
-    points_3d_leaf = list()
-    d = radius * 2.0
-    for (x, y, z), value in numpy.ndenumerate(matrix):
-        if value == 1:
-
-            pt_3d = (origin[0] + x * d,
-                     origin[1] + y * d,
-                     origin[2] + z * d)
-
-            points_3d.append(pt_3d)
-
-    for (x, y, z), value in numpy.ndenumerate(matrix):
-        if value == 111:
-
-            pt_3d = (origin[0] + x * d,
-                     origin[1] + y * d,
-                     origin[2] + z * d)
-
-            points_3d_leaf.append(pt_3d)
-
-    return points_3d, points_3d_leaf
-
-
-def points_3d_to_matrix(points_3d, radius):
-
-    if not points_3d:
+    if not voxel_centers:
         return numpy.zeros((0, 0, 0)), list(), (None, None, None)
 
-    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
+    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(voxel_centers)
 
-    r = radius * 2.0
+    mat = numpy.zeros(((x_max - x_min) / voxel_size + 1,
+                       (y_max - y_min) / voxel_size + 1,
+                       (z_max - z_min) / voxel_size + 1),
+                      dtype=numpy.uint8)
 
-    x_r_min = x_min / r
-    y_r_min = y_min / r
-    z_r_min = z_min / r
-
-    mat = numpy.zeros((round((x_max - x_min) / r) + 1,
-                       round((y_max - y_min) / r) + 1,
-                       round((z_max - z_min) / r) + 1), dtype=numpy.uint8)
-
-    index = collections.deque()
-    for point_3d in points_3d:
-        x_new = (point_3d[0] / r) - x_r_min
-        y_new = (point_3d[1] / r) - y_r_min
-        z_new = (point_3d[2] / r) - z_r_min
+    for x, y, z in voxel_centers:
+        x_new = (x - x_min) / voxel_size
+        y_new = (y - y_min) / voxel_size
+        z_new = (z - z_min) / voxel_size
 
         mat[x_new, y_new, z_new] = 1
 
-        index.append((x_new, y_new, z_new))
-
-    return mat, index, (x_min, y_min, z_min)
+    return mat, (x_min, y_min, z_min)
 
 
-def points_3d_to_matrix_2(points_3d, points_3d_leaf, radius):
-    x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(points_3d)
+def remove_internal_points_3d(voxel_centers, voxel_size):
 
-    for i in points_3d_leaf:
-        x, y, z, xm, ym, zm = limit_points_3d(points_3d_leaf[i])
+    if not voxel_centers:
+        return voxel_centers
 
-        x_min = min(x_min, x)
-        y_min = min(y_min, y)
-        z_min = min(z_min, z)
-        x_max = max(x_max, xm)
-        y_max = max(y_max, ym)
-        z_max = max(z_max, zm)
+    matrix, origin = points_3d_to_matrix(voxel_centers, voxel_size)
 
-    r = radius * 2.0
+    xx, yy, zz = numpy.where(matrix[1:-1, 1:-1, 1:-1] == 1)
 
-    x_r_min = x_min / r
-    y_r_min = y_min / r
-    z_r_min = z_min / r
+    xx += 1
+    yy += 1
+    zz += 1
 
-    mat = numpy.zeros((round((x_max - x_min) / r) + 1,
-                       round((y_max - y_min) / r) + 1,
-                       round((z_max - z_min) / r) + 1), dtype=numpy.uint8)
+    def is_removable(x, y, z):
+        for i in [-1, 0, 1]:
+            for j in [-1, 0, 1]:
+                for k in [-1, 0, 1]:
+                    if matrix[x + i, y + j, z + k] == 0:
+                        return False
+        return True
 
-    index = collections.deque()
-    for point_3d in points_3d:
-        x_new = (point_3d[0] / r) - x_r_min
-        y_new = (point_3d[1] / r) - y_r_min
-        z_new = (point_3d[2] / r) - z_r_min
-
-        mat[x_new, y_new, z_new] = 1
-
-        # index.append((x_new, y_new, z_new))
-
-    nb = 2
-    for i in points_3d_leaf:
-        for point_3d in points_3d_leaf[i]:
-            x_new = (point_3d[0] / r) - x_r_min
-            y_new = (point_3d[1] / r) - y_r_min
-            z_new = (point_3d[2] / r) - z_r_min
-
-            mat[x_new, y_new, z_new] = nb
-
-            index.append((x_new, y_new, z_new))
-        nb += 1
-
-    return mat, index, (x_min, y_min, z_min)
-
-
-def remove_internal_points_3d(points_3d, radius):
-
-    if not points_3d:
-        return points_3d
-
-    matrix, index, origin = points_3d_to_matrix(points_3d, radius)
-
-    index_new = collections.deque()
     mat = matrix.copy()
-    while True:
-        try:
-            x, y, z = index.popleft()
+    for i in xrange(len(xx)):
+        x, y, z = xx[i], yy[i], zz[i]
+        if is_removable(x, y, z):
+            mat[x, y, z] = 0
 
-            if (matrix[x - 1, y - 1, z] == 1 and
-                matrix[x - 1, y, z] == 1 and
-                matrix[x - 1, y + 1, z] == 1 and
-                matrix[x, y - 1, z] == 1 and
-                matrix[x, y + 1, z] == 1 and
-                matrix[x + 1, y - 1, z] == 1 and
-                matrix[x + 1, y, z] == 1 and
-                matrix[x + 1, y + 1, z] == 1 and
+    voxel_centers = matrix_to_points_3d(mat, voxel_size, origin=origin)
 
-                matrix[x - 1, y - 1, z - 1] == 1 and
-                matrix[x - 1, y, z - 1] == 1 and
-                matrix[x - 1, y + 1, z - 1] == 1 and
-                matrix[x, y - 1, z - 1] == 1 and
-                matrix[x, y, z - 1] == 1 and
-                matrix[x, y + 1, z - 1] == 1 and
-                matrix[x + 1, y - 1, z - 1] == 1 and
-                matrix[x + 1, y, z - 1] == 1 and
-                matrix[x + 1, y + 1, z - 1] == 1 and
+    return voxel_centers
 
-                matrix[x - 1, y - 1, z + 1] == 1 and
-                matrix[x - 1, y, z + 1] == 1 and
-                matrix[x - 1, y + 1, z + 1] == 1 and
-                matrix[x, y - 1, z + 1] == 1 and
-                matrix[x, y, z + 1] == 1 and
-                matrix[x, y + 1, z + 1] == 1 and
-                matrix[x + 1, y - 1, z + 1] == 1 and
-                matrix[x + 1, y, z + 1] == 1 and
-                    matrix[x + 1, y + 1, z + 1] == 1):
-                mat[x, y, z] = 0
-            else:
-                index_new.append((x, y, z))
 
-        except IndexError:
+def find_position_base_plant(matrix, origin, voxel_size, neighbor_size=2):
 
-            if len(index) > 0:
-                index_new.append((x, y, z))
-                continue
-            else:
-                break
+    x = int(round(-origin[0] / voxel_size))
+    y = int(round(-origin[1] / voxel_size))
 
-    return index_to_points_3d(index_new, radius, origin=origin)
+    k = neighbor_size
+    roi = matrix[x - k: x + k, y - k: y + k, :]
+
+    xx, yy, zz = numpy.where(roi == 1)
+    i = numpy.argmin(zz)
+
+    return x - k + xx[i], y - k + yy[i], zz[i]
+
+
+def labeling_matrix(matrix):
+
+    len_x, len_y, len_z = matrix.shape
+
+    mm = numpy.zeros((len_x + 2, len_y + 2, len_z + 2))
+    mm[1:-1, 1:-1, 1:-1] = matrix
+
+    xx, yy, zz = numpy.where(mm == 1)
+    mat = numpy.zeros_like(mm, dtype=int)
+
+    def get_neighbors(x, y, z):
+        l = list()
+        for i in [-1, 0, 1]:
+            for j in [-1, 0, 1]:
+                for k in [-1, 0, 1]:
+                    ind = x + i, y + j, z + k
+                    if mm[ind] == 1:
+                        l.append(ind)
+        return l
+
+    print len(xx)
+
+    num_label = 1
+    for i in xrange(len(xx)):
+        x, y, z = xx[i], yy[i], zz[i]
+
+        if mat[x, y, z] == 0:
+            mat[x, y, z] = num_label
+            neighbors = get_neighbors(x, y, z)
+            while neighbors:
+                xxx, yyy, zzz = neighbors.pop()
+
+                if mat[xxx, yyy, zzz] == 0:
+                    mat[xxx, yyy, zzz] = num_label
+                    neighbors += get_neighbors(xxx, yyy, zzz)
+
+            num_label += 1
+
+    return mat[1:-1, 1:-1, 1:-1]

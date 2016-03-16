@@ -1,12 +1,6 @@
 # -*- python -*-
 #
-#       test_mesh.py : 
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
-#
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -14,61 +8,55 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
-
-#       ========================================================================
-#       External Import
-import numpy
-
-#       ========================================================================
-#       Local Import
+# ==============================================================================
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.mesh
-
-#       ========================================================================
-#       Code
-
-
-def test_mesh_1():
-    size = 10
-    origin = (0.0, 0.0, 0.0)
-    radius = 5
-
-    matrix = numpy.zeros((size, size, size), dtype=numpy.uint8)
-    matrix[1:9, 1:9, 1:9] = 1
-    vertices, faces = alinea.phenomenal.mesh.meshing(matrix, origin, radius)
+import alinea.phenomenal.plant_1
+# ==============================================================================
 
 
-def test_mesh_2():
+def test_mesh_empty_voxel_centers():
 
-    radius = 8
-    points_3d = list()
+    voxel_size = 8
+    voxel_centers = list()
 
-    mat, index, origin = alinea.phenomenal.data_transformation.\
-        points_3d_to_matrix(points_3d, radius)
-
-    vertices, faces = alinea.phenomenal.mesh.meshing(mat, origin, radius)
+    vertices, faces = alinea.phenomenal.mesh.meshing(
+        voxel_centers, voxel_size)
 
     assert vertices == list()
     assert faces == list()
 
 
-def test_mesh_3():
+def test_mesh_one_voxel_centers():
+    voxel_size = 1
+    voxel_centers = list()
+    voxel_centers.append((0, 0, 0))
 
-    radius = 1
-    points_3d = list()
-    points_3d.append((0, 0, 0))
-    points_3d.append((1, 1, 2))
+    vertices, faces = alinea.phenomenal.mesh.meshing(
+        voxel_centers, voxel_size)
 
-    mat, index, origin = alinea.phenomenal.data_transformation.\
-        points_3d_to_matrix(points_3d, radius)
+    assert vertices == list()
+    assert faces == list()
 
-    vertices, faces = alinea.phenomenal.mesh.meshing(mat, origin, radius)
 
-#       ========================================================================
-#       LOCAL TEST
+def test_mesh_two_voxel_center():
+    voxel_size = 5
+    voxel_centers = list()
+    voxel_centers.append((0, 0, 0))
+    voxel_centers.append((1, 1, 2))
 
-if __name__ == "__main__":
-    test_mesh_1()
-    test_mesh_2()
-    test_mesh_3()
+    vertices, faces = alinea.phenomenal.mesh.meshing(
+        voxel_centers, voxel_size)
+
+    assert vertices == list()
+    assert faces == list()
+
+
+def test_mesh_normal():
+    voxel_size = 20
+    voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
+        voxel_size=voxel_size)
+
+    vertices, faces = alinea.phenomenal.mesh.meshing(voxel_centers, voxel_size)
+
+    print vertices, faces

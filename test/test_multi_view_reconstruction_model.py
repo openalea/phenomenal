@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -13,92 +9,92 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import numpy
+from alinea.phenomenal.data_creation import (
+    build_object_1,
+    build_images_1)
 
-import alinea.phenomenal.calibration_model
-import alinea.phenomenal.multi_view_reconstruction
-import alinea.phenomenal.data_transformation
-import alinea.phenomenal.data_creation
-import alinea.phenomenal.plant_1
+from alinea.phenomenal.plant_1 import (
+    plant_1_calibration_camera_side_2_target)
+
+from alinea.phenomenal.multi_view_reconstruction import (
+    project_voxel_centers_on_image,
+    reconstruction_3d,
+    error_reconstruction)
 # ==============================================================================
 
 
 def test_multi_view_reconstruction_model_1():
+    # ==========================================================================
+    # Create object
+    cube_size = 10
+    voxel_size = 10
+    voxel_center = (0, 0, 0)
 
-    size = 10
-    radius = 8
-    point_3d = (-472, -472, 200)
+    voxel_centers = build_object_1(cube_size, voxel_size, voxel_center)
 
-    points = alinea.phenomenal.data_creation.build_object_1(
-        size, radius, point_3d)
+    assert len(voxel_centers) == 1000
+    volume = len(voxel_centers) * voxel_size**3
+    assert volume == 1000000
 
-    # alinea.phenomenal.result_viewer.show_points_3d(points)
+    # ==========================================================================
+    calibration = plant_1_calibration_camera_side_2_target()
 
-    # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.plant_1.\
-        plant_1_calibration_params_path()
+    images_projections = list()
+    shape_image = (2454, 2056)
+    for angle in range(0, 360, 30):
+        projection = calibration.get_projection(angle)
 
-    cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
-        params_camera_path)
+        img = project_voxel_centers_on_image(voxel_centers,
+                                             voxel_size,
+                                             shape_image,
+                                             projection)
 
-    # Create model projection object
-    projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
+        images_projections.append((img, projection))
 
-    images = alinea.phenomenal.data_creation.build_image_from_points_3d(
-        points, radius, projection, step=30)
+    # ==========================================================================
+    voxel_size = 20
+    voxel_centers = reconstruction_3d(images_projections,
+                                      voxel_size=voxel_size,
+                                      verbose=True)
 
-    # alinea.phenomenal.result_viewer.show_image(images[0])
-
-    points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, projection, 8, verbose=True)
-
-    mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
-        points, radius)
-
-    # alinea.phenomenal.result_viewer.show_points_3d(points)
-
-    assert mat.size == 1728
-    assert (mat == 1).all()
+    assert len(voxel_centers) == 288
+    volume = len(voxel_centers) * voxel_size**3
+    assert volume == 2304000
 
 
 def test_multi_view_reconstruction_model_2():
 
-    radius = 4
-    images = alinea.phenomenal.data_creation.build_images_1()
-
+    # ==========================================================================
     # Load camera model parameters
-    params_camera_path, _ = alinea.phenomenal.plant_1.\
-        plant_1_calibration_params_path()
+    calibration = plant_1_calibration_camera_side_2_target()
 
-    cam_params = alinea.phenomenal.calibration_model.CameraModelParameters.read(
-        params_camera_path)
+    # ==========================================================================
+    # Build images_projections
+    images = build_images_1()
+    images_projections = list()
+    for angle in range(0, 360, 30):
+        projection = calibration.get_projection(angle)
+        img = images[angle]
+        images_projections.append((img, projection))
 
-    # Create model projection object
-    projection = alinea.phenomenal.calibration_model.ModelProjection(cam_params)
+    # ==========================================================================
 
-    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, projection, radius, verbose=True)
+    voxel_size = 8
+    voxel_centers = reconstruction_3d(images_projections,
+                                      voxel_size=voxel_size,
+                                      verbose=True)
 
-    assert len(points_3d) == 7272
+    print len(voxel_centers)
+    assert len(voxel_centers) == 7280
 
-    for angle in images:
-        image = alinea.phenomenal.multi_view_reconstruction.\
-            project_points_on_image(points_3d,
-                                    radius,
-                                    images[angle].shape,
-                                    projection,
-                                    angle)
+    for image, projection in images_projections:
+        err = error_reconstruction(
+            image, projection, voxel_centers, voxel_size)
 
-        img = numpy.subtract(image, images[0])
-        img[img == -255] = 255
-
-        # alinea.phenomenal.result_viewer.show_images([images[angle], img, image])
-        print "Angle : ", angle, ' Err : ', numpy.count_nonzero(img)
-        assert numpy.count_nonzero(img) < 4000
+        assert err < 4000
 
 
 # ==============================================================================
-# LOCAL TEST
 
 if __name__ == "__main__":
     test_multi_view_reconstruction_model_1()

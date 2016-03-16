@@ -1,12 +1,6 @@
 # -*- python -*-
 #
-#       test_multi_view_reconstruction_opencv.py :
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
-#
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -14,73 +8,83 @@
 #
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
-#       ========================================================================
+# ==============================================================================
+from alinea.phenomenal.calibration_opencv import (
+    Calibration)
 
-#       ========================================================================
-#       External Import
-import numpy
-
-#       ========================================================================
-#       Local Import
-import alinea.phenomenal.calibration_opencv
-import alinea.phenomenal.multi_view_reconstruction
-import alinea.phenomenal.data_transformation
-import alinea.phenomenal.data_creation
+from alinea.phenomenal.plant_1 import (
+    plant_1_params_camera_opencv_path)
 
 
-#       ========================================================================
-#       Code
+from alinea.phenomenal.data_creation import (
+    build_object_1,
+    build_images_1)
+
+from alinea.phenomenal.multi_view_reconstruction import (
+    project_voxel_centers_on_image,
+    reconstruction_3d,
+    error_reconstruction)
+# ==============================================================================
+
+
 def test_multi_view_reconstruction_opencv_1():
+    # ==========================================================================
     size = 10
-    radius = 8
-    point_3d = (-472, -472, 200)
+    voxel_size = 10
+    voxel_center = (0, 0, 0)
+    voxel_centers = build_object_1(size, voxel_size, voxel_center)
 
-    points = alinea.phenomenal.data_creation.build_object_1(
-        size, radius, point_3d)
+    # ==========================================================================
+    calibration = Calibration.load(plant_1_params_camera_opencv_path())
 
-    calibration = alinea.phenomenal.calibration_opencv.\
-        Calibration.read_calibration('tests/test_calibration_opencv')
+    images_projections = list()
+    shape_image = (2454, 2056)
+    for angle in [0, 30, 60, 90]:
 
-    images = alinea.phenomenal.data_creation.build_image_from_points_3d(
-        points, radius, calibration, step=30)
+        projection = calibration.get_projection(angle)
 
-    points = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, radius, verbose=True)
+        img = project_voxel_centers_on_image(voxel_centers,
+                                             voxel_size,
+                                             shape_image,
+                                             projection)
 
-    mat, _, _ = alinea.phenomenal.data_transformation.points_3d_to_matrix(
-        points, radius)
+        images_projections.append((img, projection))
 
-    assert mat.size == 2184
-    print numpy.shape(mat)
+    # ==========================================================================
+    voxel_size = 20
+    voxel_centers = reconstruction_3d(images_projections,
+                                      voxel_size=voxel_size,
+                                      verbose=True)
+
+    assert len(voxel_centers) == 465
+    volume = len(voxel_centers) * voxel_size**3
+    assert volume == 3720000
 
 
 def test_multi_view_reconstruction_opencv_2():
-    radius = 4
-    images = alinea.phenomenal.data_creation.build_images_1()
+    voxel_size = 8
+    calibration = Calibration.load(plant_1_params_camera_opencv_path())
+    images = build_images_1()
 
-    calibration = alinea.phenomenal.calibration_opencv.\
-        Calibration.read_calibration('tests/test_calibration_opencv')
+    images_projections = list()
+    for angle in [0, 30, 60, 90]:
+        projection = calibration.get_projection(angle)
+        img = images[angle]
+        images_projections.append((img, projection))
 
-    points_3d = alinea.phenomenal.multi_view_reconstruction.reconstruction_3d(
-        images, calibration, radius, verbose=True)
+    voxel_centers = reconstruction_3d(
+        images_projections, voxel_size=voxel_size, verbose=True)
 
-    assert len(points_3d) == 6096
+    assert len(voxel_centers) == 9929
 
-    for angle in images:
-        image = alinea.phenomenal.multi_view_reconstruction.\
-            project_points_on_image(points_3d,
-                                    radius,
-                                    images[angle].shape,
-                                    calibration,
-                                    angle)
+    for image, projection in images_projections:
+        err = error_reconstruction(
+            image, projection, voxel_centers, voxel_size)
 
-        img = numpy.subtract(image, images[0])
-        img[img == -255] = 255
-        print "Angle : ", angle, ' Err : ', numpy.count_nonzero(img)
-        assert numpy.count_nonzero(img) < 8000
+        assert err < 9000
 
-#       ========================================================================
-#       LOCAL TEST
+
+# ==============================================================================
 
 if __name__ == "__main__":
     test_multi_view_reconstruction_opencv_1()

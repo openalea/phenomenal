@@ -1,11 +1,6 @@
 # -*- python -*-
 #
-#
 #       Copyright 2015 INRIA - CIRAD - INRA
-#
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -16,8 +11,9 @@
 # ==============================================================================
 import numpy
 
-import alinea.phenomenal.data_transformation
-import alinea.phenomenal.multi_view_reconstruction
+
+from alinea.phenomenal.data_transformation import (
+    matrix_to_points_3d)
 # ==============================================================================
 
 
@@ -45,37 +41,12 @@ def build_images_1():
     return images
 
 
-def build_object_1(size, radius, origin):
+def build_object_1(size, voxel_size, voxel_center_origin):
 
     matrix = numpy.ones((size, size, size), dtype=numpy.uint8)
 
-    points_3d = alinea.phenomenal.data_transformation.matrix_to_points_3d(
-        matrix, radius, origin)
+    voxel_centers = matrix_to_points_3d(matrix,
+                                        voxel_size,
+                                        voxel_center_origin)
 
-    return points_3d
-
-
-def build_image_from_points_3d(points_3d, radius, projection, step=30):
-
-    images = dict()
-    for angle in range(0, 360, step):
-        img = numpy.zeros((2454, 2056), dtype=numpy.uint8)
-        h, l = numpy.shape(img)
-
-        print 'Build image angle : ', angle
-        for point_3d in points_3d:
-            x_min, x_max, y_min, y_max = \
-                alinea.phenomenal.multi_view_reconstruction.bbox_projection(
-                    point_3d, radius, projection, angle)
-
-            x_min = min(max(x_min, 0), l - 1)
-            x_max = min(max(x_max, 0), l - 1)
-            y_min = min(max(y_min, 0), h - 1)
-            y_max = min(max(y_max, 0), h - 1)
-
-            img[y_min:y_max + 1, x_min:x_max + 1] = 255
-
-        images[angle] = img
-
-    return images
-
+    return voxel_centers

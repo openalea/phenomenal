@@ -2,10 +2,6 @@
 #
 #       Copyright 2015 INRIA - CIRAD - INRA
 #
-#       File author(s): Simon Artzet <simon.artzet@gmail.com>
-#
-#       File contributor(s):
-#
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
@@ -95,7 +91,7 @@ def test_wrong_parameters_7():
         assert False
 
 
-def test_get_mean_image_1():
+def test_simply_working_1():
     images = list()
     for i in range(10):
         images.append(numpy.zeros((25, 25, 3)))
@@ -106,7 +102,7 @@ def test_get_mean_image_1():
     assert image.shape == (25, 25, 3)
 
 
-def test_get_mean_image_2():
+def test_simply_working_2():
     images = list()
     for i in range(10):
         images.append(numpy.ones((25, 25, 3)))
@@ -118,7 +114,7 @@ def test_get_mean_image_2():
     assert numpy.count_nonzero(image) == 25 * 25 * 3
 
 
-def test_get_mean_image_3():
+def test_simply_working_3():
     images = list()
     for i in range(0, 1):
         images.append(numpy.ones((25, 25, 3)))
@@ -143,6 +139,6 @@ if __name__ == "__main__":
     test_wrong_parameters_6()
     test_wrong_parameters_7()
 
-    test_get_mean_image_1()
-    test_get_mean_image_2()
-    test_get_mean_image_3()
+    test_simply_working_1()
+    test_simply_working_2()
+    test_simply_working_3()
