@@ -16,9 +16,6 @@ from alinea.phenomenal.plant_1 import (
 from alinea.phenomenal.multi_view_reconstruction import (
     reconstruction_3d)
 
-from alinea.phenomenal.viewer import (
-    show_points_3d)
-
 # ==============================================================================
 
 
@@ -45,6 +42,3 @@ def test_1():
 
     # # Viewing
     # show_points_3d(voxel_centers, scale_factor=20)
-
-if __name__ == "__main__":
-    test_1()

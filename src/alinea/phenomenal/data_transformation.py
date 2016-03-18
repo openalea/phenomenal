@@ -78,7 +78,11 @@ def voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
                              int((y_max - y_min) / voxel_size + 1),
                              int((z_max - z_min) / voxel_size + 1))
     image_data.SetSpacing(1.0, 1.0, 1.0)
-    image_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
+
+    if vtk.VTK_MAJOR_VERSION < 6:
+        image_data.AllocateScalars()
+    else:
+        image_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
 
     for x, y, z in voxel_centers:
         nx = int((x - x_min) / voxel_size)
@@ -97,7 +101,11 @@ def numpy_matrix_to_vtk_image_data(data_matrix):
     image_data = vtk.vtkImageData()
     image_data.SetDimensions(nx, ny, nz)
     image_data.SetSpacing(1.0, 1.0, 1.0)
-    image_data.AllocateScalars(get_vtk_array_type(data_matrix.dtype), 1)
+
+    if vtk.VTK_MAJOR_VERSION < 6:
+        image_data.AllocateScalars()
+    else:
+        image_data.AllocateScalars(get_vtk_array_type(data_matrix.dtype), 1)
 
     lx, ly, lz = image_data.GetDimensions()
     for i in xrange(0, lx):
