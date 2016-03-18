@@ -64,7 +64,7 @@ def meshing(voxel_centers, voxel_size,
         three indices
     """
 
-    if not voxel_centers:
+    if not voxel_centers or len(voxel_centers) < 10:
         return list(), list()
 
     vtk_image_data, real_origin = voxel_centers_to_vtk_image_data(
@@ -136,7 +136,11 @@ def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
         print ""
 
     surface = vtk.vtkMarchingCubes()
-    surface.SetInputData(vtk_image_data)
+    if vtk.VTK_MAJOR_VERSION <= 5:
+        surface.SetInput(vtk_image_data)
+    else:
+        surface.SetInputData(vtk_image_data)
+
     surface.ComputeNormalsOn()
     surface.SetValue(0, iso_value)
     surface.Update()
@@ -201,7 +205,12 @@ def smoothing(vtk_poly_data,
         print "================================================================"
 
     smoother = vtk.vtkWindowedSincPolyDataFilter()
-    smoother.SetInputData(vtk_poly_data)
+
+    if vtk.VTK_MAJOR_VERSION <= 5:
+        smoother.SetInput(vtk_poly_data)
+    else:
+        smoother.SetInputData(vtk_poly_data)
+
     smoother.BoundarySmoothingOn()
     smoother.SetFeatureAngle(feature_angle)
     smoother.SetPassBand(pass_band)
@@ -251,7 +260,12 @@ def decimation(vtk_poly_data, reduction=0.95, verbose=False):
 
     decimate = vtk.vtkQuadricDecimation()
     decimate.SetTargetReduction(reduction)
-    decimate.SetInputData(vtk_poly_data)
+
+    if vtk.VTK_MAJOR_VERSION <= 5:
+        decimate.SetInput(vtk_poly_data)
+    else:
+        decimate.SetInputData(vtk_poly_data)
+
     decimate.Update()
 
     vtk_poly_decimated = vtk.vtkPolyData()
