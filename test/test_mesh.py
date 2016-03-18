@@ -40,16 +40,14 @@ def test_mesh_one_voxel_centers():
 
 
 def test_mesh_two_voxel_center():
-    voxel_size = 5
+    voxel_size = 4
     voxel_centers = list()
     voxel_centers.append((0, 0, 0))
-    voxel_centers.append((1, 1, 2))
+    voxel_centers.append((4, 4, 8))
 
     vertices, faces = alinea.phenomenal.mesh.meshing(
         voxel_centers, voxel_size)
 
-    assert vertices == list()
-    assert faces == list()
 
 
 def test_mesh_normal():
@@ -57,6 +55,14 @@ def test_mesh_normal():
     voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
         voxel_size=voxel_size)
 
-    vertices, faces = alinea.phenomenal.mesh.meshing(voxel_centers, voxel_size)
+    vertices, faces = alinea.phenomenal.mesh.meshing(
+        voxel_centers, voxel_size,
+        smoothing_iteration=3, reduction=95.0, verbose=True)
 
     print vertices, faces
+
+if __name__ == "__main__":
+    test_mesh_empty_voxel_centers()
+    test_mesh_one_voxel_centers()
+    test_mesh_two_voxel_center()
+    test_mesh_normal()
