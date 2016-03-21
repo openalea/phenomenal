@@ -127,7 +127,7 @@ def test_no_regression_1():
         image_0_binarize = threshold_meanshift(images[angle], mean_image)
         image_0_binarize *= 255
         if not (-100 < numpy.count_nonzero(image_0_binarize) - ref < 100):
-            assert True
+            assert False
 
 # ==============================================================================
 
