@@ -215,12 +215,7 @@ def remove_internal_points_3d(voxel_centers, voxel_size):
         return voxel_centers
 
     matrix, origin = points_3d_to_matrix(voxel_centers, voxel_size)
-
     xx, yy, zz = numpy.where(matrix[1:-1, 1:-1, 1:-1] == 1)
-
-    xx += 1
-    yy += 1
-    zz += 1
 
     def is_removable(x, y, z):
         for i in [-1, 0, 1]:
@@ -233,7 +228,7 @@ def remove_internal_points_3d(voxel_centers, voxel_size):
     mat = matrix.copy()
     for i in xrange(len(xx)):
         x, y, z = xx[i], yy[i], zz[i]
-        if is_removable(x, y, z):
+        if is_removable(x + 1, y + 1, z + 1):
             mat[x, y, z] = 0
 
     voxel_centers = matrix_to_points_3d(mat, voxel_size, origin=origin)
