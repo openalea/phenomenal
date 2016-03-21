@@ -11,6 +11,7 @@
 # ==============================================================================
 import cv2
 import glob
+import os
 
 import openalea.deploy.shared_data
 import alinea.phenomenal
@@ -27,9 +28,9 @@ def plant_1_images():
 
     data_directory = shared_directory + '/plant_1/images/'
     files_path = glob.glob(data_directory + '*.png')
+    files_name = [os.path.basename(path) for path in files_path]
 
-    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]),
-                 files_path)
+    angles = map(lambda x: int((x.split('.png')[0])), files_name)
 
     images = dict()
     for i in range(len(files_path)):
@@ -44,9 +45,9 @@ def plant_1_images_chessboard():
 
     data_directory = shared_directory + '/plant_1/images_chessboard/'
     files_path = glob.glob(data_directory + '*.png')
+    files_name = [os.path.basename(path) for path in files_path]
 
-    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]),
-                 files_path)
+    angles = map(lambda x: int((x.split('.png')[0])), files_name)
 
     images_chessboard = dict()
     for i in range(len(files_path)):
@@ -62,8 +63,9 @@ def plant_1_images_binarize():
 
     data_directory = shared_directory + '/plant_1/images_binarize/'
     files_path = glob.glob(data_directory + '*.png')
-    angles = map(lambda x: int((x.split('\\')[-1]).split('.png')[0]),
-                 files_path)
+    files_name = [os.path.basename(path) for path in files_path]
+
+    angles = map(lambda x: int((x.split('.png')[0])), files_name)
 
     images = dict()
     for i in range(len(files_path)):
