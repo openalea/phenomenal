@@ -49,7 +49,6 @@ def test_mesh_two_voxel_center():
         voxel_centers, voxel_size)
 
 
-
 def test_mesh_normal():
     voxel_size = 20
     voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
@@ -57,9 +56,12 @@ def test_mesh_normal():
 
     vertices, faces = alinea.phenomenal.mesh.meshing(
         voxel_centers, voxel_size,
-        smoothing_iteration=3, reduction=95.0, verbose=True)
+        smoothing_iteration=3, reduction=0.95, verbose=True)
 
-    print vertices, faces
+    print len(vertices), len(faces)
+
+    assert len(vertices) == 273
+    assert len(faces) == 541
 
 if __name__ == "__main__":
     test_mesh_empty_voxel_centers()

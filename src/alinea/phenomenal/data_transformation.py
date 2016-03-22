@@ -64,6 +64,7 @@ def vtk_poly_data_to_vertices_faces(vtk_poly_data):
 
 
 def voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
+
     x_min = min(voxel_centers, key=itemgetter(0))[0]
     x_max = max(voxel_centers, key=itemgetter(0))[0]
 
@@ -74,16 +75,24 @@ def voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
     z_max = max(voxel_centers, key=itemgetter(2))[2]
 
     image_data = vtk.vtkImageData()
-    image_data.SetDimensions(int((x_max - x_min) / voxel_size + 1),
-                             int((y_max - y_min) / voxel_size + 1),
-                             int((z_max - z_min) / voxel_size + 1))
+
+    nx, ny, nz = (int((x_max - x_min) / voxel_size + 1),
+                  int((y_max - y_min) / voxel_size + 1),
+                  int((z_max - z_min) / voxel_size + 1))
+
+    image_data.SetDimensions(nx, ny, nz)
     image_data.SetSpacing(1.0, 1.0, 1.0)
 
+    print nx, ny, nz
+
     if vtk.VTK_MAJOR_VERSION < 6:
+        image_data.SetScalarType(vtk.VTK_UNSIGNED_CHAR)
+        image_data.SetNumberOfScalarComponents(1)
         image_data.AllocateScalars()
     else:
         image_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
 
+    # Wrong initialization, image_data not initialize to 0 value
     for x, y, z in voxel_centers:
         nx = int((x - x_min) / voxel_size)
         ny = int((y - y_min) / voxel_size)
@@ -102,12 +111,21 @@ def numpy_matrix_to_vtk_image_data(data_matrix):
     image_data.SetDimensions(nx, ny, nz)
     image_data.SetSpacing(1.0, 1.0, 1.0)
 
+    print nx, ny, nz
+
+    print 'TYPE :', get_vtk_array_type(data_matrix.dtype)
+    print 'TYPE :', vtk.VTK_UNSIGNED_CHAR
+
     if vtk.VTK_MAJOR_VERSION < 6:
+        image_data.SetScalarType(get_vtk_array_type(data_matrix.dtype))
+        image_data.SetNumberOfScalarComponents(1)
         image_data.AllocateScalars()
     else:
         image_data.AllocateScalars(get_vtk_array_type(data_matrix.dtype), 1)
 
     lx, ly, lz = image_data.GetDimensions()
+    print lx, ly, lz
+
     for i in xrange(0, lx):
         for j in xrange(0, ly):
             for k in xrange(0, lz):
