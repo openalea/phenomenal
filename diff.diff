@@ -1,0 +1,184 @@
+diff --git a/benchmarks/notebook/Meshing.ipynb b/benchmarks/notebook/Meshing.ipynb
+index 43824f8..634a9a5 100644
+--- a/benchmarks/notebook/Meshing.ipynb
++++ b/benchmarks/notebook/Meshing.ipynb
+@@ -13,7 +13,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": 1,
++   "execution_count": 3,
+    "metadata": {
+     "collapsed": false
+    },
+@@ -22,7 +22,7 @@
+     "import alinea.phenomenal.plant_1\n",
+     "import alinea.phenomenal.viewer\n",
+     "\n",
+-    "voxel_size = 3\n",
++    "voxel_size = 10\n",
+     "voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(voxel_size=voxel_size)\n",
+     "\n",
+     "# Display it\n",
+@@ -40,7 +40,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": 2,
++   "execution_count": null,
+    "metadata": {
+     "collapsed": false
+    },
+@@ -66,18 +66,7 @@
+       "================================================================\n",
+       "================================================================\n",
+       "Decimation :\n",
+-      "\tReduction (percentage) : 0.95\n",
+-      "\n",
+-      "\tBefore decimation\n",
+-      "\t-----------------\n",
+-      "\tThere are 171558 points.\n",
+-      "\tThere are 342336 polygons.\n",
+-      "\n",
+-      "\tAfter decimation\n",
+-      "\t-----------------\n",
+-      "\tThere are 8588 points.\n",
+-      "\tThere are 17116 polygons.\n",
+-      "================================================================\n"
++      "\tReduction (percentage) : "
+      ]
+     }
+    ],
+@@ -98,7 +87,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": 3,
++   "execution_count": null,
+    "metadata": {
+     "collapsed": false
+    },
+@@ -120,7 +109,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": 4,
++   "execution_count": null,
+    "metadata": {
+     "collapsed": false
+    },
+@@ -140,7 +129,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": 5,
++   "execution_count": null,
+    "metadata": {
+     "collapsed": false
+    },
+@@ -162,19 +151,11 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": 6,
++   "execution_count": null,
+    "metadata": {
+     "collapsed": false
+    },
+-   "outputs": [
+-    {
+-     "name": "stdout",
+-     "output_type": "stream",
+-     "text": [
+-      "Mesh surface area :  1052250.86034\n"
+-     ]
+-    }
+-   ],
++   "outputs": [],
+    "source": [
+     "import skimage.measure\n",
+     "\n",
+diff --git a/benchmarks/scripts/mesh.py b/benchmarks/scripts/mesh.py
+index 735638f..d578388 100644
+--- a/benchmarks/scripts/mesh.py
++++ b/benchmarks/scripts/mesh.py
+@@ -20,7 +20,7 @@ import alinea.phenomenal.mesh
+ import alinea.phenomenal.viewer
+ # ==============================================================================
+ 
+-voxel_size = 3
++voxel_size = 8
+ voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
+     voxel_size=voxel_size)
+ 
+@@ -28,17 +28,16 @@ vertices, faces = alinea.phenomenal.mesh.meshing(
+     voxel_centers, voxel_size,
+     reduction=0.95, smoothing_iteration=5, verbose=True)
+ 
+-# # Write
+-# alinea.phenomenal.misc.write_mesh(
+-#     vertices, faces, 'mesh_radius_' + str(voxel_size))
+-#
+-# # Read
+-# vertices, faces = alinea.phenomenal.misc.read_mesh(
+-#     'mesh_radius_' + str(voxel_size))
++# Write
++alinea.phenomenal.misc.write_mesh(
++    vertices, faces, 'mesh_voxel_size_' + str(voxel_size))
++
++# Read
++vertices, faces = alinea.phenomenal.misc.read_mesh(
++    'mesh_voxel_size_' + str(voxel_size))
+ 
+ normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
+ centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
+ 
+-
+ alinea.phenomenal.viewer.show_mesh(vertices, faces,
+                                    normals=normals, centers=centers)
+diff --git a/benchmarks/scripts/multi-view_reconstruction.py b/benchmarks/scripts/multi-view_reconstruction.py
+index 936455e..c0757c1 100644
+--- a/benchmarks/scripts/multi-view_reconstruction.py
++++ b/benchmarks/scripts/multi-view_reconstruction.py
+@@ -14,8 +14,7 @@ from alinea.phenomenal.plant_1 import (
+     plant_1_calibration_camera_side_2_target)
+ 
+ from alinea.phenomenal.multi_view_reconstruction import (
+-    reconstruction_3d,
+-    volume)
++    reconstruction_3d, volume)
+ 
+ import alinea.phenomenal.viewer
+ import alinea.phenomenal.misc
+@@ -40,12 +39,13 @@ voxel_centers = reconstruction_3d(
+ 
+ print len(voxel_centers)
+ 
+-# # Write
+-# alinea.phenomenal.misc.write_xyz(voxel_centers,
+-#                                  'voxel_centers_size_' + str(voxel_size))
++# Write
++alinea.phenomenal.misc.write_xyz(voxel_centers,
++                                 'voxel_centers_size_' + str(voxel_size))
+ 
+-# # Read
+-# points_3d = alinea.phenomenal.misc.read_xyz('points_3d_radius_' + str(radius))
++# Read
++points_3d = alinea.phenomenal.misc.read_xyz(
++    'voxel_centers_size_' + str(voxel_size))
+ 
+ # Viewing
+ alinea.phenomenal.viewer.show_points_3d(voxel_centers, scale_factor=10)
+diff --git a/src/alinea/phenomenal/data_transformation.py b/src/alinea/phenomenal/data_transformation.py
+index b1be90d..c1f7a7d 100644
+--- a/src/alinea/phenomenal/data_transformation.py
++++ b/src/alinea/phenomenal/data_transformation.py
+@@ -80,6 +80,8 @@ def voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
+     image_data.SetSpacing(1.0, 1.0, 1.0)
+ 
+     if vtk.VTK_MAJOR_VERSION < 6:
++        image_data.SetScalarType(vtk.VTK_UNSIGNED_CHAR)
++        image_data.SetNumberOfScalarComponents(1)
+         image_data.AllocateScalars()
+     else:
+         image_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
