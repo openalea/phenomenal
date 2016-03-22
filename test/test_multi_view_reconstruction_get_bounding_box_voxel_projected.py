@@ -9,12 +9,22 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.plant_1 import (
-    plant_1_calibration_camera_side_2_target)
-
 from alinea.phenomenal.multi_view_reconstruction import (
     get_bounding_box_voxel_projected)
+from alinea.phenomenal.plant_1 import (
+    plant_1_calibration_camera_side_2_target)
 # ==============================================================================
+
+
+def check_values(values, refs, percentage=0.0001):
+    if len(values) != len(refs):
+        assert False
+
+    for i in xrange(len(values)):
+        # Acceptation error of 0.01 %
+        acceptation_error = refs[i] * percentage
+        if abs(values[i] - refs[i]) > acceptation_error:
+            assert False
 
 
 def test_bbox_projection_1():
@@ -40,17 +50,14 @@ def test_bbox_projection_2():
 
     voxel_center = (0, 0, 0)
     voxel_size = 8
-    ref = (1017.3089948473056,
-           1025.7875288183795,
-           1258.2799614482235,
-           1265.171426935121)
+    refs = (1017.3089948473056,
+            1025.7875288183795,
+            1258.2799614482235,
+            1265.171426935121)
 
-    res = get_bounding_box_voxel_projected(voxel_center, voxel_size, projection)
+    values = get_bounding_box_voxel_projected(voxel_center, voxel_size, projection)
 
-    assert -1 < res[0] - ref[0] < 1
-    assert -1 < res[1] - ref[1] < 1
-    assert -1 < res[2] - ref[2] < 1
-    assert -1 < res[3] - ref[3] < 1
+    check_values(values, refs)
 
 if __name__ == "__main__":
     test_bbox_projection_1()
