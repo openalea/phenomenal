@@ -49,7 +49,6 @@ def test_mesh_two_voxel_center():
         voxel_centers, voxel_size)
 
 
-
 def test_mesh_normal():
     voxel_size = 20
     voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
