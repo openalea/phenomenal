@@ -10,14 +10,55 @@
 #
 # ==============================================================================
 import numpy
+import skimage.measure
 import vtk
 import vtk.util.numpy_support
 
 from alinea.phenomenal.data_transformation import (
     voxel_centers_to_vtk_image_data,
-    vtk_poly_data_to_vertices_faces)
+    vtk_poly_data_to_vertices_faces,
+    points_3d_to_matrix)
 
 # ==============================================================================
+
+
+def deprecated_mesh(voxel_centers, voxel_size):
+    """
+    Build a  polygonal mesh representation (vertices and faces) from voxels.
+
+    A marching cubes algorithm is apply to compute the polygonal mesh.
+
+    Parameters
+    ----------
+    voxel_centers : [(x, y, z)]
+        cList (collections.deque) of center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    Returns
+    -------
+    vertices : [(x, y, z), ...]
+        Spatial coordinates for unique mesh vertices.
+
+    faces : [(V1, V2, V3), ...]
+        Define triangular faces via referencing vertex indices from vertices.
+        This algorithm specifically outputs triangles, so each face has exactly
+        three indices
+    """
+    matrix, real_origin = points_3d_to_matrix(voxel_centers, voxel_size)
+
+    if len(matrix.shape) != 3 or matrix.shape < (2, 2, 2):
+        return list(), list()
+
+    vertices, faces = skimage.measure.marching_cubes(matrix, 0.5)
+
+    faces = skimage.measure.correct_mesh_orientation(
+        matrix, vertices, faces, gradient_direction='descent')
+
+    vertices = vertices * voxel_size + real_origin
+
+    return vertices, faces
 
 
 def meshing(voxel_centers, voxel_size,
