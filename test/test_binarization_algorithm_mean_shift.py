@@ -10,6 +10,7 @@
 #
 # ==============================================================================
 import numpy
+import numpy.testing
 
 from alinea.phenomenal.plant_1 import plant_1_images
 from alinea.phenomenal.binarization_algorithm import (threshold_meanshift,
@@ -126,7 +127,10 @@ def test_no_regression_1():
     for angle, ref in refs:
         image_0_binarize = threshold_meanshift(images[angle], mean_image)
         image_0_binarize *= 255
-        if not (-100 < numpy.count_nonzero(image_0_binarize) - ref < 100):
+        # Acceptation error of 0.01 %
+        acceptation_error = ref * 0.001
+	print abs(numpy.count_nonzero(image_0_binarize) - ref), acceptation_error
+        if abs(numpy.count_nonzero(image_0_binarize) - ref) > acceptation_error:
             assert False
 
 # ==============================================================================
