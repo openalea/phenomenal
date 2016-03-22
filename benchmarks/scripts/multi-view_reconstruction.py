@@ -14,8 +14,7 @@ from alinea.phenomenal.plant_1 import (
     plant_1_calibration_camera_side_2_target)
 
 from alinea.phenomenal.multi_view_reconstruction import (
-    reconstruction_3d,
-    volume)
+    reconstruction_3d, volume)
 
 import alinea.phenomenal.viewer
 import alinea.phenomenal.misc
@@ -40,12 +39,13 @@ voxel_centers = reconstruction_3d(
 
 print len(voxel_centers)
 
-# # Write
-# alinea.phenomenal.misc.write_xyz(voxel_centers,
-#                                  'voxel_centers_size_' + str(voxel_size))
+# Write
+alinea.phenomenal.misc.write_xyz(voxel_centers,
+                                 'voxel_centers_size_' + str(voxel_size))
 
-# # Read
-# points_3d = alinea.phenomenal.misc.read_xyz('points_3d_radius_' + str(radius))
+# Read
+points_3d = alinea.phenomenal.misc.read_xyz(
+    'voxel_centers_size_' + str(voxel_size))
 
 # Viewing
 alinea.phenomenal.viewer.show_points_3d(voxel_centers, scale_factor=10)
