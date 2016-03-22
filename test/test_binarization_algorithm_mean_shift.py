@@ -128,7 +128,8 @@ def test_no_regression_1():
         image_0_binarize = threshold_meanshift(images[angle], mean_image)
         image_0_binarize *= 255
         # Acceptation error of 0.01 %
-        acceptation_error = ref * 0.0001
+        acceptation_error = ref * 0.001
+	print abs(numpy.count_nonzero(image_0_binarize) - ref), acceptation_error
         if abs(numpy.count_nonzero(image_0_binarize) - ref) > acceptation_error:
             assert False
 
