@@ -254,15 +254,23 @@ def remove_internal_points_3d(voxel_centers, voxel_size):
     return voxel_centers
 
 
-def find_position_base_plant(matrix, origin, voxel_size, neighbor_size=2):
+def find_position_base_plant(matrix, origin, voxel_size, neighbor_size=5):
 
-    x = int(round(-origin[0] / voxel_size))
-    y = int(round(-origin[1] / voxel_size))
+    x = int(round(0 - origin[0] / voxel_size))
+    y = int(round(0 - origin[1] / voxel_size))
 
     k = neighbor_size
-    roi = matrix[x - k: x + k, y - k: y + k, :]
+    x_len, y_len, z_len = matrix.shape
+    roi = matrix[max(x - k, 0): min(x + k, x_len),
+                 max(y - k, 0): min(y + k, y_len),
+                 :]
 
     xx, yy, zz = numpy.where(roi == 1)
+    inds = numpy.where(zz == zz.min())
+    # print int(round(numpy.mean(xx[inds])))
+    # print int(round(numpy.mean(yy[inds])))
+    # print zz[inds]
+
     i = numpy.argmin(zz)
 
     return x - k + xx[i], y - k + yy[i], zz[i]
