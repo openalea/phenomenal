@@ -9,15 +9,15 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import time
+
+import alinea.phenomenal.misc
+import alinea.phenomenal.viewer
+from alinea.phenomenal.multi_view_reconstruction import (
+    reconstruction_3d)
 from alinea.phenomenal.plant_1 import (
     plant_1_images_binarize,
     plant_1_calibration_camera_side_2_target)
-
-from alinea.phenomenal.multi_view_reconstruction import (
-    reconstruction_3d, volume)
-
-import alinea.phenomenal.viewer
-import alinea.phenomenal.misc
 # ==============================================================================
 
 # Load images binarize
@@ -32,11 +32,14 @@ for angle in range(0, 360, 30):
     projection = calibration.get_projection(angle)
     images_projections.append((img, projection))
 
-voxel_size = 10
+voxel_size = 4
+
+t0 = time.time()
 # Multi-view reconstruction
 voxel_centers = reconstruction_3d(
     images_projections, voxel_size=voxel_size, verbose=True)
 
+print "Time to reconstruct plant : ", time.time() - t0
 print len(voxel_centers)
 
 # Write
@@ -48,5 +51,7 @@ points_3d = alinea.phenomenal.misc.read_xyz(
     'voxel_centers_size_' + str(voxel_size))
 
 # Viewing
-alinea.phenomenal.viewer.show_points_3d(voxel_centers, scale_factor=10)
-
+alinea.phenomenal.viewer.show_points_3d(voxel_centers,
+                                        scale_factor=voxel_size,
+                                        color=(0.1, 0.8, 0.1),
+                                        figure_name=str(voxel_size))
