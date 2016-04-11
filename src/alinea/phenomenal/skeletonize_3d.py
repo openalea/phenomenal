@@ -27,9 +27,9 @@ def voxel_centers_to_vectors(voxel_centers):
     vectors = list()
     for voxel_center in voxel_centers:
         vectors.append(
-            openalea.plantgl.math.Vector3(numpy.double(voxel_center[0]),
-                                          numpy.double(voxel_center[1]),
-                                          numpy.double(voxel_center[2])))
+            openalea.plantgl.math.Vector3(float(voxel_center[0]),
+                                          float(voxel_center[1]),
+                                          float(voxel_center[2])))
 
     return vectors
 

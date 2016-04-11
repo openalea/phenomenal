@@ -32,7 +32,7 @@ for angle in range(0, 360, 30):
     projection = calibration.get_projection(angle)
     images_projections.append((img, projection))
 
-voxel_size = 4
+voxel_size = 10
 
 t0 = time.time()
 # Multi-view reconstruction
@@ -42,16 +42,29 @@ voxel_centers = reconstruction_3d(
 print "Time to reconstruct plant : ", time.time() - t0
 print len(voxel_centers)
 
-# Write
-alinea.phenomenal.misc.write_xyz(voxel_centers,
-                                 'voxel_centers_size_' + str(voxel_size))
+# # Write
+# alinea.phenomenal.misc.write_xyz(voxel_centers,
+#                                  'voxel_centers_size_' + str(voxel_size))
+#
+# # Read
+# points_3d = alinea.phenomenal.misc.read_xyz(
+#     'voxel_centers_size_' + str(voxel_size))
+#
+# # Viewing
+# alinea.phenomenal.viewer.show_points_3d(voxel_centers,
+#                                         scale_factor=voxel_size,
+#                                         color=(0.1, 0.8, 0.1),
+#                                         figure_name=str(voxel_size))
 
-# Read
-points_3d = alinea.phenomenal.misc.read_xyz(
-    'voxel_centers_size_' + str(voxel_size))
+import alinea.phenomenal.data_transformation
+import mahotas
+import numpy
 
-# Viewing
-alinea.phenomenal.viewer.show_points_3d(voxel_centers,
-                                        scale_factor=voxel_size,
-                                        color=(0.1, 0.8, 0.1),
-                                        figure_name=str(voxel_size))
+matrix, origin = alinea.phenomenal.data_transformation.points_3d_to_matrix(
+    voxel_centers, voxel_size)
+
+print matrix.shape
+
+m = mahotas.thin(matrix)
+
+# numpy.save('plant', matrix)

@@ -212,15 +212,16 @@ def points_3d_to_matrix(voxel_centers, voxel_size):
 
     x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(voxel_centers)
 
-    mat = numpy.zeros(((x_max - x_min) / voxel_size + 1,
-                       (y_max - y_min) / voxel_size + 1,
-                       (z_max - z_min) / voxel_size + 1),
-                      dtype=numpy.uint8)
+    len_x = int((x_max - x_min) / voxel_size + 1)
+    len_y = int((y_max - y_min) / voxel_size + 1)
+    len_z = int((z_max - z_min) / voxel_size + 1)
+
+    mat = numpy.zeros((len_x, len_y, len_z), dtype=numpy.uint8)
 
     for x, y, z in voxel_centers:
-        x_new = (x - x_min) / voxel_size
-        y_new = (y - y_min) / voxel_size
-        z_new = (z - z_min) / voxel_size
+        x_new = int((x - x_min) / voxel_size)
+        y_new = int((y - y_min) / voxel_size)
+        z_new = int((z - z_min) / voxel_size)
 
         mat[x_new, y_new, z_new] = 1
 
