@@ -259,7 +259,7 @@ def voxel_is_visible_in_image(voxel_center,
 
     if (0 <= x < length_image and
         0 <= y < height_image and
-            image[y, x] > 0):
+            image[int(y), int(x)] > 0):
         return True
 
     # ==========================================================================
@@ -267,10 +267,10 @@ def voxel_is_visible_in_image(voxel_center,
     x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
         voxel_center, voxel_size, projection)
 
-    x_min = min(max(math.floor(x_min), 0), length_image - 1)
-    x_max = min(max(math.ceil(x_max), 0), length_image - 1)
-    y_min = min(max(math.floor(y_min), 0), height_image - 1)
-    y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+    x_min = int(min(max(math.floor(x_min), 0), length_image - 1))
+    x_max = int(min(max(math.ceil(x_max), 0), length_image - 1))
+    y_min = int(min(max(math.floor(y_min), 0), height_image - 1))
+    y_max = int(min(max(math.ceil(y_max), 0), height_image - 1))
 
     if (image[y_min, x_min] > 0 or
         image[y_max, x_min] > 0 or

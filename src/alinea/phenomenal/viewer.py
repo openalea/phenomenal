@@ -56,6 +56,25 @@ def plot_points_3d(points_3d, color=None, scale_factor=5):
     return color
 
 
+def plot_3d(points_3d, color=None, tube_radius=1):
+    pts = numpy.array(points_3d)
+    pts = pts.astype(int)
+
+    if color is None:
+        color = (random.uniform(0, 1),
+                 random.uniform(0, 1),
+                 random.uniform(0, 1))
+
+    if len(points_3d) > 0:
+        mayavi.mlab.plot3d(pts[:, 0], pts[:, 1], pts[:, 2],
+                           color=color,
+                           tube_radius=tube_radius)
+
+    del pts
+
+    return color
+
+
 def plot_vectors(vectors, color=None, tube_radius=5.0):
     if color is None:
         color = (random.uniform(0, 1),
@@ -156,6 +175,8 @@ def show_mesh(vertices, faces,
               normals=None,
               centers=None):
 
+    print normals, centers
+
     if normals is not None and centers is not None:
         mayavi.mlab.quiver3d(centers[:, 0], centers[:, 1], centers[:, 2],
                              normals[:, 0], normals[:, 1], normals[:, 2],
@@ -200,6 +221,7 @@ def show_chessboard_3d_projection_on_image(image,
 
     matplotlib.pyplot.figure()
     matplotlib.pyplot.imshow(img)
+    matplotlib.pyplot.show()
     # matplotlib.pyplot.clf()
 
 # ==============================================================================

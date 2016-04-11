@@ -15,8 +15,8 @@ import vtk
 import vtk.util.numpy_support
 
 from alinea.phenomenal.data_transformation import (
-    voxel_centers_to_vtk_image_data,
     vtk_poly_data_to_vertices_faces,
+    vertices_faces_to_vtk_poly_data,
     points_3d_to_matrix,
     numpy_matrix_to_vtk_image_data)
 
@@ -136,7 +136,7 @@ def meshing(voxel_centers, voxel_size,
     return vertices, faces
 
 
-def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
+def marching_cubes(vtk_image_data, iso_value=1.0, verbose=False):
     """
     Call of vtkMarchingCubes on a vtk_image_data with iso_value
 
@@ -385,3 +385,14 @@ def center_of_vertices(vertices, faces):
               actual_vertices[:, 2, :]) / 3.0
 
     return center
+
+
+def write_on_ply_format(vertices, faces, filename):
+
+    vtk_poly_data = vertices_faces_to_vtk_poly_data(vertices, faces)
+
+    ply_writer = vtk.vtkPLYWriter()
+    ply_writer.SetFileTypeToASCII()
+    ply_writer.SetFileName(filename + '.ply')
+    ply_writer.SetInputData(vtk_poly_data)
+    ply_writer.Write()
