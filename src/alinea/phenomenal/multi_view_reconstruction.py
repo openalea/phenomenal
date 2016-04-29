@@ -340,7 +340,7 @@ def reconstruction_3d(images_projections,
                       voxel_size=4,
                       error_tolerance=0,
                       voxel_center_origin=(0.0, 0.0, 0.0),
-                      world_size=4096,
+                      world_size=2048,
                       voxel_centers=None,
                       verbose=False):
     """

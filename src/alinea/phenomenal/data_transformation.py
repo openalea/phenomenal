@@ -316,3 +316,20 @@ def labeling_matrix(matrix):
             num_label += 1
 
     return mat[1:-1, 1:-1, 1:-1]
+
+
+def kept_biggest_group_connected(matrix):
+    mat = labeling_matrix(matrix)
+
+    max_value = 0
+    save = None
+    for i in range(1, numpy.max(mat) + 1):
+        nb = len(numpy.where(mat == i)[0])
+        if nb > max_value:
+            max_value = nb
+            save = i
+
+    mat[mat != save] = 0
+    mat[mat == save] = 1
+
+    return mat

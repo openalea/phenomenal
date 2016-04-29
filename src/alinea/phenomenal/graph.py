@@ -14,6 +14,7 @@ import math
 import networkx
 import numpy
 import scipy.spatial
+import gc
 # ==============================================================================
 
 
@@ -43,11 +44,12 @@ def create_graph(matrix, verbose=False):
                                        (x + i - 1, y + j - 1, z + k - 1),
                                        weight=abs(i) + abs(j) + abs(k))
 
+    gc.collect()
+
     if verbose:
         print 'Time graph building : ', time.time() - t0
         print 'Nodes :', graph.number_of_nodes()
         print 'Edges :', graph.number_of_edges()
-        print 'Selft loops :', graph.number_of_selfloops()
 
     return graph
 
@@ -151,3 +153,16 @@ def get_max_radius_floating_ball(graph, node_src):
                     node_save = node
 
     return max_radius, node_save
+
+
+def get_max_radius_floating_ball_2(graph, node_src, nodes):
+
+    max_radius = get_max_radius_ball(graph, node_src)
+    for node in nodes:
+        r = get_max_radius_ball(graph, node)
+        d = scipy.spatial.distance.euclidean(node_src, node)
+
+        if d <= r and r >= max_radius:
+            max_radius = r
+
+    return max_radius
