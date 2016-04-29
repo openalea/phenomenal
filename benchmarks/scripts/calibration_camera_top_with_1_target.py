@@ -21,7 +21,7 @@ from alinea.phenomenal.viewer import (
     show_chessboard_3d_projection_on_image)
 
 from alinea.phenomenal.calibration import (
-    CalibrationCameraTopWith1Target,
+    CalibrationCameraTop,
     CalibrationCameraSideWith1Target)
 
 # ==============================================================================
@@ -41,7 +41,7 @@ for angle in chess_top.get_corners_2d():
 
 size_image_top = (2454, 2056)
 
-calibration_top = CalibrationCameraTopWith1Target()
+calibration_top = CalibrationCameraTop()
 calibration_top.calibrate(chess_top.get_corners_2d(),
                           ref_target_points_global_3d,
                           size_image_top,
@@ -50,7 +50,7 @@ calibration_top.calibrate(chess_top.get_corners_2d(),
                           verbose=True)
 
 calibration_top.dump("benchmarks_calibration_top")
-calibration_top = CalibrationCameraTopWith1Target.load(
+calibration_top = CalibrationCameraTop.load(
     "benchmarks_calibration_top")
 
 # ==============================================================================
@@ -59,12 +59,11 @@ angle = 0
 points_2d = calibration_top.get_global_point_projected(
     ref_target_points_global_3d[angle])
 
-img_top = cv2.imread('../../local/chess_top.png', cv2.IMREAD_COLOR)
+img_top = cv2.imread('chess_top.png', cv2.IMREAD_COLOR)
 show_chessboard_3d_projection_on_image(
     img_top,
     chess_top.corners_points[angle],
-    points_2d,
-    name_windows=str(angle))
+    points_2d)
 
 # ==============================================================================
 

@@ -78,5 +78,4 @@ for i in range(len(files_path)):
         alinea.phenomenal.viewer.show_chessboard_3d_projection_on_image(
             img,
             chess_1.corners_points[angle],
-            points_2d,
-            name_windows=str(angles[i]))
+            points_2d)

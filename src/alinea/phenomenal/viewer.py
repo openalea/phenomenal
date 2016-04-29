@@ -11,28 +11,33 @@
 # ==============================================================================
 """ Module to visualize plant data via Mayavi and Matplotlib"""
 # ==============================================================================
-import cv2
-import vtk
 import gc
-import numpy
 import random
-import mayavi.mlab
+import threading
+
+import cv2
 import matplotlib.cm
 import matplotlib.pyplot
-# ==============================================================================
+import mayavi.mlab
+import numpy
+import vtk
 
+
+# ==============================================================================
 
 def show_points_3d(points_3d,
                    color=None,
                    scale_factor=5,
                    figure_name=""):
 
-    mayavi.mlab.figure(figure_name)
+    fg = mayavi.mlab.figure(figure_name)
     mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
     mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
     mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
     plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
     mayavi.mlab.show()
+    mayavi.mlab.clf(fg)
+    gc.collect()
 
 
 def plot_points_3d(points_3d, color=None, scale_factor=5):
@@ -208,7 +213,8 @@ def show_image_with_chessboard_corners(image, corners,
 
 def show_chessboard_3d_projection_on_image(image,
                                            points_2d_1,
-                                           points_2d_2):
+                                           points_2d_2,
+                                           figure_name=""):
     img = image.copy()
 
     points_2d_1 = points_2d_1.astype(int)
@@ -219,7 +225,7 @@ def show_chessboard_3d_projection_on_image(image,
 
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
-    matplotlib.pyplot.figure()
+    matplotlib.pyplot.figure(figure_name)
     matplotlib.pyplot.imshow(img)
     matplotlib.pyplot.show()
     # matplotlib.pyplot.clf()

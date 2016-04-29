@@ -12,14 +12,30 @@
 import cv2
 import numpy
 import json
+import collections
 # ==============================================================================
+
+
+class Target(object):
+
+    def __init__(self):
+        self.image_points = collections.defaultdict(dict)
+
+    def add_image_points(self, camera_view, angle, image):
+        pass
+
+    def get_3d_local_points(self):
+        pass
+
+    def get_image_points(self):
+        pass
 
 
 class Chessboard(object):
     def __init__(self, square_size, shape):
         self.square_size = square_size
         self.shape = shape
-        self.corners_points = dict()
+        self.image_points = collections.defaultdict(dict)
 
     def __str__(self):
         my_str = ''
@@ -27,11 +43,11 @@ class Chessboard(object):
         my_str += 'Square size (mm): ' + str(self.square_size) + '\n'
         my_str += 'Shape : ' + str(self.shape) + '\n'
 
-        my_str += 'Number of angle : ' + str(len(self.corners_points)) + '\n'
-        for angle in self.corners_points:
+        my_str += 'Number of angle : ' + str(len(self.image_points)) + '\n'
+        for angle in self.image_points:
             my_str += str(angle) + ', '
 
-        if len(self.corners_points) > 0:
+        if len(self.image_points) > 0:
             my_str += '\n'
 
         return my_str
@@ -48,12 +64,20 @@ class Chessboard(object):
 
         return corners_local_3d
 
-    def get_corners_2d(self):
+    def get_corners_2d(self, id_camera):
         corners_2d = dict()
-        for angle in self.corners_points:
-            corners_2d[angle] = self.corners_points[angle][:, 0, :]
+        for angle in self.image_points[id_camera]:
+            corners_2d[angle] = self.image_points[id_camera][angle][:, 0, :]
 
         return corners_2d
+
+    def _increase_brightness(self, image, value=150):
+        image = image.astype(int)
+        image += value
+        image[image > 255] = 255
+        image = image.astype(numpy.uint8)
+
+        return image
 
     def find_corners(self, image):
         try:
@@ -64,11 +88,10 @@ class Chessboard(object):
                 cv2.CALIB_CB_NORMALIZE_IMAGE)
 
             if found:
-                cv2.cornerSubPix(image, corners, (11, 11), (-1, -1),
-                                 criteria=(cv2.TERM_CRITERIA_EPS +
-                                           cv2.TERM_CRITERIA_MAX_ITER,
-                                           30,
-                                           0.001))
+                cv2.cornerSubPix(
+                    image, corners, (11, 11), (-1, -1),
+                    criteria=(cv2.TERM_CRITERIA_EPS +
+                              cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
             else:
                 return None
 
@@ -77,29 +100,37 @@ class Chessboard(object):
 
         return corners
 
-    def add_corners(self, id_camera, angle, corners):
-        self.corners_points[id_camera][angle] = corners
+    def find_and_add_corners(self, id_camera, angle, image, verbose=False):
 
-    def find_and_add_corners(self, angle, image, verbose=False):
-        corners_points = self.find_corners(image)
-        if corners_points is not None:
-            self.corners_points[angle] = corners_points
-            if verbose:
-                print "Angle : " + str(angle) + "\tcorners detected"
+        image_points = self.find_corners(image)
+        if image_points is not None:
+            self.image_points[id_camera][angle] = image_points
         else:
-            if verbose:
-                print "Angle : " + str(angle) + "\tcorners not find"
+            img = self._increase_brightness(image)
+            image_points = self.find_corners(img)
+            if image_points is not None:
+                self.image_points[id_camera][angle] = image_points
+
+        if verbose:
+            print str(id_camera) + " camera, ",
+            print str(angle).zfill(3) + " angle",
+            if image_points is not None:
+                print "\t- corners detected"
+            else:
+                print "\t- corners not found"
 
     def dump(self, file_path):
         # Convert to json format
-        corners_points = dict()
-        for angle in self.corners_points:
-            corners_points[angle] = self.corners_points[angle].tolist()
+        image_points = collections.defaultdict(dict)
+        for id_camera in self.image_points:
+            for angle in self.image_points[id_camera]:
+                image_points[id_camera][angle] = \
+                    self.image_points[id_camera][angle].tolist()
 
         save_class = dict()
         save_class['square_size'] = self.square_size
         save_class['shape'] = self.shape
-        save_class['corners_points'] = corners_points
+        save_class['image_points'] = image_points
 
         with open(file_path + '.json', 'w') as output_file:
             json.dump(save_class, output_file,
@@ -118,11 +149,13 @@ class Chessboard(object):
 
             chessboard = Chessboard(square_size, shape)
 
-            corners_points = save_class['corners_points']
+            image_points = save_class['image_points']
 
             # Convert to numpy format
-            for angle in corners_points:
-                chessboard.corners_points[float(angle)] = numpy.array(
-                    corners_points[angle]).astype(numpy.float)
+            for id_camera in image_points:
+                for angle in image_points[id_camera]:
+                    chessboard.image_points[id_camera][float(angle)] = \
+                        numpy.array(image_points[id_camera][angle]).astype(
+                            numpy.float)
 
         return chessboard

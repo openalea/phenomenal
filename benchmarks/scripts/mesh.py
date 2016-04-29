@@ -36,12 +36,12 @@ vertices, faces = alinea.phenomenal.mesh.meshing(
 # vertices, faces = alinea.phenomenal.misc.read_mesh(
 #     'mesh_voxel_size_' + str(voxel_size))
 
-# normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
-# centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
-#
-# alinea.phenomenal.viewer.show_mesh(vertices, faces,
-#                                    normals=normals, centers=centers)
-#
+normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
+centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
+
+alinea.phenomenal.viewer.show_mesh(vertices, faces,
+                                   normals=normals, centers=centers)
+
 import mayavi
 import mayavi.mlab
 
