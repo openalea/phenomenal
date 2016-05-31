@@ -61,7 +61,7 @@ def test_mesh_normal():
     print len(vertices), len(faces)
 
     assert len(vertices) == 273
-    assert len(faces) == 541
+    assert len(faces) == 542
 
 if __name__ == "__main__":
     test_mesh_empty_voxel_centers()
