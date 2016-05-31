@@ -18,7 +18,8 @@ from alinea.phenomenal.data_transformation import (
     vtk_poly_data_to_vertices_faces,
     vertices_faces_to_vtk_poly_data,
     points_3d_to_matrix,
-    numpy_matrix_to_vtk_image_data)
+    numpy_matrix_to_vtk_image_data,
+    voxel_centers_to_sparse_matrix)
 
 # ==============================================================================
 
@@ -91,6 +92,7 @@ def meshing(voxel_centers, voxel_size,
 
     reduction : float, optional
         Center position of the first original voxel, who will be split.
+        0 and 1
 
     verbose : bool, optional
         If True, print for some information of each part of the algorithms
@@ -110,6 +112,8 @@ def meshing(voxel_centers, voxel_size,
         return list(), list()
 
     matrix, real_origin = points_3d_to_matrix(voxel_centers, voxel_size)
+    # matrix, real_origin = voxel_centers_to_sparse_matrix(
+    #     voxel_centers, voxel_size)
 
     vtk_image_data = numpy_matrix_to_vtk_image_data(matrix)
 

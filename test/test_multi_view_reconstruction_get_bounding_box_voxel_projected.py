@@ -12,7 +12,7 @@
 from alinea.phenomenal.multi_view_reconstruction import (
     get_bounding_box_voxel_projected)
 from alinea.phenomenal.plant_1 import (
-    plant_1_calibration_camera_side_2_target)
+    plant_1_calibration_camera_side)
 # ==============================================================================
 
 
@@ -45,7 +45,7 @@ def test_bbox_projection_1():
 
 def test_bbox_projection_2():
     angle = 0
-    calibration = plant_1_calibration_camera_side_2_target()
+    calibration = plant_1_calibration_camera_side()
     projection = calibration.get_projection(angle)
 
     voxel_center = (0, 0, 0)

@@ -17,7 +17,10 @@ import openalea.deploy.shared_data
 import alinea.phenomenal
 
 from alinea.phenomenal.chessboard import Chessboard
-from alinea.phenomenal.calibration import CalibrationCameraSideWith2Target
+from alinea.phenomenal.calibration import (
+    CalibrationCameraSideWith2Target,
+    CalibrationCameraTop)
+
 from alinea.phenomenal.misc import read_xyz
 # ==============================================================================
 
@@ -198,14 +201,24 @@ def plant_1_chessboards():
     return chess_1, chess_2, chess_top
 
 
-def plant_1_calibration_camera_side_2_target():
+def plant_1_calibration_camera_side():
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
 
     data_directory = shared_directory + '/plant_1/'
-    file_path = data_directory + 'calibration_camera_side_2_target'
+    file_path = data_directory + 'calibration_camera_side'
 
     return CalibrationCameraSideWith2Target.load(file_path)
+
+
+def plant_1_calibration_camera_top():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    data_directory = shared_directory + '/plant_1/'
+    file_path = data_directory + 'calibration_camera_top'
+
+    return CalibrationCameraTop.load(file_path)
 
 
 def plant_1_params_camera_opencv_path():

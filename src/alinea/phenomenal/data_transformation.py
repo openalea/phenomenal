@@ -17,6 +17,7 @@ import vtk
 from vtk.util.numpy_support import get_vtk_array_type
 from operator import itemgetter
 
+
 # ==============================================================================
 # VTK Transformation
 
@@ -111,11 +112,6 @@ def numpy_matrix_to_vtk_image_data(data_matrix):
     image_data.SetDimensions(nx, ny, nz)
     image_data.SetSpacing(1.0, 1.0, 1.0)
 
-    print nx, ny, nz
-
-    print 'TYPE :', get_vtk_array_type(data_matrix.dtype)
-    print 'TYPE :', vtk.VTK_UNSIGNED_CHAR
-
     if vtk.VTK_MAJOR_VERSION < 6:
         image_data.SetScalarType(get_vtk_array_type(data_matrix.dtype))
         image_data.SetNumberOfScalarComponents(1)
@@ -124,7 +120,6 @@ def numpy_matrix_to_vtk_image_data(data_matrix):
         image_data.AllocateScalars(get_vtk_array_type(data_matrix.dtype), 1)
 
     lx, ly, lz = image_data.GetDimensions()
-    print lx, ly, lz
 
     for i in xrange(0, lx):
         for j in xrange(0, ly):
@@ -203,6 +198,9 @@ def matrix_to_points_3d(matrix, voxel_size,
         points_3d.append((xxx[i], yyy[i], zzz[i]))
 
     return points_3d
+
+
+# ==============================================================================
 
 
 def points_3d_to_matrix(voxel_centers, voxel_size):
@@ -296,8 +294,6 @@ def labeling_matrix(matrix):
                     if mm[ind] == 1:
                         l.append(ind)
         return l
-
-    print len(xx)
 
     num_label = 1
     for i in xrange(len(xx)):
