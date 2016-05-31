@@ -180,8 +180,6 @@ def show_mesh(vertices, faces,
               normals=None,
               centers=None):
 
-    print normals, centers
-
     if normals is not None and centers is not None:
         mayavi.mlab.quiver3d(centers[:, 0], centers[:, 1], centers[:, 2],
                              normals[:, 0], normals[:, 1], normals[:, 2],

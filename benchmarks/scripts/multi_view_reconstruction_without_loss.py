@@ -14,7 +14,7 @@
 #
 # ==============================================================================
 from alinea.phenomenal.plant_1 import (
-    plant_1_calibration_camera_side_2_target,
+    plant_1_calibration_camera_side,
     plant_1_images_binarize)
 
 import alinea.phenomenal.calibration_model
@@ -24,7 +24,7 @@ import alinea.phenomenal.misc
 import alinea.phenomenal.data_transformation
 # ==============================================================================
 images = plant_1_images_binarize()
-calibration = plant_1_calibration_camera_side_2_target()
+calibration = plant_1_calibration_camera_side()
 
 images_projections_refs = list()
 for angle in range(0, 360, 30):

@@ -10,9 +10,12 @@
 #
 # ==============================================================================
 import collections
-import math
-import numpy
 import gc
+import math
+
+import numpy
+
+
 # ==============================================================================
 
 
@@ -334,13 +337,51 @@ def kept_visible_voxel(voxel_centers,
     return kept
 
 # ==============================================================================
+import multiprocessing
 
+
+def worker_split_voxel_centers_in_eight(queue,
+                                        voxel_centers,
+                                        voxel_size):
+    queue.put(split_voxel_centers_in_eight(voxel_centers, voxel_size))
+
+
+def mp_split_voxel_centers_in_eight(voxel_centers, voxel_size):
+
+    queue = multiprocessing.Queue()
+
+    n_process = 4
+    chunk_size = int(math.ceil(len(voxel_centers) / float(n_process)))
+
+    voxel_centers = list(voxel_centers)
+    process = list()
+    for i in range(n_process):
+        p = multiprocessing.Process(
+            target=worker_split_voxel_centers_in_eight,
+            args=(queue,
+                  voxel_centers[chunk_size * i:chunk_size * (i + 1)],
+                  voxel_size))
+
+        process.append(p)
+        p.start()
+
+    new_voxel_centers = list()
+    for i in range(n_process):
+        new_voxel_centers.extend(queue.get())
+
+    for p in process:
+        p.join()
+
+    return new_voxel_centers
+
+
+# ==============================================================================
 
 def reconstruction_3d(images_projections,
                       voxel_size=4,
                       error_tolerance=0,
                       voxel_center_origin=(0.0, 0.0, 0.0),
-                      world_size=2048,
+                      world_size=4096,
                       voxel_centers=None,
                       verbose=False):
     """
@@ -395,6 +436,7 @@ def reconstruction_3d(images_projections,
         nb_iteration += 1
 
     for i in range(nb_iteration):
+
         if len(images_projections) == 1:
             voxel_centers = split_voxel_centers_in_four(voxel_centers,
                                                         voxel_size)

@@ -20,7 +20,7 @@ import numpy
 import collections
 
 from alinea.phenomenal.plant_1 import (
-    plant_1_calibration_camera_side_2_target,
+    plant_1_calibration_camera_side,
     plant_1_images_binarize)
 
 import alinea.phenomenal.calibration_model
@@ -54,7 +54,7 @@ def load():
 
 # ==============================================================================
 images = plant_1_images_binarize()
-calibration = plant_1_calibration_camera_side_2_target()
+calibration = plant_1_calibration_camera_side()
 
 images_projections = list()
 for angle in range(0, 360, 30):

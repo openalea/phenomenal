@@ -41,21 +41,3 @@ centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
 
 alinea.phenomenal.viewer.show_mesh(vertices, faces,
                                    normals=normals, centers=centers)
-
-import mayavi
-import mayavi.mlab
-
-mayavi.mlab.figure()
-mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
-mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
-mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
-
-mayavi.mlab.triangular_mesh([vert[0] for vert in vertices],
-                            [vert[1] for vert in vertices],
-                            [vert[2] for vert in vertices],
-                            faces)
-
-alinea.phenomenal.viewer.plot_points_3d(voxel_centers,
-                                        scale_factor=voxel_size / 2)
-
-mayavi.mlab.show()

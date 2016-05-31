@@ -18,43 +18,34 @@ import gc
 # ==============================================================================
 
 
-def create_graph(matrix, verbose=False):
-
+def create_graph(voxel_centers, verbose=False):
     if verbose:
+        print "Graph building : ...",
         t0 = time.time()
 
     graph = networkx.Graph()
+    graph.add_nodes_from(voxel_centers)
 
-    len_x, len_y, len_z = matrix.shape
-    mm = numpy.zeros((len_x + 2, len_y + 2, len_z + 2))
-    mm[1:-1, 1:-1, 1:-1] = matrix
-
-    xx, yy, zz = numpy.where(mm == 1)
-    for i in xrange(len(xx)):
-        x, y, z = xx[i], yy[i], zz[i]
-
-        graph.add_node((x - 1, y - 1, z - 1))
+    for pt in voxel_centers:
 
         for i in [-1, 0, 1]:
             for j in [-1, 0, 1]:
                 for k in [-1, 0, 1]:
-                    ind = x + i, y + j, z + k
-                    if mm[ind] == 1:
-                        graph.add_edge((x - 1, y - 1, z - 1),
-                                       (x + i - 1, y + j - 1, z + k - 1),
-                                       weight=abs(i) + abs(j) + abs(k))
-
-    gc.collect()
+                    pos = pt[0] + i, pt[1] + j, pt[2] + k
+                    if graph.has_node(pos):
+                        graph.add_edge(pt, pos, weight=abs(i) + abs(j) + abs(k))
 
     if verbose:
-        print 'Time graph building : ', time.time() - t0
+        print "done, in ", time.time() - t0, 'seconds'
         print 'Nodes :', graph.number_of_nodes()
         print 'Edges :', graph.number_of_edges()
 
+    gc.collect()
+
     return graph
 
-
 # ==============================================================================
+
 
 def ball(graph, node_src, radius):
     g = networkx.single_source_shortest_path_length(
