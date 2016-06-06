@@ -9,12 +9,15 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import time
+import gc
 import math
+import time
+
 import networkx
 import numpy
 import scipy.spatial
-import gc
+
+
 # ==============================================================================
 
 
@@ -26,14 +29,21 @@ def create_graph(voxel_centers, verbose=False):
     graph = networkx.Graph()
     graph.add_nodes_from(voxel_centers)
 
-    for pt in voxel_centers:
+    ijk = [(-1, -1, -1), (-1, -1, 0), (-1, -1, 1),
+           (-1, 0, -1), (-1, 0, 0), (-1, 0, 1),
+           (-1, 1, -1), (-1, 1, 0), (-1, 1, 1),
+           (0, -1, -1), (0, -1, 0), (0, -1, 1),
+           (0, 0, -1), (0, 0, 0), (0, 0, 1),
+           (0, 1, -1), (0, 1, 0), (0, 1, 1),
+           (1, -1, -1), (1, -1, 0), (1, -1, 1),
+           (1, 0, -1), (1, 0, 0), (1, 0, 1),
+           (1, 1, -1), (1, 1, 0), (1, 1, 1)]
 
-        for i in [-1, 0, 1]:
-            for j in [-1, 0, 1]:
-                for k in [-1, 0, 1]:
-                    pos = pt[0] + i, pt[1] + j, pt[2] + k
-                    if graph.has_node(pos):
-                        graph.add_edge(pt, pos, weight=abs(i) + abs(j) + abs(k))
+    for pt in voxel_centers:
+        for i, j, k in ijk:
+            pos = pt[0] + i, pt[1] + j, pt[2] + k
+            if graph.has_node(pos):
+                graph.add_edge(pt, pos, weight=abs(i) + abs(j) + abs(k))
 
     if verbose:
         print "done, in ", time.time() - t0, 'seconds'
@@ -44,6 +54,35 @@ def create_graph(voxel_centers, verbose=False):
 
     return graph
 
+
+def add_nodes(graph, voxel_centers, verbose=False):
+    if verbose:
+        print "Graph adding : ...",
+        t0 = time.time()
+
+    graph.add_nodes_from(voxel_centers)
+
+    ijk = [(-1, -1, -1), (-1, -1, 0), (-1, -1, 1),
+           (-1, 0, -1), (-1, 0, 0), (-1, 0, 1),
+           (-1, 1, -1), (-1, 1, 0), (-1, 1, 1),
+           (0, -1, -1), (0, -1, 0), (0, -1, 1),
+           (0, 0, -1), (0, 0, 0), (0, 0, 1),
+           (0, 1, -1), (0, 1, 0), (0, 1, 1),
+           (1, -1, -1), (1, -1, 0), (1, -1, 1),
+           (1, 0, -1), (1, 0, 0), (1, 0, 1),
+           (1, 1, -1), (1, 1, 0), (1, 1, 1)]
+
+    for pt in voxel_centers:
+        for i, j, k in ijk:
+            pos = pt[0] + i, pt[1] + j, pt[2] + k
+            if graph.has_node(pos):
+                graph.add_edge(pt, pos, weight=abs(i) + abs(j) + abs(k))
+        if verbose:
+            print "done, in ", time.time() - t0, 'seconds'
+
+    gc.collect()
+
+    return graph
 # ==============================================================================
 
 
