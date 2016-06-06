@@ -11,12 +11,9 @@
 # ==============================================================================
 import time
 
-import alinea.phenomenal.calibration
-import alinea.phenomenal.misc
 import alinea.phenomenal.viewer
 from alinea.phenomenal.multi_view_reconstruction import (
     reconstruction_3d)
-
 from alinea.phenomenal.plant_1 import (
     plant_1_images_binarize,
     plant_1_calibration_camera_side,
@@ -45,8 +42,10 @@ if __name__ == '__main__':
 
     t0 = time.time()
     # Multi-view reconstruction
-    voxel_centers = reconstruction_3d(
-        images_projections, voxel_size=voxel_size, verbose=True)
+    voxel_centers = reconstruction_3d(images_projections,
+                                      voxel_size=voxel_size,
+                                      verbose=True,
+                                      error_tolerance=1)
 
     print "Time to reconstruct plant : ", time.time() - t0
     print len(voxel_centers)

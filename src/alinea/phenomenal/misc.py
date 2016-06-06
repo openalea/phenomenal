@@ -121,15 +121,15 @@ def read_xyz(file_path):
     return points_3d
 
 
-def write_to_csv(voxel_centers, file_path):
+def write_to_csv(voxel_centers, voxel_size, file_path):
 
     with open(file_path, 'wb') as f:
         c = csv.writer(f)
 
-        c.writerow(['x_coord', 'y_coord', 'z_coord'])
+        c.writerow(['x_coord', 'y_coord', 'z_coord', 'voxel_size'])
 
         for x, y, z in voxel_centers:
-            c.writerow([x, y, z])
+            c.writerow([x, y, z, voxel_size])
 
 
 def read_from_csv(file_path):
@@ -137,12 +137,17 @@ def read_from_csv(file_path):
         reader = csv.reader(f)
 
         next(reader)
+        x, y, z, vs = next(reader)
+
+        voxel_size = float(vs)
 
         voxel_centers = list()
-        for x, y, z in reader:
+        voxel_centers.append((float(x), float(y), float(z)))
+
+        for x, y, z, vs in reader:
             voxel_centers.append((float(x), float(y), float(z)))
 
-        return voxel_centers
+        return voxel_centers, voxel_size
 
 
 def write_mesh(vertices, faces, mesh_path):
