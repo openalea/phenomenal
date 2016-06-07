@@ -632,10 +632,9 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
         top_stem = set(top_1_stem) - set(top_2_stem)
         top_stem = set(top_stem).intersection(nvc)
 
-
     subgraph = graph.subgraph(top_stem)
     top_stem = max(networkx.connected_components(subgraph), key=len)
-#
+
     top_stem_neighbors = list()
     for node in top_stem:
         top_stem_neighbors += graph[node].keys()
@@ -707,9 +706,31 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
                 stem_voxel, stem_neighbors, graph, voxel_size, verbose=False)
 
             # skeletonize.append(longest_shortest_path)
-
+            #
             if len(left) == 0:
                 simple_leaf.append(leaf)
+            #
+            #     planes, closest_nodes, c_shorted_path = compute_closest_nodes(
+            #         new_voxel_centers,
+            #         longest_shortest_path,
+            #         radius=8,
+            #         verbose=verbose,
+            #         dist=0.5)
+            #
+            #     nodes_length = map(len, closest_nodes)
+            #
+            #
+            #
+            #     leaf = list()
+            #     for i in xrange(len(closest_nodes)):
+            #         leaf += closest_nodes[i]
+
+
+
+
+
+
+
             else:
                 # not_simple_leaf.append(connected_component)
 
@@ -758,7 +779,7 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
     #
     #             skeletonize.append(longest_shortest_path)
 
-    return stem_voxel, simple_leaf, connected_leaf, corners
+    return stem_voxel, simple_leaf, connected_leaf, corners,
 
 
 def convert_to_real_point_3d(stem_positions, origin, voxel_size):
