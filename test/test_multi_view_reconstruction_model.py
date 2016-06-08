@@ -14,7 +14,7 @@ from alinea.phenomenal.data_creation import (
     build_images_1)
 
 from alinea.phenomenal.plant_1 import (
-    plant_1_calibration_camera_side_2_target)
+    plant_1_calibration_camera_side)
 
 from alinea.phenomenal.multi_view_reconstruction import (
     project_voxel_centers_on_image,
@@ -37,7 +37,7 @@ def test_multi_view_reconstruction_model_1():
     assert volume == 1000000
 
     # ==========================================================================
-    calibration = plant_1_calibration_camera_side_2_target()
+    calibration = plant_1_calibration_camera_side()
 
     images_projections = list()
     shape_image = (2454, 2056)
@@ -66,7 +66,7 @@ def test_multi_view_reconstruction_model_2():
 
     # ==========================================================================
     # Load camera model parameters
-    calibration = plant_1_calibration_camera_side_2_target()
+    calibration = plant_1_calibration_camera_side()
 
     # ==========================================================================
     # Build images_projections

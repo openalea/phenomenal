@@ -11,13 +11,13 @@
 # ==============================================================================
 
 from alinea.phenomenal.plant_1 import (
-    plant_1_calibration_camera_side_2_target)
+    plant_1_calibration_camera_side)
 # ==============================================================================
 
 
 def test_projection_1():
 
-    calibration = plant_1_calibration_camera_side_2_target()
+    calibration = plant_1_calibration_camera_side()
 
     angle = 0
     pt_3d = (-472, -472, 200)

@@ -17,6 +17,7 @@ import vtk
 from vtk.util.numpy_support import get_vtk_array_type
 from operator import itemgetter
 
+
 # ==============================================================================
 # VTK Transformation
 
@@ -111,11 +112,6 @@ def numpy_matrix_to_vtk_image_data(data_matrix):
     image_data.SetDimensions(nx, ny, nz)
     image_data.SetSpacing(1.0, 1.0, 1.0)
 
-    print nx, ny, nz
-
-    print 'TYPE :', get_vtk_array_type(data_matrix.dtype)
-    print 'TYPE :', vtk.VTK_UNSIGNED_CHAR
-
     if vtk.VTK_MAJOR_VERSION < 6:
         image_data.SetScalarType(get_vtk_array_type(data_matrix.dtype))
         image_data.SetNumberOfScalarComponents(1)
@@ -124,7 +120,6 @@ def numpy_matrix_to_vtk_image_data(data_matrix):
         image_data.AllocateScalars(get_vtk_array_type(data_matrix.dtype), 1)
 
     lx, ly, lz = image_data.GetDimensions()
-    print lx, ly, lz
 
     for i in xrange(0, lx):
         for j in xrange(0, ly):
@@ -205,6 +200,9 @@ def matrix_to_points_3d(matrix, voxel_size,
     return points_3d
 
 
+# ==============================================================================
+
+
 def points_3d_to_matrix(voxel_centers, voxel_size):
 
     if not voxel_centers:
@@ -212,15 +210,16 @@ def points_3d_to_matrix(voxel_centers, voxel_size):
 
     x_min, y_min, z_min, x_max, y_max, z_max = limit_points_3d(voxel_centers)
 
-    mat = numpy.zeros(((x_max - x_min) / voxel_size + 1,
-                       (y_max - y_min) / voxel_size + 1,
-                       (z_max - z_min) / voxel_size + 1),
-                      dtype=numpy.uint8)
+    len_x = int((x_max - x_min) / voxel_size + 1)
+    len_y = int((y_max - y_min) / voxel_size + 1)
+    len_z = int((z_max - z_min) / voxel_size + 1)
+
+    mat = numpy.zeros((len_x, len_y, len_z), dtype=numpy.uint8)
 
     for x, y, z in voxel_centers:
-        x_new = (x - x_min) / voxel_size
-        y_new = (y - y_min) / voxel_size
-        z_new = (z - z_min) / voxel_size
+        x_new = int((x - x_min) / voxel_size)
+        y_new = int((y - y_min) / voxel_size)
+        z_new = int((z - z_min) / voxel_size)
 
         mat[x_new, y_new, z_new] = 1
 
@@ -296,8 +295,6 @@ def labeling_matrix(matrix):
                         l.append(ind)
         return l
 
-    print len(xx)
-
     num_label = 1
     for i in xrange(len(xx)):
         x, y, z = xx[i], yy[i], zz[i]
@@ -315,3 +312,20 @@ def labeling_matrix(matrix):
             num_label += 1
 
     return mat[1:-1, 1:-1, 1:-1]
+
+
+def kept_biggest_group_connected(matrix):
+    mat = labeling_matrix(matrix)
+
+    max_value = 0
+    save = None
+    for i in range(1, numpy.max(mat) + 1):
+        nb = len(numpy.where(mat == i)[0])
+        if nb > max_value:
+            max_value = nb
+            save = i
+
+    mat[mat != save] = 0
+    mat[mat == save] = 1
+
+    return mat

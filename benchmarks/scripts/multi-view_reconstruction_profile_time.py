@@ -14,7 +14,7 @@ import time
 import matplotlib.pyplot as plt
 
 from alinea.phenomenal.plant_1 import (
-    plant_1_calibration_camera_side_2_target,
+    plant_1_calibration_camera_side,
     plant_1_images_binarize)
 
 from alinea.phenomenal.multi_view_reconstruction import (
@@ -22,7 +22,7 @@ from alinea.phenomenal.multi_view_reconstruction import (
 
 # ==============================================================================
 images = plant_1_images_binarize()
-calibration = plant_1_calibration_camera_side_2_target()
+calibration = plant_1_calibration_camera_side()
 
 # Select images
 images_projections = list()
