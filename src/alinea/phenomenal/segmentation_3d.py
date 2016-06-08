@@ -9,9 +9,9 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import collections
 import math
 import time
-import collections
 
 import matplotlib.pyplot
 import mayavi.mlab
@@ -19,11 +19,12 @@ import networkx
 import numpy
 import scipy.interpolate
 
-from alinea.phenomenal.peakdetect import peakdetect
-
 import alinea.phenomenal.data_transformation
 import alinea.phenomenal.graph
 import alinea.phenomenal.viewer
+from alinea.phenomenal.peakdetect import peakdetect
+
+
 # ==============================================================================
 
 
@@ -147,9 +148,10 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75):
     closest_voxel = voxels[index]
 
     nodes = list()
-    nodes.append(numpy.array(node_src))
-
     closest_node = list()
+
+    # if node_src in map(tuple, voxels):
+    nodes.append(numpy.array(node_src))
     closest_node.append(numpy.array(node_src))
 
     while nodes:
@@ -176,7 +178,6 @@ def compute_closest_nodes(voxels, path, radius=8, verbose=False, dist=0.75):
 
     planes = list()
     closest_nodes = list()
-    centred_path = list()
 
     length_path = len(path)
     for i in xrange(length_path):
@@ -197,14 +198,12 @@ def compute_closest_nodes(voxels, path, radius=8, verbose=False, dist=0.75):
         planes.append(plane)
 
         nodes = get_node_close_to_planes(voxels, node, plane, dist=dist)
-
-        centred_path.append(numpy.array(nodes).mean(axis=0))
         closest_nodes.append(nodes)
 
     if verbose:
         print "done, in ", time.time() - t0, 'seconds'
 
-    return planes, closest_nodes, centred_path
+    return planes, closest_nodes
 
 
 def peak_detection(values, lookahead, verbose=False):
@@ -252,8 +251,9 @@ def peak_detection_2(values, lookahead, verbose=False):
     return max_peaks, min_peaks
 
 
-def segment_leaf(nodes, connected_components, all_shorted_path, new_voxel_centers,
-                 stem_voxel, stem_neighbors, graph, voxel_size, verbose=False):
+def segment_leaf(nodes, connected_components, all_shorted_path,
+                 new_voxel_centers, stem_voxel, stem_neighbors, graph,
+                 voxel_size, verbose=False):
 
     longest_shortest_path = None
     longest_length = 0
@@ -282,7 +282,7 @@ def segment_leaf(nodes, connected_components, all_shorted_path, new_voxel_center
 
             mayavi.mlab.show()
 
-        planes, closest_nodes, _ = compute_closest_nodes(
+        planes, closest_nodes = compute_closest_nodes(
             new_voxel_centers, longest_shortest_path, radius=8,
             verbose=verbose, dist=2)
 
@@ -354,7 +354,9 @@ def segment_leaf(nodes, connected_components, all_shorted_path, new_voxel_center
 
 
 def maize_corner_detection(nodes_length, min_peaks, verbose=False):
+
     d = {index: value for (index, value) in list(min_peaks)}
+
     print min_peaks
 
     sum_lgth, sum_width = (0, 0)
@@ -383,19 +385,19 @@ def maize_corner_detection(nodes_length, min_peaks, verbose=False):
         if i + 2 < len(l):
             index_2, v_2, sum_lgth_2, sum_width_2 = l[i + 1]
 
-            print (sum_values / (i + 1)) * 2.5, v_2
-            if (sum_values / (i + 1)) * 2.5 < v_2:
+            print (sum_values / (i + 1)) * 2.8, v_2
+            if (sum_values / (i + 1)) * 2.8 < v_2:
                 stop = index
                 print "Index values, stop", stop
                 break
 
-            # print (sum_all_width / (i + 1)) * 1.5, sum_width_2
-            # if (sum_all_width / (i + 1)) * 1.5 < sum_width_2:
-            print (sum_all_lgth / (i + 1)) * 2.8, sum_lgth_2
-            if (sum_all_lgth / (i + 1)) * 2.8 < sum_lgth_2:
-                stop = index
-                print "Index lgth, stop", stop
-                break
+            print (sum_all_width / (i + 1)) * 1.5, sum_width_2
+            if (sum_all_width / (i + 1)) * 1.5 < sum_width_2:
+                print (sum_all_lgth / (i + 1)) * 2.8, sum_lgth_2
+                if (sum_all_lgth / (i + 1)) * 2.8 < sum_lgth_2:
+                    stop = index
+                    print "Index lgth, stop", stop
+                    break
         else:
             print "Index end, stop", stop
             stop = index
@@ -411,6 +413,143 @@ def maize_corner_detection(nodes_length, min_peaks, verbose=False):
         matplotlib.pyplot.show()
 
     return stop
+
+
+def extract_data_leaf(leaf, longest_shortest_path, verbose=False):
+
+    leaf_array = numpy.array(list(leaf))
+    planes, closest_nodes = compute_closest_nodes(leaf_array,
+                                                  longest_shortest_path,
+                                                  radius=8,
+                                                  verbose=verbose,
+                                                  dist=1)
+
+    c_shorted_path = list()
+    for nodes in closest_nodes:
+
+        if len(nodes) > 1:
+            # print len(nodes)
+            # if nodes:
+            c_shorted_path.append(numpy.array(nodes).mean(axis=0))
+            # else:
+            #     pass
+
+    # ==============================================================
+    # Interpolate
+    print c_shorted_path
+    data = numpy.array(c_shorted_path).transpose()
+
+    k = 5
+    print len(c_shorted_path)
+    if len(c_shorted_path) <= 5:
+        k = len(c_shorted_path) - 1
+    print k
+    idim, m = data.shape
+    print m
+
+    tck, u = scipy.interpolate.splprep(data, k=k)
+    xxx, yyy, zzz = scipy.interpolate.splev(
+        numpy.linspace(0, 1, 500),
+        tck)
+
+    path = list()
+    for i in xrange(len(xxx)):
+        path.append((xxx[i], yyy[i], zzz[i]))
+
+    nodes_length = map(len, closest_nodes)
+    max_node_lgth = max(nodes_length)
+    index_max_node_lgth = nodes_length.index(max_node_lgth)
+
+    plane = closest_nodes[index_max_node_lgth]
+
+    def distance(n1, n2):
+        x, y, z = n1
+        xx, yy, zz = n2
+
+        d = (x - xx) ** 2 + (y - yy) ** 2 + (z - zz) ** 2
+        return math.sqrt(d)
+
+    max_dist = list()
+    for n1 in plane:
+        max_dist.append(max([distance(n1, n2) for n2 in plane]))
+
+    max_longest = 0
+    for i in xrange(len(path)):
+        n1 = path[i]
+
+        if i + 1 < len(path):
+            n2 = path[i + 1]
+            max_longest += distance(n1, n2)
+
+    x, y, z = path[0]
+    vectors = list()
+    for i in xrange(1, len(path)):
+        xx, yy, zz = path[i]
+
+        v = (xx - x, yy - y, zz - z)
+        vectors.append(v)
+
+    vector_mean = numpy.array(vectors).mean(axis=0)
+    print vector_mean
+
+    distances_max = max(max_dist)
+    print "Max largest :", distances_max
+    print "Max longest :", max_longest
+
+    # nodes_length = map(len, closest_nodes)
+    # lookahead = int(len(closest_nodes) / 50.0)
+    # nodes_length = [float(n) for n in nodes_length]
+    #
+    # max_peaks, min_peaks = peak_detection(
+    #     nodes_length, lookahead, verbose=verbose)
+
+    if verbose:
+        mayavi.mlab.figure("")
+
+        alinea.phenomenal.viewer.plot_points_3d(
+            list(leaf),
+            scale_factor=1,
+            color=(0.7, 0, 0.1))
+
+        alinea.phenomenal.viewer.plot_points_3d(
+            c_shorted_path,
+            scale_factor=1,
+            color=(0.1, 0.1, 1))
+
+        alinea.phenomenal.viewer.plot_points_3d(
+            path,
+            scale_factor=1,
+            color=(0.1, 1, 1))
+
+        alinea.phenomenal.viewer.plot_points_3d(
+            longest_shortest_path,
+            scale_factor=1,
+            color=(0, 0, 0))
+
+        a, b, c = vector_mean
+        mayavi.mlab.quiver3d(float(x), float(y), float(z),
+                             float(a), float(b), float(c),
+                             line_width=2.0,
+                             scale_factor=2,
+                             color=(0, 0, 1))
+
+        mayavi.mlab.show()
+
+    if verbose:
+        matplotlib.pyplot.figure()
+        matplotlib.pyplot.plot(
+            range(len(nodes_length)), nodes_length)
+
+        matplotlib.pyplot.plot(index_max_node_lgth,
+                               max_node_lgth,
+                               'bo')
+
+        matplotlib.pyplot.show()
+
+    a, b, c = vector_mean
+
+    return path, distances_max, max_longest, ((float(x), float(y), float(z)),
+                                              (float(a), float(b), float(c)))
 
 
 def maize_segmentation(voxel_centers, voxel_size, verbose=False):
@@ -488,8 +627,12 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
     # ==========================================================================
     # Get normal of the path and intercept voxel, plane
     #
-    planes, closest_nodes, centred_shorted_path = compute_closest_nodes(
+    planes, closest_nodes = compute_closest_nodes(
         new_voxel_centers, shortest_path, radius=8, verbose=verbose, dist=3)
+
+    centred_shorted_path = [
+        numpy.array(nodes).mean(axis=0) for nodes in closest_nodes]
+
     # ==========================================================================
 
     # if verbose:
@@ -559,7 +702,7 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
 
             radius = max(radius, distance)
 
-        return radius  # TODO : hack
+        return radius
 
     data = list()
     radius = list()
@@ -666,7 +809,7 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
     print "Size Stem :", len(stem_voxel)
     print "Number of connected components :", len(connected_components)
 
-    if verbose:
+    if True:
         mayavi.mlab.figure("")
 
         for voxels in connected_components:
@@ -687,9 +830,9 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
         mayavi.mlab.show()
 
     # ==========================================================================
-    # ==========================================================================
 
     simple_leaf = list()
+    simple_leaf_data = list()
     corners = list()
     connected_leaf = list()
     # skeletonize = list()
@@ -706,30 +849,15 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
                 stem_voxel, stem_neighbors, graph, voxel_size, verbose=False)
 
             # skeletonize.append(longest_shortest_path)
-            #
+
             if len(left) == 0:
                 simple_leaf.append(leaf)
-            #
-            #     planes, closest_nodes, c_shorted_path = compute_closest_nodes(
-            #         new_voxel_centers,
-            #         longest_shortest_path,
-            #         radius=8,
-            #         verbose=verbose,
-            #         dist=0.5)
-            #
-            #     nodes_length = map(len, closest_nodes)
-            #
-            #
-            #
-            #     leaf = list()
-            #     for i in xrange(len(closest_nodes)):
-            #         leaf += closest_nodes[i]
 
+                path, distances_max, max_longest, vector = extract_data_leaf(
+                    leaf, longest_shortest_path, verbose=False)
 
-
-
-
-
+                simple_leaf_data.append((path, distances_max, max_longest,
+                                         vector))
 
             else:
                 # not_simple_leaf.append(connected_component)
@@ -742,7 +870,7 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
                 while len(left) != 0:
 
                     # TODO : update stem neighbors
-                    leaf, left, stem_voxel, longest_shortest_path = segment_leaf(
+                    leaf, left, stem_voxel, _ = segment_leaf(
                         list(left), connected_component, all_shorted_path_down,
                         new_voxel_centers,
                         stem_voxel, stem_neighbors, graph, voxel_size,
@@ -758,6 +886,17 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
 
                 if is_same_leaf is True:
                     simple_leaf.append(set(big_leaf))
+
+                    path, distances_max, max_longest, vector = \
+                        extract_data_leaf(big_leaf,
+                                          longest_shortest_path,
+                                          verbose=False)
+
+                    simple_leaf_data.append((path, distances_max, max_longest,
+                                             vector))
+
+
+
                 else:
                     connected_leaf.append(connected_component)
 
@@ -779,7 +918,7 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
     #
     #             skeletonize.append(longest_shortest_path)
 
-    return stem_voxel, simple_leaf, connected_leaf, corners,
+    return stem_voxel, simple_leaf, simple_leaf_data, connected_leaf, corners
 
 
 def convert_to_real_point_3d(stem_positions, origin, voxel_size):
