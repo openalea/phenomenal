@@ -54,13 +54,24 @@ class Calibration(object):
     def calibrate(self,
                   ref_target_points_2d,
                   ref_target_points_local_3d,
+                  ref_target_points_2d_2,
+                  ref_target_points_local_3d_2,
+
                   size_image):
+
         image_points = list()
         object_points = list()
         for angle in ref_target_points_2d:
             corners = ref_target_points_2d[angle].astype(numpy.float32)
             image_points.append(corners)
             pts_3d = numpy.array(ref_target_points_local_3d)
+            pts_3d = pts_3d.astype(numpy.float32)
+            object_points.append(pts_3d)
+
+        for angle in ref_target_points_2d_2:
+            corners = ref_target_points_2d_2[angle].astype(numpy.float32)
+            image_points.append(corners)
+            pts_3d = numpy.array(ref_target_points_local_3d_2)
             pts_3d = pts_3d.astype(numpy.float32)
             object_points.append(pts_3d)
 
@@ -82,6 +93,8 @@ class Calibration(object):
                                 cv2.CALIB_FIX_K1 + cv2.CALIB_FIX_K2 +
                                 cv2.CALIB_FIX_K3 + cv2.CALIB_FIX_K4 +
                                 cv2.CALIB_FIX_K5 + cv2.CALIB_FIX_K6)
+
+        # cv2.CALIB_FIX_PRINCIPAL_POINT +
 
         self.focal_matrix = focal_matrix
         self.distortion_coefficient = distortion_coefficient

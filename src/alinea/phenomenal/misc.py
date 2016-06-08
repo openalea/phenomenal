@@ -15,6 +15,7 @@ import re
 import cv2
 import json
 import numpy
+import csv
 # ==============================================================================
 
 
@@ -106,7 +107,6 @@ def write_xyz(points_3d, file_path):
 def read_xyz(file_path):
     points_3d = list()
     with open(file_path + '.xyz', 'r') as f:
-
         for line in f:
             point_3d = re.findall(r'[-0-9.]+', line)
 
@@ -119,6 +119,35 @@ def read_xyz(file_path):
     f.close()
 
     return points_3d
+
+
+def write_to_csv(voxel_centers, voxel_size, file_path):
+
+    with open(file_path, 'wb') as f:
+        c = csv.writer(f)
+
+        c.writerow(['x_coord', 'y_coord', 'z_coord', 'voxel_size'])
+
+        for x, y, z in voxel_centers:
+            c.writerow([x, y, z, voxel_size])
+
+
+def read_from_csv(file_path):
+    with open(file_path, 'rb') as f:
+        reader = csv.reader(f)
+
+        next(reader)
+        x, y, z, vs = next(reader)
+
+        voxel_size = float(vs)
+
+        voxel_centers = list()
+        voxel_centers.append((float(x), float(y), float(z)))
+
+        for x, y, z, vs in reader:
+            voxel_centers.append((float(x), float(y), float(z)))
+
+        return voxel_centers, voxel_size
 
 
 def write_mesh(vertices, faces, mesh_path):

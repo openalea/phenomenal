@@ -17,7 +17,7 @@ from alinea.phenomenal.frame import Frame, x_axis, y_axis, z_axis
 from alinea.phenomenal.transformations import (
     concatenate_matrices, rotation_matrix)
 from alinea.phenomenal.plant_1 import (
-    plant_1_calibration_camera_side_2_target)
+    plant_1_calibration_camera_side)
 
 
 # ==============================================================================
@@ -93,7 +93,7 @@ def test_chess_frame():
 # ==============================================================================
 
 def test_frame():
-    c = plant_1_calibration_camera_side_2_target()
+    c = plant_1_calibration_camera_side()
 
     print c._cam_pos_x, c._cam_pos_y, c._cam_pos_z
     print c._cam_rot_x, c._cam_rot_y, c._cam_rot_z

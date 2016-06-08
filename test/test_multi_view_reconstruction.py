@@ -10,7 +10,7 @@
 #
 # ==============================================================================
 from alinea.phenomenal.plant_1 import (
-    plant_1_calibration_camera_side_2_target,
+    plant_1_calibration_camera_side,
     plant_1_images_binarize)
 
 from alinea.phenomenal.multi_view_reconstruction import (
@@ -22,7 +22,7 @@ from alinea.phenomenal.multi_view_reconstruction import (
 def test_1():
     # Load images binarize
     images = plant_1_images_binarize()
-    calibration = plant_1_calibration_camera_side_2_target()
+    calibration = plant_1_calibration_camera_side()
 
     images_and_projections = list()
     for angle in range(0, 360, 30):

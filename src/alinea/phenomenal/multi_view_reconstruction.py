@@ -10,9 +10,12 @@
 #
 # ==============================================================================
 import collections
-import math
-import numpy
 import gc
+import math
+
+import numpy
+
+
 # ==============================================================================
 
 
@@ -259,7 +262,7 @@ def voxel_is_visible_in_image(voxel_center,
 
     if (0 <= x < length_image and
         0 <= y < height_image and
-            image[y, x] > 0):
+            image[int(y), int(x)] > 0):
         return True
 
     # ==========================================================================
@@ -267,10 +270,10 @@ def voxel_is_visible_in_image(voxel_center,
     x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
         voxel_center, voxel_size, projection)
 
-    x_min = min(max(math.floor(x_min), 0), length_image - 1)
-    x_max = min(max(math.ceil(x_max), 0), length_image - 1)
-    y_min = min(max(math.floor(y_min), 0), height_image - 1)
-    y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+    x_min = int(min(max(math.floor(x_min), 0), length_image - 1))
+    x_max = int(min(max(math.ceil(x_max), 0), length_image - 1))
+    y_min = int(min(max(math.floor(y_min), 0), height_image - 1))
+    y_max = int(min(max(math.ceil(y_max), 0), height_image - 1))
 
     if (image[y_min, x_min] > 0 or
         image[y_max, x_min] > 0 or
@@ -334,7 +337,45 @@ def kept_visible_voxel(voxel_centers,
     return kept
 
 # ==============================================================================
+import multiprocessing
 
+
+def worker_split_voxel_centers_in_eight(queue,
+                                        voxel_centers,
+                                        voxel_size):
+    queue.put(split_voxel_centers_in_eight(voxel_centers, voxel_size))
+
+
+def mp_split_voxel_centers_in_eight(voxel_centers, voxel_size):
+
+    queue = multiprocessing.Queue()
+
+    n_process = 4
+    chunk_size = int(math.ceil(len(voxel_centers) / float(n_process)))
+
+    voxel_centers = list(voxel_centers)
+    process = list()
+    for i in range(n_process):
+        p = multiprocessing.Process(
+            target=worker_split_voxel_centers_in_eight,
+            args=(queue,
+                  voxel_centers[chunk_size * i:chunk_size * (i + 1)],
+                  voxel_size))
+
+        process.append(p)
+        p.start()
+
+    new_voxel_centers = list()
+    for i in range(n_process):
+        new_voxel_centers.extend(queue.get())
+
+    for p in process:
+        p.join()
+
+    return new_voxel_centers
+
+
+# ==============================================================================
 
 def reconstruction_3d(images_projections,
                       voxel_size=4,
@@ -395,6 +436,7 @@ def reconstruction_3d(images_projections,
         nb_iteration += 1
 
     for i in range(nb_iteration):
+
         if len(images_projections) == 1:
             voxel_centers = split_voxel_centers_in_four(voxel_centers,
                                                         voxel_size)
