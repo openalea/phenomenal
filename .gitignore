@@ -14,6 +14,13 @@
 # Compiled Object files
 *.os
 
+# Coverage
+.coverage
+cover
+
+# local directory
+local
+
 # Packages
 *.egg
 *.egg-info
@@ -24,7 +31,6 @@ eggs
 parts
 bin
 var
-local
 sdist
 develop-eggs
 .installed.cfg
