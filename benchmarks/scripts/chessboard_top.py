@@ -14,8 +14,7 @@
 #
 # ==============================================================================
 
-from alinea.phenomenal.chessboard import (
-    Chessboard)
+from alinea.phenomenal.calibration.chessboard import Chessboard
 
 # ==============================================================================
 
