@@ -23,8 +23,7 @@ from numpy import (array, zeros,
 from numpy.linalg import norm
 
 __all__ = ["x_axis", "y_axis", "z_axis", "Frame",
-           "triangle_frame", "tetrahedron_frame",
-           "polygon_frame", "mean_frame",
+           "triangle_frame", "tetrahedron_frame", "mean_frame",
            "change_frame_tensor2", "local_to_global3d"]
 
 

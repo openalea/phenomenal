@@ -9,10 +9,29 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+"""
+
+
+"""
+# ==============================================================================
 import matplotlib.pyplot
 import cv2
 import numpy
 # ==============================================================================
+
+
+def show_image(image, name_windows=''):
+    matplotlib.pyplot.title(name_windows)
+
+    if image.ndim == 2:
+        img = image.astype(numpy.uint8)
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        matplotlib.pyplot.imshow(img)
+    else:
+        img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        matplotlib.pyplot.imshow(img)
+
+    matplotlib.pyplot.show()
 
 
 def show_images(images, name_windows='', names_axes=None):
@@ -39,21 +58,6 @@ def show_images(images, name_windows='', names_axes=None):
         del img
 
         i += 1
-
-    matplotlib.pyplot.show()
-
-
-def show_image(image,
-               name_windows=''):
-    matplotlib.pyplot.title(name_windows)
-
-    if image.ndim == 2:
-        img = image.astype(numpy.uint8)
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        matplotlib.pyplot.imshow(img)
-    else:
-        img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        matplotlib.pyplot.imshow(img)
 
     matplotlib.pyplot.show()
 

@@ -9,3 +9,56 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+
+"""
+============
+Binarization
+============
+
+.. currentmodule:: alinea.phenomenal.binarization
+
+Sub-package for objects used in binarization.
+
+Threshold
+=========
+
+.. autosummary::
+   :toctree: generated/
+
+   meanshift
+   hsv
+
+Morphology
+==========
+
+.. autosummary::
+   :toctree: generated/
+
+   dilate_erode
+   erode_dilate
+   close
+
+Routines
+========
+
+.. autosummary::
+   :toctree: generated/
+
+   mean
+   hsv
+
+Formats
+=======
+
+.. autosummary::
+   :toctree: generated/
+
+    read_image
+    write_image
+
+"""
+
+from .formats import *
+from .morphology import *
+from .routines import *
+from .threshold import *

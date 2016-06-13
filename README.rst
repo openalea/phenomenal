@@ -37,31 +37,34 @@ Installation
 ------------
 
 .. toctree::
+    :maxdepth: 2
 
    ./install/install.rst
 
 Documentation
 -------------
 
-Tutorial
-''''''''
-
-.. toctree::
-    ./notebook/notebook.rst
-
-
-Reference
+Notebooks
 '''''''''
 
 .. toctree::
+    :maxdepth: 3
 
-    ./modules/documentation.rst
+    ./notebooks/notebooks.rst
+
+
+References
+''''''''''
+
+.. toctree::
+    :maxdepth: 4
+
+    ./references/index.rst
 
 Authors
 -------
 
 .. include:: ../../AUTHORS.rst
-
 
 
 License
