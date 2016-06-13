@@ -1,0 +1,1 @@
+nosetests --with-coverage --cover-erase --cover-html --cover-package=alinea.phenomenal --cover-tests --cover-inclusive
