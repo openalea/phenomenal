@@ -10,7 +10,7 @@ Multi-view reconstruction
 
 .. code:: python
 
-    from alinea.phenomenal.plant_1 import plant_1_images_binarize
+    from alinea.phenomenal.data_plants.plant_1 import plant_1_images_binarize
     
     # Load images binarize of the plant_1
     images = plant_1_images_binarize()
@@ -20,10 +20,10 @@ Multi-view reconstruction
 
 .. code:: python
 
-    from alinea.phenomenal.plant_1 import plant_1_calibration_camera_side_2_target
+    from alinea.phenomenal.data_plants.plant_1 import plant_1_calibration_camera_side
     
     # Load calibration associate to camera of the plant_1
-    calibration = plant_1_calibration_camera_side_2_target()
+    calibration = plant_1_calibration_camera_side()
 
 2. Multi-view reconstruction
 ----------------------------
@@ -48,7 +48,7 @@ Multi-view reconstruction
 
 .. code:: python
 
-    from alinea.phenomenal.multi_view_reconstruction import reconstruction_3d
+    from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction import reconstruction_3d
     
     voxel_size = 4
     voxel_centers = reconstruction_3d(images_projections, voxel_size=voxel_size, verbose=True)
@@ -73,19 +73,20 @@ Multi-view reconstruction
 
 .. code:: python
 
-    from alinea.phenomenal.misc import write_xyz, read_xyz
+    from alinea.phenomenal.multi_view_reconstruction.formats import write_to_csv, read_from_csv
     
     # Write
-    write_xyz(voxel_centers, 'test_plant_1_points_3d')
+    write_to_csv(voxel_centers, voxel_size, 'plant_1.csv')
     
     # Read
-    voxel_centers = read_xyz('test_plant_1_points_3d')
+    voxel_centers, voxel_size = read_from_csv('plant_1.csv')
 
 2.4 Viewing
 ~~~~~~~~~~~
 
 .. code:: python
 
-    import alinea.phenomenal.viewer
+    from alinea.phenomenal.display.multi_view_reconstruction import show_points_3d
     
-    alinea.phenomenal.viewer.show_points_3d(voxel_centers, scale_factor=2)
+    show_points_3d(voxel_centers, scale_factor=2)
+

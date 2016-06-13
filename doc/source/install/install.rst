@@ -3,7 +3,6 @@ Installation
 ============
 
 .. toctree::
-    :maxdepth: 3
     :glob:
     :caption: Install
 

@@ -10,14 +10,21 @@ Meshing
 
 .. code:: python
 
-    import alinea.phenomenal.plant_1
-    import alinea.phenomenal.viewer
+    from alinea.phenomenal.data_plants.plant_1 import plant_1_voxel_centers
+    from alinea.phenomenal.display.multi_view_reconstruction import show_points_3d
     
-    voxel_size = 3
-    voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(voxel_size=voxel_size)
+    voxel_size = 10
+    voxel_centers = plant_1_voxel_centers(voxel_size=voxel_size)
     
     # Display it
-    alinea.phenomenal.viewer.show_points_3d(voxel_centers)
+    show_points_3d(voxel_centers)
+
+.. code:: python
+
+    from alinea.phenomenal.multi_view_reconstruction.routines import voxel_centers_to_image_3d
+    
+    # Convert voxel_centers to image3D
+    image_3d = voxel_centers_to_image_3d(voxel_centers, voxel_size)
 
 2. Meshing
 ----------
@@ -27,21 +34,23 @@ Meshing
 
 .. code:: python
 
-    import alinea.phenomenal.mesh
+    from alinea.phenomenal.mesh.algorithms import meshing
     
-    vertices, faces = alinea.phenomenal.mesh.meshing(
-        voxel_centers, voxel_size,
-        reduction=0.95, smoothing_iteration=2, verbose=True)
+    
+    vertices, faces = meshing(image_3d,
+                              reduction=0.95, 
+                              smoothing_iteration=2, 
+                              verbose=True)
 
 
 .. parsed-literal::
 
     ================================================================
     Marching cubes :
-    	Iso value : 0.5
+    	Iso value : 1.0
     
-    	There are 171558 points.
-    	There are 342336 polygons.
+    	There are 9410 points.
+    	There are 19129 polygons.
     
     ================================================================
     ================================================================
@@ -57,13 +66,13 @@ Meshing
     
     	Before decimation
     	-----------------
-    	There are 171558 points.
-    	There are 342336 polygons.
+    	There are 9410 points.
+    	There are 19129 polygons.
     
     	After decimation
     	-----------------
-    	There are 8588 points.
-    	There are 17116 polygons.
+    	There are 484 points.
+    	There are 956 polygons.
     ================================================================
     
 
@@ -72,31 +81,37 @@ Meshing
 
 .. code:: python
 
+    from alinea.phenomenal.mesh.formats import (
+        write_vertices_faces_to_json_file,
+        read_json_file_to_vertices_faces)
+    
     # Write
-    alinea.phenomenal.misc.write_mesh(vertices, faces, 'mesh')
+    write_vertices_faces_to_json_file(vertices, faces, 'mesh.json')
     
     # Read
-    vertices, faces = alinea.phenomenal.misc.read_mesh('mesh')
+    vertices, faces = read_json_file_to_vertices_faces('mesh.json')
 
 2.4 Display it
 ~~~~~~~~~~~~~~
 
 .. code:: python
 
-    import alinea.phenomenal.viewer
+    from alinea.phenomenal.display.mesh import show_mesh
     
-    alinea.phenomenal.viewer.show_mesh(vertices, faces)
+    show_mesh(vertices, faces)
 
 2.5 Normals of each faces
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
-    normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
-    centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
+    from alinea.phenomenal.mesh.routines import normals, centers
+    
+    normals = normals(vertices, faces)
+    centers = centers(vertices, faces)
     
     # Display it
-    alinea.phenomenal.viewer.show_mesh(vertices, faces, normals=normals, centers=centers)
+    show_mesh(vertices, faces, normals=normals, centers=centers)
 
 2.6. Surface area estimation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -112,7 +127,7 @@ Meshing
 
 .. parsed-literal::
 
-    Mesh surface area :  1052250.86034
+    Mesh surface area :  880873.046613
     
 
 3. PlantGL Format

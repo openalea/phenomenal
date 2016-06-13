@@ -46,13 +46,13 @@ def write_vertices_faces_to_json_file(vertices, faces, mesh_path):
     if not os.path.exists(path_directory):
         os.makedirs(path_directory)
 
-    with open(mesh_path + '.json', 'w') as outfile:
+    with open(mesh_path, 'w') as outfile:
         json.dump({'vertices': vertices.tolist(),
                    'faces': faces.tolist()}, outfile)
 
 
 def read_json_file_to_vertices_faces(file_path):
-    with open(file_path + '.json', 'r') as infile:
+    with open(file_path, 'r') as infile:
         load_mesh = json.load(infile)
 
     return numpy.array(load_mesh['vertices']), numpy.array(load_mesh['faces'])
