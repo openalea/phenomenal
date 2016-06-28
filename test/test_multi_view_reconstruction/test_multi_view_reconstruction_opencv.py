@@ -10,7 +10,7 @@
 #
 # ==============================================================================
 from alinea.phenomenal.calibration.calibration_opencv import (
-    Calibration)
+    CalibrationCameraOpenCv)
 
 from alinea.phenomenal.data_plants.plant_1 import (
     plant_1_params_camera_opencv_path)
@@ -35,7 +35,7 @@ def test_multi_view_reconstruction_opencv_1():
     voxel_centers, _ = build_object_1(size, voxel_size, voxel_center)
 
     # ==========================================================================
-    calibration = Calibration.load(plant_1_params_camera_opencv_path())
+    calibration = CalibrationCameraOpenCv.load(plant_1_params_camera_opencv_path())
 
     images_projections = list()
     shape_image = (2454, 2056)
@@ -63,7 +63,9 @@ def test_multi_view_reconstruction_opencv_1():
 
 def test_multi_view_reconstruction_opencv_2():
     voxel_size = 8
-    calibration = Calibration.load(plant_1_params_camera_opencv_path())
+    calibration = CalibrationCameraOpenCv.load(
+        plant_1_params_camera_opencv_path())
+
     images = build_images_1()
 
     images_projections = list()

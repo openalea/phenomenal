@@ -10,11 +10,15 @@
 #
 # ==============================================================================
 """
- Routines functions to binarize images
+Routines functions to binarize images
 """
 # ==============================================================================
-import numpy
 import cv2
+import numpy
+# ==============================================================================
+
+__all__ = ["mean"]
+
 # ==============================================================================
 
 
@@ -59,7 +63,6 @@ def mean(images):
 
     start = cv2.addWeighted(images[0], weight, images[1], weight, 0)
 
-    def f(x, y):
-        return cv2.addWeighted(x, 1, y, weight, 0)
-
-    return reduce(f, images[2:], start)
+    return reduce(lambda x, y: cv2.addWeighted(x, 1, y, weight, 0),
+                  images[2:],
+                  start)

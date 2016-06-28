@@ -16,16 +16,20 @@
 """
 This module defines a frame or coordinate system in space
 """
-
+# ==============================================================================
 from numpy import (array, zeros,
                    dot, add, subtract, divide, tensordot,
                    cross, transpose, sign)
+
 from numpy.linalg import norm
+
+# ==============================================================================
 
 __all__ = ["x_axis", "y_axis", "z_axis", "Frame",
            "triangle_frame", "tetrahedron_frame", "mean_frame",
            "change_frame_tensor2", "local_to_global3d"]
 
+# ==============================================================================
 
 x_axis = array([1., 0., 0.])
 y_axis = array([0., 1., 0.])
@@ -125,7 +129,6 @@ class Frame(object):
         """
         return dot(self._axes, transpose(vecs))
 
-
     def global_vec(self, vec):
         """Global coordinates of a local vector
 
@@ -135,7 +138,6 @@ class Frame(object):
         :Returns Type: array
         """
         return dot(transpose(self._axes), vec)
-
 
     def local_points(self, points):
         """Local coordinates of global points

@@ -16,15 +16,55 @@ import time
 import networkx
 import numpy
 import scipy.spatial
-
-
 # ==============================================================================
 
 
-def create_graph(voxel_centers, verbose=False):
-    if verbose:
-        print "Graph building : ...",
-        t0 = time.time()
+# def create_graph(voxel_centers, voxel_size, verbose=False):
+#     if verbose:
+#         print "Graph building : ...",
+#         t0 = time.time()
+#
+#     graph = networkx.Graph()
+#     graph.add_nodes_from(voxel_centers)
+#
+#
+#     # ijk = [(-1, -1, -1), (-1, -1, 0), (-1, -1, 1),
+#     #        (-1, 0, -1), (-1, 0, 0), (-1, 0, 1),
+#     #        (-1, 1, -1), (-1, 1, 0), (-1, 1, 1),
+#     #        (0, -1, -1), (0, -1, 0), (0, -1, 1),
+#     #        (0, 0, -1), (0, 0, 0), (0, 0, 1),
+#     #        (0, 1, -1), (0, 1, 0), (0, 1, 1),
+#     #        (1, -1, -1), (1, -1, 0), (1, -1, 1),
+#     #        (1, 0, -1), (1, 0, 0), (1, 0, 1),
+#     #        (1, 1, -1), (1, 1, 0), (1, 1, 1)]
+#
+#     vs = voxel_size
+#     ijk = [(-vs, -vs, -vs), (-vs, -vs, 0), (-vs, -vs, vs),
+#            (-vs, 0, -vs), (-vs, 0, 0), (-vs, 0, vs),
+#            (-vs, vs, -vs), (-vs, vs, 0), (-vs, vs, vs),
+#            (0, -vs, -vs), (0, -vs, 0), (0, -vs, vs),
+#            (0, 0, -vs), (0, 0, 0), (0, 0, vs),
+#            (0, vs, -vs), (0, vs, 0), (0, vs, vs),
+#            (vs, -vs, -vs), (vs, -vs, 0), (vs, -vs, vs),
+#            (vs, 0, -vs), (vs, 0, 0), (vs, 0, vs),
+#            (vs, vs, -vs), (vs, vs, 0), (vs, vs, vs)]
+#
+#     for pt in voxel_centers:
+#         for i, j, k in ijk:
+#             pos = pt[0] + i, pt[1] + j, pt[2] + k
+#             if graph.has_node(pos):
+#                 graph.add_edge(pt, pos, weight=abs(i) + abs(j) + abs(k))
+#
+#     if verbose:
+#         print "done, in ", time.time() - t0, 'seconds'
+#         print 'Nodes :', graph.number_of_nodes()
+#         print 'Edges :', graph.number_of_edges()
+#
+#     gc.collect()
+#
+#     return graph
+
+def create_graph(voxel_centers):
 
     graph = networkx.Graph()
     graph.add_nodes_from(voxel_centers)
@@ -44,13 +84,6 @@ def create_graph(voxel_centers, verbose=False):
             pos = pt[0] + i, pt[1] + j, pt[2] + k
             if graph.has_node(pos):
                 graph.add_edge(pt, pos, weight=abs(i) + abs(j) + abs(k))
-
-    if verbose:
-        print "done, in ", time.time() - t0, 'seconds'
-        print 'Nodes :', graph.number_of_nodes()
-        print 'Edges :', graph.number_of_edges()
-
-    gc.collect()
 
     return graph
 

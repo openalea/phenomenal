@@ -11,7 +11,6 @@
 # ==============================================================================
 import collections
 import math
-
 import numpy
 
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
@@ -19,7 +18,6 @@ from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
             split_voxel_centers_in_eight,
             get_bounding_box_voxel_projected,
             voxel_is_visible_in_image)
-
 # ==============================================================================
 
 

@@ -11,25 +11,31 @@
 # ==============================================================================
 import time
 
-from alinea.phenomenal.display.multi_view_reconstruction import show_points_3d
+from alinea.phenomenal.display.multi_view_reconstruction import (
+    show_points_3d)
+
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
     import (reconstruction_3d)
+
 from alinea.phenomenal.data_plants.plant_1 import (
     plant_1_images_binarize,
     plant_1_calibration_camera_side,
     plant_1_calibration_camera_top)
+
 # ==============================================================================
 
 
 if __name__ == '__main__':
+
     # Load images binarize
     images = plant_1_images_binarize()
+
     calibration_side = plant_1_calibration_camera_side()
     calibration_top = plant_1_calibration_camera_top()
 
     # Select images
     images_projections = list()
-    for angle in [0, 30, 60, 90]:
+    for angle in range(0, 360, 30):
         img = images[angle]
         projection = calibration_side.get_projection(angle)
         images_projections.append((img, projection))
@@ -38,8 +44,7 @@ if __name__ == '__main__':
     # projection = calibration_top.get_projection(0)
     # images_projections.append((img, projection))
 
-    voxel_size = 4
-
+    voxel_size = 8
     t0 = time.time()
     # Multi-view reconstruction
     voxel_centers = reconstruction_3d(images_projections,

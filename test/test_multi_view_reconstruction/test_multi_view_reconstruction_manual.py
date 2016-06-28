@@ -11,7 +11,7 @@
 # ==============================================================================
 from alinea.phenomenal.calibration.calibration_manual import (
     EnvironmentCamera,
-    Calibration)
+    CalibrationCameraManual)
 
 from alinea.phenomenal.data_plants.data_creation import (
     build_object_1,
@@ -34,7 +34,7 @@ def test_multi_view_reconstruction_manual_1():
 
     # ==========================================================================
     env_feat = EnvironmentCamera()
-    calibration = Calibration(env_feat)
+    calibration = CalibrationCameraManual(env_feat)
 
     images_projections = list()
     shape_image = (2454, 2056)
@@ -66,7 +66,7 @@ def test_multi_view_reconstruction_manual_2():
     voxel_size = 1
 
     env_feat = EnvironmentCamera()
-    calibration = Calibration(env_feat)
+    calibration = CalibrationCameraManual(env_feat)
 
     images = build_images_1()
 

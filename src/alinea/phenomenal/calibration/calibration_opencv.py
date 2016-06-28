@@ -14,8 +14,12 @@ import cv2
 import numpy
 #  =============================================================================
 
+__all__ = ["CalibrationCameraOpenCv"]
 
-class Calibration(object):
+# ==============================================================================
+
+
+class CalibrationCameraOpenCv(object):
     def __init__(self):
         self.focal_matrix = numpy.zeros((3, 3))
         self.distortion_coefficient = numpy.zeros((5, 1))
@@ -165,7 +169,7 @@ class Calibration(object):
                     save_class['translation_vectors'][angle]).reshape(
                         (3, 1)).astype(numpy.float32)
 
-            c = Calibration()
+            c = CalibrationCameraOpenCv()
             c.focal_matrix = fm
             c.rotation_vectors = rv
             c.translation_vectors = tv

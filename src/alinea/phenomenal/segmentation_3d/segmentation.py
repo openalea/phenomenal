@@ -21,11 +21,12 @@ import scipy.interpolate
 
 # ==============================================================================
 
-from alinea.phenomenal.display.multi_view_reconstruction import (
-    plot_points_3d)
 from alinea.phenomenal.multi_view_reconstruction.routines import (
-    bounding_box)
+    bounding_box,
+    find_position_base_plant)
 
+from alinea.phenomenal.multi_view_reconstruction import Image3D
+from alinea.phenomenal.display import plot_points_3d
 from alinea.phenomenal.segmentation_3d.graph import (
     create_graph,
     ball,
@@ -182,10 +183,7 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75):
     return map(tuple, closest_node)
 
 
-def compute_closest_nodes(voxels, path, radius=8, verbose=False, dist=0.75):
-    if verbose:
-        print "Computation of planes long to the path : ...",
-        t0 = time.time()
+def compute_closest_nodes(voxels, path, radius=8, dist=0.75):
 
     planes = list()
     closest_nodes = list()
@@ -198,7 +196,7 @@ def compute_closest_nodes(voxels, path, radius=8, verbose=False, dist=0.75):
             path[max(0, i - radius):min(length_path, i + radius)])
 
         # Do an SVD on the mean-centered neighbors points.
-        k = numpy.linalg.svd(neighbors - neighbors.mean(axis=0))[2][0]
+        k = abs(numpy.linalg.svd(neighbors - neighbors.mean(axis=0))[2][0])
 
         # Computation of plane equation
         # x, y, z = node
@@ -206,13 +204,11 @@ def compute_closest_nodes(voxels, path, radius=8, verbose=False, dist=0.75):
         # Plane equation : d = a * x + b * y + c * z
         d = k[0] * node[0] + k[1] * node[1] + k[2] * node[2]
         plane = (k[0], k[1], k[2], d)
+
         planes.append(plane)
 
         nodes = get_node_close_to_planes(voxels, node, plane, dist=dist)
         closest_nodes.append(nodes)
-
-    if verbose:
-        print "done, in ", time.time() - t0, 'seconds'
 
     return planes, closest_nodes
 
@@ -277,24 +273,23 @@ def segment_leaf(nodes, connected_components, all_shorted_path,
 
     if longest_shortest_path:
 
-        if verbose:
-
-            mayavi.mlab.figure("Longest_shortest_path of leaf")
-
-            plot_points_3d(new_voxel_centers,
-                           scale_factor=voxel_size * 0.1,
-                           color=(0.1, 1, 0.1))
-
-            plot_points_3d(longest_shortest_path,
-                           scale_factor=voxel_size * 0.2,
-                           color=(0, 0, 0))
-
-            mayavi.mlab.show()
+        # if verbose:
+        #
+        #     mayavi.mlab.figure("Longest_shortest_path of leaf")
+        #
+        #     plot_points_3d(new_voxel_centers,
+        #                    scale_factor=voxel_size * 0.1,
+        #                    color=(0.1, 1, 0.1))
+        #
+        #     plot_points_3d(longest_shortest_path,
+        #                    scale_factor=voxel_size * 0.2,
+        #                    color=(0, 0, 0))
+        #
+        #     mayavi.mlab.show()
 
         planes, closest_nodes = compute_closest_nodes(new_voxel_centers,
                                                       longest_shortest_path,
                                                       radius=8,
-                                                      verbose=verbose,
                                                       dist=2)
 
         leaf = list()
@@ -336,25 +331,25 @@ def segment_leaf(nodes, connected_components, all_shorted_path,
                 else:
                     left = left.union(voxels)
 
-        if verbose:
-
-            mayavi.mlab.figure("")
-            plot_points_3d(new_voxel_centers,
-                           scale_factor=voxel_size * 0.1,
-                           color=(0.1, 1, 0.1))
-
-            plot_points_3d(list(stem_voxel),
-                           scale_factor=voxel_size * 0.1,
-                           color=(0, 0, 0))
-
-            plot_points_3d(list(leaf),
-                           scale_factor=voxel_size * 0.1,
-                           color=(0, 0, 1))
-
-            plot_points_3d(list(left),
-                           scale_factor=voxel_size * 0.1,
-                           color=(1, 0, 0))
-            mayavi.mlab.show()
+        # if verbose:
+        #
+        #     mayavi.mlab.figure("")
+        #     plot_points_3d(new_voxel_centers,
+        #                    scale_factor=voxel_size * 0.1,
+        #                    color=(0.1, 1, 0.1))
+        #
+        #     plot_points_3d(list(stem_voxel),
+        #                    scale_factor=voxel_size * 0.1,
+        #                    color=(0, 0, 0))
+        #
+        #     plot_points_3d(list(leaf),
+        #                    scale_factor=voxel_size * 0.1,
+        #                    color=(0, 0, 1))
+        #
+        #     plot_points_3d(list(left),
+        #                    scale_factor=voxel_size * 0.1,
+        #                    color=(1, 0, 0))
+        #     mayavi.mlab.show()
 
         return leaf, left, stem_voxel, longest_shortest_path
 
@@ -428,9 +423,9 @@ def extract_data_leaf(leaf, longest_shortest_path, verbose=False):
     planes, closest_nodes = compute_closest_nodes(leaf_array,
                                                   longest_shortest_path,
                                                   radius=8,
-                                                  verbose=verbose,
                                                   dist=1)
 
+    # TODO : hack little
     c_shorted_path = list()
     for nodes in closest_nodes:
 
@@ -555,108 +550,140 @@ def extract_data_leaf(leaf, longest_shortest_path, verbose=False):
                                               (float(a), float(b), float(c)))
 
 
-def maize_segmentation(voxel_centers, voxel_size, verbose=False):
+def find_stem_base_position(octree, voxel_size):
 
+    k = 5 * voxel_size
+
+    def func_if_true_add_node(node):
+        if node.size == voxel_size and node.data is True:
+            x, y, z = node.position
+            if -k <= x <= k:
+                if -k <= y <= k:
+                    return True
+        return False
+
+    def func_get(node):
+        return node.position
+
+    l = octree.root.get_nodes(func_if_true_add_node=func_if_true_add_node,
+                              func_get=func_get)
+
+    index = numpy.argmin(numpy.array(l)[:, 2])
+
+    return numpy.array(l)[index]
+
+
+def grid_voxel(voxel_centers, voxel_size):
+
+    (x_min, y_min, z_min), _ = bounding_box(voxel_centers)
+
+    origin = numpy.array([x_min, y_min, z_min])
+
+    new_voxel_centers = (numpy.array(voxel_centers) - origin) / voxel_size
+
+    new_voxel_centers = new_voxel_centers.astype(int)
+
+    return new_voxel_centers, origin
+
+
+def graph_skeletonize(voxel_centers, voxel_size, stem_base_position, verbose=False):
     # ==========================================================================
     # Graph creation
 
-    (x_min, y_min, z_min), (x_max, y_max, z_max) = bounding_box(voxel_centers)
+    new_voxel_centers, origin = grid_voxel(voxel_centers, voxel_size)
 
-    new_voxel_centers = (numpy.array(voxel_centers) - numpy.array(
-        [x_min, y_min, z_min])) / voxel_size
-    new_voxel_centers = new_voxel_centers.astype(int)
+    graph = create_graph(map(tuple, list(new_voxel_centers)))
 
-    graph = create_graph(map(tuple, list(new_voxel_centers)), verbose=verbose)
+    # Keep the biggest connected components
     graph = max(networkx.connected_component_subgraphs(graph, copy=False),
                 key=len)
 
+    # Convert to numpy array
     new_voxel_centers = numpy.array(networkx.nodes(graph))
 
-    len_x = int((x_max - x_min) / voxel_size + 1)
-    len_y = int((y_max - y_min) / voxel_size + 1)
-    len_z = int((z_max - z_min) / voxel_size + 1)
-
-    matrix = numpy.zeros((len_x, len_y, len_z), dtype=numpy.uint8)
-
-    for x, y, z in new_voxel_centers:
-        matrix[x, y, z] = 1
-
-    origin = (x_min, y_min, z_min)
     # ==========================================================================
     # Get the high points in the matrix and the suposed base plant points
 
-    index = numpy.argmax(new_voxel_centers[:, 2])
-    x_top, y_top, z_top = new_voxel_centers[index]
-    print 'Node top : ', x_top, y_top, z_top
-
-
-
-    x_stem, y_stem, z_stem = find_position_base_plant(image_3d)
+    stem_base_position = (stem_base_position - origin) / voxel_size
+    x_stem, y_stem, z_stem = stem_base_position
     print 'Node base : ', x_stem, y_stem, z_stem
 
     # ==========================================================================
     # Compute the shorted path
 
-    if verbose:
-        t0 = time.time()
-
     all_shorted_path_down = networkx.single_source_dijkstra_path(
         graph, (x_stem, y_stem, z_stem), weight="weight")
 
-    # all_shorted_path_up = networkx.single_source_dijkstra_path(
-    #     graph, (x_top, y_top, z_top), weight="weight")
+    return graph, new_voxel_centers, all_shorted_path_down, origin
 
-    shortest_path = all_shorted_path_down[(x_top, y_top, z_top)]
 
-    if verbose:
-        print 'Time all shorted path :', time.time() - t0
-        print 'Length of shorted path', len(shortest_path)
+def compute_ball_integer(node, r):
+    x, y, z = node
+
+    l = list()
+    diameter = r * 2
+    for i in xrange(int(x - diameter), int(x + diameter), 1):
+        for j in xrange(int(y - diameter), int(y + diameter), 1):
+            for k in xrange(int(z - diameter), int(z + diameter), 1):
+                if math.sqrt((i - x) ** 2 + (j - y) ** 2 + (k - z) ** 2) <= r:
+                    l.append((i, j, k))
+    return l
+
+
+def stem_segmentation(voxel_centers, all_shorted_path_down,
+                      verbose=False):
+
+    index = numpy.argmax(voxel_centers[:, 2])
+    x_top, y_top, z_top = voxel_centers[index]
+    print 'Node top : ', x_top, y_top, z_top
+
+    stem_voxel_path = all_shorted_path_down[(x_top, y_top, z_top)]
+
+    # if verbose:
+    #     print 'Length of shorted path', len(shortest_path)
     #
     #     mayavi.mlab.figure("shorted path")
-    #     alinea.phenomenal.viewer.plot_points_3d(
-    #         new_voxel_centers,
-    #         scale_factor=voxel_size * 0.1,
-    #         color=(0.1, 1, 0.1))
     #
-    #     alinea.phenomenal.viewer.plot_points_3d(
-    #         shortest_path,
-    #         scale_factor=voxel_size * 0.5,
-    #         color=(0, 0, 0))
+    #     plot_points_3d(voxel_centers,
+    #                    scale_factor=0.5,
+    #                    color=(0.1, 1, 0.1))
+    #
+    #     plot_points_3d(shortest_path,
+    #                    scale_factor=0.5,
+    #                    color=(0, 0, 0))
     #
     #     mayavi.mlab.show()
 
     # ==========================================================================
     # Get normal of the path and intercept voxel, plane
-    #
+
     planes, closest_nodes = compute_closest_nodes(
-        new_voxel_centers, shortest_path, radius=8, verbose=verbose, dist=3)
+        voxel_centers, stem_voxel_path, radius=8,
+        dist=5)
 
     centred_shorted_path = [
         numpy.array(nodes).mean(axis=0) for nodes in closest_nodes]
-
-    # ==========================================================================
 
     # if verbose:
     #
     #     mayavi.mlab.figure("")
     #
-    #     alinea.phenomenal.viewer.plot_points_3d(
-    #         new_voxel_centers,
-    #         scale_factor=voxel_size * 0.1,
+    #     plot_points_3d(
+    #         voxel_centers,
+    #         scale_factor=0.5,
     #         color=(0.1, 1, 0.1))
     #
-    #     alinea.phenomenal.viewer.plot_points_3d(
+    #     plot_points_3d(
     #         centred_shorted_path,
-    #         scale_factor=voxel_size * 0.5,
+    #         scale_factor=0.5,
     #         color=(0.1, 0.1, 1))
     #
-    #     alinea.phenomenal.viewer.plot_points_3d(
+    #     plot_points_3d(
     #         shortest_path,
-    #         scale_factor=voxel_size * 0.5,
+    #         scale_factor=0.5,
     #         color=(0, 0, 0))
     #
     #     for i in xrange(len(planes)):
-    #
     #         # x, y, z = points_3d[i]
     #         # a, b, c, d = planes[i]
     #         #
@@ -674,11 +701,9 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
     #         # xx, yy, zz = get_point_of_planes((a, b, c), (x, y, z), radius=40)
     #         # mayavi.mlab.mesh(xx, yy, zz)
     #
-    #         alinea.phenomenal.viewer.plot_points_3d(
-    #             closest_nodes[i], scale_factor=voxel_size * 0.1)
+    #         plot_points_3d(closest_nodes[i], scale_factor=0.5)
     #
     #     mayavi.mlab.show()
-
     # ==========================================================================
     # Detect peak on graphic
 
@@ -725,27 +750,15 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
 
     tck, u = scipy.interpolate.splprep(data)
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
-
     # ==========================================================================
 
     print "Interpolate done"
 
-    def compute_ball_integer(node, r):
-        x, y, z = node
-
-        l = list()
-        diameter = r * 2
-        for i in xrange(int(x - diameter), int(x + diameter), 1):
-            for j in xrange(int(y - diameter), int(y + diameter), 1):
-                for k in xrange(int(z - diameter), int(z + diameter), 1):
-                    if math.sqrt((i - x) ** 2 + (j - y) ** 2 + (k - z) ** 2) <= r:
-                        l.append((i, j, k))
-        return l
-
     score = len(xxx) / len(radius)
     j = 0
 
-    stem = list()
+    stem_voxel = list()
+    stem_geometry = list()
     for i in xrange(len(xxx)):
 
         if i % score == 0 and j < len(radius):
@@ -753,25 +766,31 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
             j += 1
 
         x, y, z = xxx[i], yyy[i], zzz[i]
-        stem += compute_ball_integer((x, y, z), max(r, 1))
-    stem = set(stem)
 
-    nvc = set(map(tuple, list(new_voxel_centers)))
-    stem_voxel = stem.intersection(nvc)
+        stem_geometry.append(((x, y, z), max(r, 1)))
+
+        stem_voxel += compute_ball_integer((x, y, z), max(r, 1))
+
+    stem_voxel = set(stem_voxel)
+
+    nvc = set(map(tuple, list(voxel_centers)))
+    stem_voxel = stem_voxel.intersection(nvc)
     not_stem_voxel = nvc.difference(stem_voxel)
 
-    # ==========================================================================
-    # Last voxel
+    return stem_voxel, not_stem_voxel, stem_voxel_path, stem_geometry
+
+
+def compute_top_stem_neighbors(nvc, graph, stem_geometry):
 
     i = -1
-    x, y, z = xxx[i], yyy[i], zzz[i]
-    top_1_stem = compute_ball_integer((x, y, z), max(r, 1))
+    (x, y, z), radius = stem_geometry[i]
+    top_1_stem = compute_ball_integer((x, y, z), radius)
 
     top_stem = set()
     while len(top_stem) == 0:
         i -= 1
-        x, y, z = xxx[i], yyy[i], zzz[i]
-        top_2_stem = compute_ball_integer((x, y, z), max(r, 1))
+        (x, y, z), radius = stem_geometry[i]
+        top_2_stem = compute_ball_integer((x, y, z), radius)
 
         top_stem = set(top_1_stem) - set(top_2_stem)
         top_stem = set(top_stem).intersection(nvc)
@@ -784,7 +803,12 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
         top_stem_neighbors += graph[node].keys()
     top_stem_neighbors = set(top_stem_neighbors)
 
+    return top_stem_neighbors
+
     # ==========================================================================
+
+
+def merge(graph, stem_voxel, not_stem_voxel, percentage=50):
 
     stem_neighbors = list()
     for node in stem_voxel:
@@ -798,12 +822,32 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
         nb_stem = len(voxels.intersection(stem_neighbors))
 
         print "Percentage stem:", nb_stem * 100 / len(voxels)
-        print "Number of voxel:", len(voxels), '\n'
 
-        if nb_stem * 100 / len(voxels) >= 50:
+        if nb_stem * 100 / len(voxels) >= percentage:
             stem_voxel = stem_voxel.union(voxels)
         else:
             connected_components.append(voxels)
+
+    return stem_voxel, stem_neighbors, connected_components
+
+
+def maize_segmentation(voxel_centers, voxel_size,
+                       stem_base_position=None,
+                       verbose=False):
+
+    graph, new_voxel_centers, all_shorted_path_down, origin = graph_skeletonize(
+        voxel_centers, voxel_size, stem_base_position)
+
+    # ==========================================================================
+    stem_voxel, not_stem_voxel, stem_voxel_path, stem_geometry = \
+        stem_segmentation(new_voxel_centers, all_shorted_path_down, verbose=verbose)
+
+    nvc = set(map(tuple, list(new_voxel_centers)))
+
+    top_stem_neighbors = compute_top_stem_neighbors(nvc, graph, stem_geometry)
+
+    stem_voxel, stem_neighbors, connected_components = merge(
+        graph, stem_voxel, not_stem_voxel, percentage=50)
 
     # ==========================================================================
 
@@ -814,16 +858,12 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
         mayavi.mlab.figure("")
 
         for voxels in connected_components:
-            plot_points_3d(list(voxels), scale_factor=voxel_size * 0.2)
+            plot_points_3d(list(voxels), scale_factor=0.5)
 
-        plot_points_3d(list(stem_voxel),
-                       scale_factor=voxel_size * 0.2,
-                       color=(0, 0, 0))
+        plot_points_3d(list(stem_voxel), scale_factor=0.5, color=(0, 0, 0))
 
-        # alinea.phenomenal.viewer.plot_points_3d(
-        #     list(top_stem),
-        #     scale_factor=voxel_size * 0.2,
-        #     color=(1, 0, 0.5))
+        plot_points_3d(list(top_stem_neighbors), scale_factor=0.2,
+                       color=(1, 0, 0.5))
 
         mayavi.mlab.show()
 
@@ -833,7 +873,6 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
     simple_leaf_data = list()
     corners = list()
     connected_leaf = list()
-    # skeletonize = list()
 
     for connected_component in connected_components:
 
@@ -893,30 +932,12 @@ def maize_segmentation(voxel_centers, voxel_size, verbose=False):
                     simple_leaf_data.append((path, distances_max, max_longest,
                                              vector))
 
-
-
                 else:
                     connected_leaf.append(connected_component)
 
-    # for connected_component in connected_components:
-    #
-    #     leaf, left, stem_voxel, longest_shortest_path = segment_leaf(
-    #         connected_component, all_shorted_path_up, new_voxel_centers,
-    #         stem_voxel, stem_neighbors, graph, voxel_size, verbose=False)
-    #
-    #     skeletonize.append(longest_shortest_path)
-    #
-    #     if len(left) != 0:
-    #         while len(left) != 0:
-    #             # TODO : update stem neighbors
-    #             leaf, left, stem_voxel, longest_shortest_path = segment_leaf(
-    #                 list(left), all_shorted_path_up, new_voxel_centers,
-    #                 stem_voxel, stem_neighbors, graph, voxel_size,
-    #                 verbose=False)
-    #
-    #             skeletonize.append(longest_shortest_path)
-
     return stem_voxel, simple_leaf, simple_leaf_data, connected_leaf, corners
+
+# ==============================================================================
 
 
 def convert_to_real_point_3d(stem_positions, origin, voxel_size):
