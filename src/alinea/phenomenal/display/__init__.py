@@ -71,7 +71,21 @@ Multi_view_reconstruction
 
 """
 
-from .image import *
-from .calibration import *
-from .multi_view_reconstruction import *
-from .mesh import *
+from alinea.phenomenal.display.image import (
+    show_image,
+    show_images)
+
+from alinea.phenomenal.display.calibration import (
+    show_chessboard_3d_projection_on_image,
+    show_image_with_chessboard_corners)
+
+from alinea.phenomenal.display.multi_view_reconstruction import (
+    plot_3d,
+    plot_points_3d,
+    show_each_stage_of_octree,
+    show_octree,
+    show_points_3d)
+
+from alinea.phenomenal.display.mesh import (
+    show_mesh,
+    show_poly_data)

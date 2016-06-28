@@ -9,7 +9,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 """
 ============
 Calibration
@@ -70,17 +69,28 @@ Frame
     x_axis
     y_axis
     z_axis
-
-Transformations
-===============
-
-.. automodule:: alinea.phenomenal.calibration.transformations
-.. currentmodule:: alinea.phenomenal.calibration
-
 """
+# ==============================================================================
 
-from .calibration import *
-from .calibration_manual import *
-from .calibration_opencv import *
-from .chessboard import *
-from .frame import *
+from alinea.phenomenal.calibration.calibration import (
+    CalibrationCamera,
+    CalibrationCameraTop,
+    CalibrationCameraTopNew,
+    CalibrationCameraSideWith1Target,
+    CalibrationCameraSideWith2Target)
+
+from alinea.phenomenal.calibration.calibration_manual import (
+    CalibrationCameraManual, EnvironmentCamera)
+
+from alinea.phenomenal.calibration.calibration_opencv import (
+    CalibrationCameraOpenCv)
+
+from alinea.phenomenal.calibration.chessboard import (
+    Target,
+    Chessboard)
+
+from alinea.phenomenal.calibration.frame import (
+    Frame,
+    x_axis,
+    y_axis,
+    z_axis)

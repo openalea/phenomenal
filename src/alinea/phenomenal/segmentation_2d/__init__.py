@@ -30,6 +30,12 @@ Skeletonize
     skeletonize_erode_dilate
 
 """
+# ==============================================================================
 
-from .segmentation_2d import *
-from .skeletonize import *
+from alinea.phenomenal.segmentation_2d.segmentation_2d import (
+    Segment, Organ, Stem, Leaf)
+
+from alinea.phenomenal.segmentation_2d.skeletonize import (
+    skeletonize,
+    skeletonize_thinning,
+    skeletonize_erode_dilate)

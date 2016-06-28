@@ -12,6 +12,11 @@
 import math
 # ==============================================================================
 
+__all__ = ["EnvironmentCamera",
+           "CalibrationCameraManual"]
+
+# ==============================================================================
+
 
 class EnvironmentCamera(object):
     def __init__(self):
@@ -59,7 +64,7 @@ class EnvironmentCamera(object):
         self.convSide = 30 / 3.95
 
 
-class Calibration(object):
+class CalibrationCameraManual(object):
     def __init__(self, env_feat):
 
         # ======================================================================

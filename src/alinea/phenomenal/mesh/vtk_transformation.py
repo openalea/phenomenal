@@ -15,6 +15,13 @@ from vtk.util.numpy_support import get_vtk_array_type
 from operator import itemgetter
 # ==============================================================================
 
+__all__ = ["from_vertices_faces_to_vtk_poly_data",
+           "from_vtk_poly_data_to_vertices_faces",
+           "from_voxel_centers_to_vtk_image_data",
+           "from_numpy_matrix_to_vtk_image_data"]
+
+# ==============================================================================
+
 
 def from_vertices_faces_to_vtk_poly_data(vertices, faces):
     # Makes a vtkIdList from a Python iterable. I'm kinda surprised that

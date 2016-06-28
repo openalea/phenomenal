@@ -15,6 +15,10 @@ import json
 import collections
 # ==============================================================================
 
+__all__ = ["Target", "Chessboard"]
+
+# ==============================================================================
+
 
 class Target(object):
 
@@ -57,9 +61,9 @@ class Chessboard(object):
         width, height = self.shape
 
         corners_local_3d = list()
-        for j in range(height):
-            for i in range(width):
-                v = numpy.array([i * square_size, j * square_size, 0.0])
+        for y in range(height):
+            for x in range(width):
+                v = numpy.array([x * square_size, y * square_size, 0.0])
                 corners_local_3d.append(v)
 
         return corners_local_3d
