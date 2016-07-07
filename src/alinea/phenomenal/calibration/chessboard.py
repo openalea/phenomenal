@@ -75,14 +75,6 @@ class Chessboard(object):
 
         return corners_2d
 
-    def _increase_brightness(self, image, value=150):
-        image = image.astype(int)
-        image += value
-        image[image > 255] = 255
-        image = image.astype(numpy.uint8)
-
-        return image
-
     def find_corners(self, image):
         try:
             found, corners = cv2.findChessboardCorners(
@@ -109,11 +101,6 @@ class Chessboard(object):
         image_points = self.find_corners(image)
         if image_points is not None:
             self.image_points[id_camera][angle] = image_points
-        else:
-            img = self._increase_brightness(image)
-            image_points = self.find_corners(img)
-            if image_points is not None:
-                self.image_points[id_camera][angle] = image_points
 
         if verbose:
             print str(id_camera) + " camera, ",

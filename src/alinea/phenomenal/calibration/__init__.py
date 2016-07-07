@@ -75,9 +75,8 @@ Frame
 from alinea.phenomenal.calibration.calibration import (
     CalibrationCamera,
     CalibrationCameraTop,
-    CalibrationCameraTopNew,
     CalibrationCameraSideWith1Target,
-    CalibrationCameraSideWith2Target)
+    CalibrationCameraSideWith2TargetYXZ)
 
 from alinea.phenomenal.calibration.calibration_manual import (
     CalibrationCameraManual, EnvironmentCamera)
