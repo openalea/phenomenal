@@ -13,8 +13,9 @@
 
 """
 # ==============================================================================
-import vtk
 import mayavi.mlab
+import vtk
+
 # ==============================================================================
 
 __all__ = ["show_mesh", "show_poly_data"]
@@ -24,20 +25,39 @@ __all__ = ["show_mesh", "show_poly_data"]
 
 def show_mesh(vertices, faces,
               normals=None,
-              centers=None):
+              centers=None,
+              color=None):
     if normals is not None and centers is not None:
         mayavi.mlab.quiver3d(centers[:, 0], centers[:, 1], centers[:, 2],
                              normals[:, 0], normals[:, 1], normals[:, 2],
                              line_width=1.0, scale_factor=1)
 
-    mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
-    mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
-    mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         100, 0, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(1, 0, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 100, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 1, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 0, 100,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 0, 1))
+
+    if color is None:
+        color = (0, 1, 0)
 
     mayavi.mlab.triangular_mesh([vert[0] for vert in vertices],
                                 [vert[1] for vert in vertices],
                                 [vert[2] for vert in vertices],
-                                faces)
+                                faces,
+                                color=color)
 
     mayavi.mlab.show()
 

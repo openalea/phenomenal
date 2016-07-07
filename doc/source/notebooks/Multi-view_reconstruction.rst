@@ -88,5 +88,5 @@ Multi-view reconstruction
 
     from alinea.phenomenal.display.multi_view_reconstruction import show_points_3d
     
-    show_points_3d(voxel_centers, scale_factor=2)
+    show_points_3d(voxel_centers, scale_factor=2, color=(0, 1, 0))
 
