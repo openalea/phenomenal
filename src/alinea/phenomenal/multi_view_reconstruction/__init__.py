@@ -41,18 +41,6 @@ Multi-View Reconstruction
     error_reconstruction_precision
     volume
 
-
-Image 3D
-========
-
-.. automodule:: alinea.phenomenal.multi_view_reconstruction.image3d
-.. currentmodule:: alinea.phenomenal.multi_view_reconstruction
-
-.. autosummary::
-   :toctree: generated/
-
-    Image3D
-
 Formats
 =======
 
@@ -93,9 +81,6 @@ from alinea.phenomenal.multi_view_reconstruction.formats import (
     write_to_csv,
     write_xyz)
 
-from alinea.phenomenal.multi_view_reconstruction.image3d import (
-    Image3D)
-
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
     import (error_reconstruction,
             error_reconstruction_lost,
@@ -116,11 +101,8 @@ from alinea.phenomenal.multi_view_reconstruction.\
 from alinea.phenomenal.multi_view_reconstruction.routines import (
     biggest_connected_component,
     bounding_box,
-    find_position_base_plant,
     image_3d_to_voxel_centers,
     labeling_connected_component,
     remove_internal,
     voxel_centers_to_image_3d)
 
-from alinea.phenomenal.multi_view_reconstruction.octree import (
-    Octree)

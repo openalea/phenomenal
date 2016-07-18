@@ -9,11 +9,11 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.data_plants.data_creation import (
+from alinea.phenomenal.data_access.data_creation import (
     build_object_1,
     build_images_1)
 
-from alinea.phenomenal.data_plants.plant_1 import (
+from alinea.phenomenal.data_access.plant_1 import (
     plant_1_calibration_camera_side)
 
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \

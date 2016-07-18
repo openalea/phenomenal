@@ -14,7 +14,7 @@ from alinea.phenomenal.multi_view_reconstruction.routines import (
 
 from alinea.phenomenal.display.mesh import show_mesh
 from alinea.phenomenal.mesh.algorithms import meshing
-from alinea.phenomenal.data_plants.plant_1 import plant_1_voxel_centers
+from alinea.phenomenal.data_access.plant_1 import plant_1_voxel_centers
 # ==============================================================================
 
 

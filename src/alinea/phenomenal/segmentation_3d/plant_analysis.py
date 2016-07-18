@@ -14,6 +14,7 @@ import scipy
 import math
 # ==============================================================================
 
+
 def simple_leaf_analysis(voxel_leaf, longest_shortest_path, verbose=False):
 
     leaf_array = numpy.array(list(voxel_leaf))

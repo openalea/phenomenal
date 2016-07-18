@@ -22,10 +22,8 @@ import scipy.interpolate
 # ==============================================================================
 
 from alinea.phenomenal.multi_view_reconstruction.routines import (
-    bounding_box,
-    find_position_base_plant)
+    bounding_box)
 
-from alinea.phenomenal.multi_view_reconstruction import Image3D
 from alinea.phenomenal.display import plot_points_3d
 from alinea.phenomenal.segmentation_3d.graph import (
     create_graph,
@@ -937,6 +935,8 @@ def maize_segmentation(voxel_centers, voxel_size,
 
     return stem_voxel, simple_leaf, simple_leaf_data, connected_leaf, corners
 
+# ==============================================================================
+# ==============================================================================
 # ==============================================================================
 
 
