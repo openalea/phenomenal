@@ -9,7 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.multi_view_reconstruction.octree import Octree
+from alinea.phenomenal.data_structure.octree import Octree
 # ==============================================================================
 
 

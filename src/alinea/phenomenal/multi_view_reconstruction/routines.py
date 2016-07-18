@@ -11,7 +11,7 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.multi_view_reconstruction.image3d import Image3D
+from alinea.phenomenal.data_structure import Image3D
 # ==============================================================================
 
 
@@ -74,23 +74,6 @@ def remove_internal(image_3d):
     result = im - im2
 
     return result[1:-1, 1:-1, 1:-1]
-
-
-def find_position_base_plant(image_3d, neighbor_size=5):
-    x = int(round(0 - image_3d.world_coordinate[0] / image_3d.voxel_size))
-    y = int(round(0 - image_3d.world_coordinate[1] / image_3d.voxel_size))
-
-    k = neighbor_size
-    x_len, y_len, z_len = image_3d.shape
-
-    roi = image_3d[max(x - k, 0): min(x + k, x_len),
-                   max(y - k, 0): min(y + k, y_len),
-                   :]
-
-    xx, yy, zz = numpy.where(roi == 1)
-    i = numpy.argmin(zz)
-
-    return x - k + xx[i], y - k + yy[i], zz[i]
 
 
 def labeling_connected_component(image_3d):

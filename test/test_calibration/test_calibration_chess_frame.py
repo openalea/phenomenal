@@ -17,7 +17,7 @@ from alinea.phenomenal.calibration.frame import Frame, x_axis, y_axis, z_axis
 from alinea.phenomenal.calibration.transformations import (
     concatenate_matrices,
     rotation_matrix)
-from alinea.phenomenal.data_plants.plant_1 import (
+from alinea.phenomenal.data_access.plant_1 import (
     plant_1_calibration_camera_side)
 
 

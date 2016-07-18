@@ -12,11 +12,11 @@
 from alinea.phenomenal.calibration.calibration_opencv import (
     CalibrationCameraOpenCv)
 
-from alinea.phenomenal.data_plants.plant_1 import (
+from alinea.phenomenal.data_access.plant_1 import (
     plant_1_params_camera_opencv_path)
 
 
-from alinea.phenomenal.data_plants.data_creation import (
+from alinea.phenomenal.data_access.data_creation import (
     build_object_1,
     build_images_1)
 

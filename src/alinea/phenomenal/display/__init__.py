@@ -55,6 +55,17 @@ Mesh
    show_mesh
    show_poly_data
 
+Octree
+======
+
+.. automodule:: alinea.phenomenal.display.octree
+.. currentmodule:: alinea.phenomenal.display
+
+.. autosummary::
+   :toctree: generated/
+
+   show_octree
+   show_each_stage_of_octree
 
 Multi_view_reconstruction
 =========================
@@ -82,9 +93,11 @@ from alinea.phenomenal.display.calibration import (
 from alinea.phenomenal.display.multi_view_reconstruction import (
     plot_3d,
     plot_points_3d,
-    show_each_stage_of_octree,
-    show_octree,
     show_points_3d)
+
+from alinea.phenomenal.display.octree import (
+    show_octree,
+    show_each_stage_of_octree)
 
 from alinea.phenomenal.display.mesh import (
     show_mesh,

@@ -307,7 +307,7 @@ class Octree(object):
         if not os.path.exists(path_directory):
             os.makedirs(path_directory)
 
-        with open(file_path, 'w') as outfile:
+        with open(file_path, 'wb') as outfile:
             json.dump(dict_nodes, outfile)
 
     @staticmethod

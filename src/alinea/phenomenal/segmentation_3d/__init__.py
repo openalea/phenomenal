@@ -75,3 +75,5 @@ from alinea.phenomenal.segmentation_3d.thinning import (
 from alinea.phenomenal.segmentation_3d.segmentation import (
     maize_segmentation)
 
+from alinea.phenomenal.segmentation_3d.routines import (
+    find_position_base_plant)

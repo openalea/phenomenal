@@ -16,7 +16,7 @@ import csv
 # ==============================================================================
 
 
-def save_matrix_to_stack_image(matrix, folder_name, ):
+def save_matrix_to_stack_image(matrix, folder_name):
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 

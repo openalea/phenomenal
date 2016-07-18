@@ -15,7 +15,7 @@ import os
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
     import reconstruction_3d
 
-from alinea.phenomenal.data_plants.plant_1 import (
+from alinea.phenomenal.data_access.plant_1 import (
     plant_1_chessboards,
     plant_1_images_binarize)
 

@@ -11,7 +11,7 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.multi_view_reconstruction.image3d import (
+from alinea.phenomenal.data_structure.image3d import (
     Image3D)
 
 from alinea.phenomenal.multi_view_reconstruction.routines import (

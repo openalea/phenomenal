@@ -13,7 +13,7 @@ import collections
 import math
 import numpy
 
-from alinea.phenomenal.multi_view_reconstruction.octree import Octree
+from alinea.phenomenal.data_structure import Octree
 # ==============================================================================
 
 
