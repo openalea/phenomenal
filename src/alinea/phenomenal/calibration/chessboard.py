@@ -15,6 +15,10 @@ import json
 import collections
 # ==============================================================================
 
+__all__ = ["Target", "Chessboard"]
+
+# ==============================================================================
+
 
 class Target(object):
 
@@ -57,9 +61,9 @@ class Chessboard(object):
         width, height = self.shape
 
         corners_local_3d = list()
-        for j in range(height):
-            for i in range(width):
-                v = numpy.array([i * square_size, j * square_size, 0.0])
+        for y in range(height):
+            for x in range(width):
+                v = numpy.array([x * square_size, y * square_size, 0.0])
                 corners_local_3d.append(v)
 
         return corners_local_3d
@@ -70,14 +74,6 @@ class Chessboard(object):
             corners_2d[angle] = self.image_points[id_camera][angle][:, 0, :]
 
         return corners_2d
-
-    def _increase_brightness(self, image, value=150):
-        image = image.astype(int)
-        image += value
-        image[image > 255] = 255
-        image = image.astype(numpy.uint8)
-
-        return image
 
     def find_corners(self, image):
         try:
@@ -105,11 +101,6 @@ class Chessboard(object):
         image_points = self.find_corners(image)
         if image_points is not None:
             self.image_points[id_camera][angle] = image_points
-        else:
-            img = self._increase_brightness(image)
-            image_points = self.find_corners(img)
-            if image_points is not None:
-                self.image_points[id_camera][angle] = image_points
 
         if verbose:
             print str(id_camera) + " camera, ",

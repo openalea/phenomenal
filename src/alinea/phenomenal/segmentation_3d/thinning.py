@@ -14,9 +14,7 @@ A 3D 6-subiteration thinning algorithm for extracting medial lines
 of Kalman Palagyi and Attila Kuba implementation
 """
 # ==============================================================================
-
 import numpy
-
 # ==============================================================================
 
 

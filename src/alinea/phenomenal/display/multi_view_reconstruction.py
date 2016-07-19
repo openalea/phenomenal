@@ -11,25 +11,46 @@
 # ==============================================================================
 """
 
-
 """
 # ==============================================================================
+import random
 import mayavi.mlab
 import numpy
-import random
+# ==============================================================================
+
+__all__ = ["show_points_3d",
+           "plot_points_3d",
+           "plot_3d"]
+
 # ==============================================================================
 
 
 def show_points_3d(points_3d,
                    color=None,
-                   scale_factor=5,
+                   scale_factor=1,
                    figure_name=""):
 
     fg = mayavi.mlab.figure(figure_name)
-    mayavi.mlab.quiver3d(0, 0, 0, 1, 0, 0, line_width=5.0, scale_factor=100)
-    mayavi.mlab.quiver3d(0, 0, 0, 0, 1, 0, line_width=5.0, scale_factor=100)
-    mayavi.mlab.quiver3d(0, 0, 0, 0, 0, 1, line_width=5.0, scale_factor=100)
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         100, 0, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(1, 0, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 100, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 1, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 0, 100,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 0, 1))
+
     plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
+
     mayavi.mlab.show()
     mayavi.mlab.clf(fg)
 
@@ -71,3 +92,5 @@ def plot_3d(points_3d, color=None, tube_radius=1):
     del pts
 
     return color
+
+

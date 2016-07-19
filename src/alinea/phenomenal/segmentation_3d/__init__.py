@@ -61,10 +61,19 @@ Thinning
    :toctree: generated/
 
     thinning_3d
-
 """
+# ==============================================================================
+from alinea.phenomenal.segmentation_3d.graph import (
+    create_graph, add_nodes)
 
-from .graph import *
-from .peakdetect import *
-from .thinning import *
-from .segmentation import *
+from alinea.phenomenal.segmentation_3d.peakdetect import (
+    peakdetect)
+
+from alinea.phenomenal.segmentation_3d.thinning import (
+    thinning_3d)
+
+from alinea.phenomenal.segmentation_3d.segmentation import (
+    maize_segmentation)
+
+from alinea.phenomenal.segmentation_3d.routines import (
+    find_position_base_plant)

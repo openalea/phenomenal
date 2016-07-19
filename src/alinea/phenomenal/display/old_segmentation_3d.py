@@ -9,8 +9,10 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
+import random
+import mayavi.mlab
 # ==============================================================================
+
 
 def plot_vectors(vectors, color=None, tube_radius=5.0):
     if color is None:

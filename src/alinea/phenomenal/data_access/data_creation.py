@@ -11,10 +11,14 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.multi_view_reconstruction.image3d import Image3D
-from alinea.phenomenal.multi_view_reconstruction.routines import \
-    image_3d_to_voxel_centers
+from alinea.phenomenal.data_structure.image3d import (
+    Image3D)
 
+from alinea.phenomenal.multi_view_reconstruction.routines import (
+    image_3d_to_voxel_centers)
+# ==============================================================================
+
+__all__ = ["write_circle_on_image", "build_images_1", "build_object_1"]
 
 # ==============================================================================
 

@@ -17,6 +17,10 @@ import cv2
 import numpy
 # ==============================================================================
 
+__all__ = ["dilate_erode", "erode_dilate", "close"]
+
+# ==============================================================================
+
 
 def dilate_erode(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
     """

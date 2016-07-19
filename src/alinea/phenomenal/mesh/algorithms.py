@@ -17,6 +17,9 @@ import numpy
 from alinea.phenomenal.mesh.vtk_transformation import (
     from_vtk_poly_data_to_vertices_faces,
     from_numpy_matrix_to_vtk_image_data)
+# ==============================================================================
+
+__all__ = ["meshing", "marching_cubes", "smoothing", "decimation"]
 
 # ==============================================================================
 

@@ -16,12 +16,24 @@ import os
 import openalea.deploy.shared_data
 import alinea.phenomenal
 
-from alinea.phenomenal.calibration.chessboard import Chessboard
+from alinea.phenomenal.calibration.chessboard import (
+    Chessboard)
+
 from alinea.phenomenal.calibration.calibration import (
     CalibrationCameraSideWith2Target,
     CalibrationCameraTop)
 
-from alinea.phenomenal.multi_view_reconstruction.formats import read_xyz
+from alinea.phenomenal.multi_view_reconstruction.formats import (
+    read_xyz)
+# ==============================================================================
+
+__all__ = ["plant_1_images",
+           "plant_1_images_binarize",
+           "plant_1_chessboards",
+           "plant_1_calibration_camera_side",
+           "plant_1_calibration_camera_top",
+           "plant_1_voxel_centers"]
+
 # ==============================================================================
 
 
