@@ -13,38 +13,34 @@ import os
 import re
 import cv2
 import csv
+import json
 
 # ==============================================================================
 
-def save_matrix_to_stack_image(matrix, folder_name, ):
+def save_matrix_to_stack_image(matrix, folder_name):
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 
     xl, yl, zl = matrix.shape
-    print xl, yl, zl
     for i in range(zl):
         mat = matrix[:, :, i] * 255
         cv2.imwrite(folder_name + '%d.png' % i, mat)
 
 
-def write_xyz(points_3d, file_path):
-    path_directory, file_name = os.path.split(file_path)
+def write_to_xyz(filename, voxel_centers):
 
-    if path_directory.strip() and not os.path.exists(path_directory):
-        os.makedirs(path_directory)
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
 
-    f = open(file_path + '.xyz', 'w')
-
-    for point_3d in points_3d:
-        x, y, z = point_3d
+    f = open(filename, 'wb')
+    for x, y, z in voxel_centers:
         f.write("%f %f %f \n" % (x, y, z))
-
     f.close()
 
 
-def read_xyz(file_path):
+def read_from_xyz(filename):
     points_3d = list()
-    with open(file_path + '.xyz', 'r') as f:
+    with open(filename, 'r') as f:
         for line in f:
             point_3d = re.findall(r'[-0-9.]+', line)
 
@@ -53,14 +49,16 @@ def read_xyz(file_path):
             z = float(point_3d[2])
 
             points_3d.append((x, y, z))
-
     f.close()
 
     return points_3d
 
 
-def write_to_csv(voxel_centers, voxel_size, file_path):
-    with open(file_path, 'wb') as f:
+def write_to_csv(filename, voxel_centers, voxel_size):
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+
+    with open(filename, 'wb') as f:
         c = csv.writer(f)
 
         c.writerow(['x_coord', 'y_coord', 'z_coord', 'voxel_size'])
@@ -69,8 +67,8 @@ def write_to_csv(voxel_centers, voxel_size, file_path):
             c.writerow([x, y, z, voxel_size])
 
 
-def read_from_csv(file_path):
-    with open(file_path, 'rb') as f:
+def read_from_csv(filename):
+    with open(filename, 'rb') as f:
         reader = csv.reader(f)
 
         next(reader)

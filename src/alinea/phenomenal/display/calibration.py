@@ -10,12 +10,16 @@
 #
 # ==============================================================================
 """
-
-
+Modules to display calibration result
 """
 # ==============================================================================
 import matplotlib.pyplot
 import cv2
+# ==============================================================================
+
+__all__ = ["show_image_with_chessboard_corners",
+           "show_chessboard_3d_projection_on_image"]
+
 # ==============================================================================
 
 
@@ -38,7 +42,7 @@ def show_chessboard_3d_projection_on_image(image,
     img = image.copy()
 
     points_2d_1 = points_2d_1.astype(int)
-    img[points_2d_1[:, 0, 1], points_2d_1[:, 0, 0]] = [0, 0, 255]
+    img[points_2d_1[:, 0, 1], points_2d_1[:, 0, 0]] = [0, 0, 0]
 
     for x, y in points_2d_2:
         img[int(y), int(x)] = [255, 0, 0]

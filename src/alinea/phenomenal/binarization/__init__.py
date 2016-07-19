@@ -9,7 +9,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-
 """
 ============
 Binarization
@@ -57,8 +56,16 @@ Formats
     write_image
 
 """
+# ==============================================================================
+from alinea.phenomenal.binarization.formats import (
+    read_image, write_image)
 
-from .formats import *
-from .morphology import *
-from .routines import *
-from .threshold import *
+from alinea.phenomenal.binarization.morphology import (
+    close, dilate_erode, erode_dilate)
+
+from alinea.phenomenal.binarization.routines import (
+    mean)
+
+from alinea.phenomenal.binarization.threshold import (
+    hsv, meanshift)
+# ==============================================================================

@@ -73,8 +73,8 @@ if errorlevel 9009 (
 
 
 if "%1" == "notebooks" (
-    jupyter nbconvert ..\benchmarks\notebooks\*.ipynb --to rst
-    move /y ..\benchmarks\notebooks\*.rst source\notebooks\
+    jupyter nbconvert ..\examples\notebooks\*.ipynb --to rst
+    move /y ..\examples\notebooks\*.rst source\notebooks\
 	goto end
 )
 

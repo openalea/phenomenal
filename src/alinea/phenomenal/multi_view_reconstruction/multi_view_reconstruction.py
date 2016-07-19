@@ -10,7 +10,6 @@
 #
 # ==============================================================================
 import collections
-import gc
 import math
 import numpy
 # ==============================================================================
@@ -334,45 +333,7 @@ def kept_visible_voxel(voxel_centers,
     return kept
 
 # ==============================================================================
-import multiprocessing
 
-
-def worker_split_voxel_centers_in_eight(queue,
-                                        voxel_centers,
-                                        voxel_size):
-    queue.put(split_voxel_centers_in_eight(voxel_centers, voxel_size))
-
-
-def mp_split_voxel_centers_in_eight(voxel_centers, voxel_size):
-
-    queue = multiprocessing.Queue()
-
-    n_process = 4
-    chunk_size = int(math.ceil(len(voxel_centers) / float(n_process)))
-
-    voxel_centers = list(voxel_centers)
-    process = list()
-    for i in range(n_process):
-        p = multiprocessing.Process(
-            target=worker_split_voxel_centers_in_eight,
-            args=(queue,
-                  voxel_centers[chunk_size * i:chunk_size * (i + 1)],
-                  voxel_size))
-
-        process.append(p)
-        p.start()
-
-    new_voxel_centers = list()
-    for i in range(n_process):
-        new_voxel_centers.extend(queue.get())
-
-    for p in process:
-        p.join()
-
-    return new_voxel_centers
-
-
-# ==============================================================================
 
 def reconstruction_3d(images_projections,
                       voxel_size=4,
@@ -453,8 +414,6 @@ def reconstruction_3d(images_projections,
         if verbose is True:
             print ' - ', len(voxel_centers)
 
-    gc.collect()
-
     return voxel_centers
 
 # ==============================================================================
@@ -476,8 +435,8 @@ def project_voxel_centers_on_image(voxel_centers,
     voxel_size : float
         Size of side geometry of voxel
 
-    image: numpy.ndarray
-        binary image
+    shape_image: Tuple
+        size height and length of the image target projected
 
     projection : function ((x, y, z)) -> (x, y)
         Function of projection who take 1 argument (tuple of position (x, y, z))
