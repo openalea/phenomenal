@@ -1,9 +1,10 @@
+# ==============================================================================
 import numpy as np
 from math import pi, log
 import pylab
 from scipy import fft, ifft
 from scipy.optimize import curve_fit
-
+# ==============================================================================
 i = 10000
 x = np.linspace(0, 3.5 * pi, i)
 y = (0.3*np.sin(x) + np.sin(1.3 * x) + 0.9 * np.sin(4.2 * x) + 0.06 *
