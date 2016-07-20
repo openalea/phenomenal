@@ -15,8 +15,11 @@ import collections
 
 class VoxelPointCloud(object):
 
-    def __init__(self, voxel_size):
-        self.voxel_centers = collections.deque()
+    def __init__(self,
+                 voxel_centers=collections.deque(),
+                 voxel_size=1):
+
+        self.voxel_centers = voxel_centers
         self.voxel_size = voxel_size
 
     def bounding_box(self):
@@ -54,4 +57,3 @@ class VoxelPointCloud(object):
         """
 
         return len(self.voxel_centers) * self.voxel_size ** 3
-

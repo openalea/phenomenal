@@ -24,7 +24,7 @@ from alinea.phenomenal.calibration.calibration import (
     CalibrationCameraTop)
 
 from alinea.phenomenal.multi_view_reconstruction.formats import (
-    read_xyz)
+    read_from_xyz)
 # ==============================================================================
 
 __all__ = ["plant_1_images",
@@ -253,8 +253,10 @@ def plant_1_voxel_centers(voxel_size=10):
     data_directory = shared_directory + '/plant_1/'
 
     if 3 <= int(voxel_size) <= 20:
-        path = data_directory + 'voxel_centers_size_' + str(int(voxel_size))
-        return read_xyz(path)
+        path = (data_directory + 'voxel_centers_size_' + str(int(voxel_size)) +
+                '.xyz')
+
+        return read_from_xyz(path)
 
     return None
 
