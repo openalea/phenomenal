@@ -19,7 +19,22 @@ from alinea.phenomenal.segmentation_3d.algorithm import (
     extract_data_leaf,
     segment_leaf)
 
+from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
 # ==============================================================================
+
+
+def maize_base_stem_position_voxel_centers(voxel_centers,
+                                           voxel_size,
+                                           neighbor_size=5):
+
+    image_3d = voxel_centers_to_image_3d(voxel_centers, voxel_size)
+    stem_base_position = maize_base_stem_position_image3d(
+        image_3d, neighbor_size=neighbor_size)
+
+    pos = numpy.array(stem_base_position)
+    pos = pos * voxel_size + image_3d.world_coordinate
+
+    return pos
 
 
 def maize_base_stem_position_image3d(image_3d, neighbor_size=5):
@@ -75,7 +90,11 @@ def maize_stem_segmentation(voxel_centers, voxel_size,
     stem_voxel, stem_neighbors, connected_components = merge(
         graph, stem_voxel, not_stem_voxel, percentage=50)
 
-    return stem_voxel, connected_components
+    not_stem_voxel = set()
+    for voxels in connected_components:
+        not_stem_voxel = not_stem_voxel.union(voxels)
+
+    return list(stem_voxel), list(not_stem_voxel)
 
 
 def maize_plant_segmentation(voxel_centers, voxel_size,

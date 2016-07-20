@@ -54,6 +54,16 @@ def image_3d_to_voxel_centers(image_3d, voxel_value=1):
 
 
 def voxel_centers_to_image_3d(voxel_centers, voxel_size):
+    """
+
+    Args:
+        voxel_centers:
+        voxel_size:
+
+    Returns:
+        Image3D object
+
+    """
     (x_min, y_min, z_min), (x_max, y_max, z_max) = bounding_box(voxel_centers)
 
     len_x = int((x_max - x_min) / voxel_size + 1)
