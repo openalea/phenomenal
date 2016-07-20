@@ -31,7 +31,7 @@ def show_points_3d(points_3d,
                    scale_factor=1,
                    figure_name=""):
 
-    fg = mayavi.mlab.figure(figure_name)
+    fg = mayavi.mlab.figure(figure_name, size=(800, 700))
     mayavi.mlab.quiver3d(0, 0, 0,
                          100, 0, 0,
                          line_width=5.0,
@@ -52,8 +52,46 @@ def show_points_3d(points_3d,
 
     plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
 
-    mayavi.mlab.show()
-    mayavi.mlab.clf(fg)
+    mayavi.mlab.show(stop=True)
+
+    im = mayavi.mlab.screenshot()
+
+    mayavi.mlab.close()
+    return im
+
+def show_list_points_3d(list_points_3d,
+                        color=None,
+                        scale_factor=1,
+                        figure_name=""):
+
+    fg = mayavi.mlab.figure(figure_name, size=(800, 700))
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         100, 0, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(1, 0, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 100, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 1, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 0, 100,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 0, 1))
+
+    for points_3d in list_points_3d:
+        plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
+
+    mayavi.mlab.show(stop=True)
+
+    im = mayavi.mlab.screenshot()
+
+    mayavi.mlab.close()
+    return im
 
 
 def plot_points_3d(points_3d, color=None, scale_factor=5):
