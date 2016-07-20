@@ -76,10 +76,10 @@ Routines
 
 from alinea.phenomenal.multi_view_reconstruction.formats import (
     read_from_csv,
-    read_xyz,
+    read_from_xyz,
     save_matrix_to_stack_image,
     write_to_csv,
-    write_xyz)
+    write_to_xyz)
 
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
     import (error_reconstruction,
@@ -100,9 +100,6 @@ from alinea.phenomenal.multi_view_reconstruction.\
 
 from alinea.phenomenal.multi_view_reconstruction.routines import (
     biggest_connected_component,
-    bounding_box,
-    image_3d_to_voxel_centers,
     labeling_connected_component,
-    remove_internal,
-    voxel_centers_to_image_3d)
+    remove_internal)
 

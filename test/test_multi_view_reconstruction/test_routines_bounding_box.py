@@ -9,7 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.multi_view_reconstruction.routines import bounding_box
+from alinea.phenomenal.data_structure import bounding_box
 
 # ==============================================================================
 

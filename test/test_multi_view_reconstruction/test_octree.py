@@ -9,6 +9,8 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import os
+
 from alinea.phenomenal.data_structure.octree import Octree
 # ==============================================================================
 
@@ -80,11 +82,11 @@ def test_octree_4():
     # print octree.root.get_leafs_formats_list()
 
     octree.write_to_json("test.json")
-
     octree = octree.read_from_json("test.json")
+    os.remove("test.json")
 
-    print octree.root
-    print octree.root.sons[0]
+    print(octree.root)
+    print(octree.root.sons[0])
 
 if __name__ == "__main__":
     test_octree()
