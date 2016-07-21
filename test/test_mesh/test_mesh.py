@@ -9,10 +9,9 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.multi_view_reconstruction.routines import (
+from alinea.phenomenal.data_structure import (
     voxel_centers_to_image_3d)
 
-from alinea.phenomenal.display.mesh import show_mesh
 from alinea.phenomenal.mesh.algorithms import meshing
 from alinea.phenomenal.data_access.plant_1 import plant_1_voxel_centers
 # ==============================================================================

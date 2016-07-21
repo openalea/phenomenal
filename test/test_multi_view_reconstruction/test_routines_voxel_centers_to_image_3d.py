@@ -11,8 +11,7 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.data_structure.image3d import Image3D
-from alinea.phenomenal.multi_view_reconstruction.routines import (
+from alinea.phenomenal.data_structure import (
     image_3d_to_voxel_centers,
     voxel_centers_to_image_3d)
 

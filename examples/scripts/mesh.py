@@ -13,20 +13,19 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import alinea.phenomenal.plant_1
-import alinea.phenomenal.misc
-import alinea.phenomenal.data_transformation
-import alinea.phenomenal.mesh
-import alinea.phenomenal.viewer
+from alinea.phenomenal.data_access import plant_1_voxel_centers
+from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
+from alinea.phenomenal.mesh import meshing, centers, normals
+from alinea.phenomenal.display import show_mesh
 # ==============================================================================
 
 voxel_size = 4
-voxel_centers = alinea.phenomenal.plant_1.plant_1_voxel_centers(
-    voxel_size=voxel_size)
+voxel_centers = plant_1_voxel_centers(voxel_size=voxel_size)
 
-vertices, faces = alinea.phenomenal.mesh.meshing(
-    voxel_centers, voxel_size,
-    reduction=1.0, smoothing_iteration=0, verbose=True)
+
+image3d = voxel_centers_to_image_3d(voxel_centers, voxel_size)
+vertices, faces = meshing(image3d,
+                          reduction=1.0, smoothing_iteration=0, verbose=True)
 
 # # Write
 # alinea.phenomenal.misc.write_mesh(
@@ -36,8 +35,7 @@ vertices, faces = alinea.phenomenal.mesh.meshing(
 # vertices, faces = alinea.phenomenal.misc.read_mesh(
 #     'mesh_voxel_size_' + str(voxel_size))
 
-normals = alinea.phenomenal.mesh.compute_normal(vertices, faces)
-centers = alinea.phenomenal.mesh.center_of_vertices(vertices, faces)
+norms = normals(vertices, faces)
+cents = centers(vertices, faces)
 
-alinea.phenomenal.viewer.show_mesh(vertices, faces,
-                                   normals=normals, centers=centers)
+show_mesh(vertices, faces, normals=norms, centers=cents)

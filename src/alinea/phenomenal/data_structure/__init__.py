@@ -26,6 +26,18 @@ Sub-package for objects used in data structure.
     Octree
     OcNode
     VoxelPointCloud
+
+Routines
+========
+
+.. autosummary::
+   :toctree: generated/
+
+    bounding_box
+    image_3d_to_voxel_centers
+    voxel_centers_to_image_3d
+
+
 """
 # ==============================================================================
 from alinea.phenomenal.data_structure.image3d import (
@@ -36,5 +48,10 @@ from alinea.phenomenal.data_structure.octree import (
 
 from alinea.phenomenal.data_structure.voxelPointCloud import (
     VoxelPointCloud)
+
+from alinea.phenomenal.data_structure.routines import (
+    bounding_box,
+    image_3d_to_voxel_centers,
+    voxel_centers_to_image_3d)
 
 # ==============================================================================

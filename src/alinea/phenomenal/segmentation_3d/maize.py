@@ -19,7 +19,23 @@ from alinea.phenomenal.segmentation_3d.algorithm import (
     extract_data_leaf,
     segment_leaf)
 
+from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
 # ==============================================================================
+
+
+def maize_base_stem_position_voxel_centers(voxel_centers,
+                                           voxel_size,
+                                           neighbor_size=5):
+
+    image_3d = voxel_centers_to_image_3d(voxel_centers, voxel_size)
+
+    stem_base_position = maize_base_stem_position_image3d(
+        image_3d, neighbor_size=neighbor_size)
+
+    pos = numpy.array(stem_base_position)
+    pos = pos * voxel_size + image_3d.world_coordinate
+
+    return pos
 
 
 def maize_base_stem_position_image3d(image_3d, neighbor_size=5):
@@ -63,31 +79,43 @@ def maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
 
 
 def maize_stem_segmentation(voxel_centers, voxel_size,
-                            stem_base_position=None):
+                            distance_plane_1=4,
+                            distance_plane_2=0.75):
 
     graph, new_voxel_centers, all_shorted_path_down, origin = graph_skeletonize(
-        voxel_centers, voxel_size, stem_base_position)
+        voxel_centers, voxel_size)
 
     # ==========================================================================
     stem_voxel, not_stem_voxel, stem_voxel_path, stem_geometry = \
-        stem_segmentation(new_voxel_centers, all_shorted_path_down)
+        stem_segmentation(new_voxel_centers, all_shorted_path_down,
+                          distance_plane_1=distance_plane_1,
+                          distance_plane_2=distance_plane_2)
 
     stem_voxel, stem_neighbors, connected_components = merge(
         graph, stem_voxel, not_stem_voxel, percentage=50)
 
-    return stem_voxel, connected_components
+    not_stem_voxel = set()
+    for voxels in connected_components:
+        not_stem_voxel = not_stem_voxel.union(voxels)
+
+    stem_voxel = (numpy.array(list(stem_voxel)) * voxel_size) + origin
+    stem_voxel = map(tuple, list(stem_voxel))
+
+    not_stem_voxel = (numpy.array(list(not_stem_voxel)) * voxel_size) + origin
+    not_stem_voxel = map(tuple, list(not_stem_voxel))
+
+    return stem_voxel, not_stem_voxel
 
 
 def maize_plant_segmentation(voxel_centers, voxel_size,
-                             stem_base_position=None,
                              verbose=False):
 
     graph, new_voxel_centers, all_shorted_path_down, origin = graph_skeletonize(
-        voxel_centers, voxel_size, stem_base_position)
+        voxel_centers, voxel_size)
 
     # ==========================================================================
     stem_voxel, not_stem_voxel, stem_voxel_path, stem_geometry = \
-        stem_segmentation(new_voxel_centers, all_shorted_path_down, verbose=verbose)
+        stem_segmentation(new_voxel_centers, all_shorted_path_down)
 
     nvc = set(map(tuple, list(new_voxel_centers)))
 
@@ -127,7 +155,7 @@ def maize_plant_segmentation(voxel_centers, voxel_size,
                 simple_leaf.append(leaf)
 
                 path, distances_max, max_longest, vector = extract_data_leaf(
-                    leaf, longest_shortest_path, verbose=False)
+                    leaf, longest_shortest_path)
 
                 simple_leaf_data.append((path, distances_max, max_longest,
                                          vector))
