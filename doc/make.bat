@@ -72,9 +72,9 @@ if errorlevel 9009 (
 :sphinx_ok
 
 
-if "%1" == "notebook" (
-    jupyter nbconvert ..\benchmarks\notebook\*.ipynb --to rst
-    move /y *.rst source\notebook\
+if "%1" == "notebooks" (
+    jupyter nbconvert ..\examples\notebooks\*.ipynb --to rst
+    move /y ..\examples\notebooks\*.rst source\notebooks\
 	goto end
 )
 
