@@ -71,7 +71,7 @@ def labeling_connected_component(image_3d):
         return l
 
     num_label = 1
-    for i in xrange(len(xx)):
+    for i in range(len(xx)):
         x, y, z = xx[i], yy[i], zz[i]
 
         if mat[x, y, z] == 0:
@@ -89,7 +89,7 @@ def labeling_connected_component(image_3d):
     return mat[1:-1, 1:-1, 1:-1]
 
 
-def biggest_connected_component(image_3d):
+def kept_biggest_connected_component(image_3d):
     mat = labeling_connected_component(image_3d)
 
     max_value = 0

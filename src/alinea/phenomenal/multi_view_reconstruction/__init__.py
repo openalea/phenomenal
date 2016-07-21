@@ -99,7 +99,7 @@ from alinea.phenomenal.multi_view_reconstruction.\
         reconstruction_without_loss)
 
 from alinea.phenomenal.multi_view_reconstruction.routines import (
-    biggest_connected_component,
+    kept_biggest_connected_component,
     labeling_connected_component,
     remove_internal)
 
