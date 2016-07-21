@@ -13,9 +13,8 @@
 
 """
 # ==============================================================================
-import mayavi.mlab
 import vtk
-
+import mayavi.mlab
 # ==============================================================================
 
 __all__ = ["show_mesh", "show_poly_data"]
@@ -59,7 +58,11 @@ def show_mesh(vertices, faces,
                                 faces,
                                 color=color)
 
-    mayavi.mlab.show()
+    mayavi.mlab.show(stop=True)
+    im = mayavi.mlab.screenshot()
+    mayavi.mlab.close()
+
+    return im
 
 
 def show_poly_data(poly_data, colored=True):

@@ -322,7 +322,7 @@ class Octree(object):
 
         if dict_sons is not None:
             node.is_leaf = False
-            for i in xrange(len(dict_sons)):
+            for i in range(len(dict_sons)):
                 node.sons[i] = Octree.create_oc_node(dict_sons[i], node)
         else:
             node.is_leaf = True

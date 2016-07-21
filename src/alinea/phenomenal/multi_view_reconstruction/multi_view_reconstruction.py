@@ -9,6 +9,8 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import collections
 import math
 import numpy
@@ -405,14 +407,14 @@ def reconstruction_3d(images_projections,
         voxel_size /= 2.0
 
         if verbose is True:
-            print 'Iteration', i + 1, '/', nb_iteration,
-            print ' : ', len(voxel_centers),
+            print('Iteration', i + 1, '/', nb_iteration, end="")
+            print(' : ', len(voxel_centers), end="")
 
         voxel_centers = kept_visible_voxel(
             voxel_centers, voxel_size, images_projections, error_tolerance)
 
         if verbose is True:
-            print ' - ', len(voxel_centers)
+            print(' - ', len(voxel_centers))
 
     return voxel_centers
 

@@ -11,3 +11,4 @@ Notebook
     ./Calibration.rst
     ./Multi-view_reconstruction.rst
     ./Meshing.rst
+    ./segmentation_3d.rst

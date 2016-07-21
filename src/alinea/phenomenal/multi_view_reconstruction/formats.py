@@ -13,9 +13,9 @@ import os
 import re
 import cv2
 import csv
-import json
 
 # ==============================================================================
+
 
 def save_matrix_to_stack_image(matrix, folder_name):
     if not os.path.exists(folder_name):
@@ -29,7 +29,8 @@ def save_matrix_to_stack_image(matrix, folder_name):
 
 def write_to_xyz(filename, voxel_centers):
 
-    if not os.path.exists(os.path.dirname(filename)):
+    if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
+            filename))):
         os.makedirs(os.path.dirname(filename))
 
     f = open(filename, 'wb')
@@ -39,7 +40,7 @@ def write_to_xyz(filename, voxel_centers):
 
 
 def read_from_xyz(filename):
-    points_3d = list()
+    voxel_centers = list()
     with open(filename, 'r') as f:
         for line in f:
             point_3d = re.findall(r'[-0-9.]+', line)
@@ -48,14 +49,16 @@ def read_from_xyz(filename):
             y = float(point_3d[1])
             z = float(point_3d[2])
 
-            points_3d.append((x, y, z))
+            voxel_centers.append((x, y, z))
     f.close()
 
-    return points_3d
+    return voxel_centers
 
 
 def write_to_csv(filename, voxel_centers, voxel_size):
-    if not os.path.exists(os.path.dirname(filename)):
+
+    if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
+            filename))):
         os.makedirs(os.path.dirname(filename))
 
     with open(filename, 'wb') as f:

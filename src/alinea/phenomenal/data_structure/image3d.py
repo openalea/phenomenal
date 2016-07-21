@@ -107,4 +107,3 @@ class Image3D(numpy.ndarray):
                             world_coordinate=image_3d.world_coordinate,
                             dtype=image_3d.dtype,
                             order=order)
-

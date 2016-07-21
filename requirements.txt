@@ -4,7 +4,6 @@ ipython
 ipython[notebook]
 scikit-image
 nose
-scons
 
 #cv2==3.0.0
 #scikit==0.16.0
