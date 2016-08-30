@@ -16,7 +16,7 @@ import time
 # ==============================================================================
 
 
-def get_node_close_to_planes(voxels, node_src, plane, dist=0.75):
+def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
     """
     - voxels is a numpy array
     - node_src tuple
@@ -36,7 +36,7 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75):
 
     index = numpy.where(res < dist)[0]
     closest_voxel = voxels[index]
-
+    # print "closest voxel", closest_voxel
     nodes = list()
     closest_node = list()
 
@@ -49,7 +49,7 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75):
 
         rr = numpy.sum(abs(closest_voxel - node), 1)
 
-        index = numpy.where(rr <= 3)[0]
+        index = numpy.where(rr <= 3 * voxel_size)[0]
         nodes += list(closest_voxel[index])
         closest_node += list(closest_voxel[index])
 
@@ -66,7 +66,8 @@ def compute_closest_nodes(voxels, path, radius=8, dist=0.75):
     closest_nodes = list()
 
     length_path = len(path)
-    for i in xrange(length_path):
+    for i in range(length_path):
+        # print i, '/', length_path
         node = path[i]
 
         neighbors = numpy.array(

@@ -17,7 +17,10 @@ from alinea.phenomenal.segmentation_3d.algorithm import (
     merge,
     compute_top_stem_neighbors,
     extract_data_leaf,
-    segment_leaf)
+    segment_leaf,
+    voxel_position_grid_to_real,
+    voxel_position_real_to_grid,
+    create_graph)
 
 from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
 # ==============================================================================
@@ -80,31 +83,49 @@ def maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
 
 def maize_stem_segmentation(voxel_centers, voxel_size,
                             distance_plane_1=4,
-                            distance_plane_2=0.75):
-
-    graph, new_voxel_centers, all_shorted_path_down, origin = graph_skeletonize(
-        voxel_centers, voxel_size)
+                            distance_plane_2=0.75,
+                            verbose=False):
 
     # ==========================================================================
+    # Build skeleton of plant with graph of shorted path
+    graph, biggest_component_voxel_centers, all_shorted_path_down = \
+        graph_skeletonize(voxel_centers, voxel_size)
+
+    voxel_not_connected = set(graph.nodes()).difference(
+        set(voxel_centers))
+
+    if verbose:
+        print("Graph building : done")
+
+    # ==========================================================================
+    # Stem Segmentation
     stem_voxel, not_stem_voxel, stem_voxel_path, stem_geometry = \
-        stem_segmentation(new_voxel_centers, all_shorted_path_down,
+        stem_segmentation(biggest_component_voxel_centers,
+                          all_shorted_path_down,
                           distance_plane_1=distance_plane_1,
                           distance_plane_2=distance_plane_2)
 
+    if verbose:
+        print("Stem segmentation done : done")
+
+    # ==========================================================================
+    # Merge stem_voxel with this neighbors voxel component if the percentage
+    # of neighborhood is superior to percentage=50
     stem_voxel, stem_neighbors, connected_components = merge(
         graph, stem_voxel, not_stem_voxel, percentage=50)
 
-    not_stem_voxel = set()
+    if verbose:
+        print("Merge voxel stem : done")
+
+    # ==========================================================================
+    # Group connected components except stem in one group
+    not_stem_voxel = voxel_not_connected
     for voxels in connected_components:
         not_stem_voxel = not_stem_voxel.union(voxels)
 
-    stem_voxel = (numpy.array(list(stem_voxel)) * voxel_size) + origin
-    stem_voxel = map(tuple, list(stem_voxel))
+    not_stem_voxel = not_stem_voxel.union()
 
-    not_stem_voxel = (numpy.array(list(not_stem_voxel)) * voxel_size) + origin
-    not_stem_voxel = map(tuple, list(not_stem_voxel))
-
-    return stem_voxel, not_stem_voxel
+    return list(stem_voxel), list(not_stem_voxel)
 
 
 def maize_plant_segmentation(voxel_centers, voxel_size,
@@ -159,7 +180,6 @@ def maize_plant_segmentation(voxel_centers, voxel_size,
 
                 simple_leaf_data.append((path, distances_max, max_longest,
                                          vector))
-
             else:
                 # not_simple_leaf.append(connected_component)
 

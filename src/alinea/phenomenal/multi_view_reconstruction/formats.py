@@ -13,7 +13,7 @@ import os
 import re
 import cv2
 import csv
-
+import collections
 # ==============================================================================
 
 
@@ -86,3 +86,37 @@ def read_from_csv(filename):
             voxel_centers.append((float(x), float(y), float(z)))
 
         return voxel_centers, voxel_size
+
+
+def write_to_csv_with_label(filename, label_voxel_centers, voxel_size):
+
+    if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
+            filename))):
+        os.makedirs(os.path.dirname(filename))
+
+    with open(filename, 'wb') as f:
+        c = csv.writer(f)
+
+        c.writerow(['x_coord', 'y_coord', 'z_coord', 'voxel_size', 'label'])
+
+        for label in label_voxel_centers:
+            for x, y, z in label_voxel_centers[label]:
+                c.writerow([x, y, z, voxel_size, label])
+
+def read_from_csv_with_label(filename):
+
+    label_voxel_centers = collections.defaultdict(list)
+    with open(filename, 'rb') as f:
+        reader = csv.reader(f)
+
+        next(reader)
+        x, y, z, vs, label = next(reader)
+        label_voxel_centers[label].append((float(x), float(y), float(z)))
+
+        voxel_size = float(vs)
+
+        for x, y, z, vs, label in reader:
+            label_voxel_centers[label].append((float(x), float(y), float(z)))
+
+        return label_voxel_centers, voxel_size
+
