@@ -13,6 +13,8 @@ import math
 import networkx
 import numpy
 import scipy.interpolate
+from scipy.integrate._ode import vode
+from sklearn.cluster import SpectralClustering, KMeans
 
 from alinea.phenomenal.data_structure import (
     bounding_box)
@@ -85,7 +87,7 @@ def graph_skeletonize(voxel_centers, voxel_size):
         networkx.connected_component_subgraphs(graph, copy=False), key=len)
 
     # Keep the voxel cloud of the biggest component
-    biggest_component_voxel_centers = numpy.array(graph.nodes())
+    biggest_component_voxel_centers = graph.nodes()
 
     # ==========================================================================
     # Get the high points in the matrix and the supposed base plant points
@@ -175,35 +177,145 @@ def maize_corner_detection(nodes_length, min_peaks):
     return stop
 
 
-def merge(graph, stem_voxel, not_stem_voxel, percentage=50):
-    stem_neighbors = list()
-    for node in stem_voxel:
-        stem_neighbors += graph[node].keys()
-    stem_neighbors = set(stem_neighbors)
+def maize_corner_detection_2(values, min_peaks):
+    # print min_peaks
+    # l = [(index, value) for (index, value) in list(min_peaks)]
+    #
+    # sum_lgth, sum_width = (0, 0)
+    #
+    # index_values = list()
+    # for i, value in enumerate(values):
+    #     index_values.append((i, value))
+    #
+    # index_values = numpy.array(index_values)
+    # print index_values
+    #
+    # k = KMeans(n_clusters=2)
+    # k.fit(l)
+    #
+    # print k.labels_
+    #
+    # return k.labels_
 
-    subgraph = graph.subgraph(not_stem_voxel)
+    d = {index: value for (index, value) in list(min_peaks)}
+
+    sum_lgth, sum_width = (0, 0)
+
+    l = list()
+    for index in range(len(values)):
+        sum_lgth += values[index]
+        # sum_width += index
+        sum_width += 1
+        if index in d:
+            # print "Sum width", sum_width
+            l.append((index, values[index], sum_lgth, sum_width))
+            sum_lgth, sum_width = (0, 0)
+
+    del l[0]
+
+    stop = 0
+    sum_values = 0
+    sum_all_lgth = 0
+    sum_all_width = 0
+    for i in range(len(l)):
+        index, v, sum_lgth, sum_width = l[i]
+
+        sum_values += v
+
+        # sum_all_lgth += sum_lgth
+        # sum_all_width += sum_width
+        # print sum_all_width, i, (sum_all_width / (i + 1))
+
+        if i + 2 < len(l):
+            index_2, v_2, sum_lgth_2, sum_width_2 = l[i + 1]
+
+            # print 'Sum value', (sum_values / (i + 1)) * 2.8, v_2
+            if (sum_values / (i + 1)) * 4 < v_2:
+                stop = index
+                # print "Index values, stop", stop
+                break
+
+        else:
+            # print "Index end, stop", stop
+            stop = index
+            break
+
+    return stop
+
+
+def merge(graph, voxels, remaining_voxels, percentage=50):
+
+    voxels_neighbors = set()
+    for node in voxels:
+        voxels_neighbors = voxels_neighbors.union(graph[node].keys())
+
+    subgraph = graph.subgraph(remaining_voxels)
 
     connected_components = list()
-    for voxels in networkx.connected_components(subgraph):
-        nb_stem = len(voxels.intersection(stem_neighbors))
+    for voxel_group in networkx.connected_components(subgraph):
+        nb = len(voxel_group.intersection(voxels_neighbors))
 
-        if nb_stem * 100 / len(voxels) >= percentage:
-            stem_voxel = stem_voxel.union(voxels)
+        if nb * 100 / len(voxel_group) >= percentage:
+            voxels = voxels.union(voxel_group)
         else:
-            connected_components.append(voxels)
+            connected_components.append(voxel_group)
 
-    return stem_voxel, stem_neighbors, connected_components
+    return voxels, voxels_neighbors, connected_components
 
+
+def segment_stem(voxel_centers, all_shorted_path,
+                 distance_plane_1=4,
+                 voxel_size=4):
+
+    array_voxel_centers = numpy.array(voxel_centers)
+    index = numpy.argmax(array_voxel_centers[:, 2])
+    x_top, y_top, z_top = array_voxel_centers[index]
+
+    stem_voxel_path = all_shorted_path[(x_top, y_top, z_top)]
+
+    planes, closest_nodes = compute_closest_nodes(
+        array_voxel_centers, stem_voxel_path, radius=8,
+        dist=distance_plane_1 * voxel_size)
+
+    return stem_voxel_path, closest_nodes
+
+
+def segment_leaf_2(nodes, all_shorted_path, voxel_centers,
+                   distance_plane_1=4,
+                   voxel_size=4):
+
+    longest_shortest_path = None
+    longest_length = 0
+    for node in nodes:
+        p = all_shorted_path[node]
+
+        if len(p) > longest_length:
+            longest_length = len(p)
+            longest_shortest_path = p
+
+    if longest_shortest_path:
+        planes, closest_nodes = compute_closest_nodes(
+            voxel_centers, longest_shortest_path, radius=8,
+            dist=distance_plane_1 * voxel_size)
+
+        leaf = list()
+        for i in range(len(closest_nodes)):
+            leaf += closest_nodes[i]
+
+        return set(leaf)
 
 def stem_segmentation(voxel_centers, all_shorted_path_down,
                       distance_plane_1=4,
                       distance_plane_2=0.75,
                       voxel_size=4):
 
-    index = numpy.argmax(voxel_centers[:, 2])
-    x_top, y_top, z_top = voxel_centers[index]
+    array_voxel_centers = numpy.array(voxel_centers)
+
+    index = numpy.argmax(array_voxel_centers[:, 2])
+    x_top, y_top, z_top = array_voxel_centers[index]
 
     stem_voxel_path = all_shorted_path_down[(x_top, y_top, z_top)]
+
 
     # import mayavi.mlab
     # from alinea.phenomenal.display.multi_view_reconstruction import (
@@ -237,7 +349,7 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
     #     color=(1, 0, 0))
     #
     # plot_points_3d(
-    #     list(voxel_centers),
+    #     voxel_centers,
     #     scale_factor=2,
     #     color=(0.1, 0.9, 0.1))
     #
@@ -247,7 +359,7 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
     # Get normal of the path and intercept voxel, plane
 
     planes, closest_nodes = compute_closest_nodes(
-        voxel_centers, stem_voxel_path, radius=8,
+        array_voxel_centers, stem_voxel_path, radius=8,
         dist=distance_plane_1 * voxel_size)
 
     # centred_shorted_path = [
@@ -280,7 +392,7 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
     stem_voxel_path = [v for i, v in enumerate(stem_voxel_path) if i <= stop]
 
     planes, closest_nodes = compute_closest_nodes(
-        voxel_centers, stem_voxel_path, radius=8,
+        array_voxel_centers, stem_voxel_path, radius=8,
         dist=distance_plane_2 * voxel_size)
 
     centred_shorted_path = [
@@ -314,7 +426,6 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
 
     radius[0] = radius[1]
     new_centred_shorted_path = numpy.array(new_centred_shorted_path).transpose()
-
     # ==========================================================================
     # Interpolate
 
@@ -328,9 +439,9 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
     # ==========================================================================
 
     score = len(xxx) / len(radius)
-    j = 0
 
-    stem_voxel = list()
+    j = 0
+    stem_voxel = set()
     stem_geometry = list()
     for i in range(len(xxx)):
         if i % score == 0 and j < len(radius):
@@ -339,14 +450,17 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
 
         x, y, z = xxx[i], yyy[i], zzz[i]
 
-        stem_geometry.append(((x, y, z), max(r, 1)))
-        stem_voxel += compute_ball_integer((x, y, z), max(r, 1))
+        stem_geometry.append(((x, y, z), max(r, float(voxel_size))))
+        res = numpy.sqrt((array_voxel_centers[:, 0] - x) ** 2 +
+                         (array_voxel_centers[:, 1] - y) ** 2 +
+                         (array_voxel_centers[:, 2] - z) ** 2)
 
-    stem_voxel = set(stem_voxel)
+        index = numpy.where(res <= numpy.array(r))
 
-    nvc = set(map(tuple, list(voxel_centers)))
-    stem_voxel = stem_voxel.intersection(nvc)
-    not_stem_voxel = nvc.difference(stem_voxel)
+        res = map(tuple, list(array_voxel_centers[index]))
+        stem_voxel = stem_voxel.union(set(res))
+
+    not_stem_voxel = set(voxel_centers).difference(stem_voxel)
 
     return stem_voxel, not_stem_voxel, stem_voxel_path, stem_geometry
 
@@ -383,6 +497,7 @@ def compute_top_stem_neighbors(nvc, graph, stem_geometry):
 
 def extract_data_leaf(leaf, longest_shortest_path):
     leaf_array = numpy.array(list(leaf))
+
     planes, closest_nodes = compute_closest_nodes(leaf_array,
                                                   longest_shortest_path,
                                                   radius=8,
@@ -474,64 +589,71 @@ def extract_data_leaf(leaf, longest_shortest_path):
                                               (float(a), float(b), float(c)))
 
 
-def segment_leaf(nodes, connected_components, all_shorted_path,
-                 new_voxel_centers, stem_voxel, stem_neighbors, graph,
+def segment_leaf(voxels,
+                 connected_components,
+                 skeleton_path,
+                 array_voxel_centers,
+                 graph,
                  voxel_size, verbose=False):
 
-    longest_shortest_path = None
+    # ==========================================================================
+    # Get the longest shorted path of voxels
+
+    leaf_skeleton_path = None
     longest_length = 0
-    for node in nodes:
-        p = all_shorted_path[node]
+    for node in voxels:
+        p = skeleton_path[node]
 
         if len(p) > longest_length:
             longest_length = len(p)
-            longest_shortest_path = p
+            leaf_skeleton_path = p
+    # ==========================================================================
+    if leaf_skeleton_path:
 
-    if longest_shortest_path:
+        planes, closest_nodes = compute_closest_nodes(
+            array_voxel_centers,
+            leaf_skeleton_path,
+            radius=8,
+            dist=2 * voxel_size)
 
-        planes, closest_nodes = compute_closest_nodes(new_voxel_centers,
-                                                      longest_shortest_path,
-                                                      radius=8,
-                                                      dist=2)
-
-        leaf = list()
-        for i in xrange(len(closest_nodes)):
-            leaf += closest_nodes[i]
-
-        leaf = set(leaf).intersection(connected_components)
-        not_leaf = set(nodes).difference(leaf)
+        leaf = set().union(*closest_nodes)
+        leaf = leaf.intersection(connected_components)
+        remain = set(voxels).difference(leaf)
 
         if verbose:
-            print "len of connected_component :", len(nodes)
-            print "len of not_leaf :", len(not_leaf)
+            print "len of connected_component :", len(voxels)
+            print "len of not_leaf :", len(remain)
             print "len of leaf  :", len(leaf)
 
-        left = set()
-        if len(not_leaf) > 0:
-            leaf_neighbors = list()
-            for node in leaf:
-                leaf_neighbors += graph[node].keys()
-            leaf_neighbors = set(leaf_neighbors)
+        leaf, leaf_neighbors, connected_components_remain = merge(
+            graph, leaf, remain)
 
-            subgraph = graph.subgraph(not_leaf)
+        remain = set().union(*connected_components_remain)
 
-            for voxels in networkx.connected_components(subgraph):
-                nb_leaf = len(voxels.intersection(leaf_neighbors))
-                nb_stem = len(voxels.intersection(stem_neighbors))
+        # remain = set()
+        # if not_leaf > 0:
+        #     leaf_neighbors = set()
+        #     for node in leaf:
+        #         leaf_neighbors = leaf_neighbors.union(graph[node].keys())
+        #
+        #     subgraph = graph.subgraph(not_leaf)
+        #
+        #     for voxels in networkx.connected_components(subgraph):
+        #         nb_leaf = len(voxels.intersection(leaf_neighbors))
+        #         nb_stem = len(voxels.intersection(stem_neighbors))
+        #
+        #         if verbose:
+        #             print "Percentage leaf:", nb_leaf * 100 / len(voxels)
+        #             print "Percentage stem:", nb_stem * 100 / len(voxels)
+        #             print "Number of voxel:", len(voxels), '\n'
+        #
+        #         if nb_leaf * 100 / len(voxels) >= 50:
+        #             leaf = leaf.union(voxels)
+        #         elif nb_stem * 100 / len(voxels) >= 50:
+        #             stem_voxel = stem_voxel.union(voxels)
+        #         elif len(voxels) * voxel_size <= 100:  # TODO: hack remove
+        #             leaf = leaf.union(voxels)
+        #         else:
+        #             remain = remain.union(voxels)
 
-                if verbose:
-                    print "Percentage leaf:", nb_leaf * 100 / len(voxels)
-                    print "Percentage stem:", nb_stem * 100 / len(voxels)
-                    print "Number of voxel:", len(voxels), '\n'
-
-                if nb_leaf * 100 / len(voxels) >= 50:
-                    leaf = leaf.union(voxels)
-                elif nb_stem * 100 / len(voxels) >= 50:
-                    stem_voxel = stem_voxel.union(voxels)
-                elif len(voxels) * voxel_size <= 100:  # TODO: hack
-                    leaf = leaf.union(voxels)
-                else:
-                    left = left.union(voxels)
-
-
-        return leaf, left, stem_voxel, longest_shortest_path
+        return leaf, remain, leaf_skeleton_path
