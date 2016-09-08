@@ -103,6 +103,7 @@ def write_to_csv_with_label(filename, label_voxel_centers, voxel_size):
             for x, y, z in label_voxel_centers[label]:
                 c.writerow([x, y, z, voxel_size, label])
 
+
 def read_from_csv_with_label(filename):
 
     label_voxel_centers = collections.defaultdict(list)
