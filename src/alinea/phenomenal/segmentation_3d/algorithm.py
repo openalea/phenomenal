@@ -30,7 +30,7 @@ from alinea.phenomenal.segmentation_3d.plane_interception import (
 
 from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
 
-from alinea.phenomenal.display import show_points_3d
+from alinea.phenomenal.display import show_points_3d, show_list_points_3d
 # ==============================================================================
 # Stem
 
@@ -376,58 +376,96 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
 
     stop = maize_corner_detection(nodes_length, min_peaks)
 
-    # import matplotlib.pyplot
-    # matplotlib.pyplot.figure()
-    # matplotlib.pyplot.plot(range(len(nodes_length)), nodes_length)
-    #
-    # for index, _ in min_peaks:
-    #
-    #     matplotlib.pyplot.plot(index, nodes_length[index], 'bo')
-    #
-    # matplotlib.pyplot.plot(stop, nodes_length[stop], 'ro')
-    # matplotlib.pyplot.show()
+    import matplotlib.pyplot
+    matplotlib.pyplot.figure()
+    matplotlib.pyplot.plot(range(len(nodes_length)), nodes_length)
+
+    for index, _ in min_peaks:
+
+        matplotlib.pyplot.plot(index, nodes_length[index], 'bo')
+
+    matplotlib.pyplot.plot(stop, nodes_length[stop], 'ro')
+    matplotlib.pyplot.show()
 
     # ==========================================================================
-    # Little hack
     stem_voxel_path = [v for i, v in enumerate(stem_voxel_path) if i <= stop]
+    stem_min_peaks = [(i, v) for i, v in min_peaks if i <= stop]
 
     planes, closest_nodes = compute_closest_nodes(
         array_voxel_centers, stem_voxel_path, radius=8,
         dist=distance_plane_2 * voxel_size)
 
-    centred_shorted_path = [
+    stem_centred_path = [
         numpy.array(nodes).mean(axis=0) for nodes in closest_nodes]
+
+    stem_centred_path_min_peak = [stem_centred_path[index]
+                                  for index, value in stem_min_peaks]
+
+    stem_voxel = set()
+    for index, value in stem_min_peaks:
+        stem_voxel = stem_voxel.union(closest_nodes[index])
+
+    arr_stem_voxels = set()
+    for nodes in closest_nodes:
+        arr_stem_voxels = arr_stem_voxels.union(set(nodes))
+    arr_stem_voxels = numpy.array(list(arr_stem_voxels))
 
     # ==========================================================================
     # Compute radius
 
-    def compute_max_distance(centred_node, closest_nodes):
-        radius = 0
-        for node in closest_nodes:
-            distance = numpy.linalg.norm(
-                numpy.array(node) - numpy.array(centred_node))
+    def get_max_distance(node, nodes):
+        max_distance = 0
+        max_node = node
 
-            radius = max(radius, distance)
+        for n in nodes:
+            distance = numpy.linalg.norm(numpy.array(node) - numpy.array(n))
+            max_distance = max(max_distance, distance)
+            max_node = n
 
-        return radius
+        return max_node, max_distance
 
-    new_centred_shorted_path = list()
-    new_centred_shorted_path.append(centred_shorted_path[0])
+    # distances = list()
+    # for i in range(len(closest_nodes)):
+    #     nodes = closest_nodes[i]
+    #
+    #     pt1, _ = get_max_distance(nodes[0], nodes)
+    #     pt2, distance = get_max_distance(pt1, nodes)
+    #
+    #     distances.append(float(distance) / float(voxel_size))
+
+    # def compute_max_distance(centred_node, closest_nodes):
+    #     radius = 0
+    #     for node in closest_nodes:
+    #         distance = numpy.linalg.norm(
+    #             numpy.array(node) - numpy.array(centred_node))
+    #
+    #         radius = max(radius, distance)
+    #
+    #     return radius
 
     radius = list()
     radius.append(None)
-    for index, value in min_peaks:
-        if index <= stop:
-            new_centred_shorted_path.append(centred_shorted_path[index])
-            radius.append(compute_max_distance(
-                centred_shorted_path[index], closest_nodes[index]))
+    for index, value in stem_min_peaks:
+        nodes = closest_nodes[index]
 
-    len_new_centred_shorted_path = len(new_centred_shorted_path)
+        pt1, _ = get_max_distance(nodes[0], nodes)
+        pt2, distance = get_max_distance(pt1, nodes)
+
+        radius.append(distance / 2.0)
+
+        # radius.append(compute_max_distance(
+        #     stem_centred_path[index], closest_nodes[index]))
 
     radius[0] = radius[1]
-    new_centred_shorted_path = numpy.array(new_centred_shorted_path).transpose()
+
     # ==========================================================================
     # Interpolate
+
+    new_centred_shorted_path = list()
+    new_centred_shorted_path.append(stem_centred_path[0])
+    new_centred_shorted_path += stem_centred_path_min_peak
+    len_new_centred_shorted_path = len(new_centred_shorted_path)
+    new_centred_shorted_path = numpy.array(new_centred_shorted_path).transpose()
 
     k = 3
     if len_new_centred_shorted_path <= k:
@@ -441,7 +479,7 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
     score = len(xxx) / len(radius)
 
     j = 0
-    stem_voxel = set()
+    # stem_voxel = set()
     stem_geometry = list()
     for i in range(len(xxx)):
         if i % score == 0 and j < len(radius):
@@ -451,13 +489,23 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
         x, y, z = xxx[i], yyy[i], zzz[i]
 
         stem_geometry.append(((x, y, z), max(r, float(voxel_size))))
-        res = numpy.sqrt((array_voxel_centers[:, 0] - x) ** 2 +
-                         (array_voxel_centers[:, 1] - y) ** 2 +
-                         (array_voxel_centers[:, 2] - z) ** 2)
+
+        # res = numpy.sqrt((array_voxel_centers[:, 0] - x) ** 2 +
+        #                  (array_voxel_centers[:, 1] - y) ** 2 +
+        #                  (array_voxel_centers[:, 2] - z) ** 2)
+        #
+        # index = numpy.where(res <= numpy.array(r))
+        #
+        # res = map(tuple, list(array_voxel_centers[index]))
+        # stem_voxel = stem_voxel.union(set(res))
+
+        res = numpy.sqrt((arr_stem_voxels[:, 0] - x) ** 2 +
+                         (arr_stem_voxels[:, 1] - y) ** 2 +
+                         (arr_stem_voxels[:, 2] - z) ** 2)
 
         index = numpy.where(res <= numpy.array(r))
 
-        res = map(tuple, list(array_voxel_centers[index]))
+        res = map(tuple, list(arr_stem_voxels[index]))
         stem_voxel = stem_voxel.union(set(res))
 
     not_stem_voxel = set(voxel_centers).difference(stem_voxel)
@@ -468,31 +516,62 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
 # ==============================================================================
 # Plant
 
-def compute_top_stem_neighbors(nvc, graph, stem_geometry):
+# def compute_top_stem_neighbors(nvc, graph, stem_geometry):
+#     i = -1
+#     (x, y, z), radius = stem_geometry[i]
+#     top_1_stem = compute_ball_integer((x, y, z), radius)
+#
+#     top_stem = set()
+#     while len(top_stem) == 0:
+#         i -= 1
+#         (x, y, z), radius = stem_geometry[i]
+#         top_2_stem = compute_ball_integer((x, y, z), radius)
+#
+#         top_stem = set(top_1_stem) - set(top_2_stem)
+#         top_stem = set(top_stem).intersection(nvc)
+#
+#     subgraph = graph.subgraph(top_stem)
+#     top_stem = max(networkx.connected_components(subgraph), key=len)
+#
+#     top_stem_neighbors = list()
+#     for node in top_stem:
+#         top_stem_neighbors += graph[node].keys()
+#     top_stem_neighbors = set(top_stem_neighbors)
+#
+#     return top_stem_neighbors
+
+def compute_top_stem_neighbors(graph, stem, stem_geometry):
+
+    def compute_ball(array_voxels, center, radius):
+        x, y, z = center
+        res = numpy.sqrt((array_voxels[:, 0] - numpy.array(x)) ** 2 +
+                         (array_voxels[:, 1] - numpy.array(y)) ** 2 +
+                         (array_voxels[:, 2] - numpy.array(z)) ** 2)
+
+        index = numpy.where(res <= numpy.array(radius))
+
+        return set(map(tuple, list(array_stem_voxels[index])))
+
+    array_stem_voxels = numpy.array(list(stem))
+
     i = -1
-    (x, y, z), radius = stem_geometry[i]
-    top_1_stem = compute_ball_integer((x, y, z), radius)
+    center, radius = stem_geometry[i]
 
-    top_stem = set()
-    while len(top_stem) == 0:
+    stem_top_src = compute_ball(array_stem_voxels, center, radius)
+
+    stem_top = set()
+    while not stem_top:
         i -= 1
-        (x, y, z), radius = stem_geometry[i]
-        top_2_stem = compute_ball_integer((x, y, z), radius)
+        center, radius = stem_geometry[i]
+        stem_top_prev = compute_ball(array_stem_voxels, center, radius)
 
-        top_stem = set(top_1_stem) - set(top_2_stem)
-        top_stem = set(top_stem).intersection(nvc)
+        stem_top = stem_top_src - stem_top_prev
 
-    subgraph = graph.subgraph(top_stem)
-    top_stem = max(networkx.connected_components(subgraph), key=len)
+    stem_top_neighbors = set()
+    for node in stem_top:
+        stem_top_neighbors = stem_top_neighbors.union(graph[node].keys())
 
-    top_stem_neighbors = list()
-    for node in top_stem:
-        top_stem_neighbors += graph[node].keys()
-    top_stem_neighbors = set(top_stem_neighbors)
-
-    return top_stem_neighbors
-
-    # ==========================================================================
+    return stem_top_neighbors
 
 
 def extract_data_leaf(leaf, longest_shortest_path):
@@ -607,14 +686,22 @@ def segment_leaf(voxels,
         if len(p) > longest_length:
             longest_length = len(p)
             leaf_skeleton_path = p
+
+    # print len(connected_components)
+
     # ==========================================================================
+
     if leaf_skeleton_path:
 
         planes, closest_nodes = compute_closest_nodes(
             array_voxel_centers,
             leaf_skeleton_path,
             radius=8,
-            dist=2 * voxel_size)
+            dist=2 * voxel_size,
+            verbose=True,
+            graph=graph)
+
+        # show_list_points_3d(closest_nodes)
 
         leaf = set().union(*closest_nodes)
         leaf = leaf.intersection(connected_components)

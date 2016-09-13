@@ -27,7 +27,6 @@ from alinea.phenomenal.segmentation_3d.algorithm import (
 
 from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
 
-
 # ==============================================================================
 
 
@@ -135,7 +134,7 @@ def maize_stem_segmentation(voxel_centers, voxel_size,
 
     return labeled_voxels
 
-def shogun(voxel_centers):
+def shogun(voxels):
     import mayavi.mlab
 
     from alinea.phenomenal.display.multi_view_reconstruction import (
@@ -162,7 +161,7 @@ def shogun(voxel_centers):
                          color=(0, 0, 1))
 
     plot_points_3d(
-        voxel_centers,
+        list(voxels),
         scale_factor=2,
         color=(0.1, 0.9, 0.1))
 
@@ -305,7 +304,6 @@ def maize_plant_segmentation_2(voxel_centers, voxel_size,
         #     matplotlib.pyplot.plot(i, values[i], 'b+')
 
 
-        return
     matplotlib.pyplot.figure()
     matplotlib.pyplot.plot(range(len(nodes_length)), nodes_length, 'b')
     # matplotlib.pyplot.plot(range(len(values_stem)), values_stem, 'r')
@@ -367,12 +365,19 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
 
     # ==========================================================================
 
-    set_voxels_plant = set(biggest_connected_voxels_plant)
     array_voxels_plant = numpy.array(biggest_connected_voxels_plant)
 
     # ==========================================================================
-    top_stem_neighbors = compute_top_stem_neighbors(
-        set_voxels_plant, graph, stem_geometry)
+
+    top_stem_neighbors = compute_top_stem_neighbors(graph,
+                                                    stem_voxel,
+                                                    stem_geometry)
+
+    from alinea.phenomenal.display.multi_view_reconstruction import (
+        show_list_points_3d)
+
+    show_list_points_3d([stem_voxel, top_stem_neighbors])
+
     # ==========================================================================
 
     simple_leaf = list()
@@ -394,12 +399,18 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
             remain_leaf = list(connected_component)
             stem_intersection = set()
 
+            all_group = list()
+            all_path = list()
+
             while len(remain_leaf) != 0:
 
                 leaf, remain_leaf, leaf_skeleton_path = segment_leaf(
                     list(remain_leaf), connected_component, skeleton_path,
                     array_voxels_plant, graph, voxel_size,
                     verbose=False)
+
+                all_group.append(leaf)
+                all_path.append(leaf_skeleton_path)
 
                 stem_voxel, stem_neighbors, connected_components_remain = merge(
                     graph, stem_voxel, remain_leaf)
@@ -414,8 +425,10 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
                     final_leaf = final_leaf.union(leaf)
                     final_path = leaf_skeleton_path
                     stem_intersection = stem_neighbors.intersection(leaf)
-
                 else:
+                    # print len(stem_neighbors.intersection(leaf))
+                    # print len(stem_intersection)
+
                     if len(stem_neighbors.intersection(leaf)) == \
                             len(stem_intersection):
                         final_leaf = final_leaf.union(leaf)
@@ -433,7 +446,12 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
                 # simple_leaf_data.append((path, distances_max, max_longest,
                 #                          vector))
             else:
-                print "connected leaf"
+                # from alinea.phenomenal.display.multi_view_reconstruction import (
+                #     show_list_points_3d)
+                #
+                # show_list_points_3d(all_group)
+                # show_list_points_3d(all_path)
+
                 connected_leaf.append(connected_component)
 
     # ==========================================================================

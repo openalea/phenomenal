@@ -61,7 +61,8 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
     return map(tuple, closest_node)
 
 
-def compute_closest_nodes(voxels, path, radius=8, dist=0.75):
+def compute_closest_nodes(voxels, path, radius=8, dist=0.75, verbose=False,
+                          graph=None):
     planes = list()
     closest_nodes = list()
 
@@ -70,11 +71,45 @@ def compute_closest_nodes(voxels, path, radius=8, dist=0.75):
         # print i, '/', length_path
         node = path[i]
 
-        neighbors = numpy.array(
-            path[max(0, i - radius):min(length_path, i + radius)])
+        # neighbors = numpy.array(
+        #     path[max(0, i - radius):min(length_path, i + radius)])
+        #
+        # # # Do an SVD on the mean-centered neighbors points.
+        # k = abs(numpy.linalg.svd(neighbors - neighbors.mean(axis=0))[2][0])
 
-        # Do an SVD on the mean-centered neighbors points.
-        k = abs(numpy.linalg.svd(neighbors - neighbors.mean(axis=0))[2][0])
+        # ======================================================================
+
+        # path_neighbors = path[max(0, i - radius):min(length_path, i + radius)]
+        #
+        # x, y, z = path_neighbors[0]
+        # print x, y, z, node
+        #
+        # vectors = list()
+        # for i in xrange(1, len(path_neighbors)):
+        #     xx, yy, zz = path_neighbors[i]
+        #
+        #     v = map(float, (xx - x, yy - y, zz - z))
+        #     vectors.append(v)
+        #
+        # vector_mean = numpy.array(vectors).mean(axis=0)
+        #
+        # k = vector_mean
+
+        # ======================================================================
+
+        vectors = list()
+        for j in range(1, radius):
+            x, y, z = path[max(0, i - j)]
+            xx, yy, zz = path[min(length_path - 1, i + j)]
+
+            v = map(float, (xx - x, yy - y, zz - z))
+            vectors.append(v)
+
+        vector_mean = numpy.array(vectors).mean(axis=0)
+
+        k = vector_mean
+
+        # ======================================================================
 
         # Computation of plane equation
         # x, y, z = node
@@ -86,7 +121,27 @@ def compute_closest_nodes(voxels, path, radius=8, dist=0.75):
         planes.append(plane)
 
         nodes = get_node_close_to_planes(voxels, node, plane, dist=dist)
+
         closest_nodes.append(nodes)
+
+        # if verbose:
+        #
+        #     from alinea.phenomenal.display.segmentation3d import (
+        #         plot_plane)
+        #
+        #     from alinea.phenomenal.display.multi_view_reconstruction import (
+        #         plot_points_3d, show_list_points_3d)
+        #
+        #     import mayavi.mlab
+        #
+        #     mayavi.mlab.figure()
+        #
+        #     plot_plane(plane, node)
+        #     plot_points_3d(path)
+        #
+        #     mayavi.mlab.show()
+        #
+        #     # show_list_points_3d([nodes, path])
 
     return planes, closest_nodes
 
