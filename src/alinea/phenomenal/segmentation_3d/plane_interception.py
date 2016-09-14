@@ -149,6 +149,7 @@ def compute_closest_nodes(voxels, path, radius=8, dist=0.75, verbose=False,
 # Old implementation soon removed TODO: remove below or move for visualization
 # ==============================================================================
 
+
 def compute_planes(points):
     mean_point = points.mean(axis=0)
 
