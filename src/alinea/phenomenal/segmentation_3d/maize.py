@@ -350,7 +350,7 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
 
     # ==========================================================================
     # Stem Segmentation
-    stem_voxel, voxels_remain, stem_voxel_path, stem_geometry = \
+    stem_voxel, voxels_remain, stem_voxel_path, stem_geometry, stem_top = \
         stem_segmentation(
             biggest_connected_voxels_plant,
             skeleton_path,
@@ -365,13 +365,18 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
 
     # ==========================================================================
 
+    top_stem_neighbors = set()
+    for node in stem_top:
+        top_stem_neighbors = top_stem_neighbors.union(graph[node].keys())
+    top_stem_neighbors = top_stem_neighbors - stem_voxel
+
     array_voxels_plant = numpy.array(biggest_connected_voxels_plant)
 
     # ==========================================================================
 
-    top_stem_neighbors = compute_top_stem_neighbors(graph,
-                                                    stem_voxel,
-                                                    stem_geometry)
+    # top_stem_neighbors = compute_top_stem_neighbors(graph,
+    #                                                 stem_voxel,
+    #                                                 stem_geometry)
 
     from alinea.phenomenal.display.multi_view_reconstruction import (
         show_list_points_3d)

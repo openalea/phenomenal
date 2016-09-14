@@ -304,6 +304,7 @@ def segment_leaf_2(nodes, all_shorted_path, voxel_centers,
 
         return set(leaf)
 
+
 def stem_segmentation(voxel_centers, all_shorted_path_down,
                       distance_plane_1=4,
                       distance_plane_2=0.75,
@@ -481,6 +482,7 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
     j = 0
     # stem_voxel = set()
     stem_geometry = list()
+    stem_top = set()
     for i in range(len(xxx)):
         if i % score == 0 and j < len(radius):
             r = radius[j]
@@ -506,12 +508,15 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
         index = numpy.where(res <= numpy.array(r))
 
         res = map(tuple, list(arr_stem_voxels[index]))
+
+        if i == len(xxx) - 1:
+            stem_top = set(res)
+
         stem_voxel = stem_voxel.union(set(res))
 
     not_stem_voxel = set(voxel_centers).difference(stem_voxel)
 
-    return stem_voxel, not_stem_voxel, stem_voxel_path, stem_geometry
-
+    return stem_voxel, not_stem_voxel, stem_voxel_path, stem_geometry, stem_top
 
 # ==============================================================================
 # Plant
@@ -539,6 +544,7 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
 #     top_stem_neighbors = set(top_stem_neighbors)
 #
 #     return top_stem_neighbors
+
 
 def compute_top_stem_neighbors(graph, stem, stem_geometry):
 
