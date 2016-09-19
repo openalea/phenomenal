@@ -15,7 +15,6 @@
 # ==============================================================================
 import random
 import numpy
-
 import mayavi.mlab
 # ==============================================================================
 
@@ -29,7 +28,8 @@ __all__ = ["show_points_3d",
 def show_points_3d(points_3d,
                    color=None,
                    scale_factor=1,
-                   figure_name=""):
+                   figure_name="",
+                   notebook=False):
 
     fg = mayavi.mlab.figure(figure_name, size=(800, 700))
     mayavi.mlab.quiver3d(0, 0, 0,
@@ -52,17 +52,20 @@ def show_points_3d(points_3d,
 
     plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
 
-    mayavi.mlab.show(stop=True)
+
+    mayavi.mlab.show(stop=notebook)
 
     im = mayavi.mlab.screenshot()
 
     mayavi.mlab.close()
     return im
 
+
 def show_list_points_3d(list_points_3d,
-                        color=None,
+                        list_color=None,
                         scale_factor=1,
-                        figure_name=""):
+                        figure_name="",
+                        notebook=False):
 
     fg = mayavi.mlab.figure(figure_name, size=(800, 700))
     mayavi.mlab.quiver3d(0, 0, 0,
@@ -83,10 +86,11 @@ def show_list_points_3d(list_points_3d,
                          scale_factor=1,
                          color=(0, 0, 1))
 
-    for points_3d in list_points_3d:
-        plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
+    plot_list_points_3d(list_points_3d,
+                        list_color=list_color,
+                        scale_factor=scale_factor)
 
-    mayavi.mlab.show(stop=True)
+    mayavi.mlab.show(stop=notebook)
 
     im = mayavi.mlab.screenshot()
 
@@ -112,6 +116,59 @@ def plot_points_3d(points_3d, color=None, scale_factor=5):
     del pts
 
     return color
+
+
+def plot_list_points_3d(list_points_3d, list_color=None, scale_factor=1):
+
+    if list_color is None:
+        list_color = [None] * len(list_points_3d)
+
+    for points_3d, color in zip(list_points_3d, list_color):
+        plot_points_3d(list(points_3d), color=color, scale_factor=scale_factor)
+
+
+def screenshot_list_voxels(list_points_3d,
+                           list_color=None,
+                           voxel_size=1,
+                           size=(1600, 1400),
+                           azimuth=None,
+                           elevation=None,
+                           distance=None,
+                           focalpoint=None):
+
+    fg = mayavi.mlab.figure(size=size)
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         100, 0, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(1, 0, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 100, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 1, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 0, 100,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 0, 1))
+
+    if list_color is None:
+        list_color = [None] * len(list_points_3d)
+
+    for points_3d, color in zip(list_points_3d, list_color):
+        plot_points_3d(list(points_3d),
+                       color=color,
+                       scale_factor=voxel_size)
+
+    mayavi.mlab.view(azimuth=azimuth,
+                     elevation=elevation,
+                     distance=distance,
+                     focalpoint=focalpoint)
+
+    return mayavi.mlab.screenshot()
 
 
 def plot_3d(points_3d, color=None, tube_radius=1):
