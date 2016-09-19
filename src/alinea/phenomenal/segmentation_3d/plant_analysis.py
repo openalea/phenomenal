@@ -101,7 +101,7 @@ def voxels_path_analysis(voxel, path, voxel_size,
 
     # ==========================================================================
 
-    info['lenght'] = length
+    info['length'] = length
     info['height'] = real_path[-1][2]
     info['base'] = real_path[0][2]
 
@@ -136,7 +136,7 @@ def info_plant_empty():
     info['max_width'] = None
     info['mean_width'] = None
     info['min_width'] = None
-    info['lenght'] = None
+    info['length'] = None
     info['height'] = None
     info['base'] = None
     info['azimuth'] = None
