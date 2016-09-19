@@ -74,10 +74,7 @@ def read_labeled_skeleton_path_from_csv(filename):
         reader = csv.reader(f)
 
         next(reader)
-        i, x, y, z, label = next(reader)
-        labeled_skeleton_path[label].append((float(x), float(y), float(z)))
-
-        for x, y, z, vs, label in reader:
+        for i, x, y, z, label in reader:
             labeled_skeleton_path[label].append((float(x), float(y), float(z)))
 
         return labeled_skeleton_path

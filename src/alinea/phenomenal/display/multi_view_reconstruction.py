@@ -86,11 +86,9 @@ def show_list_points_3d(list_points_3d,
                          scale_factor=1,
                          color=(0, 0, 1))
 
-    if list_color is None:
-        list_color = [None] * len(list_points_3d)
-
-    for points_3d, color in zip(list_points_3d, list_color):
-        plot_points_3d(list(points_3d), color=color, scale_factor=scale_factor)
+    plot_list_points_3d(list_points_3d,
+                        list_color=list_color,
+                        scale_factor=scale_factor)
 
     mayavi.mlab.show(stop=notebook)
 
@@ -98,6 +96,35 @@ def show_list_points_3d(list_points_3d,
 
     mayavi.mlab.close()
     return im
+
+
+def plot_points_3d(points_3d, color=None, scale_factor=5):
+    pts = numpy.array(points_3d)
+    pts = pts.astype(int)
+
+    if color is None:
+        color = (random.uniform(0, 1),
+                 random.uniform(0, 1),
+                 random.uniform(0, 1))
+
+    if len(points_3d) > 0:
+        mayavi.mlab.points3d(pts[:, 0], pts[:, 1], pts[:, 2],
+                             mode='cube',
+                             color=color,
+                             scale_factor=scale_factor)
+
+    del pts
+
+    return color
+
+
+def plot_list_points_3d(list_points_3d, list_color=None, scale_factor=1):
+
+    if list_color is None:
+        list_color = [None] * len(list_points_3d)
+
+    for points_3d, color in zip(list_points_3d, list_color):
+        plot_points_3d(list(points_3d), color=color, scale_factor=scale_factor)
 
 
 def screenshot_list_voxels(list_points_3d,
@@ -142,26 +169,6 @@ def screenshot_list_voxels(list_points_3d,
                      focalpoint=focalpoint)
 
     return mayavi.mlab.screenshot()
-
-
-def plot_points_3d(points_3d, color=None, scale_factor=5):
-    pts = numpy.array(points_3d)
-    pts = pts.astype(int)
-
-    if color is None:
-        color = (random.uniform(0, 1),
-                 random.uniform(0, 1),
-                 random.uniform(0, 1))
-
-    if len(points_3d) > 0:
-        mayavi.mlab.points3d(pts[:, 0], pts[:, 1], pts[:, 2],
-                             mode='cube',
-                             color=color,
-                             scale_factor=scale_factor)
-
-    del pts
-
-    return color
 
 
 def plot_3d(points_3d, color=None, tube_radius=1):
