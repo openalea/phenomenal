@@ -22,7 +22,6 @@ from alinea.phenomenal.segmentation_3d.algorithm import (
     stem_segmentation,
     merge,
     compute_top_stem_neighbors,
-    extract_data_leaf,
     segment_leaf)
 
 from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
@@ -133,6 +132,7 @@ def maize_stem_segmentation(voxel_centers, voxel_size,
     labeled_voxels["not_stem"] = not_stem_voxel
 
     return labeled_voxels
+
 
 def shogun(voxels):
     import mayavi.mlab
@@ -350,7 +350,7 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
 
     # ==========================================================================
     # Stem Segmentation
-    stem_voxel, voxels_remain, stem_voxel_path, stem_geometry, stem_top = \
+    stem_voxel, voxels_remain, stem_voxel_path, stem_top = \
         stem_segmentation(
             biggest_connected_voxels_plant,
             skeleton_path,
@@ -365,23 +365,31 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
 
     # ==========================================================================
 
-    top_stem_neighbors = set()
+    stem_top_neighbors = set()
     for node in stem_top:
-        top_stem_neighbors = top_stem_neighbors.union(graph[node].keys())
-    top_stem_neighbors = top_stem_neighbors - stem_voxel
+        stem_top_neighbors = stem_top_neighbors.union(graph[node].keys())
+    # stem_top_neighbors = stem_top_neighbors - stem_voxel
+
+    stem_without_top = stem_voxel - stem_top
+    stem_without_top_neighbors = set()
+    for node in stem_without_top:
+        stem_without_top_neighbors = stem_without_top_neighbors.union(
+            graph[node].keys())
+
+    # stem_neighbors = set()
+    # for node in stem_voxel:
+    #     stem_neighbors = stem_neighbors.union(graph[node].keys())
+
+    stem_top_neighbors = stem_top_neighbors - stem_without_top_neighbors
 
     array_voxels_plant = numpy.array(biggest_connected_voxels_plant)
 
     # ==========================================================================
 
-    # top_stem_neighbors = compute_top_stem_neighbors(graph,
-    #                                                 stem_voxel,
-    #                                                 stem_geometry)
-
-    from alinea.phenomenal.display.multi_view_reconstruction import (
-        show_list_points_3d)
-
-    show_list_points_3d([stem_voxel, top_stem_neighbors])
+    # from alinea.phenomenal.display.multi_view_reconstruction import (
+    #     show_list_points_3d)
+    #
+    # show_list_points_3d([stem_voxel, stem_top_neighbors])
 
     # ==========================================================================
 
@@ -395,7 +403,7 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
 
     for i, connected_component in enumerate(connected_components):
 
-        if len(top_stem_neighbors.intersection(connected_component)) > 0:
+        if len(stem_top_neighbors.intersection(connected_component)) > 0:
             voxels_cornet = voxels_cornet.union(connected_component)
         else:
             final_leaf = set()
@@ -418,6 +426,9 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
                 all_path.append(leaf_skeleton_path)
 
                 stem_voxel, stem_neighbors, connected_components_remain = merge(
+                    graph, stem_voxel, leaf)
+
+                stem_voxel, stem_neighbors, connected_components_remain = merge(
                     graph, stem_voxel, remain_leaf)
 
                 remain_leaf = set().union(*connected_components_remain)
@@ -431,8 +442,6 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
                     final_path = leaf_skeleton_path
                     stem_intersection = stem_neighbors.intersection(leaf)
                 else:
-                    # print len(stem_neighbors.intersection(leaf))
-                    # print len(stem_intersection)
 
                     if len(stem_neighbors.intersection(leaf)) == \
                             len(stem_intersection):
@@ -471,7 +480,7 @@ def maize_plant_segmentation(voxels_plant, voxel_size,
 
     for i, (voxels, path) in enumerate(zip(simple_leaf, simple_leaf_path)):
         labeled_voxels["leaf_" + str(i)] = voxels
-        labeled_skeleton_path["leaf_" + str(i)] = voxels
+        labeled_skeleton_path["leaf_" + str(i)] = path
 
     for i, voxels in enumerate(connected_leaf):
         labeled_voxels["connected_leaf_" + str(i)] = voxels

@@ -120,4 +120,3 @@ def read_from_csv_with_label(filename):
             label_voxel_centers[label].append((float(x), float(y), float(z)))
 
         return label_voxel_centers, voxel_size
-
