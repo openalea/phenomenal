@@ -99,7 +99,7 @@ def show_list_points_3d(list_points_3d,
 
 
 def plot_points_3d(points_3d, color=None, scale_factor=5):
-    pts = numpy.array(points_3d)
+    pts = numpy.array(list(points_3d))
     pts = pts.astype(int)
 
     if color is None:

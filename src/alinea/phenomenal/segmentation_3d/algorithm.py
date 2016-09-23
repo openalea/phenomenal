@@ -13,6 +13,8 @@ import math
 import networkx
 import numpy
 import scipy.interpolate
+import matplotlib.pyplot
+import sklearn.cluster
 
 from alinea.phenomenal.data_structure import (
     bounding_box)
@@ -303,6 +305,256 @@ def segment_leaf_2(nodes, all_shorted_path, voxel_centers,
         return set(leaf)
 
 
+def get_length_point_cloud(nodes):
+
+    def get_max_distance(node, nodes):
+        max_distance = 0
+        max_node = node
+
+        for n in nodes:
+            distance = numpy.linalg.norm(numpy.array(node) - numpy.array(n))
+            max_distance = max(max_distance, distance)
+            max_node = n
+
+        return max_node, max_distance
+
+    pt1, _ = get_max_distance(nodes[0], nodes)
+    pt2, distance = get_max_distance(pt1, nodes)
+
+    return distance
+
+def smooth(x,window_len=11,window='hanning'):
+    """smooth the data using a window with requested size.
+
+    This method is based on the convolution of a scaled window with the signal.
+    The signal is prepared by introducing reflected copies of the signal
+    (with the window size) in both ends so that transient parts are minimized
+    in the begining and end part of the output signal.
+
+    input:
+        x: the input signal
+        window_len: the dimension of the smoothing window; should be an odd integer
+        window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
+            flat window will produce a moving average smoothing.
+
+    output:
+        the smoothed signal
+
+    example:
+
+    t=linspace(-2,2,0.1)
+    x=sin(t)+randn(len(t))*0.1
+    y=smooth(x)
+
+    see also:
+
+    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
+    scipy.signal.lfilter
+
+    TODO: the window parameter could be the window itself if an array instead of a string
+    NOTE: length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    """
+
+    if x.ndim != 1:
+        raise ValueError("smooth only accepts 1 dimension arrays.")
+
+    if x.size < window_len:
+        raise ValueError("Input vector needs to be bigger than window size.")
+    if window_len<3:
+        return x
+
+    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+        raise ValueError("Window is on of 'flat', 'hanning',"
+                         " 'hamming', 'bartlett', 'blackman'")
+
+    s = numpy.r_[x[(window_len - 1) // 2:0:-1], x, x[-1:-window_len // 2:-1]]
+
+    print "LENGTH:", len(s), len(x)
+
+    if window == 'flat': #moving average
+        w = numpy.ones(window_len, 'd')
+    else:
+        w = eval('numpy.'+window+'(window_len)')
+
+    print "LENGTH:", len(s), len(x), len(w)
+    y = numpy.convolve(w/w.sum(), s, mode='valid')
+
+    return y
+
+
+def stem_detection_2(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
+                     distance_plane=0.50):
+
+    # ==========================================================================
+
+    arr_stem_segment_voxel = numpy.array(list(stem_segment_voxel))
+
+    planes, closest_nodes = compute_closest_nodes(
+        arr_stem_segment_voxel, stem_segment_path, radius=8,
+        dist=distance_plane * voxel_size)
+
+    # ==========================================================================
+
+    nodes_length = map(float, map(len, closest_nodes))
+    stem_segment_centred_path = [
+        numpy.array(nodes).mean(axis=0) for nodes in closest_nodes]
+    # ==========================================================================
+
+    distances = list()
+    for i in range(len(closest_nodes)):
+        distance = get_length_point_cloud(closest_nodes[i])
+        distances.append(float(distance))
+
+    print('Number leaf', len(leafs))
+
+    values_stem = [1] * len(closest_nodes)
+    for i in range(len(closest_nodes)):
+        for voxels, paths in leafs:
+            v = len(set(closest_nodes[i]).intersection(voxels))
+            print(v)
+            values_stem[i] += float(v) / float(len(closest_nodes[i]))
+
+    for i in range(len(values_stem)):
+        print(i, values_stem[i])
+        if values_stem[i] <= 1:
+            stop = i
+            break
+
+    values_stem = values_stem[:stop]
+    nodes_length = nodes_length[:stop]
+
+    mix = list()
+    for i in range(len(values_stem)):
+        mix.append(float(distances[i]) * float(nodes_length[i]) /
+                   values_stem[i])
+
+    stop = mix.index(max(mix))
+
+    mix = mix[:stop]
+    nodes_length = nodes_length[:stop]
+
+    def find_stop_peak(values):
+        lookahead = int(len(values) / 50.0)
+
+        max_peaks, min_peaks = peak_detection(values, lookahead)
+        labels = maize_corner_detection_2(values, min_peaks)
+
+        return labels, min_peaks, max_peaks
+
+    def show_stop_peak(values, color='r'):
+
+        # Normalize
+        values = [v / float(sum(values)) for v in values]
+
+        # Smooth
+        values = smooth(numpy.array(values))
+
+        # Plot
+        matplotlib.pyplot.plot(range(len(values)), values, color)
+
+        # Peak
+        stop, min_peaks, max_peaks = find_stop_peak(values)
+
+        min_peaks_values = [v for i, v in min_peaks]
+        a = numpy.array(min_peaks_values).reshape((len(min_peaks_values), 1))
+        # kmean = sklearn.cluster.KMeans(n_clusters=2)
+        # kmean.fit(a)
+
+        meanshift = sklearn.cluster.MeanShift(bandwidth=min_peaks_values[0] *
+                                                        1.5)
+        meanshift.fit(a)
+
+        ref_label = meanshift.labels_[0]
+
+        min_peaks_stem = list()
+        for (index, value), label in zip(min_peaks, meanshift.labels_):
+            if ref_label == label:
+                min_peaks_stem.append((index, value))
+
+        color = {0: 'bo', 1: 'ro', 2: 'go', 3: 'co', 4: 'ko'}
+        for (index, value), label in zip(min_peaks, meanshift.labels_):
+            matplotlib.pyplot.plot(index, value, color[label])
+
+        return min_peaks_stem
+
+    matplotlib.pyplot.figure()
+    show_stop_peak(mix, 'r')
+    min_peaks_stem = show_stop_peak(nodes_length, 'b')
+    matplotlib.pyplot.show()
+
+    # ==========================================================================
+
+    matplotlib.pyplot.figure()
+    distances = smooth(numpy.array(distances))
+    matplotlib.pyplot.plot(range(len(distances)), distances, 'b')
+    for index, value in min_peaks_stem:
+        matplotlib.pyplot.plot(index, distances[index], 'ro')
+    matplotlib.pyplot.show()
+
+    stem_voxel = set()
+    radius = list()
+    stem_centred_path_min_peak = list()
+    for index, value in min_peaks_stem:
+        radius.append(distances[index] / 2.0)
+        stem_centred_path_min_peak.append(stem_segment_centred_path[index])
+        stem_voxel = stem_voxel.union(closest_nodes[index])
+    # ==========================================================================
+    # Interpolate
+
+    new_centred_shorted_path = list()
+    new_centred_shorted_path.append(stem_segment_centred_path[0])
+    new_centred_shorted_path += stem_centred_path_min_peak
+    len_new_centred_shorted_path = len(new_centred_shorted_path)
+    new_centred_shorted_path = numpy.array(new_centred_shorted_path).transpose()
+
+    k = 2
+    if len_new_centred_shorted_path <= k:
+        k = 1
+
+    tck, u = scipy.interpolate.splprep(new_centred_shorted_path, k=k)
+    xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
+
+    # ==========================================================================
+    # TODO : Wrong radius for the interpolation !!!!
+
+    def get_nodes_radius(center, points, radius):
+
+        x, y, z = center
+
+        result = numpy.sqrt((points[:, 0] - x) ** 2 +
+                            (points[:, 1] - y) ** 2 +
+                            (points[:, 2] - z) ** 2)
+
+        index = numpy.where(result <= numpy.array(radius))
+        result = set(map(tuple, list(points[index])))
+
+        return result
+
+    score = len(xxx) / len(radius)
+
+    j = 0
+    r = voxel_size
+
+    print(radius)
+
+    real_path = list()
+    for i in range(len(xxx)):
+        if i % score == 0 and j < len(radius):
+            r = radius[j]
+            j += 1
+
+        print("Radius :", i, r)
+
+        x, y, z = xxx[i], yyy[i], zzz[i]
+        real_path.append((x, y, z))
+        result = get_nodes_radius((x, y, z), arr_stem_segment_voxel, r)
+        stem_voxel = stem_voxel.union(result)
+
+    not_stem_voxel = set(stem_segment_voxel).difference(stem_voxel)
+
+    return stem_voxel, not_stem_voxel, real_path
+
+
 def stem_segmentation(voxel_centers, all_shorted_path_down,
                       distance_plane_1=4,
                       distance_plane_2=0.50,
@@ -484,9 +736,6 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
     # stem_top = set()
     # r = radius[-1]
     # x, y, z = xxx[-1], yyy[-1], zzz[-1]
-    #
-    #
-    #
     # get_nodes_radius((x, y, z), arr_stem_top, r)
 
     # ==========================================================================
@@ -585,8 +834,7 @@ def segment_leaf(voxels,
             leaf_skeleton_path,
             radius=8,
             dist=2 * voxel_size,
-            verbose=True,
-            graph=graph)
+            verbose=True)
 
         # show_list_points_3d(closest_nodes)
 
