@@ -10,19 +10,24 @@
 #
 # ==============================================================================
 import numpy
+import sys
+import networkx
 
 import alinea.phenomenal.segmentation_3d.algorithm
 from alinea.phenomenal.segmentation_3d.peak_detection import peak_detection
 from alinea.phenomenal.segmentation_3d.plane_interception import (
     compute_closest_nodes)
 
+from alinea.phenomenal.display import (
+    plot_points_3d, show_points_3d, show_list_points_3d)
 
 from alinea.phenomenal.segmentation_3d.algorithm import (
     graph_skeletonize,
     stem_segmentation,
     merge,
     compute_top_stem_neighbors,
-    segment_leaf)
+    segment_leaf,
+    stem_detection_2)
 
 from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
 
@@ -168,166 +173,105 @@ def shogun(voxels):
     mayavi.mlab.show()
 
 
-def maize_plant_segmentation_2(voxel_centers, voxel_size,
-                               distance_plane_1=2,
-                               distance_plane_2=0.75,
-                               verbose=False):
+def get_neighbors(graph, voxels):
+
+    voxels_neighbors = set()
+    for node in voxels:
+        voxels_neighbors = voxels_neighbors.union(graph[node].keys())
+
+    voxels_neighbors = voxels_neighbors - voxels
+
+    return voxels_neighbors
+
+
+def maize_plant_segmentation_3(segments, voxel_size, graph):
 
     # ==========================================================================
-    # Build skeleton of plant with graph of shorted path
-    graph, biggest_component_voxel_centers, all_shorted_path = \
-        graph_skeletonize(voxel_centers, voxel_size)
+    # Stem segment attribution
 
-    arr_voxels_plants = numpy.array(biggest_component_voxel_centers)
-    set_voxels_plant = set(biggest_component_voxel_centers)
-    set_voxels_plant_not_connected = set_voxels_plant.difference(
-        set(voxel_centers))
+    z_max = float("-inf")
+    stem_segment = None
+    for voxels, path in segments:
 
-    stem_voxel_path, closest_nodes = alinea.phenomenal.segmentation_3d.\
-        algorithm.segment_stem(biggest_component_voxel_centers,
-                               all_shorted_path,
-                               distance_plane_1=distance_plane_1)
+        z = numpy.max(numpy.array(path)[:, 2])
 
-    def get_max_distance(node, nodes):
-        max_distance = 0
-        max_node = node
+        if z > z_max:
+            z_max = z
+            stem_segment = voxels, path
 
-        for n in nodes:
-            distance = numpy.linalg.norm(numpy.array(node) - numpy.array(n))
-            max_distance = max(max_distance, distance)
-            max_node = n
+    segments.remove(stem_segment)
+    stem_segment_voxel, stem_segment_path = stem_segment
 
-        return max_node, max_distance
-
-    distances = list()
-    for i in range(len(closest_nodes)):
-        nodes = closest_nodes[i]
-
-        pt1, _ = get_max_distance(nodes[0], nodes)
-        pt2, distance = get_max_distance(pt1, nodes)
-
-        distances.append(float(distance) / float(voxel_size))
-
-    values_stem = [1] * len(closest_nodes)
-    nodes_length = map(len, closest_nodes)
-
-    stem_voxels = list()
-    for i in range(len(closest_nodes)):
-        stem_voxels += closest_nodes[i]
-    stem_voxels = set(stem_voxels)
-
-    remaining_voxels = set(set_voxels_plant).difference(stem_voxels)
-    stem_voxels, _, _ = merge(graph, stem_voxels, remaining_voxels,
-                              percentage=50)
-    remaining_voxels = set(set_voxels_plant).difference(stem_voxels)
-
-
-    # shogun(list(stem_voxels))
-    # shogun(list(remaining_voxels))
-
-    print len(remaining_voxels), len(stem_voxels), len(set_voxels_plant)
-
-    j = 1
-    while remaining_voxels:
-        j += 1
-        leaf = alinea.phenomenal.segmentation_3d.algorithm.segment_leaf_2(
-            remaining_voxels,
-            all_shorted_path,
-            arr_voxels_plants,
-            distance_plane_1=distance_plane_1,
-            voxel_size=voxel_size)
-
-        leaf, _, _ = merge(graph, leaf, remaining_voxels, percentage=50)
-
-        # shogun(list(leaf))
-
-        for i in range(len(closest_nodes)):
-            v = len(set(closest_nodes[i]).intersection(leaf))
-
-            values_stem[i] += float(v) / float(len(closest_nodes[i]))
-
-        remaining_voxels = remaining_voxels.difference(leaf)
-
-    mix = list()
-    for i in range(len(values_stem)):
-        mix.append(float(distances[i]) * len(closest_nodes[i]) / values_stem[i])
-
-    def find_stop_peak(values):
-        lookahead = int(len(values) / 50.0)
-
-        max_peaks, min_peaks = peak_detection(values, lookahead)
-        stop = alinea.phenomenal.segmentation_3d.algorithm.maize_corner_detection(
-            values, min_peaks)
-
-        return stop, min_peaks, max_peaks
-
-    def find_stop_peak_2(values):
-        lookahead = int(len(values) / 50.0)
-
-        max_peaks, min_peaks = peak_detection(values, lookahead)
-        labels = alinea.phenomenal.segmentation_3d.algorithm\
-            .maize_corner_detection_2(
-            values, min_peaks)
-
-        return labels, min_peaks, max_peaks
-
-    import matplotlib.pyplot
-    def show_stop_peak(values):
-        stop, min_peaks, max_peaks = find_stop_peak(values)
-
-        for index, _ in min_peaks:
-            matplotlib.pyplot.plot(index, values[index], 'bo')
-
-        matplotlib.pyplot.plot(stop, values[stop], 'ro')
-
-
-    def show_stop_peak_2(values):
-        stop, min_peaks, max_peaks = find_stop_peak_2(values)
-
-        for index, _ in min_peaks:
-            matplotlib.pyplot.plot(index, values[index], 'bo')
-
-        matplotlib.pyplot.plot(stop, values[stop], 'ro')
-
-        # for i in range(len(min_peaks)):
-        #     index, value = min_peaks[i]
-
-            # if labels[i] == 0:
-            #     matplotlib.pyplot.plot(index, value, 'bo')
-            # else:
-            #     matplotlib.pyplot.plot(index, value, 'ro')
-
-        # for i in range(len(values)):
-        #     # if labels[i] == 0:
-        #     #     matplotlib.pyplot.plot(i, values[i], 'b+')
-        #     # else:
-        #     matplotlib.pyplot.plot(i, values[i], 'b+')
-
-
-    matplotlib.pyplot.figure()
-    matplotlib.pyplot.plot(range(len(nodes_length)), nodes_length, 'b')
-    # matplotlib.pyplot.plot(range(len(values_stem)), values_stem, 'r')
-    matplotlib.pyplot.plot(range(len(mix)), mix, 'g')
-    # matplotlib.pyplot.plot(range(len(distances)), distances, 'r')
-    # show_stop_peak(nodes_length)
-    show_stop_peak_2(mix)
-    matplotlib.pyplot.show()
+    # show_points_3d(stem_segment_voxel)
+    show_list_points_3d([voxels - stem_segment_voxel for voxels, _ in segments])
 
     # ==========================================================================
-    # Little hack
-    # from alinea.phenomenal.display.multi_view_reconstruction import (
-    #     show_list_points_3d)
-    #
-    # stop, min_peaks, max_peaks = find_stop_peak(nodes_length)
-    # stem_voxel_path = [v for i, v in enumerate(stem_voxel_path) if i <= stop]
-    # show_list_points_3d([biggest_component_voxel_centers, stem_voxel_path],
-    #                     list_color=[(0, 1, 0), (1, 0, 0)])
-    #
-    #
-    # stop, min_peaks, max_peaks = find_stop_peak_2(mix)
-    # stem_voxel_path = [v for i, v in enumerate(stem_voxel_path) if i <= stop]
-    # show_list_points_3d([biggest_component_voxel_centers, stem_voxel_path],
-    #                     list_color=[(0, 1, 0), (1, 0, 0)])
+    # Fusion leaf
+
+    new_segments = list()
+    for segment_voxel, segment_path in segments:
+        result = segment_voxel - stem_segment_voxel
+
+        leaf_voxel = None
+        subgraph = graph.subgraph(result)
+        for voxel_group in networkx.connected_components(subgraph):
+            if segment_path[-1] in voxel_group:
+                leaf_voxel = voxel_group
+
+        neighbors = get_neighbors(graph, leaf_voxel)
+        stem_neighbors = neighbors.intersection(stem_segment_voxel)
+        new_segments.append((segment_voxel,
+                             segment_path,
+                             stem_neighbors))
+        # show_list_points_3d([voxels - stem_segment_voxel, stem_segment_voxel,
+        #                      neighbors_stem_intersection])
+
+    leafs = list()
+    while new_segments:
+        segment_voxel, segment_path, stem_neighbors = \
+            new_segments.pop()
+
+        paths = [segment_path]
+
+        again = True
+        while again:
+            again = False
+            for i, (segment_voxel_2, segment_path_2, stem_neighbors_2) in \
+                    enumerate(new_segments):
+
+                if stem_neighbors.intersection(stem_neighbors_2):
+                    segment_voxel = segment_voxel.union(segment_voxel_2)
+                    stem_neighbors = stem_neighbors.union(stem_neighbors_2)
+                    paths.append(segment_path_2)
+                    new_segments.pop(i)
+                    again = True
+                    break
+
+        leafs.append((segment_voxel, paths))
+
+    # ==========================================================================
+
+    stem_voxel, not_stem_voxel, real_path = stem_detection_2(stem_segment_voxel,
+                                                  stem_segment_path, leafs, voxel_size)
+
+    # stem_voxel, stem_neighbors, connected_components = merge(
+    #     graph, stem_voxel, not_stem_voxel, percentage=50)
+
+    # ==========================================================================
+
+    real_leaf = list()
+    for segment_voxel, paths in leafs:
+        result = segment_voxel - stem_voxel
+
+        leaf_voxel = None
+        subgraph = graph.subgraph(result)
+        for voxel_group in networkx.connected_components(subgraph):
+            if paths[0][-1] in voxel_group:
+                leaf_voxel = voxel_group
+
+        real_leaf.append(leaf_voxel)
+
+    show_list_points_3d(real_leaf + [stem_voxel, real_path])
 
 
 def maize_plant_segmentation(voxels_plant, voxel_size,
