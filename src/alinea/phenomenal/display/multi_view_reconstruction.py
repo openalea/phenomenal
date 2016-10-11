@@ -52,7 +52,6 @@ def show_points_3d(points_3d,
 
     plot_points_3d(points_3d, color=color, scale_factor=scale_factor)
 
-
     mayavi.mlab.show(stop=notebook)
 
     im = mayavi.mlab.screenshot()
