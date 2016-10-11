@@ -52,7 +52,6 @@ def get_length_point_cloud(nodes):
 
 
 def voxels_path_analysis(voxel, path, voxel_size,
-                         verbose=False,
                          distance_plane=0.75):
 
     info = collections.defaultdict()
@@ -63,7 +62,6 @@ def voxels_path_analysis(voxel, path, voxel_size,
         arr_voxel,
         path,
         radius=8,
-        verbose=verbose,
         dist=distance_plane * voxel_size)
 
     # ==========================================================================
