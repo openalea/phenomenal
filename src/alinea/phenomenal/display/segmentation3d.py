@@ -11,6 +11,10 @@
 # ==============================================================================
 import numpy
 import mayavi.mlab
+
+from alinea.phenomenal.display.multi_view_reconstruction import (
+    show_list_points_3d)
+
 # ==============================================================================
 
 
@@ -51,3 +55,82 @@ def plot_plane(plane, point):
     mayavi.mlab.mesh(xx, yy, zz)
 
 
+def show_segment_voxel(segments, voxel_size):
+
+    voxels_stem = [d["voxel"] for d in segments if d["label"] == "stem"]
+
+    voxels_mature_leafs = [d["voxel"] for d in segments
+                           if d["label"].startswith("mature_leaf_")]
+
+    voxels_connected_leafs = [d["voxel"] for d in segments
+                              if d["label"].startswith("connected_leaf_")]
+
+    voxels_cornet_leafs = [d["voxel"] for d in segments
+                           if d["label"].startswith("cornet_leaf_")]
+
+    print("Number of leaf detected : ", len(voxels_mature_leafs))
+    print("Number of leaf connected : ", len(voxels_connected_leafs))
+    print("Number of leaf cornet : ", len(voxels_cornet_leafs))
+    print("Number of all lea", (len(voxels_mature_leafs) +
+                                len(voxels_connected_leafs) +
+                                len(voxels_cornet_leafs)))
+
+    mature_leafs = set().union(*voxels_mature_leafs)
+    connected_leafs = set().union(*voxels_connected_leafs)
+    stem = set().union(*voxels_stem)
+    cornet = set().union(*voxels_cornet_leafs)
+
+    list_voxels = [stem,
+                   cornet,
+                   mature_leafs,
+                   connected_leafs]
+
+    list_color = [(0.0, 0.0, 0.0),
+                  (0.9, 0.1, 0.1),
+                  (0.1, 0.9, 0.9),
+                  (0.1, 0.1, 0.9)]
+
+    show_list_points_3d(list_voxels,
+                        list_color=list_color,
+                        scale_factor=voxel_size)
+
+    show_list_points_3d(voxels_mature_leafs,
+                        scale_factor=voxel_size)
+
+
+def show_labeled_voxel(labeled_voxels, voxel_size):
+
+    voxels_mature_leaf = [v for k, v in labeled_voxels.items()
+                          if k.startswith('mature_leaf_')]
+
+    voxels_connected_leaf = [v for k, v in labeled_voxels.items()
+                             if k.startswith('connected_leaf_')]
+
+    voxels_cornet_leaf = [v for k, v in labeled_voxels.items()
+                          if k.startswith('cornet_leaf_')]
+
+    # print("Number of leaf detected : ", len(voxels_mature_leaf))
+    # print("Number of leaf connected : ", len(voxels_connected_leaf))
+    # print("Number of leaf cornet : ", len(voxels_cornet_leaf))
+    # print("Number of all lea", (len(voxels_mature_leaf) +
+    #                             len(voxels_connected_leaf) +
+    #                             len(voxels_cornet_leaf)))
+
+    mature_leafs = set().union(*voxels_mature_leaf)
+    connected_leafs = set().union(*voxels_connected_leaf)
+    stem = labeled_voxels["stem"]
+    cornet = set().union(*voxels_cornet_leaf)
+
+    list_voxels = [stem,
+                   cornet,
+                   mature_leafs,
+                   connected_leafs]
+
+    list_color = [(0.0, 0.0, 0.0),
+                  (0.9, 0.1, 0.1),
+                  (0.1, 0.9, 0.9),
+                  (0.1, 0.1, 0.9)]
+
+    show_list_points_3d(list_voxels,
+                        list_color=list_color,
+                        scale_factor=voxel_size)

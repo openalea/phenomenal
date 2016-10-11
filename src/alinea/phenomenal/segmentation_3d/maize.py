@@ -19,7 +19,7 @@ from alinea.phenomenal.segmentation_3d.plane_interception import (
     compute_closest_nodes)
 
 from alinea.phenomenal.display import (
-    plot_points_3d, show_points_3d, show_list_points_3d)
+    plot_points_3d, show_points_3d, show_list_points_3d, plot_list_points_3d)
 
 from alinea.phenomenal.segmentation_3d.algorithm import (
     graph_skeletonize,
@@ -175,13 +175,11 @@ def shogun(voxels):
 
 def get_neighbors(graph, voxels):
 
-    voxels_neighbors = set()
+    voxels_neighbors = list()
     for node in voxels:
-        voxels_neighbors = voxels_neighbors.union(graph[node].keys())
+        voxels_neighbors += graph[node].keys()
 
-    voxels_neighbors = voxels_neighbors - voxels
-
-    return voxels_neighbors
+    return set(voxels_neighbors) - voxels
 
 
 def maize_plant_segmentation_3(segments, voxel_size, graph):
@@ -203,7 +201,7 @@ def maize_plant_segmentation_3(segments, voxel_size, graph):
     stem_segment_voxel, stem_segment_path = stem_segment
 
     # show_points_3d(stem_segment_voxel)
-    show_list_points_3d([voxels - stem_segment_voxel for voxels, _ in segments])
+    # show_list_points_3d([voxels - stem_segment_voxel for voxels, _ in segments])
 
     # ==========================================================================
     # Fusion leaf
@@ -214,17 +212,16 @@ def maize_plant_segmentation_3(segments, voxel_size, graph):
 
         leaf_voxel = None
         subgraph = graph.subgraph(result)
-        for voxel_group in networkx.connected_components(subgraph):
-            if segment_path[-1] in voxel_group:
-                leaf_voxel = voxel_group
+        i = -1
+        while leaf_voxel is None:
+            for voxel_group in networkx.connected_components(subgraph):
+                if segment_path[i] in voxel_group:
+                    leaf_voxel = voxel_group
+            i -= 1
 
         neighbors = get_neighbors(graph, leaf_voxel)
         stem_neighbors = neighbors.intersection(stem_segment_voxel)
-        new_segments.append((segment_voxel,
-                             segment_path,
-                             stem_neighbors))
-        # show_list_points_3d([voxels - stem_segment_voxel, stem_segment_voxel,
-        #                      neighbors_stem_intersection])
+        new_segments.append((segment_voxel, segment_path, stem_neighbors))
 
     leafs = list()
     while new_segments:
@@ -251,15 +248,39 @@ def maize_plant_segmentation_3(segments, voxel_size, graph):
 
     # ==========================================================================
 
-    stem_voxel, not_stem_voxel, real_path = stem_detection_2(stem_segment_voxel,
-                                                  stem_segment_path, leafs, voxel_size)
+    stem_voxel, not_stem_voxel, stem_path, stem_top = stem_detection_2(
+        stem_segment_voxel, stem_segment_path, leafs, voxel_size)
 
     # stem_voxel, stem_neighbors, connected_components = merge(
     #     graph, stem_voxel, not_stem_voxel, percentage=50)
 
     # ==========================================================================
 
+    stem_top_neighbors = set()
+    for node in stem_top:
+        stem_top_neighbors = stem_top_neighbors.union(graph[node].keys())
+    # stem_top_neighbors = stem_neighbors - stem_voxel
+
+    stem_without_top = stem_voxel - stem_top
+    stem_without_top_neighbors = set()
+    for node in stem_without_top:
+        stem_without_top_neighbors = stem_without_top_neighbors.union(
+            graph[node].keys())
+
+    stem_top_neighbors = stem_top_neighbors - stem_without_top_neighbors
+
+    # ==========================================================================
     real_leaf = list()
+
+    result = stem_segment_voxel - stem_voxel
+    leaf_voxel = None
+    subgraph = graph.subgraph(result)
+    for voxel_group in networkx.connected_components(subgraph):
+        if stem_segment_path[-1] in voxel_group:
+            leaf_voxel = voxel_group
+
+    real_leaf.append((leaf_voxel, [stem_segment_path]))
+
     for segment_voxel, paths in leafs:
         result = segment_voxel - stem_voxel
 
@@ -269,9 +290,68 @@ def maize_plant_segmentation_3(segments, voxel_size, graph):
             if paths[0][-1] in voxel_group:
                 leaf_voxel = voxel_group
 
-        real_leaf.append(leaf_voxel)
+        real_leaf.append((leaf_voxel, paths))
 
-    show_list_points_3d(real_leaf + [stem_voxel, real_path])
+
+    # ==========================================================================
+
+    for leaf, paths in real_leaf:
+        not_stem_voxel = not_stem_voxel - leaf
+
+    stem_voxel, stem_neighbors, connected_components = merge(
+        graph, stem_voxel, not_stem_voxel, percentage=50)
+
+    for i, (leaf, paths) in enumerate(real_leaf):
+        l, _, connected_components = merge(
+            graph, leaf, set().union(*connected_components), percentage=50)
+
+        real_leaf[i] = (l, paths)
+
+    # print("Number all leaf :", len(real_leaf))
+    # Put voxel remain as voxel stem
+    stem_voxel = stem_voxel.union(*connected_components)
+
+    # ==========================================================================
+
+    voxels_cornet = set()
+    simple_leafs = list()
+    simple_leafs_paths = list()
+
+    segments = list()
+
+    stem_dict = dict()
+    stem_dict["voxel"] = stem_voxel
+    stem_dict["paths"] = [stem_path]
+    stem_dict["label"] = "stem"
+    segments.append(stem_dict)
+
+    i = 0
+    for leaf, paths in real_leaf:
+
+        leaf_dict = dict()
+        leaf_dict["voxel"] = leaf
+        leaf_dict["paths"] = paths
+
+        if len(stem_top_neighbors.intersection(leaf)) > 0:
+            leaf_dict["label"] = "cornet_leaf_" + str(i)
+        else:
+            leaf_dict["label"] = "mature_leaf_" + str(i)
+
+        i += 1
+
+        segments.append(leaf_dict)
+
+    # ==========================================================================
+
+    # TODO :  put voxel intersection in the nearest neighbors
+
+    # for i in range(len(simple_leafs)):
+    #     r = simple_leafs[i].intersection(voxels_cornet)
+    #     simple_leafs[i] = simple_leafs[i] - r
+
+    # ==========================================================================
+
+    return segments
 
 
 def maize_plant_segmentation(voxels_plant, voxel_size,

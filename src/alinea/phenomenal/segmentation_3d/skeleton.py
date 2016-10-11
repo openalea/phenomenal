@@ -24,7 +24,6 @@ from alinea.phenomenal.segmentation_3d.plane_interception import (
 def segment_path(voxels, array_voxels,
                  skeleton_path,
                  graph,
-                 voxel_size,
                  distance_plane=0.75,
                  verbose=False):
 
@@ -48,7 +47,7 @@ def segment_path(voxels, array_voxels,
             array_voxels,
             leaf_skeleton_path,
             radius=8,
-            dist=distance_plane * voxel_size,
+            dist=distance_plane,
             verbose=True,
             graph=graph)
 
@@ -57,12 +56,13 @@ def segment_path(voxels, array_voxels,
 
         leaf, leaf_neighbors, connected_components_remain = merge(
             graph, leaf, remain)
+
         remain = set().union(*connected_components_remain)
 
         return leaf, remain, leaf_skeleton_path
 
 
-def skeletonize(voxels_plant, voxel_size, distance_plane=0.75, verbose=False):
+def skeletonize(voxels_plant, voxel_size, distance_plane=1.0, verbose=False):
 
     # ==========================================================================
     # Build skeleton of plant with graph of shorted path
@@ -82,9 +82,10 @@ def skeletonize(voxels_plant, voxel_size, distance_plane=0.75, verbose=False):
     while len(remain) != 0:
 
         segment_voxel, remain, segment_ske_path = segment_path(
-            remain, arr_voxels_plant, skeleton_path, graph, voxel_size,
-            distance_plane=distance_plane)
+            remain, arr_voxels_plant, skeleton_path, graph,
+            distance_plane=distance_plane * voxel_size)
 
         segment.append((segment_voxel, segment_ske_path))
 
     return segment, graph
+

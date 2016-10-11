@@ -9,12 +9,12 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import math
 import networkx
 import numpy
 import scipy.interpolate
-import matplotlib.pyplot
 import sklearn.cluster
+import scipy.spatial
+import matplotlib
 
 from alinea.phenomenal.data_structure import (
     bounding_box)
@@ -30,12 +30,10 @@ from alinea.phenomenal.segmentation_3d.plane_interception import (
 
 from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
 
-from alinea.phenomenal.display import show_points_3d, show_list_points_3d
 # ==============================================================================
-# Stem
 
 
-def find_base_stem_position(voxel_centers, voxel_size, neighbor_size=100):
+def find_base_stem_position(voxel_centers, voxel_size, neighbor_size=50):
 
     image_3d = voxel_centers_to_image_3d(voxel_centers, voxel_size)
 
@@ -45,17 +43,34 @@ def find_base_stem_position(voxel_centers, voxel_size, neighbor_size=100):
     k = neighbor_size / voxel_size
     x_len, y_len, z_len = image_3d.shape
 
-    roi = image_3d[
-          max(x - k, 0): min(x + k, x_len),
-          max(y - k, 0): min(y + k, y_len),
-          :]
+    roi = image_3d[max(x - k, 0): min(x + k, x_len),
+                   max(y - k, 0): min(y + k, y_len),
+                   :]
 
     xx, yy, zz = numpy.where(roi == 1)
-    i = numpy.argmin(zz)
 
-    stem_base_position = max(x - k, 0) + xx[i], max(y - k, 0) + yy[i], zz[i]
+    min_z_value = numpy.min(zz)
+    index_min_z_value = numpy.where(zz == min_z_value)
+    mean_float_point = numpy.array([numpy.mean(xx[index_min_z_value]),
+                                    numpy.mean(yy[index_min_z_value]),
+                                    numpy.mean(zz[index_min_z_value])])
+
+    mean_point = None
+    min_dist = float('inf')
+    for xxx, yyy, zzz in zip(xx, yy, zz):
+        pt = numpy.array([xxx, yyy, zzz])
+        dist = numpy.linalg.norm(mean_float_point - pt)
+        if dist < min_dist:
+            min_dist = dist
+            mean_point = pt
+
+    stem_base_position = (max(x - k, 0) + mean_point[0],
+                          max(y - k, 0) + mean_point[1],
+                          mean_point[2])
+
     pos = numpy.array(stem_base_position)
     pos = pos * voxel_size + image_3d.world_coordinate
+
     return pos
 
 
@@ -177,77 +192,12 @@ def maize_corner_detection(nodes_length, min_peaks):
     return stop
 
 
-def maize_corner_detection_2(values, min_peaks):
-    # print min_peaks
-    # l = [(index, value) for (index, value) in list(min_peaks)]
-    #
-    # sum_lgth, sum_width = (0, 0)
-    #
-    # index_values = list()
-    # for i, value in enumerate(values):
-    #     index_values.append((i, value))
-    #
-    # index_values = numpy.array(index_values)
-    # print index_values
-    #
-    # k = KMeans(n_clusters=2)
-    # k.fit(l)
-    #
-    # print k.labels_
-    #
-    # return k.labels_
-
-    d = {index: value for (index, value) in list(min_peaks)}
-
-    sum_lgth, sum_width = (0, 0)
-
-    l = list()
-    for index in range(len(values)):
-        sum_lgth += values[index]
-        # sum_width += index
-        sum_width += 1
-        if index in d:
-            # print "Sum width", sum_width
-            l.append((index, values[index], sum_lgth, sum_width))
-            sum_lgth, sum_width = (0, 0)
-
-    del l[0]
-
-    stop = 0
-    sum_values = 0
-    sum_all_lgth = 0
-    sum_all_width = 0
-    for i in range(len(l)):
-        index, v, sum_lgth, sum_width = l[i]
-
-        sum_values += v
-
-        # sum_all_lgth += sum_lgth
-        # sum_all_width += sum_width
-        # print sum_all_width, i, (sum_all_width / (i + 1))
-
-        if i + 2 < len(l):
-            index_2, v_2, sum_lgth_2, sum_width_2 = l[i + 1]
-
-            # print 'Sum value', (sum_values / (i + 1)) * 2.8, v_2
-            if (sum_values / (i + 1)) * 4 < v_2:
-                stop = index
-                # print "Index values, stop", stop
-                break
-
-        else:
-            # print "Index end, stop", stop
-            stop = index
-            break
-
-    return stop
-
-
 def merge(graph, voxels, remaining_voxels, percentage=50):
 
-    voxels_neighbors = set()
+    voxels_neighbors = list()
     for node in voxels:
-        voxels_neighbors = voxels_neighbors.union(graph[node].keys())
+        voxels_neighbors += graph[node].keys()
+    voxels_neighbors = set(voxels_neighbors)
 
     subgraph = graph.subgraph(remaining_voxels)
 
@@ -305,25 +255,37 @@ def segment_leaf_2(nodes, all_shorted_path, voxel_centers,
         return set(leaf)
 
 
-def get_length_point_cloud(nodes):
+def get_max_distance(node, nodes):
+    max_distance = 0
+    max_node = node
 
-    def get_max_distance(node, nodes):
-        max_distance = 0
-        max_node = node
-
-        for n in nodes:
-            distance = numpy.linalg.norm(numpy.array(node) - numpy.array(n))
-            max_distance = max(max_distance, distance)
+    for n in nodes:
+        distance = abs(numpy.linalg.norm(numpy.array(node) - numpy.array(n)))
+        if distance >= max_distance:
+            max_distance = distance
             max_node = n
 
-        return max_node, max_distance
+    return max_node, max_distance
 
-    pt1, _ = get_max_distance(nodes[0], nodes)
-    pt2, distance = get_max_distance(pt1, nodes)
 
-    return distance
+def get_length_point_cloud(nodes):
 
-def smooth(x,window_len=11,window='hanning'):
+    if len(nodes) >= 4:
+        arr = numpy.array(nodes).astype(float)
+        hull = scipy.spatial.ConvexHull(arr, qhull_options="QJ")
+        nodes = hull.vertices
+
+    max_dist = 0
+    for n in nodes:
+        pt, dist = get_max_distance(n, nodes)
+
+        if dist > max_dist:
+            max_dist = dist
+
+    return max_dist
+
+
+def smooth(x, window_len=11, window='hanning'):
     """smooth the data using a window with requested size.
 
     This method is based on the convolution of a scaled window with the signal.
@@ -369,21 +331,141 @@ def smooth(x,window_len=11,window='hanning'):
 
     s = numpy.r_[x[(window_len - 1) // 2:0:-1], x, x[-1:-window_len // 2:-1]]
 
-    print "LENGTH:", len(s), len(x)
-
     if window == 'flat': #moving average
         w = numpy.ones(window_len, 'd')
     else:
         w = eval('numpy.'+window+'(window_len)')
 
-    print "LENGTH:", len(s), len(x), len(w)
     y = numpy.convolve(w/w.sum(), s, mode='valid')
 
     return y
 
 
+def peak_stem_detection(closest_nodes, leafs):
+    nodes_length = map(float, map(len, closest_nodes))
+
+    distances = list()
+    for i in range(len(closest_nodes)):
+        distance = get_length_point_cloud(closest_nodes[i])
+        distances.append(float(distance))
+
+    values_stem = [1] * len(closest_nodes)
+    for i in range(len(closest_nodes)):
+        for voxels, paths in leafs:
+            v = len(set(closest_nodes[i]).intersection(voxels))
+            values_stem[i] += float(v) / float(len(closest_nodes[i]))
+
+    # stop = 0
+    # for i in range(len(values_stem)):
+    #     if values_stem[i] <= 2:
+    #         stop = i
+    #         break
+
+    # values_stem = values_stem[:stop]
+    # nodes_length = nodes_length[:stop]
+
+    mix = list()
+    for i in range(len(values_stem)):
+        mix.append(float(distances[i]) * float(nodes_length[i]) /
+                   float(values_stem[i]))
+
+    stop = mix.index(max(mix))
+    # mix = mix[:stop]
+
+    def show_stop_peak(values, factor=0.50):
+
+        # Normalize
+        values = [v / float(sum(values)) for v in values]
+
+        # Smooth
+        values = smooth(numpy.array(values))
+
+        # Peak
+        lookahead = 1
+
+        max_peaks, min_peaks = peak_detection(values, lookahead)
+
+        # min_peaks = [(0, values[0])] + min_peaks
+
+        # # TODO : hack !
+        # mmin_peaks = list()
+        # for index, value in min_peaks:
+        #     if index <= stop or len(mmin_peaks) <= 2:
+        #         mmin_peaks.append((index, stop))
+        #
+        # min_peaks = mmin_peaks
+
+        min_peaks_values = [v for i, v in min_peaks]
+        a = numpy.array(min_peaks_values).reshape((len(min_peaks_values), 1))
+
+        meanshift = sklearn.cluster.MeanShift(
+            bandwidth=min_peaks_values[0] * factor)
+        meanshift.fit(a)
+
+        ref_label = meanshift.labels_[0]
+
+        min_peaks_stem = list()
+        min_peaks_stem.append((0, values[0]))
+        for (index, value), label in zip(min_peaks, meanshift.labels_):
+            if ref_label == label:
+                if len(min_peaks_stem) <= 1 or index <= stop:
+                    min_peaks_stem.append((index, value))
+
+
+        # color = {0: 'bo', 1: 'ro', 2: 'go', 3: 'co', 4: 'ko'}
+        # for (index, value), label in zip(min_peaks, meanshift.labels_):
+        #     if label not in color:
+        #         matplotlib.pyplot.plot(index, value, 'ko')
+        #     else:
+        #         matplotlib.pyplot.plot(index, value, color[label])
+
+        return min_peaks_stem
+
+    # def plot_values(values, color):
+    #     # Normalize
+    #     values = [v / float(sum(values)) for v in values]
+    #
+    #     # Smooth
+    #     values = smooth(numpy.array(values))
+    #
+    #     matplotlib.pyplot.plot(range(len(values)), values, color)
+    #
+    #     max_peaks, min_peaks = peak_detection(values, 1)
+    #     min_peaks = [(0, values[0])] + min_peaks
+    #     for index, value in min_peaks:
+    #         matplotlib.pyplot.plot(index, value, 'ro')
+    #
+    # matplotlib.pyplot.figure()
+    # plot_values(nodes_length, 'b')
+    # plot_values(mix, 'g')
+    # plot_values(values_stem, 'r')
+    # min_peaks_stem = show_stop_peak(nodes_length)
+    # for index, value in min_peaks_stem:
+    #     matplotlib.pyplot.plot(index, value, 'bo')
+    #
+    # min_peaks_stem = show_stop_peak(mix, 2.0)
+    # for index, value in min_peaks_stem:
+    #     matplotlib.pyplot.plot(index, value, 'bo')
+    # matplotlib.pyplot.show()
+
+    # show_stop_peak(distances, 'g')
+    # show_stop_peak(mix, 'r')
+    min_peaks_stem = show_stop_peak(nodes_length)
+
+    # ==========================================================================
+
+    # matplotlib.pyplot.figure()
+    distances = smooth(numpy.array(distances))
+    # matplotlib.pyplot.plot(range(len(distances)), distances, 'b')
+    # for index, value in min_peaks_stem:
+    #     matplotlib.pyplot.plot(index, distances[index], 'ro')
+    # matplotlib.pyplot.show()
+
+    return min_peaks_stem, distances
+
+
 def stem_detection_2(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
-                     distance_plane=0.50):
+                     distance_plane=0.75):
 
     # ==========================================================================
 
@@ -395,115 +477,31 @@ def stem_detection_2(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
 
     # ==========================================================================
 
-    nodes_length = map(float, map(len, closest_nodes))
     stem_segment_centred_path = [
         numpy.array(nodes).mean(axis=0) for nodes in closest_nodes]
     # ==========================================================================
 
-    distances = list()
-    for i in range(len(closest_nodes)):
-        distance = get_length_point_cloud(closest_nodes[i])
-        distances.append(float(distance))
-
-    print('Number leaf', len(leafs))
-
-    values_stem = [1] * len(closest_nodes)
-    for i in range(len(closest_nodes)):
-        for voxels, paths in leafs:
-            v = len(set(closest_nodes[i]).intersection(voxels))
-            print(v)
-            values_stem[i] += float(v) / float(len(closest_nodes[i]))
-
-    for i in range(len(values_stem)):
-        print(i, values_stem[i])
-        if values_stem[i] <= 1:
-            stop = i
-            break
-
-    values_stem = values_stem[:stop]
-    nodes_length = nodes_length[:stop]
-
-    mix = list()
-    for i in range(len(values_stem)):
-        mix.append(float(distances[i]) * float(nodes_length[i]) /
-                   values_stem[i])
-
-    stop = mix.index(max(mix))
-
-    mix = mix[:stop]
-    nodes_length = nodes_length[:stop]
-
-    def find_stop_peak(values):
-        lookahead = int(len(values) / 50.0)
-
-        max_peaks, min_peaks = peak_detection(values, lookahead)
-        labels = maize_corner_detection_2(values, min_peaks)
-
-        return labels, min_peaks, max_peaks
-
-    def show_stop_peak(values, color='r'):
-
-        # Normalize
-        values = [v / float(sum(values)) for v in values]
-
-        # Smooth
-        values = smooth(numpy.array(values))
-
-        # Plot
-        matplotlib.pyplot.plot(range(len(values)), values, color)
-
-        # Peak
-        stop, min_peaks, max_peaks = find_stop_peak(values)
-
-        min_peaks_values = [v for i, v in min_peaks]
-        a = numpy.array(min_peaks_values).reshape((len(min_peaks_values), 1))
-        # kmean = sklearn.cluster.KMeans(n_clusters=2)
-        # kmean.fit(a)
-
-        meanshift = sklearn.cluster.MeanShift(bandwidth=min_peaks_values[0] *
-                                                        1.5)
-        meanshift.fit(a)
-
-        ref_label = meanshift.labels_[0]
-
-        min_peaks_stem = list()
-        for (index, value), label in zip(min_peaks, meanshift.labels_):
-            if ref_label == label:
-                min_peaks_stem.append((index, value))
-
-        color = {0: 'bo', 1: 'ro', 2: 'go', 3: 'co', 4: 'ko'}
-        for (index, value), label in zip(min_peaks, meanshift.labels_):
-            matplotlib.pyplot.plot(index, value, color[label])
-
-        return min_peaks_stem
-
-    matplotlib.pyplot.figure()
-    show_stop_peak(mix, 'r')
-    min_peaks_stem = show_stop_peak(nodes_length, 'b')
-    matplotlib.pyplot.show()
+    min_peaks_stem, distances = peak_stem_detection(closest_nodes, leafs)
 
     # ==========================================================================
 
-    matplotlib.pyplot.figure()
-    distances = smooth(numpy.array(distances))
-    matplotlib.pyplot.plot(range(len(distances)), distances, 'b')
-    for index, value in min_peaks_stem:
-        matplotlib.pyplot.plot(index, distances[index], 'ro')
-    matplotlib.pyplot.show()
-
     stem_voxel = set()
-    radius = list()
+    radius = dict()
     stem_centred_path_min_peak = list()
+    max_index_min_peak = 0
     for index, value in min_peaks_stem:
-        radius.append(distances[index] / 2.0)
+        max_index_min_peak = max(max_index_min_peak, index)
+        radius[index] = distances[index] / 2.0
         stem_centred_path_min_peak.append(stem_segment_centred_path[index])
         stem_voxel = stem_voxel.union(closest_nodes[index])
+
     # ==========================================================================
     # Interpolate
 
     new_centred_shorted_path = list()
-    new_centred_shorted_path.append(stem_segment_centred_path[0])
+    # new_centred_shorted_path.append(stem_segment_centred_path[0])
     new_centred_shorted_path += stem_centred_path_min_peak
+
     len_new_centred_shorted_path = len(new_centred_shorted_path)
     new_centred_shorted_path = numpy.array(new_centred_shorted_path).transpose()
 
@@ -515,7 +513,16 @@ def stem_detection_2(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
 
     # ==========================================================================
-    # TODO : Wrong radius for the interpolation !!!!
+
+    arr_stem_voxels = set()
+    for nodes in closest_nodes[:max_index_min_peak + 1]:
+        arr_stem_voxels = arr_stem_voxels.union(set(nodes))
+
+    arr_stem_voxels = numpy.array(list(arr_stem_voxels))
+
+    stem_top = set(closest_nodes[max_index_min_peak])
+
+    # ==========================================================================
 
     def get_nodes_radius(center, points, radius):
 
@@ -530,29 +537,25 @@ def stem_detection_2(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
 
         return result
 
-    score = len(xxx) / len(radius)
-
-    j = 0
-    r = voxel_size
-
-    print(radius)
-
     real_path = list()
     for i in range(len(xxx)):
-        if i % score == 0 and j < len(radius):
-            r = radius[j]
-            j += 1
 
-        print("Radius :", i, r)
+        index = int(i * max_index_min_peak / 500.0)
+        ii = min([ind for ind in radius.keys() if index < ind])
+        r = radius[ii]
+
+        # print("Radius :", i, r)
 
         x, y, z = xxx[i], yyy[i], zzz[i]
         real_path.append((x, y, z))
-        result = get_nodes_radius((x, y, z), arr_stem_segment_voxel, r)
+        result = get_nodes_radius((x, y, z), arr_stem_voxels, r)
         stem_voxel = stem_voxel.union(result)
 
     not_stem_voxel = set(stem_segment_voxel).difference(stem_voxel)
 
-    return stem_voxel, not_stem_voxel, real_path
+    stem_path = stem_segment_path[:max_index_min_peak + 1]
+
+    return stem_voxel, not_stem_voxel, stem_path, stem_top
 
 
 def stem_segmentation(voxel_centers, all_shorted_path_down,
@@ -663,17 +666,7 @@ def stem_segmentation(voxel_centers, all_shorted_path_down,
     # ==========================================================================
     # Compute radius
 
-    def get_max_distance(node, nodes):
-        max_distance = 0
-        max_node = node
-
-        for n in nodes:
-            distance = numpy.linalg.norm(numpy.array(node) - numpy.array(n))
-            max_distance = max(max_distance, distance)
-            max_node = n
-
-        return max_node, max_distance
-
+    # TODO : Wrong !!!!!!
     radius = list()
     radius.append(None)
     for index, value in stem_min_peaks:
@@ -843,9 +836,9 @@ def segment_leaf(voxels,
         remain = set(voxels).difference(leaf)
 
         if verbose:
-            print "len of connected_component :", len(voxels)
-            print "len of not_leaf :", len(remain)
-            print "len of leaf  :", len(leaf)
+            print("len of connected_component :", len(voxels))
+            print("len of not_leaf :", len(remain))
+            print("len of leaf  :", len(leaf))
 
         leaf, leaf_neighbors, connected_components_remain = merge(
             graph, leaf, remain)

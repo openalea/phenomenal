@@ -85,7 +85,7 @@ def extract_data_leaf(leaf, longest_shortest_path):
 
     x, y, z = path[0]
     vectors = list()
-    for i in xrange(1, len(path)):
+    for i in range(1, len(path)):
         xx, yy, zz = path[i]
 
         v = (xx - x, yy - y, zz - z)

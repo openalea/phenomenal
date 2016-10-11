@@ -13,6 +13,7 @@ import numpy
 import scipy.interpolate
 import collections
 import math
+import scipy.spatial
 
 from alinea.phenomenal.segmentation_3d.plane_interception import (
     compute_closest_nodes)
@@ -25,21 +26,29 @@ def get_max_distance(node, nodes):
     max_node = node
 
     for n in nodes:
-        distance = numpy.linalg.norm(numpy.array(node) - numpy.array(n))
-        max_distance = max(max_distance, distance)
-        max_node = n
+        distance = abs(numpy.linalg.norm(numpy.array(node) - numpy.array(n)))
+        if distance >= max_distance:
+            max_distance = distance
+            max_node = n
 
     return max_node, max_distance
 
 
-def voxel_analysis(voxel, voxel_size):
+def get_length_point_cloud(nodes):
 
-    info = dict()
+    if len(nodes) >= 4:
+        arr = numpy.array(nodes).astype(float)
+        hull = scipy.spatial.ConvexHull(arr, qhull_options="QJ")
+        nodes = hull.vertices
 
-    info['voxel_size'] = voxel_size
-    info['number_of_voxel'] = len(voxel)
+    max_dist = 0
+    for n in nodes:
+        pt, dist = get_max_distance(n, nodes)
 
-    return info
+        if dist > max_dist:
+            max_dist = dist
+
+    return max_dist
 
 
 def voxels_path_analysis(voxel, path, voxel_size,
@@ -68,9 +77,7 @@ def voxels_path_analysis(voxel, path, voxel_size,
 
     width = list()
     for nodes in closest_nodes:
-        pt1, _ = get_max_distance(nodes[0], nodes)
-        pt2, distance = get_max_distance(pt1, nodes)
-        width.append(distance)
+        width.append(get_length_point_cloud(nodes))
 
     # info['width'] = width
     info['max_width'] = max(width)
@@ -79,8 +86,12 @@ def voxels_path_analysis(voxel, path, voxel_size,
 
     # ==========================================================================
 
-    centred_path = [numpy.array(nodes).mean(axis=0) for nodes in closest_nodes]
-    arr_centred_path = numpy.array(centred_path).transpose()
+    centred_path = [tuple(numpy.array(nodes).mean(axis=0)) for nodes in
+                    closest_nodes]
+
+    centred_path = list(set(centred_path))
+
+    arr_centred_path = numpy.array(centred_path, dtype=float).transpose()
 
     k = 5
     while len(centred_path) <= k and k > 1:
@@ -130,58 +141,17 @@ def voxels_path_analysis(voxel, path, voxel_size,
     return info
 
 
-def info_plant_empty():
-    info = dict()
-
-    info['max_width'] = None
-    info['mean_width'] = None
-    info['min_width'] = None
-    info['length'] = None
-    info['height'] = None
-    info['base'] = None
-    info['azimuth'] = None
-    info['voxel_size'] = None
-    info['number_of_voxel'] = None
-
-    return info
-
-
-def plant_info_empty():
-
-    plant_info = dict()
-    labels = ['stem', 'cornet']
-    for i in range(0, 20):
-        labels.append('leaf_' + str(i))
-    for i in range(0, 20):
-        labels.append('connected_leaf_' + str(i))
-
-    for label in labels:
-        info = info_plant_empty()
-
-        for info_key in list(info.keys()):
-            plant_info[label + '_' + info_key] = info.pop(info_key)
-
-    return plant_info
-
-
 def plant_analysis(labeled_voxels, labeled_path, voxel_size):
 
-    plant_info = dict()
+    plant_info = list()
     for label in labeled_voxels:
 
         voxel = labeled_voxels[label]
+        path = labeled_path[label]
 
-        if label in labeled_path:
-            path = labeled_path[label]
-            info = voxels_path_analysis(voxel, path, voxel_size)
-        else:
-            info = voxel_analysis(voxel, voxel_size)
+        info = voxels_path_analysis(voxel, path, voxel_size)
+        info['label'] = label
 
-        for info_key in list(info.keys()):
-            plant_info[label + '_' + info_key] = info.pop(info_key)
+        plant_info.append(info)
 
     return plant_info
-
-
-
-
