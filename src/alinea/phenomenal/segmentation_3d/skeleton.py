@@ -11,6 +11,7 @@
 # ==============================================================================
 import numpy
 import networkx
+import scipy.spatial
 
 from alinea.phenomenal.segmentation_3d.algorithm import (
     merge)
@@ -66,14 +67,58 @@ def find_base_stem_position(voxel_centers, voxel_size, neighbor_size=50):
     return pos
 
 
+def fusion_graph(graph):
+
+    connected_component = list(networkx.connected_component_subgraphs(
+        graph, copy=False))
+
+
+    nodes_connected_component = [cc.nodes() for cc in connected_component]
+
+    while len(nodes_connected_component) > 1:
+
+        nodes_src = nodes_connected_component[0]
+        nodes_dst = set()
+        nodes_connected_component = nodes_connected_component[1:]
+
+        pt1 = None
+        pt2 = None
+        min_dist = float('inf')
+
+        for nodes in nodes_connected_component:
+
+            result = scipy.spatial.distance.cdist(nodes_src, nodes, 'euclidean')
+
+            min1 = result.min(axis=1)
+            m = min1.min(axis=0)
+
+            if m < min_dist:
+                min_dist = m
+
+                dst_index = numpy.argmin(result, axis=1)
+                src_index = numpy.argmin(min1, axis=0)
+
+                pt1 = nodes_src[src_index]
+                pt2 = nodes[dst_index[src_index]]
+
+                nodes_dst = nodes
+
+        nodes_connected_component.remove(nodes_dst)
+        nodes_connected_component.append(list(set(nodes_src).union(nodes_dst)))
+        graph.add_edge(pt1, pt2, weight=min_dist)
+
+    return graph
+
+
 def graph_skeletonize(voxel_centers, voxel_size):
     # ==========================================================================
     # Graph creation
     graph = create_graph(voxel_centers, voxel_size=voxel_size)
 
-    # Keep the biggest connected components
-    graph = max(
-        networkx.connected_component_subgraphs(graph, copy=False), key=len)
+    graph = fusion_graph(graph)
+    # # Keep the biggest connected components
+    # graph = max(networkx.connected_component_subgraphs(graph, copy=False),
+    #             key=len)
 
     # Keep the voxel cloud of the biggest component
     biggest_component_voxel_centers = graph.nodes()
@@ -117,7 +162,8 @@ def segment_path(voxels, array_voxels,
             array_voxels,
             leaf_skeleton_path,
             radius=8,
-            dist=distance_plane)
+            dist=distance_plane,
+            graph=graph)
 
         leaf = set().union(*closest_nodes)
         remain = set(voxels).difference(leaf)
@@ -138,7 +184,7 @@ def skeletonize(voxels_plant, voxel_size, distance_plane=1.0):
     graph, biggest_connected_voxels_plant, skeleton_path = \
         graph_skeletonize(voxels_plant, voxel_size)
 
-    voxel_plant_not_connected = set(graph.nodes()).difference(set(voxels_plant))
+    # voxel_plant_not_connected = set(graph.nodes()).difference(set(voxels_plant))
 
     # ==========================================================================
     voxels_plant = biggest_connected_voxels_plant

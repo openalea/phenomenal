@@ -17,6 +17,7 @@ from alinea.phenomenal.segmentation_3d.algorithm import (
 
 # ==============================================================================
 
+
 def maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
     k = neighbor_size * voxel_size
 
