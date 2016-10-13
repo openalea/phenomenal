@@ -11,11 +11,13 @@
 # ==============================================================================
 import math
 import numpy
+import networkx
 
 # ==============================================================================
 
 
-def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
+def get_node_close_to_planes(voxels, node_src, plane, dist=0.75,
+                             voxel_size=4, graph=None):
     """
     - voxels is a numpy array
     - node_src tuple
@@ -25,6 +27,8 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
     - dist : is the maximal distance between plane and node
 
     """
+
+    # TODO : Maybe change that by graph connected definition
 
     res = abs(voxels[:, 0] * plane[0] +
               voxels[:, 1] * plane[1] +
@@ -38,6 +42,16 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
 
     nodes = list()
     closest_node = list()
+
+    if graph is not None:
+        closest_voxel = map(tuple, closest_voxel)
+        subgraph = graph.subgraph(closest_voxel)
+        connected_component = networkx.connected_component_subgraphs(
+            subgraph, copy=False)
+
+        for cc in connected_component:
+            if node_src in cc:
+                return cc
 
     nodes.append(numpy.array(node_src))
 
@@ -61,7 +75,7 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
     return map(tuple, closest_node)
 
 
-def compute_closest_nodes(voxels, path, radius=8, dist=0.75):
+def compute_closest_nodes(voxels, path, radius=8, dist=0.75, graph=None):
     planes = list()
     closest_nodes = list()
 
@@ -94,7 +108,8 @@ def compute_closest_nodes(voxels, path, radius=8, dist=0.75):
 
         planes.append(plane)
 
-        nodes = get_node_close_to_planes(voxels, node, plane, dist=dist)
+        nodes = get_node_close_to_planes(voxels, node, plane, dist=dist,
+                                         graph=graph)
 
         closest_nodes.append(nodes)
 
