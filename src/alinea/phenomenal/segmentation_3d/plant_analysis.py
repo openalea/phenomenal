@@ -18,6 +18,8 @@ import scipy.spatial
 from alinea.phenomenal.segmentation_3d.plane_interception import (
     compute_closest_nodes)
 
+from alinea.phenomenal.display.segmentation3d import (show_list_points_3d)
+
 # ==============================================================================
 
 
@@ -36,40 +38,99 @@ def get_max_distance(node, nodes):
 
 def get_length_point_cloud(nodes):
 
-    if len(nodes) >= 4:
-        arr = numpy.array(nodes).astype(float)
-        hull = scipy.spatial.ConvexHull(arr, qhull_options="QJ")
-        nodes = hull.vertices
+    # print nodes
+    # if len(nodes) >= 4:
+    #     arr = numpy.array(nodes).astype(float)
+    #     hull = scipy.spatial.ConvexHull(arr, qhull_options="QJ")
+    #     nodes = hull.vertices
 
-    max_dist = 0
-    for n in nodes:
-        pt, dist = get_max_distance(n, nodes)
+    res = scipy.spatial.distance.pdist(nodes, 'euclidean')
 
-        if dist > max_dist:
-            max_dist = dist
-
-    return max_dist
+    if len(res) > 0:
+        return res.max()
+    else:
+        return 0
 
 
 def voxels_path_analysis(voxel, path, voxel_size,
-                         distance_plane=0.75):
+                         higher_path, all_vs, distance_plane=0.75):
 
     info = collections.defaultdict()
 
     set_voxel = set(list(voxel))
-    arr_voxel = numpy.array(list(voxel))
     planes, closest_nodes = compute_closest_nodes(
-        arr_voxel,
+        all_vs,
         path,
         radius=8,
         dist=distance_plane * voxel_size)
 
+    voxels = set().union(*closest_nodes)
+    voxels = list(voxels.intersection(set(higher_path)))
+    z = numpy.max(numpy.array(voxels)[:, 2])
+
+    info["z_intersection"] = z
+
     # ==========================================================================
 
-    closest_nodes = [nodes for nodes in closest_nodes
-                     if len(set_voxel.intersection(set(nodes))) > 0]
+    closest_nodes = [list(set_voxel.intersection(set(nodes))) for nodes in
+                     closest_nodes]
 
-    # print(len(closest_nodes), len(path))
+    tmp_closest_nodes = list()
+    tmp_path = list()
+
+    for nodes, node in zip(closest_nodes, path):
+        if len(nodes) > 0:
+            tmp_closest_nodes.append(nodes)
+            tmp_path.append(node)
+
+    path = tmp_path
+    closest_nodes = tmp_closest_nodes
+
+    # centred_path = [tuple(numpy.array(nodes).mean(axis=0)) for nodes in
+    #                 closest_nodes]
+    #
+    # seen = set()
+    # seen_add = seen.add
+    # centred_path = [numpy.array(x) for x in centred_path if not (
+    #     x in seen or seen_add(x))]
+    #
+    # # centred_path = path
+    # arr_centred_path = numpy.array(centred_path, dtype=float).transpose()
+    #
+    # k = 5
+    # while len(centred_path) <= k and k > 1:
+    #     k -= 1
+    #
+    # tck, u = scipy.interpolate.splprep(arr_centred_path, k=k)
+    # xxx, yyy, zzz = scipy.interpolate.splev(
+    #     numpy.linspace(0, 1, len(centred_path)), tck)
+
+    # real_path = [(x, y, z) for x, y, z in zip(xxx, yyy, zzz)]
+
+    # real_path = list()
+    # for i in range(len(xxx)):
+    #     real_path.append((int(xxx[i]), int(yyy[i]), int(zzz[i])))
+
+    # print len_index_path, len(centred_path), len(real_path)
+    # show_list_points_3d([path, centred_path],
+    #                     list_color=[(1, 0, 0), (0, 1, 0)])
+
+    info['polyline'] = path
+
+    # from alinea.phenomenal.display.segmentation3d import show_list_points_3d
+    # show_list_points_3d([voxel, path], list_color=[(0, 1, 0), (1, 0, 0)])
+
+    # path = real_path
+    # ==========================================================================
+
+    # planes, closest_nodes = compute_closest_nodes(
+    #     arr_voxel,
+    #     path,
+    #     radius=8,
+    #     dist=distance_plane * voxel_size)
+    #
+    # closest_nodes = [nodes for nodes in closest_nodes
+    #                  if len(set_voxel.intersection(set(nodes))) > 0]
 
     # ==========================================================================
 
@@ -77,30 +138,10 @@ def voxels_path_analysis(voxel, path, voxel_size,
     for nodes in closest_nodes:
         width.append(get_length_point_cloud(nodes))
 
-    # info['width'] = width
+    info['width'] = width
     info['max_width'] = max(width)
     info['mean_width'] = sum(width) / float(len(width))
     info['min_width'] = min(width)
-
-    # ==========================================================================
-
-    centred_path = [tuple(numpy.array(nodes).mean(axis=0)) for nodes in
-                    closest_nodes]
-
-    centred_path = list(set(centred_path))
-
-    arr_centred_path = numpy.array(centred_path, dtype=float).transpose()
-
-    k = 5
-    while len(centred_path) <= k and k > 1:
-        k -= 1
-
-    tck, u = scipy.interpolate.splprep(arr_centred_path, k=k)
-    xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
-
-    real_path = [(x, y, z) for x, y, z in zip(xxx, yyy, zzz)]
-
-    # info['polyline'] = real_path
 
     # ==========================================================================
 
@@ -111,12 +152,12 @@ def voxels_path_analysis(voxel, path, voxel_size,
     # ==========================================================================
 
     info['length'] = length
-    info['height'] = real_path[-1][2]
-    info['base'] = real_path[0][2]
+    info['height'] = path[-1][2]
+    info['base'] = path[0][2]
 
     # ==========================================================================
 
-    x, y, z = real_path[0]
+    x, y, z = path[0]
     vectors = list()
     for i in range(1, len(path)):
         xx, yy, zz = path[i]
@@ -139,15 +180,40 @@ def voxels_path_analysis(voxel, path, voxel_size,
     return info
 
 
-def plant_analysis(labeled_voxels, labeled_path, voxel_size):
+def plant_analysis(voxel_point_cloud_segments):
 
     plant_info = list()
-    for label in labeled_voxels:
 
-        voxel = labeled_voxels[label]
-        path = labeled_path[label]
+    z_max = float("-inf")
+    higher_path = None
+    all_vs = set()
+    for vs in voxel_point_cloud_segments.voxel_point_cloud_segment:
+        all_vs = all_vs.union(set(vs.voxels_center))
+        for path in vs.paths:
+            z = numpy.max(numpy.array(path)[:, 2])
 
-        info = voxels_path_analysis(voxel, path, voxel_size)
+            if z > z_max:
+                z_max = z
+                higher_path = path
+
+    all_vs = numpy.array(list(all_vs))
+
+    for vs in voxel_point_cloud_segments.voxel_point_cloud_segment:
+
+        label = vs.label
+        voxels_centers = vs.voxels_center
+        voxels_size = vs.voxels_size
+        paths = vs.paths
+
+        if len(paths) > 0:
+            path = max(paths, key=len)
+            info = voxels_path_analysis(voxels_centers, path, voxels_size,
+                                        higher_path, all_vs)
+        else:
+            info = dict()
+            info['voxel_size'] = voxels_size
+            info['number_of_voxel'] = len(voxels_centers)
+
         info['label'] = label
 
         plant_info.append(info)
