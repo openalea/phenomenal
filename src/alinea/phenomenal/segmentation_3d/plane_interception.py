@@ -11,12 +11,13 @@
 # ==============================================================================
 import math
 import numpy
-import collections
-import time
+import networkx
+
 # ==============================================================================
 
 
-def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
+def get_node_close_to_planes(voxels, node_src, plane, dist=0.75,
+                             voxel_size=4, graph=None):
     """
     - voxels is a numpy array
     - node_src tuple
@@ -27,6 +28,8 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
 
     """
 
+    # TODO : Maybe change that by graph connected definition
+
     res = abs(voxels[:, 0] * plane[0] +
               voxels[:, 1] * plane[1] +
               voxels[:, 2] * plane[2] -
@@ -36,20 +39,31 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
 
     index = numpy.where(res < dist)[0]
     closest_voxel = voxels[index]
-    # print "closest voxel", closest_voxel
+
     nodes = list()
     closest_node = list()
 
-    # if node_src in map(tuple, voxels):
+    if graph is not None:
+        closest_voxel = map(tuple, closest_voxel)
+        subgraph = graph.subgraph(closest_voxel)
+        connected_component = networkx.connected_component_subgraphs(
+            subgraph, copy=False)
+
+        for cc in connected_component:
+            if node_src in cc:
+                return cc
+
     nodes.append(numpy.array(node_src))
-    closest_node.append(numpy.array(node_src))
 
     while nodes:
         node = nodes.pop()
 
-        rr = numpy.sum(abs(closest_voxel - node), 1)
+        rr = abs(closest_voxel - node)
 
-        index = numpy.where(rr <= 3 * voxel_size)[0]
+        index = numpy.where((rr[:, 0] <= voxel_size) &
+                            (rr[:, 1] <= voxel_size) &
+                            (rr[:, 2] <= voxel_size))[0]
+
         nodes += list(closest_voxel[index])
         closest_node += list(closest_voxel[index])
 
@@ -61,39 +75,13 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75, voxel_size=4):
     return map(tuple, closest_node)
 
 
-def compute_closest_nodes(voxels, path, radius=8, dist=0.75, verbose=False,
-                          graph=None):
+def compute_closest_nodes(voxels, path, radius=8, dist=0.75, graph=None):
     planes = list()
     closest_nodes = list()
 
     length_path = len(path)
     for i in range(length_path):
-        # print i, '/', length_path
         node = path[i]
-
-        # neighbors = numpy.array(
-        #     path[max(0, i - radius):min(length_path, i + radius)])
-        #
-        # # # Do an SVD on the mean-centered neighbors points.
-        # k = abs(numpy.linalg.svd(neighbors - neighbors.mean(axis=0))[2][0])
-
-        # ======================================================================
-
-        # path_neighbors = path[max(0, i - radius):min(length_path, i + radius)]
-        #
-        # x, y, z = path_neighbors[0]
-        # print x, y, z, node
-        #
-        # vectors = list()
-        # for i in xrange(1, len(path_neighbors)):
-        #     xx, yy, zz = path_neighbors[i]
-        #
-        #     v = map(float, (xx - x, yy - y, zz - z))
-        #     vectors.append(v)
-        #
-        # vector_mean = numpy.array(vectors).mean(axis=0)
-        #
-        # k = vector_mean
 
         # ======================================================================
 
@@ -120,128 +108,9 @@ def compute_closest_nodes(voxels, path, radius=8, dist=0.75, verbose=False,
 
         planes.append(plane)
 
-        nodes = get_node_close_to_planes(voxels, node, plane, dist=dist)
+        nodes = get_node_close_to_planes(voxels, node, plane, dist=dist,
+                                         graph=graph)
 
         closest_nodes.append(nodes)
-
-        # if verbose:
-        #
-        #     from alinea.phenomenal.display.segmentation3d import (
-        #         plot_plane)
-        #
-        #     from alinea.phenomenal.display.multi_view_reconstruction import (
-        #         plot_points_3d, show_list_points_3d)
-        #
-        #     import mayavi.mlab
-        #
-        #     mayavi.mlab.figure()
-        #
-        #     plot_plane(plane, node)
-        #     plot_points_3d(path)
-        #
-        #     mayavi.mlab.show()
-        #
-        #     # show_list_points_3d([nodes, path])
 
     return planes, closest_nodes
-
-# ==============================================================================
-# Old implementation soon removed TODO: remove below or move for visualization
-# ==============================================================================
-
-
-def compute_planes(points):
-    mean_point = points.mean(axis=0)
-
-    # Do an SVD on the mean-centered data.
-    uu, dd, vv = numpy.linalg.svd(points - mean_point)
-
-    return vv[0]
-
-
-def get_point_of_planes(normal, node, radius=5):
-    a, b, c = normal
-    x, y, z = node
-
-    d = a * x + b * y + c * z
-
-    xx = numpy.linspace(x - radius, x + radius, radius * 2)
-    yy = numpy.linspace(y - radius, y + radius, radius * 2)
-
-    xv, yv = numpy.meshgrid(xx, yy)
-
-    zz = - (a * xv + b * yv - d) / c
-
-    return xv, yv, zz
-
-
-def get_distance_point_to_plane(node, plane):
-    x, y, z = node
-    a, b, c, d = plane
-
-    return abs(a * x + b * y + c * z - d) / math.sqrt(a ** 2 + b ** 2 + c ** 2)
-
-
-def get_node_close_to_planes_2(graph, node_src, plane, dist=0.75):
-    a, b, c, d = plane
-    plane_square = math.sqrt(a ** 2 + b ** 2 + c ** 2)
-
-    closest_node = list()
-    closest_node.append(node_src)
-
-    nodes = collections.deque()
-    nodes += graph[node_src].keys()
-    while nodes:
-        node = nodes.pop()
-
-        if node not in closest_node:
-            x, y, z = node
-
-            # Plane distance equation
-            distance = abs(a * x + b * y + c * z - d) / plane_square
-
-            if distance < dist:
-                closest_node.append(node)
-
-                nodes += graph[node].keys()
-
-    return closest_node
-
-
-def compute_closest_nodes_2(graph, path, radius=8, verbose=False, dist=0.75):
-    if verbose:
-        print "Computation of planes long to the path : ...",
-        t0 = time.time()
-
-    planes = list()
-    closest_nodes = list()
-    centred_path = list()
-
-    length_path = len(path)
-    for i in xrange(length_path):
-        node = path[i]
-
-        neighbors = numpy.array(
-            path[max(0, i - radius):min(length_path, i + radius)])
-
-        # Do an SVD on the mean-centered neighbors points.
-        k = numpy.linalg.svd(neighbors - neighbors.mean(axis=0))[2][0]
-
-        # Computation of plane equation
-        # x, y, z = node
-        # a, b, c, _ = k
-        # Plane equation : d = a * x + b * y + c * z
-        d = k[0] * node[0] + k[1] * node[1] + k[2] * node[2]
-        plane = (k[0], k[1], k[2], d)
-        planes.append(plane)
-
-        nodes = get_node_close_to_planes_2(graph, node, plane, dist=dist)
-
-        centred_path.append(numpy.array(nodes).mean(axis=0))
-        closest_nodes.append(nodes)
-
-    if verbose:
-        print "done, in ", time.time() - t0, 'seconds'
-
-    return planes, closest_nodes, centred_path
-

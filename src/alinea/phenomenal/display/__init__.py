@@ -94,6 +94,7 @@ from alinea.phenomenal.display.calibration import (
 from alinea.phenomenal.display.multi_view_reconstruction import (
     plot_3d,
     plot_points_3d,
+    plot_list_points_3d,
     show_points_3d,
     show_list_points_3d)
 
