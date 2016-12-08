@@ -29,7 +29,7 @@ def merge(graph, voxels, remaining_voxels, percentage=50):
     voxels_neighbors = list()
     for node in voxels:
         voxels_neighbors += graph[node].keys()
-    voxels_neighbors = set(voxels_neighbors)
+    voxels_neighbors = set(voxels_neighbors) - voxels
 
     subgraph = graph.subgraph(remaining_voxels)
 
@@ -60,19 +60,12 @@ def get_max_distance(node, nodes):
 
 def get_length_point_cloud(nodes):
 
-    if len(nodes) >= 4:
-        arr = numpy.array(nodes).astype(float)
-        hull = scipy.spatial.ConvexHull(arr, qhull_options="QJ")
-        nodes = hull.vertices
+    res = scipy.spatial.distance.pdist(nodes, 'euclidean')
 
-    max_dist = 0
-    for n in nodes:
-        pt, dist = get_max_distance(n, nodes)
-
-        if dist > max_dist:
-            max_dist = dist
-
-    return max_dist
+    if len(res) > 0:
+        return res.max()
+    else:
+        return 0
 
 
 def smooth(x, window_len=11, window='hanning'):
@@ -178,21 +171,27 @@ def peak_stem_detection(closest_nodes, leafs):
         min_peaks_values = [v for i, v in min_peaks]
         a = numpy.array(min_peaks_values).reshape((len(min_peaks_values), 1))
 
-        meanshift = sklearn.cluster.MeanShift(
-            bandwidth=min_peaks_values[0] * factor)
-        meanshift.fit(a)
+        if len(min_peaks_values) > 0:
+            meanshift = sklearn.cluster.MeanShift(
+                bandwidth=min_peaks_values[0] * factor)
+            meanshift.fit(a)
 
-        ref_label = meanshift.labels_[0]
+            ref_label = meanshift.labels_[0]
 
-        min_peaks_stem = list()
-        min_peaks_stem.append((0, values[0]))
-        for (index, value), label in zip(min_peaks, meanshift.labels_):
-            if ref_label == label:
-                if len(min_peaks_stem) <= 1 or index <= stop:
-                    min_peaks_stem.append((index, value))
+            min_peaks_stem = list()
+            min_peaks_stem.append((0, values[0]))
+            for (index, value), label in zip(min_peaks, meanshift.labels_):
+                if ref_label == label:
+                    if len(min_peaks_stem) <= 1 or index <= stop:
+                        min_peaks_stem.append((index, value))
+        else:
+            min_peaks_stem = list()
+            for i, v in enumerate(values):
+                min_peaks_stem.append((i, v))
 
         return min_peaks_stem
 
+    #
     # import matplotlib.pyplot
     #
     # def plot_values(values, color):
@@ -208,12 +207,12 @@ def peak_stem_detection(closest_nodes, leafs):
     #     min_peaks = [(0, values[0])] + min_peaks
     #     for index, value in min_peaks:
     #         matplotlib.pyplot.plot(index, value, 'ro')
-    #
+
     # matplotlib.pyplot.figure()
     # plot_values(nodes_length, 'b')
     # plot_values(mix, 'g')
     # plot_values(values_stem, 'r')
-    # min_peaks_stem = show_stop_peak(nodes_length)
+    min_peaks_stem = show_stop_peak(nodes_length)
     # for index, value in min_peaks_stem:
     #     matplotlib.pyplot.plot(index, value, 'bo')
     #
@@ -222,10 +221,10 @@ def peak_stem_detection(closest_nodes, leafs):
     #     matplotlib.pyplot.plot(index, value, 'bo')
     # matplotlib.pyplot.show()
     #
-    min_peaks_stem = show_stop_peak(nodes_length)
-
-    # ==========================================================================
-
+    # min_peaks_stem = show_stop_peak(nodes_length)
+    #
+    # # ==========================================================================
+    #
     # matplotlib.pyplot.figure()
     distances = smooth(numpy.array(distances))
     # matplotlib.pyplot.plot(range(len(distances)), distances, 'b')
@@ -248,6 +247,20 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
         dist=distance_plane * voxel_size)
 
     # ==========================================================================
+
+    import mayavi.mlab
+    from alinea.phenomenal.display import plot_points_3d
+
+    mayavi.mlab.figure()
+
+    for voxels, paths in leafs:
+        plot_points_3d(voxels, color=(0, 1, 0))
+
+    for nodes in closest_nodes:
+        plot_points_3d(nodes)
+    mayavi.mlab.show()
+
+
 
     stem_segment_centred_path = [
         numpy.array(nodes).mean(axis=0) for nodes in closest_nodes]
@@ -324,6 +337,9 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
     not_stem_voxel = set(stem_segment_voxel).difference(stem_voxel)
 
     stem_path = stem_segment_path[:max_index_min_peak + 1]
+
+    # from alinea.phenomenal.display.segmentation3d import show_list_points_3d
+    # show_list_points_3d([stem_segment_voxel, stem_segment_path, stem_centred_path_min_peak, real_path])
 
     return stem_voxel, not_stem_voxel, stem_path, stem_top
 

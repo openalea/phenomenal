@@ -23,6 +23,8 @@ from alinea.phenomenal.segmentation_3d.graph import (
     create_graph)
 
 from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
+
+from alinea.phenomenal.display.segmentation3d import show_list_points_3d
 # ==============================================================================
 
 
@@ -71,7 +73,6 @@ def fusion_graph(graph):
 
     connected_component = list(networkx.connected_component_subgraphs(
         graph, copy=False))
-
 
     nodes_connected_component = [cc.nodes() for cc in connected_component]
 
@@ -193,6 +194,7 @@ def skeletonize(voxels_plant, voxel_size, distance_plane=1.0):
 
     remain = voxels_plant
     segment = list()
+
     while len(remain) != 0:
 
         segment_voxel, remain, segment_ske_path = segment_path(
@@ -200,6 +202,8 @@ def skeletonize(voxels_plant, voxel_size, distance_plane=1.0):
             distance_plane=distance_plane * voxel_size)
 
         segment.append((segment_voxel, segment_ske_path))
+
+        # show_list_points_3d([remain, segment_voxel, segment_ske_path])
 
     return segment, graph
 

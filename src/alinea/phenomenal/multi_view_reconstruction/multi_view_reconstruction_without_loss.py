@@ -12,6 +12,8 @@
 import collections
 import math
 import numpy
+import time
+import scipy.spatial
 
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
     import (split_voxel_centers_in_four,
@@ -27,10 +29,8 @@ def create_groups(images_projections_refs):
     group_id = 0
     for image, projection, ref in images_projections_refs:
         if ref is True:
-            index = numpy.where(image > 0)
-            for i in xrange(len(index[0])):
-                x, y = (index[0][i], index[1][i])
-
+            xx, yy = numpy.where(image > 0)
+            for x, y in zip(xx, yy):
                 groups[(group_id, x, y)] = [list(), 0, group_id]
 
         group_id += 1
@@ -46,6 +46,9 @@ def fill_groups(images_projections_refs, groups, voxel_centers, voxel_size):
         groups[key][0] = list()
         groups[key][1] = 0
 
+    weight_points = collections.defaultdict(int)
+
+    # groups = collections.defaultdict(list)
     kept = collections.deque()
     for voxel_center in voxel_centers:
         list_group = list()
@@ -63,40 +66,48 @@ def fill_groups(images_projections_refs, groups, voxel_centers, voxel_size):
                 x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
                     voxel_center, voxel_size, projection)
 
-                x_min = min(max(math.floor(x_min), 0), length_image - 1)
-                x_max = min(max(math.ceil(x_max), 0), length_image - 1)
-                y_min = min(max(math.floor(y_min), 0), height_image - 1)
-                y_max = min(max(math.ceil(y_max), 0), height_image - 1)
+                x_min = int(min(max(math.floor(x_min), 0), length_image - 1))
+                x_max = int(min(max(math.ceil(x_max), 0), length_image - 1))
+                y_min = int(min(max(math.floor(y_min), 0), height_image - 1))
+                y_max = int(min(max(math.ceil(y_max), 0), height_image - 1))
 
                 img = image[y_min:y_max + 1, x_min:x_max + 1]
-                index = numpy.where(img > 0)
 
-                for i in xrange(len(index[0])):
-                    x, y = (index[0][i] + y_min, index[1][i] + x_min)
+                xx, yy = numpy.where(img > 0)
 
+                xx += y_min
+                yy += x_min
+
+                # b = g[y_min:y_max + 1, x_min:x_max + 1]
+                # for index, value in numpy.ndenumerate(b):
+                #     b[index] = value.append(voxel_center)
+
+                for x, y in zip(xx, yy):
                     groups[(group_id, x, y)][0].append(new_point)
                     list_group.append(groups[(group_id, x, y)])
+
+                if numpy.any(img > 0):
+                    weight_points[voxel_center] += 1
+
+            else:
+                if voxel_is_visible_in_image(
+                        voxel_center, voxel_size, image, projection):
+                    weight_points[voxel_center] += 1
 
             group_id += 1
 
     for key in groups:
         groups[key][1] = len(groups[key][0])
 
-    return kept, groups
+    return kept, groups, weight_points
 
 
-def kept_points_3d(images_projections_refs, pts, voxel_size, error_tolerance):
+def kept_points_3d(acceptation_criteria, pts, weight_points):
 
     kept = collections.deque()
-    acceptation_criteria = len(images_projections_refs) - error_tolerance
-
-    weight_points = dict()
     for voxel_center, groups, weight in pts:
 
-        for image, projection, ref in images_projections_refs:
-            if voxel_is_visible_in_image(
-                    voxel_center, voxel_size, image, projection):
-                weight += 1
+        weight = weight_points[voxel_center]
 
         if weight >= acceptation_criteria:
             kept.append(voxel_center)
@@ -104,15 +115,13 @@ def kept_points_3d(images_projections_refs, pts, voxel_size, error_tolerance):
             for group in groups:
                 group[1] -= 1
 
-        weight_points[voxel_center] = weight
-
-    return kept, weight_points
+    return kept
 
 
-def compute_sum_weight_of_neighbort(point,
-                                    weight_points,
-                                    radius,
-                                    distance_to_neighbort):
+def compute_sum_weight_of_neighbor(point,
+                                   weight_points,
+                                   radius,
+                                   distance_to_neighbort):
 
     weight = 0
     diameter = radius * 2
@@ -134,17 +143,20 @@ def compute_sum_weight_of_neighbort(point,
     return weight
 
 
-def compute_list_max_weight(group):
+def compute_list_max_weight(group, weight_points):
 
     max_weight = 0
-    list_max_weight = list()
+    for pt3D, list_group, _ in group:
+        weight = weight_points[pt3D]
 
-    for pt3D, list_group, weight in group:
         if weight > max_weight:
             max_weight = weight
-            save_pt = list()
-            save_pt.append((pt3D, list_group, weight))
-        elif weight == max_weight:
+
+    list_max_weight = list()
+    for pt3D, list_group, _ in group:
+        weight = weight_points[pt3D]
+
+        if weight == max_weight:
             list_max_weight.append((pt3D, list_group, weight))
 
     return list_max_weight
@@ -170,7 +182,7 @@ def compute_list_max_neighbort_weigh(list_max_weight,
     list_max_neighbort_weigh = list()
     for pt3d, list_group, weight in list_max_weight:
 
-        sum_weight_of_neighbort = compute_sum_weight_of_neighbort(
+        sum_weight_of_neighbort = compute_sum_weight_of_neighbor(
             pt3d, weight_points, radius, distance_to_neighbort)
 
         if sum_weight_of_neighbort > max_sum_weight:
@@ -189,26 +201,49 @@ def check_groups(kept, groups, weight_points, voxel_size,
 
     for key in groups:
         group, nb, angle = groups[key]
-        if nb <= 0:
+        if nb <= 0 and len(group) > 0:
 
-            list_max_weight = compute_list_max_weight(group)
+            # list_max_weight = compute_list_max_weight(group, weight_points)
 
-            list_different_angle = compute_list_different_angle(
-                list_max_weight, angle)
+            nodes_src = list()
+            for pt3d, list_group, weight in group:
+                nodes_src.append(pt3d)
 
-            if list_different_angle:
-                for pt3d in list_different_angle:
-                    kept.append(pt3d)
-            else:
+            # nodes_src = numpy.array(nodes_src)
+            k = numpy.array(kept)
 
-                list_max_neighbort_weigh = compute_list_max_neighbort_weigh(
-                    list_max_weight,
-                    weight_points,
-                    voxel_size,
-                    distance_to_neighbort)
+            result = scipy.spatial.distance.cdist(nodes_src, k, 'euclidean')
 
-                for pt3d in list_max_neighbort_weigh:
-                    kept.append(pt3d)
+            min1 = result.min(axis=1)
+            # m = min1.min(axis=0)
+
+            # dst_index = numpy.argmin(result, axis=1)
+            src_index = numpy.argmin(min1, axis=0)
+
+            pt3d = nodes_src[src_index]
+            kept.append(pt3d)
+
+                # pt2 = nodes[dst_index[src_index]]
+
+                # nodes_dst = nodes
+
+            # list_different_angle = compute_list_different_angle(
+            #     list_max_weight, angle)
+            #
+            # if list_different_angle:
+            #     kept += list_different_angle
+            # else:
+
+                # list_max_neighbort_weigh = compute_list_max_neighbort_weigh(
+                #     list_max_weight,
+                #     weight_points,
+                #     voxel_size,
+                #     distance_to_neighbort)
+
+                # kept += list_max_neighbort_weigh
+
+            # for pt3d, list_group, weight in list_max_weight:
+            #     kept.append(pt3d)
 
     return collections.deque(set(kept))
 
@@ -216,31 +251,37 @@ def check_groups(kept, groups, weight_points, voxel_size,
 def reconstruction_without_loss(images_projections_refs,
                                 voxel_size=4,
                                 error_tolerance=0,
-                                origin_point=(0.0, 0.0, 0.0),
+                                voxel_center_origin=(0.0, 0.0, 0.0),
+                                world_size=4096,
                                 voxel_centers=None,
                                 verbose=False):
 
     if len(images_projections_refs) == 0:
         return
 
-    origin_radius = 2048 * 2
-
     if voxel_centers is None:
         voxel_centers = collections.deque()
-        voxel_centers.append(origin_point)
+        voxel_centers.append(voxel_center_origin)
 
     nb_iteration = 0
-    while voxel_size < origin_radius:
+    while voxel_size < world_size:
         voxel_size *= 2.0
         nb_iteration += 1
 
     # ==========================================================================
     # Create Groups
-    groups = create_groups(images_projections_refs)
 
+    t0 = time.time()
+    groups = create_groups(images_projections_refs)
+    print "Time create groups", time.time() - t0
+    t0 = time.time()
     # ==========================================================================
 
     for i in range(nb_iteration):
+        if verbose is True:
+            print 'Iteration', i + 1, '/', nb_iteration
+            # print ' : ', len(voxel_centers),
+
         if len(images_projections_refs) == 1:
             voxel_centers = split_voxel_centers_in_four(voxel_centers,
                                                         voxel_size)
@@ -248,28 +289,30 @@ def reconstruction_without_loss(images_projections_refs,
             voxel_centers = split_voxel_centers_in_eight(voxel_centers,
                                                          voxel_size)
         voxel_size /= 2.0
-
+        print "Time split_voxel", time.time() - t0
+        t0 = time.time()
         # ======================================================================
 
-        voxel_centers, groups = fill_groups(
+        voxel_centers, groups, weight_points = fill_groups(
             images_projections_refs, groups, voxel_centers, voxel_size)
+        print "Time fill groups", time.time() - t0
+        t0 = time.time()
 
         # ======================================================================
 
-        if verbose is True:
-            print 'Iteration', i + 1, '/', nb_iteration,
-            print ' : ', len(voxel_centers),
+        acceptation_criteria = len(images_projections_refs) - error_tolerance
+        voxel_centers = kept_points_3d(
+            acceptation_criteria, voxel_centers, weight_points)
 
-        # ======================================================================
-
-        voxel_centers, weight_points = kept_points_3d(
-            images_projections_refs, voxel_centers, voxel_size, error_tolerance)
-
+        print "Time kept_points_3d", time.time() - t0
+        t0 = time.time()
         voxel_centers = check_groups(voxel_centers, groups, weight_points, voxel_size)
 
+        print "Time check_groups", time.time() - t0
+        t0 = time.time()
         # ======================================================================
 
-        if verbose is True:
-            print ' - ', len(voxel_centers)
+        # if verbose is True:
+            # print ' - ', len(voxel_centers)
 
     return voxel_centers

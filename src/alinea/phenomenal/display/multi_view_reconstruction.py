@@ -24,6 +24,40 @@ __all__ = ["show_points_3d",
 
 # ==============================================================================
 
+def show_voxel_point_cloud(voxel_point_cloud, color=None, figure_name="",
+                           notebook=False):
+
+    fg = mayavi.mlab.figure(figure_name, size=(800, 700))
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         100, 0, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(1, 0, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 100, 0,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 1, 0))
+
+    mayavi.mlab.quiver3d(0, 0, 0,
+                         0, 0, 100,
+                         line_width=5.0,
+                         scale_factor=1,
+                         color=(0, 0, 1))
+
+    plot_points_3d(voxel_point_cloud.voxels_center, color=color,
+                   scale_factor=voxel_point_cloud.voxels_size)
+
+    mayavi.mlab.show(stop=notebook)
+
+    im = mayavi.mlab.screenshot()
+
+    mayavi.mlab.close()
+    return im
+
+
+
 
 def show_points_3d(points_3d,
                    color=None,
