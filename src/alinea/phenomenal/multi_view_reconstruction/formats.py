@@ -14,6 +14,8 @@ import re
 import cv2
 import csv
 import collections
+import json
+from ast import literal_eval
 # ==============================================================================
 
 
@@ -55,6 +57,34 @@ def read_from_xyz(filename):
     return voxel_centers
 
 
+# def write_to_json(filename, voxels_center, voxel_size):
+#     if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
+#             filename))):
+#         os.makedirs(os.path.dirname(filename))
+#
+#     with open(filename, 'wb') as f:
+#
+#         dict_to_dump = dict()
+#         number_id = 0
+#         for voxel_center in voxels_center:
+#             dict_to_dump[str(voxel_center)] = (number_id, voxel_size)
+#             number_id += 1
+#
+#         json.dump(dict_to_dump, f)
+#
+#
+# def read_from_json(filename):
+#
+#     with open(filename, 'rb') as f:
+#         dict_load = json.load(f)
+#
+#
+#
+#
+#     voxel_centers = d.keys()
+#
+#     return voxel_centers
+
 def write_to_csv(filename, voxel_centers, voxel_size):
 
     if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
@@ -64,10 +94,11 @@ def write_to_csv(filename, voxel_centers, voxel_size):
     with open(filename, 'wb') as f:
         c = csv.writer(f)
 
-        c.writerow(['x_coord', 'y_coord', 'z_coord', 'voxel_size'])
-
+        c.writerow(['id', 'position', 'size'])
+        number_id = 0
         for x, y, z in voxel_centers:
-            c.writerow([x, y, z, voxel_size])
+            c.writerow([number_id, (x, y, z), voxel_size])
+            number_id += 1
 
 
 def read_from_csv(filename):
@@ -75,17 +106,13 @@ def read_from_csv(filename):
         reader = csv.reader(f)
 
         next(reader)
-        x, y, z, vs = next(reader)
 
-        voxel_size = float(vs)
+        voxels_center = dict()
+        for number_id, position, size in reader:
+            position = literal_eval(position)
+            voxels_center.append(position)
 
-        voxel_centers = list()
-        voxel_centers.append((float(x), float(y), float(z)))
-
-        for x, y, z, vs in reader:
-            voxel_centers.append((float(x), float(y), float(z)))
-
-        return voxel_centers, voxel_size
+        return
 
 
 def write_to_csv_with_label(filename, label_voxel_centers, voxel_size):

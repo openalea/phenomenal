@@ -17,7 +17,7 @@ import collections
 # ==============================================================================
 
 
-def write_labeled_voxels_to_csv(filename, labeled_voxels, voxel_size):
+def write_labeled_voxels_to_csv(filename, segments, voxel_size):
 
     if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
             filename))):
@@ -28,9 +28,9 @@ def write_labeled_voxels_to_csv(filename, labeled_voxels, voxel_size):
 
         c.writerow(['x_coord', 'y_coord', 'z_coord', 'voxel_size', 'label'])
 
-        for label in labeled_voxels:
-            for x, y, z in labeled_voxels[label]:
-                c.writerow([x, y, z, voxel_size, label])
+        for segment in segments:
+            for x, y, z in segment["voxel"]:
+                c.writerow([x, y, z, voxel_size, segment["label"]])
 
 
 def read_labeled_voxels_from_csv(filename):
@@ -51,7 +51,7 @@ def read_labeled_voxels_from_csv(filename):
         return labeled_voxels, voxel_size
 
 
-def write_labeled_skeleton_path_to_csv(filename, labeled_skeleton_path):
+def write_labeled_skeleton_path_to_csv(filename, segments):
 
     if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
             filename))):
@@ -62,9 +62,10 @@ def write_labeled_skeleton_path_to_csv(filename, labeled_skeleton_path):
 
         c.writerow(['index', 'x_coord', 'y_coord', 'z_coord', 'label'])
 
-        for label in labeled_skeleton_path:
-            for i, (x, y, z) in enumerate(labeled_skeleton_path[label]):
-                c.writerow([i, x, y, z, label])
+        for segment in segments:
+            path = segment["paths"][0]
+            for i, (x, y, z) in enumerate(path):
+                c.writerow([i, x, y, z, segment["label"]])
 
 
 def read_labeled_skeleton_path_from_csv(filename):

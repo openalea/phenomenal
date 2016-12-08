@@ -384,7 +384,7 @@ def reconstruction_3d(images_projections,
     """
 
     if len(images_projections) == 0:
-        return
+        raise ValueError("images_projection list is empty")
 
     if voxel_centers is None:
         voxel_centers = collections.deque()
