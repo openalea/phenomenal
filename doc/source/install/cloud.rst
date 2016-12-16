@@ -90,14 +90,8 @@ Launch Notebook Server
 
     pscp.exe -i FG_Cloud_Strasbourg_Pricate_key_Simon.ppk linux-openvpn-users.zip ubuntu@134.158.151.25:.
 
-    sudo apt-get install unzip openvpn resolvconf
-
+    sudo apt-get install unzip openvpn resolvconf unzip
     sudo openvpn --config openvpn-udp-1193-vpn_users.ovpn &
     disown
 
-
-
-
-    disown
-
-
+    jupyter notebook --no-browser --ip=
