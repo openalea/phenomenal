@@ -59,6 +59,7 @@ class VoxelPointCloud(object):
         return len(self.voxels_center) * self.voxels_size ** 3
 
     def write_to_json(self, filename):
+
         if (os.path.dirname(filename) and not os.path.exists(
                 os.path.dirname(filename))):
             os.makedirs(os.path.dirname(filename))

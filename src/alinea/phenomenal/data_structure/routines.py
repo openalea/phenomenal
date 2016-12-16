@@ -39,18 +39,28 @@ def bounding_box(voxel_centers):
     return (x_min, y_min, z_min), (x_max, y_max, z_max)
 
 
-def image_3d_to_voxel_centers(image_3d, voxel_value=1):
-    xx, yy, zz = numpy.where(image_3d == voxel_value)
+def image_3d_to_voxel_centers(image_3d,
+                              voxel_value=1,
+                              voxel_size=None,
+                              world_coordinate=None):
 
-    xxx = image_3d.world_coordinate[0] + xx * image_3d.voxel_size
-    yyy = image_3d.world_coordinate[1] + yy * image_3d.voxel_size
-    zzz = image_3d.world_coordinate[2] + zz * image_3d.voxel_size
+    xx, yy, zz = numpy.where(image_3d >= voxel_value)
+
+    if voxel_size is None:
+        voxel_size = image_3d.voxel_size
+
+    if world_coordinate is None:
+        world_coordinate = image_3d.world_coordinate
+
+    xxx = world_coordinate[0] + xx * voxel_size
+    yyy = world_coordinate[1] + yy * voxel_size
+    zzz = world_coordinate[2] + zz * voxel_size
 
     voxel_centers = list()
     for i in range(len(xxx)):
         voxel_centers.append((xxx[i], yyy[i], zzz[i]))
 
-    return voxel_centers, image_3d.voxel_size
+    return voxel_centers, voxel_size
 
 
 def voxel_centers_to_image_3d(voxel_centers, voxel_size):
