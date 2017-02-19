@@ -11,7 +11,6 @@
 # ==============================================================================
 import numpy
 import networkx
-import scipy.spatial
 
 from alinea.phenomenal.segmentation_3d.algorithm import (
     merge)
@@ -19,23 +18,20 @@ from alinea.phenomenal.segmentation_3d.algorithm import (
 from alinea.phenomenal.segmentation_3d.plane_interception import (
     compute_closest_nodes)
 
-from alinea.phenomenal.segmentation_3d.graph import (
-    create_graph)
-
-from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
-
-from alinea.phenomenal.display.segmentation3d import show_list_points_3d
+from alinea.phenomenal.data_structure import (VoxelSkeleton,
+                                              VoxelSegment,
+                                              voxels_position_to_image_3d)
 # ==============================================================================
 
 
-def find_base_stem_position(voxel_centers, voxel_size, neighbor_size=50):
+def find_base_stem_position(voxels_position, voxels_size, neighbor_size=50):
 
-    image_3d = voxel_centers_to_image_3d(voxel_centers, voxel_size)
+    image_3d = voxels_position_to_image_3d(voxels_position, voxels_size)
 
-    x = int(round(0 - image_3d.world_coordinate[0] / image_3d.voxel_size))
-    y = int(round(0 - image_3d.world_coordinate[1] / image_3d.voxel_size))
+    x = int(round(0 - image_3d.world_coordinate[0] / image_3d.voxels_size))
+    y = int(round(0 - image_3d.world_coordinate[1] / image_3d.voxels_size))
 
-    k = neighbor_size / voxel_size
+    k = neighbor_size / voxels_size
     x_len, y_len, z_len = image_3d.shape
 
     roi = image_3d[max(x - k, 0): min(x + k, x_len),
@@ -64,81 +60,13 @@ def find_base_stem_position(voxel_centers, voxel_size, neighbor_size=50):
                           mean_point[2])
 
     pos = numpy.array(stem_base_position)
-    pos = pos * voxel_size + image_3d.world_coordinate
+    pos = pos * voxels_size + image_3d.world_coordinate
 
     return pos
 
 
-def fusion_graph(graph):
-
-    connected_component = list(networkx.connected_component_subgraphs(
-        graph, copy=False))
-
-    nodes_connected_component = [cc.nodes() for cc in connected_component]
-
-    while len(nodes_connected_component) > 1:
-
-        nodes_src = nodes_connected_component[0]
-        nodes_dst = set()
-        nodes_connected_component = nodes_connected_component[1:]
-
-        pt1 = None
-        pt2 = None
-        min_dist = float('inf')
-
-        for nodes in nodes_connected_component:
-
-            result = scipy.spatial.distance.cdist(nodes_src, nodes, 'euclidean')
-
-            min1 = result.min(axis=1)
-            m = min1.min(axis=0)
-
-            if m < min_dist:
-                min_dist = m
-
-                dst_index = numpy.argmin(result, axis=1)
-                src_index = numpy.argmin(min1, axis=0)
-
-                pt1 = nodes_src[src_index]
-                pt2 = nodes[dst_index[src_index]]
-
-                nodes_dst = nodes
-
-        nodes_connected_component.remove(nodes_dst)
-        nodes_connected_component.append(list(set(nodes_src).union(nodes_dst)))
-        graph.add_edge(pt1, pt2, weight=min_dist)
-
-    return graph
-
-
-def graph_skeletonize(voxel_centers, voxel_size):
-    # ==========================================================================
-    # Graph creation
-    graph = create_graph(voxel_centers, voxel_size=voxel_size)
-
-    graph = fusion_graph(graph)
-    # # Keep the biggest connected components
-    # graph = max(networkx.connected_component_subgraphs(graph, copy=False),
-    #             key=len)
-
-    # Keep the voxel cloud of the biggest component
-    biggest_component_voxel_centers = graph.nodes()
-
-    # ==========================================================================
-    # Get the high points in the matrix and the supposed base plant points
-    x_stem, y_stem, z_stem = find_base_stem_position(
-        graph.nodes(), voxel_size)
-
-    # ==========================================================================
-    # Compute the shorted path
-
-    all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
-        graph, (x_stem, y_stem, z_stem), weight="weight")
-
-    return graph, biggest_component_voxel_centers, all_shorted_path_to_stem_base
-
-
-def segment_path(voxels, array_voxels,
+def segment_path(voxels,
+                 array_voxels,
                  skeleton_path,
                  graph,
                  distance_plane=0.75):
@@ -177,33 +105,42 @@ def segment_path(voxels, array_voxels,
         return leaf, remain, leaf_skeleton_path
 
 
-def skeletonize(voxels_plant, voxel_size, distance_plane=1.0):
+def skeletonize(graph, voxels_size, distance_plane=1):
 
     # ==========================================================================
-    # Build skeleton of plant with graph of shorted path
-
-    graph, biggest_connected_voxels_plant, skeleton_path = \
-        graph_skeletonize(voxels_plant, voxel_size)
-
-    # voxel_plant_not_connected = set(graph.nodes()).difference(set(voxels_plant))
+    # Get the high points in the matrix and the supposed base plant points
+    x_stem, y_stem, z_stem = find_base_stem_position(graph.nodes(), voxels_size)
 
     # ==========================================================================
-    voxels_plant = biggest_connected_voxels_plant
-    arr_voxels_plant = numpy.array(biggest_connected_voxels_plant)
+    # Compute the shorted path
+
+    all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
+        graph, (x_stem, y_stem, z_stem), weight="weight")
+
+    # ==========================================================================
+    voxels_position_remain = graph.nodes()
+    np_arr_all_graph_voxels_plant = numpy.array(graph.nodes())
     # ==========================================================================
 
-    remain = voxels_plant
-    segment = list()
+    voxel_segments = list()
+    while len(voxels_position_remain) != 0:
 
-    while len(remain) != 0:
+        (voxels_position_segment,
+         voxels_position_remain,
+         voxels_segments_polyline) = segment_path(
+            voxels_position_remain,
+            np_arr_all_graph_voxels_plant,
+            all_shorted_path_to_stem_base,
+            graph,
+            distance_plane=distance_plane * voxels_size)
 
-        segment_voxel, remain, segment_ske_path = segment_path(
-            remain, arr_voxels_plant, skeleton_path, graph,
-            distance_plane=distance_plane * voxel_size)
+        voxel_segment = VoxelSegment(voxels_position_segment,
+                                     voxels_size,
+                                     [voxels_segments_polyline])
 
-        segment.append((segment_voxel, segment_ske_path))
+        voxel_segments.append(voxel_segment)
 
-        # show_list_points_3d([remain, segment_voxel, segment_ske_path])
+    skeleton = VoxelSkeleton(voxel_segments)
 
-    return segment, graph
+    return skeleton
 

@@ -15,8 +15,8 @@ from alinea.phenomenal.data_structure.image3d import Image3D
 # ==============================================================================
 
 
-def bounding_box(voxel_centers):
-    if not voxel_centers:
+def bounding_box(voxels_position):
+    if not voxels_position:
         raise ValueError("Empty list")
 
     x_min = float("inf")
@@ -27,7 +27,7 @@ def bounding_box(voxel_centers):
     y_max = - float("inf")
     z_max = - float("inf")
 
-    for x, y, z in voxel_centers:
+    for x, y, z in voxels_position:
         x_min = min(x_min, x)
         y_min = min(y_min, y)
         z_min = min(z_min, z)
@@ -39,47 +39,49 @@ def bounding_box(voxel_centers):
     return (x_min, y_min, z_min), (x_max, y_max, z_max)
 
 
-def image_3d_to_voxel_centers(image_3d, voxel_value=1):
-    xx, yy, zz = numpy.where(image_3d == voxel_value)
+def image_3d_to_voxels_position(image_3d,
+                                voxels_value=1,
+                                voxels_size=None,
+                                world_coordinate=None):
 
-    xxx = image_3d.world_coordinate[0] + xx * image_3d.voxel_size
-    yyy = image_3d.world_coordinate[1] + yy * image_3d.voxel_size
-    zzz = image_3d.world_coordinate[2] + zz * image_3d.voxel_size
+    xx, yy, zz = numpy.where(image_3d >= voxels_value)
 
-    voxel_centers = list()
+    if voxels_size is None:
+        voxels_size = image_3d.voxel_size
+
+    if world_coordinate is None:
+        world_coordinate = image_3d.world_coordinate
+
+    xxx = world_coordinate[0] + xx * voxels_size
+    yyy = world_coordinate[1] + yy * voxels_size
+    zzz = world_coordinate[2] + zz * voxels_size
+
+    voxels_position = list()
     for i in range(len(xxx)):
-        voxel_centers.append((xxx[i], yyy[i], zzz[i]))
+        voxels_position.append((xxx[i], yyy[i], zzz[i]))
 
-    return voxel_centers, image_3d.voxel_size
+    return voxels_position, voxels_size
 
 
-def voxel_centers_to_image_3d(voxel_centers, voxel_size):
-    """
+def voxels_position_to_image_3d(voxels_position, voxels_size):
 
-    Args:
-        voxel_centers:
-        voxel_size:
+    (x_min, y_min, z_min), (x_max, y_max, z_max) = bounding_box(voxels_position)
 
-    Returns:
-        Image3D object
-
-    """
-    (x_min, y_min, z_min), (x_max, y_max, z_max) = bounding_box(voxel_centers)
-
-    len_x = int((x_max - x_min) / voxel_size + 1)
-    len_y = int((y_max - y_min) / voxel_size + 1)
-    len_z = int((z_max - z_min) / voxel_size + 1)
+    len_x = int((x_max - x_min) / voxels_size + 1)
+    len_y = int((y_max - y_min) / voxels_size + 1)
+    len_z = int((z_max - z_min) / voxels_size + 1)
 
     image_3d = Image3D.zeros((len_x, len_y, len_z),
                              dtype=numpy.bool,
-                             voxel_size=voxel_size,
+                             voxels_size=voxels_size,
                              world_coordinate=(x_min, y_min, z_min))
 
-    for x, y, z in voxel_centers:
-        x_new = int((x - x_min) / voxel_size)
-        y_new = int((y - y_min) / voxel_size)
-        z_new = int((z - z_min) / voxel_size)
+    for x, y, z in voxels_position:
+        x_new = int((x - x_min) / voxels_size)
+        y_new = int((y - y_min) / voxels_size)
+        z_new = int((z - z_min) / voxels_size)
 
         image_3d[x_new, y_new, z_new] = 1
 
     return image_3d
+

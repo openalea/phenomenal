@@ -13,7 +13,7 @@ import numpy
 
 from alinea.phenomenal.data_structure import (
     Image3D,
-    image_3d_to_voxel_centers)
+    image_3d_to_voxels_position)
 
 # ==============================================================================
 

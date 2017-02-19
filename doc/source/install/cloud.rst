@@ -4,11 +4,22 @@ Installation on Cloud Ubuntu
 
 .. contents::
 
+Solve Frequent Problem :
+========================
+
+server certificate verification failed
+--------------------------------------
+
+.. code:: shell
+    export GIT_SSL_NO_VERIFY=1
+    #or
+    git config --global http.sslverify false
+
 hostnanme
 ---------
 
 cat /etc/host
-nano /etC/hostname
+nano /etc/hostname
 
 
 Install Machines
@@ -46,8 +57,9 @@ Install Requirements:
 
 .. code:: shell
 
-conda install jupyter nose opencv scipy networkx vtk matplotlib scikit-learn
-conda install -c openalea openalea.deploy openalea.core openalea.grapheditor
+    conda install sphinx nose jupyter
+    conda install opencv vtk scipy networkx matplotlib scikit-learn pandas
+    conda install -c openalea openalea.deploy openalea.core openalea.grapheditor
 
 Install Phenomenal
 ..................
@@ -57,24 +69,29 @@ Install Phenomenal
     git clone https://gitlab.inria.fr/phenome/phenomenal.git
     cd phenomenal
     python setup.py develop --prefix=$CONDA_PREFIX
-    cd ..
+    cd test
+    nosetests
+    cd ../..
 
 Install Phenoarch
 .................
 
 .. code:: shell
 
-    conda install pymongo pandas
+    conda install pymongo psycopg2
 
-    git clone https://artzet_s@scm.gforge.inria.fr/authscm/artzet_s/git/phenoarch/phenoarch.git
+    git clone https://gitlab.inria.fr/phenome/phenoarch
     cd phenoarch
     python setup.py develop --prefix=$CONDA_PREFIX
-    cd ..
+    cd test
+    nosetests
+    cd ../..
 
 Install PythreeJs
 .................
 
 .. code:: shell
+
     sudo apt-get install npm nodejs-legacy
 
     git clone https://github.com/avmarchenko/pythreejs
@@ -82,6 +99,15 @@ Install PythreeJs
     python setup.py develop --prefix=$CONDA_PREFIX
     jupyter nbextension install --py --symlink --sys-prefix pythreejs
     jupyter nbextension enable --py --sys-prefix pythreejs
+
+Install Python-Irodsclient
+..........................
+
+.. code:: shell
+
+    git clone https://github.com/irods/python-irodsclient
+    cd python-irodsclient
+    python setup.py develop --prefix=$CONDA_PREFIX
 
 Launch Notebook Server
 ......................
@@ -91,13 +117,7 @@ Launch Notebook Server
     pscp.exe -i FG_Cloud_Strasbourg_Pricate_key_Simon.ppk linux-openvpn-users.zip ubuntu@134.158.151.25:.
 
     sudo apt-get install unzip openvpn resolvconf
-
     sudo openvpn --config openvpn-udp-1193-vpn_users.ovpn &
     disown
 
-
-
-
-    disown
-
-
+    jupyter notebook --no-browser --ip=

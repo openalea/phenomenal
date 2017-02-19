@@ -40,18 +40,18 @@ Routines
 
 """
 # ==============================================================================
-from alinea.phenomenal.data_structure.image3d import (
-    Image3D)
 
-from alinea.phenomenal.data_structure.octree import (
-    Octree, OcNode)
+from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.data_structure.voxelPointCloud import (
-    VoxelPointCloud)
-
-from alinea.phenomenal.data_structure.routines import (
-    bounding_box,
-    image_3d_to_voxel_centers,
-    voxel_centers_to_image_3d)
+from .image3d import *
+from .octree import *
+from .routines import *
+from .voxelSegment import *
+from .voxelPointCloudSegments import *
+from .voxelPointCloud import *
+from .voxelGraph import *
+from .voxelSkeleton import *
 
 # ==============================================================================
+
+__all__ = [s for s in dir() if not s.startswith('_')]

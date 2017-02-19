@@ -24,8 +24,8 @@ Threshold
 .. autosummary::
    :toctree: generated/
 
-   meanshift
-   hsv
+   threshold_meanshift
+   threshold_hsv
 
 Morphology
 ==========
@@ -64,8 +64,11 @@ from alinea.phenomenal.binarization.morphology import (
     close, dilate_erode, erode_dilate)
 
 from alinea.phenomenal.binarization.routines import (
-    mean)
+    mean_image)
 
 from alinea.phenomenal.binarization.threshold import (
-    hsv, meanshift)
+    threshold_hsv,
+    threshold_meanshift,
+    threshold_meanshift_enhance)
+
 # ==============================================================================

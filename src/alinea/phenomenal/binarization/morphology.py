@@ -22,7 +22,10 @@ __all__ = ["dilate_erode", "erode_dilate", "close"]
 # ==============================================================================
 
 
-def dilate_erode(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
+def dilate_erode(binary_image,
+                 kernel_shape=(3, 3),
+                 iterations=1,
+                 mask=None):
     """
     Applied a morphology (dilate & erode) on binary_image on a ROI.
 
@@ -77,7 +80,10 @@ def dilate_erode(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
     return out
 
 
-def erode_dilate(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
+def erode_dilate(binary_image,
+                 kernel_shape=(3, 3),
+                 iterations=1,
+                 mask=None):
     """
     Applied a morphology (erode & dilate) on binary_image on mask ROI.
 
@@ -132,7 +138,9 @@ def erode_dilate(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
     return out
 
 
-def close(binary_image, kernel_shape=(7, 7), mask=None):
+def close(binary_image,
+          kernel_shape=(7, 7),
+          mask=None):
     """
     Applied a morphology close on binary_image on mask ROI.
 

@@ -12,7 +12,7 @@
 import vtk
 import vtk.util.numpy_support
 import numpy
-
+import math
 
 from alinea.phenomenal.mesh.vtk_transformation import (
     from_vtk_poly_data_to_vertices_faces,
@@ -88,7 +88,7 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
         return list(), list()
 
     vertices, faces = from_vtk_poly_data_to_vertices_faces(vtk_poly_data)
-    vertices = vertices * image_3d.voxel_size + image_3d.world_coordinate
+    vertices = vertices * image_3d.voxels_size + image_3d.world_coordinate
 
     return vertices, faces
 
@@ -217,6 +217,73 @@ def smoothing(vtk_poly_data,
     smoother.Update()
 
     return smoother.GetOutput()
+
+
+def voxelization(vtk_poly_data, voxels_size=1):
+
+    # ==========================================================================
+    # Build White Image
+    white_image = vtk.vtkImageData()
+
+    bounds = [0.0] * 6
+    vtk_poly_data.GetBounds(bounds)
+
+    # desired volume spacing
+    spacing = [voxels_size, voxels_size, voxels_size]
+    white_image.SetSpacing(spacing)
+
+    # ==========================================================================
+    # compute dimensions
+
+    dim = [0] * 3
+    for i in range(3):
+        dim[i] = int(math.ceil(
+            (bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]))
+
+    white_image.SetDimensions(dim)
+    white_image.SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1)
+
+    origin = [0.0] * 3
+    for i in range(3):
+        origin[i] = bounds[i * 2] + spacing[i] / 2.0
+
+    white_image.SetOrigin(origin)
+
+    # ==========================================================================
+
+    white_image.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
+
+    inval = 255
+    outval = 0
+
+    count = white_image.GetNumberOfPoints()
+
+    for i in range(count):
+        white_image.GetPointData().GetScalars().SetTuple1(i, inval)
+
+    # ==========================================================================
+    # polygonal data --> image stencil:
+
+    pol2stenc = vtk.vtkPolyDataToImageStencil()
+    pol2stenc.SetOutputOrigin(origin)
+    pol2stenc.SetInputData(vtk_poly_data)
+    pol2stenc.SetOutputSpacing(spacing)
+    pol2stenc.SetOutputWholeExtent(white_image.GetExtent())
+    pol2stenc.Update()
+
+    # ==========================================================================
+    # Cut the corresponding white image and set the background:
+
+    imgstenc = vtk.vtkImageStencil()
+    imgstenc.SetInputData(white_image)
+    imgstenc.SetStencilConnection(pol2stenc.GetOutputPort())
+    imgstenc.ReverseStencilOff()
+    imgstenc.SetBackgroundValue(outval)
+    imgstenc.Update()
+
+    # ==========================================================================
+
+    return imgstenc.GetOutput()
 
 
 def decimation(vtk_poly_data, reduction=0.95, verbose=False):
