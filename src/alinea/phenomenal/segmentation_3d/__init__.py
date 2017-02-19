@@ -70,5 +70,5 @@ from alinea.phenomenal.segmentation_3d.thinning import (
     thinning_3d)
 
 from alinea.phenomenal.segmentation_3d.maize import (
-    maize_plant_segmentation)
+    labelize_maize_skeleton)
 

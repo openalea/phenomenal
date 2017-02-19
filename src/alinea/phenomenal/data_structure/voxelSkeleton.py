@@ -12,14 +12,18 @@
 import os
 import json
 
+
 from alinea.phenomenal.data_structure.voxelSegment import VoxelSegment
 # ==============================================================================
 
 
-class VoxelPointCloudSegments(object):
+class VoxelSkeleton(object):
 
-    def __init__(self, ):
-        self.voxel_point_cloud_segment = list()
+    def __init__(self, voxel_segments=None):
+        if voxel_segments is None:
+            self.voxel_segments = list()
+        else:
+            self.voxel_segments = voxel_segments
 
     def add_voxel_segment(self, voxels_position, voxels_size, polylines, label):
 
@@ -28,7 +32,7 @@ class VoxelPointCloudSegments(object):
                                      polylines,
                                      label=label)
 
-        self.voxel_point_cloud_segment.append(voxel_segment)
+        self.voxel_segments.append(voxel_segment)
 
     def write_to_json(self, filename):
         if (os.path.dirname(filename) and not os.path.exists(
@@ -38,7 +42,7 @@ class VoxelPointCloudSegments(object):
         with open(filename, 'w') as f:
 
             data = list()
-            for v in self.voxel_point_cloud_segment:
+            for v in self.voxel_segments:
                 d = v.__dict__.copy()
                 d['voxels_position'] = list(d['voxels_position'])
 
@@ -52,7 +56,7 @@ class VoxelPointCloudSegments(object):
         with open(filename, 'rb') as f:
             data = json.load(f)
 
-            vpcs = VoxelPointCloudSegments()
+            vpcs = VoxelSkeleton()
 
             for d in data:
                 voxels_position = set(map(tuple, d['voxels_position']))
@@ -65,4 +69,3 @@ class VoxelPointCloudSegments(object):
                     voxels_position, d['voxels_size'], polylines, d['label'])
 
         return vpcs
-

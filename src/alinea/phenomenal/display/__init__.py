@@ -82,26 +82,22 @@ Multi_view_reconstruction
    show_list_points_3d
 
 """
+# ==============================================================================
 
-from alinea.phenomenal.display.image import (
-    show_image,
-    show_images)
+from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.display.calibration import (
-    show_chessboard_3d_projection_on_image,
-    show_image_with_chessboard_corners)
+from .calibration import *
+from .center_axis import *
+from .image import *
+from .mesh import *
+from .octree import *
+from .old_segmentation_3d import *
+from .peak import *
+from .segmentation3d import *
+from .voxelPointCloud import *
+from .voxels import *
+from .voxelSkeleton import *
 
-from alinea.phenomenal.display.multi_view_reconstruction import (
-    plot_3d,
-    plot_points_3d,
-    plot_list_points_3d,
-    show_points_3d,
-    show_list_points_3d)
+# ==============================================================================
 
-from alinea.phenomenal.display.octree import (
-    show_octree,
-    show_each_stage_of_octree)
-
-from alinea.phenomenal.display.mesh import (
-    show_mesh,
-    show_poly_data)
+__all__ = [s for s in dir() if not s.startswith('_')]
