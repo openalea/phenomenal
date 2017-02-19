@@ -17,12 +17,12 @@ import cv2
 import numpy
 # ==============================================================================
 
-__all__ = ["mean"]
+__all__ = ["mean_image"]
 
 # ==============================================================================
 
 
-def mean(images):
+def mean_image(images):
     """
     Compute the mean of a image list.
 

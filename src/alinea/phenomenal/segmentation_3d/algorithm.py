@@ -14,6 +14,7 @@ import numpy
 import scipy.interpolate
 import sklearn.cluster
 import scipy.spatial
+import collections
 
 from alinea.phenomenal.segmentation_3d.peak_detection import (
     peak_detection)
@@ -138,52 +139,112 @@ def peak_stem_detection(closest_nodes, leafs):
             v = len(set(closest_nodes[i]).intersection(voxels))
             values_stem[i] += float(v) / float(len(closest_nodes[i]))
 
-    # stop = 0
-    # for i in range(len(values_stem)):
-    #     if values_stem[i] <= 2:
-    #         stop = i
-    #         break
-
-    # values_stem = values_stem[:stop]
-    # nodes_length = nodes_length[:stop]
+    distances_length = list()
+    for i in range(len(values_stem)):
+        distances_length.append(float(distances[i]) * float(nodes_length[i]))
 
     mix = list()
     for i in range(len(values_stem)):
         mix.append(float(distances[i]) * float(nodes_length[i]) /
                    float(values_stem[i]))
 
-    stop = mix.index(max(mix))
-    # mix = mix[:stop]
+    # import matplotlib.pyplot
+    # from alinea.phenomenal.display.peak import plot_values, show_values
 
-    def show_stop_peak(values, factor=0.50):
+    # show_values([nodes_length],
+    #             ['r'],
+    #             normalize_values=False,
+    #             smooth_values=False,
+    #             plot_peak=False)
+    #
+    # show_values([nodes_length, distances],
+    #             ['r', 'g'],
+    #             normalize_values=False,
+    #             smooth_values=False,
+    #             plot_peak=False)
+    #
+    # show_values([nodes_length, distances, values_stem],
+    #             ['r', 'g', 'b'],
+    #             normalize_values=False,
+    #             smooth_values=False,
+    #             plot_peak=False)
+    #
+    # show_values([nodes_length, distances, values_stem],
+    #             ['r', 'g', 'b'],
+    #             normalize_values=True,
+    #             smooth_values=False,
+    #             plot_peak=False)
+    #
+    # show_values([nodes_length, distances, values_stem, mix],
+    #             ['r', 'g', 'b', 'm'],
+    #             normalize_values=True,
+    #             smooth_values=False,
+    #             plot_peak=False)
+    #
+    # show_values([nodes_length, distances, mix],
+    #             ['r', 'g', 'm'],
+    #             normalize_values=True,
+    #             smooth_values=False,
+    #             plot_peak=True)
+
+    stop = mix.index(max(mix))
+
+    # show_values([nodes_length, mix],
+    #             ['r', 'm'],
+    #             normalize_values=True,
+    #             smooth_values=True,
+    #             plot_peak=True)
+    #
+
+    # label_color = collections.defaultdict(lambda: 'co')
+    # label_color[0] = 'ro'
+    # label_color[1] = 'bo'
+    # label_color[2] = 'go'
+    # label_color[3] = 'ko'
+
+    def find_stem_min_peak(values):
 
         # Normalize
         values = [v / float(sum(values)) for v in values]
 
         # Smooth
-        values = smooth(numpy.array(values))
+        values = smooth(numpy.array(values),
+                        window_len=11,
+                        window='hanning')
+
+        values = smooth(numpy.array(values),
+                        window_len=11,
+                        window='hanning')
 
         # Peak
         lookahead = 1
 
         max_peaks, min_peaks = peak_detection(values, lookahead)
 
-        min_peaks_values = [v for i, v in min_peaks]
-        a = numpy.array(min_peaks_values).reshape((len(min_peaks_values), 1))
+        min_peaks_values = [v for i, v in min_peaks if i <= stop]
 
         if len(min_peaks_values) > 0:
+
+            bandwith = max(values) / 5.0
+
+            # Meanshift
+            a = numpy.array(min_peaks_values).reshape(
+                (len(min_peaks_values), 1))
+
             meanshift = sklearn.cluster.MeanShift(
-                bandwidth=min_peaks_values[0] * factor)
+                bandwidth=bandwith)
             meanshift.fit(a)
 
-            ref_label = meanshift.labels_[0]
+            # Option, maybe resolve stem cut problem
+            c = collections.Counter(meanshift.labels_)
+            ref_label = max(c, key=c.get)
 
             min_peaks_stem = list()
             min_peaks_stem.append((0, values[0]))
             for (index, value), label in zip(min_peaks, meanshift.labels_):
                 if ref_label == label:
-                    if len(min_peaks_stem) <= 1 or index <= stop:
-                        min_peaks_stem.append((index, value))
+                    min_peaks_stem.append((index, value))
+
         else:
             min_peaks_stem = list()
             for i, v in enumerate(values):
@@ -191,80 +252,35 @@ def peak_stem_detection(closest_nodes, leafs):
 
         return min_peaks_stem
 
-    #
-    # import matplotlib.pyplot
-    #
-    # def plot_values(values, color):
-    #     # Normalize
-    #     values = [v / float(sum(values)) for v in values]
-    #
-    #     # Smooth
-    #     values = smooth(numpy.array(values))
-    #
-    #     matplotlib.pyplot.plot(range(len(values)), values, color)
-    #
-    #     max_peaks, min_peaks = peak_detection(values, 1)
-    #     min_peaks = [(0, values[0])] + min_peaks
-    #     for index, value in min_peaks:
-    #         matplotlib.pyplot.plot(index, value, 'ro')
+    min_peaks_stem = find_stem_min_peak(nodes_length)
 
+    # import matplotlib.pyplot
+    # from alinea.phenomenal.display.peak import plot_values
     # matplotlib.pyplot.figure()
-    # plot_values(nodes_length, 'b')
-    # plot_values(mix, 'g')
-    # plot_values(values_stem, 'r')
-    min_peaks_stem = show_stop_peak(nodes_length)
-    # for index, value in min_peaks_stem:
-    #     matplotlib.pyplot.plot(index, value, 'bo')
-    #
-    # min_peaks_stem = show_stop_peak(mix, 2.0)
+    # plot_values(nodes_length, 'r', plot_peak=True)
+    # plot_values(mix, 'm', plot_peak=True)
     # for index, value in min_peaks_stem:
     #     matplotlib.pyplot.plot(index, value, 'bo')
     # matplotlib.pyplot.show()
-    #
-    # min_peaks_stem = show_stop_peak(nodes_length)
-    #
-    # # ==========================================================================
-    #
-    # matplotlib.pyplot.figure()
+
     distances = smooth(numpy.array(distances))
-    # matplotlib.pyplot.plot(range(len(distances)), distances, 'b')
-    # for index, value in min_peaks_stem:
-    #     matplotlib.pyplot.plot(index, distances[index], 'ro')
-    # matplotlib.pyplot.show()
 
     return min_peaks_stem, distances
 
 
 def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
-                     distance_plane=0.75):
+                   distance_plane=0.50):
 
     # ==========================================================================
 
     arr_stem_segment_voxel = numpy.array(list(stem_segment_voxel))
 
     planes, closest_nodes = compute_closest_nodes(
-        arr_stem_segment_voxel, stem_segment_path, radius=8,
+        arr_stem_segment_voxel, stem_segment_path, radius=6,
         dist=distance_plane * voxel_size)
-
-    # ==========================================================================
-
-    import mayavi.mlab
-    from alinea.phenomenal.display import plot_points_3d
-
-    mayavi.mlab.figure()
-
-    for voxels, paths in leafs:
-        plot_points_3d(voxels, color=(0, 1, 0))
-
-    for nodes in closest_nodes:
-        plot_points_3d(nodes)
-    mayavi.mlab.show()
-
-
 
     stem_segment_centred_path = [
         numpy.array(nodes).mean(axis=0) for nodes in closest_nodes]
-    # ==========================================================================
 
     min_peaks_stem, distances = peak_stem_detection(closest_nodes, leafs)
 
@@ -334,12 +350,8 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
         result = get_nodes_radius((x, y, z), arr_stem_voxels, r)
         stem_voxel = stem_voxel.union(result)
 
-    not_stem_voxel = set(stem_segment_voxel).difference(stem_voxel)
-
+    not_stem_voxel = stem_segment_voxel - stem_voxel
     stem_path = stem_segment_path[:max_index_min_peak + 1]
-
-    # from alinea.phenomenal.display.segmentation3d import show_list_points_3d
-    # show_list_points_3d([stem_segment_voxel, stem_segment_path, stem_centred_path_min_peak, real_path])
 
     return stem_voxel, not_stem_voxel, stem_path, stem_top
 
