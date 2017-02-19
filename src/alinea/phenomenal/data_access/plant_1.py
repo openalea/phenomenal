@@ -12,6 +12,7 @@
 import cv2
 import glob
 import os
+import collections
 
 import openalea.deploy.shared_data
 import alinea.phenomenal
@@ -25,6 +26,9 @@ from alinea.phenomenal.calibration.calibration import (
 
 from alinea.phenomenal.multi_view_reconstruction.formats import (
     read_from_xyz)
+
+from alinea.phenomenal.data_structure import VoxelPointCloud
+
 # ==============================================================================
 
 __all__ = ["plant_1_images",
@@ -43,13 +47,15 @@ def plant_1_images():
 
     data_directory = shared_directory + '/plant_1/images/'
     files_path = glob.glob(data_directory + '*.png')
-    files_name = [os.path.basename(path) for path in files_path]
 
-    angles = map(lambda x: int((x.split('.png')[0])), files_name)
+    images = collections.defaultdict(lambda: collections.defaultdict())
 
-    images = dict()
-    for i in range(len(files_path)):
-        images[angles[i]] = cv2.imread(files_path[i], cv2.IMREAD_UNCHANGED)
+    for path in files_path:
+        basename = os.path.basename(path)
+        id_camera = basename.split('_')[0]
+        angle = int(((basename.split('_')[1]).split('.png'))[0])
+
+        images[id_camera][angle] = cv2.imread(path, cv2.IMREAD_UNCHANGED)
 
     return images
 
@@ -89,7 +95,7 @@ def plant_1_images_binarize():
     return images
 
 
-def plant_1_mask_mean_shift():
+def plant_1_mask_meanshift():
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
 
@@ -260,3 +266,11 @@ def plant_1_voxel_centers(voxel_size=10):
 
     return None
 
+def plant_1_voxels_size_4_without_loss_120():
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    data_directory = shared_directory + '/plant_1/'
+    filename = data_directory + "voxel_centers_size_4_without_loss.json"
+
+    return VoxelPointCloud.read_from_json(filename)
