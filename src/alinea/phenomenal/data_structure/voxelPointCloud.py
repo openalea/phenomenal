@@ -13,6 +13,8 @@ import os
 import re
 import json
 import numpy
+import csv
+from ast import literal_eval
 
 from alinea.phenomenal.data_structure.image3d import Image3D
 from alinea.phenomenal.data_structure.voxelGraph import VoxelGraph
@@ -118,3 +120,20 @@ class VoxelPointCloud(object):
         f.close()
 
         return VoxelPointCloud(voxels_position, voxels_size)
+
+    @staticmethod
+    def read_from_csv(filename):
+
+        with open(filename, 'rb') as f:
+            reader = csv.reader(f)
+
+            next(reader)
+
+            voxels_position = list()
+            for number_id, position, size in reader:
+                position = literal_eval(position)
+                voxels_position.append(position)
+
+            voxels_size
+
+            return VoxelPointCloud(voxels_position, voxels_size)
