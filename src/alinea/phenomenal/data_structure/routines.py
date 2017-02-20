@@ -47,7 +47,7 @@ def image_3d_to_voxels_position(image_3d,
     xx, yy, zz = numpy.where(image_3d >= voxels_value)
 
     if voxels_size is None:
-        voxels_size = image_3d.voxel_size
+        voxels_size = image_3d.voxels_size
 
     if world_coordinate is None:
         world_coordinate = image_3d.world_coordinate

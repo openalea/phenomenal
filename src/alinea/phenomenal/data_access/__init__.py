@@ -50,15 +50,13 @@ Plant 1
 
 """
 
-from alinea.phenomenal.data_access.data_creation import (
-    build_images_1,
-    build_object_1,
-    write_circle_on_image)
+# ==============================================================================
 
-from alinea.phenomenal.data_access.plant_1 import (
-    plant_1_images,
-    plant_1_images_binarize,
-    plant_1_chessboards,
-    plant_1_calibration_camera_side,
-    plant_1_calibration_camera_top,
-    plant_1_voxel_centers)
+from __future__ import division, print_function, absolute_import
+
+from alinea.phenomenal.data_access.data_creation import *
+from alinea.phenomenal.data_access.plant_1 import *
+
+# ==============================================================================
+
+__all__ = [s for s in dir() if not s.startswith('_')]

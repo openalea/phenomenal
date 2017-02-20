@@ -19,10 +19,10 @@ def test_graph_1():
 
     pos_1, pos_2, pos_3, pos_4 = (0, 0, 0), (0, 0, 1), (0, 1, 0), (1, 1, 1)
     pos_5, pos_6, pos_7, pos_8 = (1, 1, 2), (2, 1, 2), (1, 2, 1), (2, 2, 2)
-    voxel_centers = [pos_1, pos_2, pos_3, pos_4, pos_5, pos_6, pos_7, pos_8]
+    voxels_position = [pos_1, pos_2, pos_3, pos_4, pos_5, pos_6, pos_7, pos_8]
 
-    voxel_size = 1
-    graph = create_graph(voxel_centers, voxel_size=voxel_size)
+    voxels_size = 1
+    graph = create_graph(voxels_position, voxels_size=voxels_size)
 
     # all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
     #     graph, (0, 0, 0), weight="weight")

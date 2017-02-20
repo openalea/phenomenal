@@ -21,7 +21,7 @@ def check_values(values, refs, percentage=0.0001):
     if len(values) != len(refs):
         assert False
 
-    for i in xrange(len(values)):
+    for i in range(len(values)):
         # Acceptation error of 0.01 %
         acceptation_error = refs[i] * percentage
         if abs(values[i] - refs[i]) > acceptation_error:
