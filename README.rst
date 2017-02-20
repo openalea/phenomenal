@@ -33,38 +33,10 @@ reconstruction, segmentation and tracking of plant organs for maize
 plants during their growth.
 
 
-Installation
-------------
-
-.. toctree::
-    :maxdepth: 2
-
-   ./install/install.rst
-
-Documentation
--------------
-
-Notebooks
-'''''''''
-
-.. toctree::
-    :maxdepth: 3
-
-    ./notebooks/notebooks.rst
-
-
-References
-''''''''''
-
-.. toctree::
-    :maxdepth: 4
-
-    ./references/index.rst
-
 Authors
 -------
 
-.. include:: ../../AUTHORS.rst
+.. include:: ./AUTHORS.rst
 
 
 License

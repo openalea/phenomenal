@@ -24,8 +24,8 @@ Threshold
 .. autosummary::
    :toctree: generated/
 
-   meanshift
-   hsv
+   threshold_meanshift
+   threshold_hsv
 
 Morphology
 ==========
@@ -57,15 +57,14 @@ Formats
 
 """
 # ==============================================================================
-from alinea.phenomenal.binarization.formats import (
-    read_image, write_image)
 
-from alinea.phenomenal.binarization.morphology import (
-    close, dilate_erode, erode_dilate)
+from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.binarization.routines import (
-    mean)
+from alinea.phenomenal.binarization.formats import *
+from alinea.phenomenal.binarization.morphology import *
+from alinea.phenomenal.binarization.routines import *
+from alinea.phenomenal.binarization.threshold import *
 
-from alinea.phenomenal.binarization.threshold import (
-    hsv, meanshift)
 # ==============================================================================
+
+__all__ = [s for s in dir() if not s.startswith('_')]

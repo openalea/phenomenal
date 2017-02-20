@@ -9,19 +9,131 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import math
 import networkx
 import numpy
-import scipy.spatial
+import scipy
+
+from alinea.phenomenal.data_structure.voxelGraph import VoxelGraph
 # ==============================================================================
 
 
-def create_graph(voxel_centers, voxel_size=1):
+def voxel_graph_from_voxel_point_cloud(voxel_point_cloud,
+                                       connect_all_point=True):
+    voxels_size = voxel_point_cloud.voxels_size
+    voxels_position = voxel_point_cloud.voxels_position
+
+    # ==========================================================================
+    # Graph creation
+    graph = create_graph(voxels_position, voxels_size=voxels_size)
+
+    if connect_all_point:
+        graph = connect_all_node_with_nearest_neighbors(graph)
+    else:
+        # Keep the biggest connected components
+        graph = max(networkx.connected_component_subgraphs(graph, copy=False),
+                    key=len)
+    return VoxelGraph(graph, voxels_size)
+
+
+def connect_all_node_with_nearest_neighbors(graph):
+
+    connected_component = list(networkx.connected_component_subgraphs(
+        graph, copy=False))
+
+    nodes_connected_component = [cc.nodes() for cc in connected_component]
+
+    while len(nodes_connected_component) > 1:
+
+        nodes_src = nodes_connected_component[0]
+        nodes_dst = set()
+        nodes_connected_component = nodes_connected_component[1:]
+
+        pt1 = None
+        pt2 = None
+        min_dist = float('inf')
+
+        for nodes in nodes_connected_component:
+
+            result = scipy.spatial.distance.cdist(nodes_src, nodes, 'euclidean')
+
+            min1 = result.min(axis=1)
+            m = min1.min(axis=0)
+
+            if m < min_dist:
+                min_dist = m
+
+                dst_index = numpy.argmin(result, axis=1)
+                src_index = numpy.argmin(min1, axis=0)
+
+                pt1 = nodes_src[src_index]
+                pt2 = nodes[dst_index[src_index]]
+
+                nodes_dst = nodes
+
+        nodes_connected_component.remove(nodes_dst)
+        nodes_connected_component.append(list(set(nodes_src).union(nodes_dst)))
+        graph.add_edge(pt1, pt2, weight=min_dist)
+
+    return graph
+
+
+def create_graph(voxels_position, voxels_size=1):
 
     graph = networkx.Graph()
-    graph.add_nodes_from(voxel_centers)
+    graph.add_nodes_from(voxels_position)
 
-    vs = voxel_size
+    vs = voxels_size
+    ijk = [(-vs, -vs, -vs),
+           (-vs, -vs, 0),
+           (-vs, -vs, vs),
+
+           (-vs, 0, -vs),
+           (-vs, 0, 0),
+           (-vs, 0, vs),
+
+           (-vs, vs, -vs),
+           (-vs, vs, 0),
+           (-vs, vs, vs),
+
+           (0, -vs, -vs),
+           (0, -vs, 0),
+           (0, -vs, vs),
+
+           (0, 0, -vs),
+           (0, 0, 0),
+           (0, 0, vs),
+
+           (0, vs, -vs),
+           (0, vs, 0),
+           (0, vs, vs),
+
+           (vs, -vs, -vs),
+           (vs, -vs, 0),
+           (vs, -vs, vs),
+
+           (vs, 0, -vs),
+           (vs, 0, 0),
+           (vs, 0, vs),
+
+           (vs, vs, -vs),
+           (vs, vs, 0),
+           (vs, vs, vs)]
+
+    for pt in voxels_position:
+        for i, j, k in ijk:
+            pos = pt[0] + i, pt[1] + j, pt[2] + k
+            if graph.has_node(pos):
+                d = numpy.linalg.norm(numpy.array(pt) - numpy.array(pos))
+                graph.add_edge(pt, pos, weight=d)
+
+    return graph
+
+
+def add_nodes(graph, voxels_position, voxels_size=1):
+
+    graph.add_nodes_from(voxels_position)
+
+    vs = voxels_size
     ijk = [(-vs, -vs, -vs), (-vs, -vs, 0), (-vs, -vs, vs),
            (-vs, 0, -vs), (-vs, 0, 0), (-vs, 0, vs),
            (-vs, vs, -vs), (-vs, vs, 0), (-vs, vs, vs),
@@ -32,150 +144,11 @@ def create_graph(voxel_centers, voxel_size=1):
            (vs, 0, -vs), (vs, 0, 0), (vs, 0, vs),
            (vs, vs, -vs), (vs, vs, 0), (vs, vs, vs)]
 
-    for pt in voxel_centers:
+    for pt in voxels_position:
         for i, j, k in ijk:
             pos = pt[0] + i, pt[1] + j, pt[2] + k
             if graph.has_node(pos):
-                graph.add_edge(pt, pos, weight=abs(i) + abs(j) + abs(k))
+                d = numpy.linalg.norm(numpy.array(pt) - numpy.array(pos))
+                graph.add_edge(pt, pos, weight=d)
 
     return graph
-
-
-def add_nodes(graph, voxel_centers, voxel_size=1):
-
-    graph.add_nodes_from(voxel_centers)
-
-    vs = voxel_size
-    ijk = [(-vs, -vs, -vs), (-vs, -vs, 0), (-vs, -vs, vs),
-           (-vs, 0, -vs), (-vs, 0, 0), (-vs, 0, vs),
-           (-vs, vs, -vs), (-vs, vs, 0), (-vs, vs, vs),
-           (0, -vs, -vs), (0, -vs, 0), (0, -vs, vs),
-           (0, 0, -vs), (0, 0, 0), (0, 0, vs),
-           (0, vs, -vs), (0, vs, 0), (0, vs, vs),
-           (vs, -vs, -vs), (vs, -vs, 0), (vs, -vs, vs),
-           (vs, 0, -vs), (vs, 0, 0), (vs, 0, vs),
-           (vs, vs, -vs), (vs, vs, 0), (vs, vs, vs)]
-
-    for pt in voxel_centers:
-        for i, j, k in ijk:
-            pos = pt[0] + i, pt[1] + j, pt[2] + k
-            if graph.has_node(pos):
-                graph.add_edge(pt, pos, weight=abs(i) + abs(j) + abs(k))
-
-    return graph
-
-# ==============================================================================
-# Old implementation soon removed TODO: remove below or move for visualization
-# ==============================================================================
-
-
-def ball(graph, node_src, radius):
-    g = networkx.single_source_shortest_path_length(
-        graph, node_src, cutoff=int(radius * 2))
-
-    ball_list = list()
-    for node in g:
-        d = scipy.spatial.distance.euclidean(node_src, node)
-        if d <= radius:
-            ball_list.append(node)
-
-    return ball_list
-
-
-def get_max_size_ball(value):
-    m = 0
-    my_range = int(1 + value * 2)
-    for i in xrange(-my_range, my_range, 1):
-        for j in xrange(-my_range, my_range, 1):
-            for k in xrange(-my_range, my_range, 1):
-                if math.sqrt(i ** 2 + j ** 2 + k ** 2) <= value:
-                    m += 1
-
-    return m
-
-
-len_max_ball = dict()
-for radius in numpy.arange(0, 10, 0.1):
-    radius = round(radius, 2)
-    len_max_ball[radius] = get_max_size_ball(radius)
-
-
-def get_max_radius_ball_2(graph, node_src):
-    max_radius_ball = 0
-
-    for radius_int in xrange(0, 10, 1):
-
-        g = networkx.single_source_shortest_path_length(
-            graph, node_src, cutoff=radius_int)
-
-        for radius_decimal in numpy.arange(0, 1, 0.1):
-            radius_decimal = round(radius_decimal, 2)
-            radius = radius_int + radius_decimal
-
-            len_ball = 0
-            for node in g:
-                d = scipy.spatial.distance.euclidean(node_src, node)
-                if d <= radius:
-                    len_ball += 1
-
-            if len_ball == len_max_ball[radius]:
-                max_radius_ball = radius
-            else:
-                return max_radius_ball
-
-    return max_radius_ball
-
-
-def get_max_radius_ball(graph, node_src):
-    max_radius_ball = 0
-    for radius in numpy.arange(0, 15, 0.1):
-        radius = round(radius, 2)
-        len_ball = len(ball(graph, node_src, radius))
-
-        if len_ball >= len_max_ball[radius]:
-            max_radius_ball = radius
-        else:
-            break
-
-    return max_radius_ball
-
-
-def get_max_radius_floating_ball(graph, node_src):
-
-    max_radius = get_max_radius_ball(graph, node_src)
-    node_save = node_src
-
-    labelize = list()
-    labelize.append(node_src)
-
-    nodes = list()
-    nodes += networkx.all_neighbors(graph, node_src)
-    while nodes:
-        node = nodes.pop()
-
-        if node not in labelize:
-            labelize.append(node)
-
-            radius = get_max_radius_ball(graph, node)
-            d = scipy.spatial.distance.euclidean(node_src, node)
-            if d <= radius:
-                nodes += networkx.all_neighbors(graph, node)
-
-                if radius >= max_radius:
-                    max_radius = radius
-                    node_save = node
-
-    return max_radius, node_save
-
-
-def get_max_radius_floating_ball_2(graph, node_src, nodes):
-
-    max_radius = get_max_radius_ball(graph, node_src)
-    for node in nodes:
-        r = get_max_radius_ball(graph, node)
-        d = scipy.spatial.distance.euclidean(node_src, node)
-
-        if d <= r and r >= max_radius:
-            max_radius = r
-
-    return max_radius

@@ -11,6 +11,7 @@
 # ==============================================================================
 import json
 import os
+import copy
 # ==============================================================================
 
 
@@ -35,6 +36,7 @@ class OcNode(object):
 
     def creates_sons(self):
         r = self.size / 4.0
+        d = self.size / 2.0
 
         x_min = self.position[0] - r
         x_max = self.position[0] + r
@@ -46,14 +48,14 @@ class OcNode(object):
         z_max = self.position[2] + r
 
         self.sons = [
-            OcNode((x_min, y_min, z_min), self.size / 2.0, self.data, self),
-            OcNode((x_max, y_min, z_min), self.size / 2.0, self.data, self),
-            OcNode((x_min, y_max, z_min), self.size / 2.0, self.data, self),
-            OcNode((x_min, y_min, z_max), self.size / 2.0, self.data, self),
-            OcNode((x_max, y_max, z_min), self.size / 2.0, self.data, self),
-            OcNode((x_max, y_min, z_max), self.size / 2.0, self.data, self),
-            OcNode((x_min, y_max, z_max), self.size / 2.0, self.data, self),
-            OcNode((x_max, y_max, z_max), self.size / 2.0, self.data, self)]
+            OcNode((x_min, y_min, z_min), d, self.data, self),
+            OcNode((x_max, y_min, z_min), d, self.data, self),
+            OcNode((x_min, y_max, z_min), d, self.data, self),
+            OcNode((x_min, y_min, z_max), d, self.data, self),
+            OcNode((x_max, y_max, z_min), d, self.data, self),
+            OcNode((x_max, y_min, z_max), d, self.data, self),
+            OcNode((x_min, y_max, z_max), d, self.data, self),
+            OcNode((x_max, y_max, z_max), d, self.data, self)]
 
         self.is_leaf = False
 
@@ -276,19 +278,61 @@ class Octree(object):
 
         return self.root.get_leafs()
 
-    def get_nodes(self):
+    def get_nodes(self,
+                  func_if_true_add_node=lambda n: True,
+                  func_if_true_look_in_sons=lambda n: True,
+                  func_get=lambda n: n):
 
         if self.root is None:
             raise ValueError("No root define")
 
-        return self.root.get_nodes()
+        return self.root.get_nodes(
+            func_if_true_add_node=func_if_true_add_node,
+            func_if_true_look_in_sons=func_if_true_look_in_sons,
+            func_get=func_get)
 
     def get_leafs_with_data_equal_to(self, data):
         leafs = self.root.get_leafs()
         return [leaf for leaf in leafs if leaf.data == data]
 
-    def get_nodes_with_size_equal_to(self, size):
-        return self.root.get_nodes_with_size_equal_to(size)
+    def get_nodes_with_size_equal_to(self, voxels_size):
+
+        def f(node):
+            if node.size == voxels_size and node.data is True:
+                return True
+            else:
+                return False
+
+        nodes = self.root.get_nodes(func_if_true_add_node=f,
+                                    func_get=lambda n: n)
+
+        return nodes
+
+    def get_nodes_position(self, voxels_size):
+
+        def f(node):
+            if node.data is True:
+                if node.size == voxels_size:
+                    return True
+                if node.is_leaf and node.size > voxels_size:
+                    return True
+            else:
+                return False
+
+        nodes = self.root.get_nodes(func_if_true_add_node=f,
+                                    func_get=lambda n: n)
+
+        nodes_position = list()
+        while nodes:
+            node = nodes.pop()
+
+            if node.size == voxels_size:
+                nodes_position.append(node.position)
+            else:
+                sons = (copy.copy(node)).creates_sons()
+                nodes.extend(sons)
+
+        return nodes_position
 
     def get_nodes_with_size_and_data_equal_to(self, size, data):
         nodes = self.root.get_nodes_with_size_equal_to(size)

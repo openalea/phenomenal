@@ -38,6 +38,7 @@ if "%1" == "help" (
 	echo.  linkcheck  to check all external links for integrity
 	echo.  doctest    to run all doctests embedded in the documentation if enabled
 	echo.  coverage   to run coverage check of the documentation if enabled
+	echo.  notebook   to convert Jupyter notebook into HTML if enabled
 	goto end
 )
 

@@ -13,7 +13,7 @@ import numpy
 
 from alinea.phenomenal.data_structure import (
     Image3D,
-    image_3d_to_voxel_centers)
+    image_3d_to_voxels_position)
 
 # ==============================================================================
 
@@ -46,11 +46,11 @@ def build_images_1():
     return images
 
 
-def build_object_1(size, voxel_size, world_coordinate):
+def build_object_1(size, voxels_size, world_coordinate):
 
     image_3d = Image3D.ones((size, size, size),
                             dtype=numpy.uint8,
-                            voxel_size=voxel_size,
+                            voxels_size=voxels_size,
                             world_coordinate=world_coordinate)
 
-    return image_3d_to_voxel_centers(image_3d)
+    return image_3d_to_voxels_position(image_3d)
