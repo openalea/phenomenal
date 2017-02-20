@@ -11,6 +11,7 @@ server certificate verification failed
 --------------------------------------
 
 .. code:: shell
+
     export GIT_SSL_NO_VERIFY=1
     #or
     git config --global http.sslverify false

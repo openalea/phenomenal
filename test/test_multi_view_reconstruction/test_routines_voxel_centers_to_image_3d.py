@@ -12,8 +12,8 @@
 import numpy
 
 from alinea.phenomenal.data_structure import (
-    image_3d_to_voxel_centers,
-    voxel_centers_to_image_3d)
+    image_3d_to_voxels_position,
+    voxels_position_to_image_3d)
 
 
 # ==============================================================================
@@ -21,13 +21,13 @@ from alinea.phenomenal.data_structure import (
 
 def test_simply_working_1():
 
-    voxel_centers = list()
-    voxel_centers.append((0, 0, 0))
-    voxel_centers.append((10, 10, 10))
+    voxels_position = list()
+    voxels_position.append((0, 0, 0))
+    voxels_position.append((10, 10, 10))
 
-    voxel_size = 2
+    voxels_size = 2
 
-    im = voxel_centers_to_image_3d(voxel_centers, voxel_size)
+    im = voxels_position_to_image_3d(voxels_position, voxels_size)
 
     assert im.ndim == 3
 
@@ -40,17 +40,17 @@ def test_simply_working_1():
 
 
 def test_simply_working_2():
-    voxel_size = 16
+    voxels_size = 16
 
-    voxel_centers = list()
-    voxel_centers.append((1, 42, 1))
+    voxels_position = list()
+    voxels_position.append((1, 42, 1))
 
-    im = voxel_centers_to_image_3d(voxel_centers, voxel_size)
+    im = voxels_position_to_image_3d(voxels_position, voxels_size)
 
     assert im == [[[1]]]
     assert im.world_coordinate == (1, 42, 1)
 
-    vcs, vs = image_3d_to_voxel_centers(im)
+    vcs, vs = image_3d_to_voxels_position(im)
 
     assert len(vcs) == 1
     assert vcs[0] == (1, 42, 1)

@@ -13,42 +13,42 @@ import numpy
 
 from alinea.phenomenal.data_structure import(
     Image3D,
-    image_3d_to_voxel_centers,
-    voxel_centers_to_image_3d)
+    image_3d_to_voxels_position,
+    voxels_position_to_image_3d)
 
 # ==============================================================================
 
 
 def test_simply_working_1():
     image_3d = Image3D.ones((10, 10, 10),
-                            voxel_size=16,
+                            voxels_size=16,
                             dtype=numpy.uint8,
                             world_coordinate=(1, 2, 3))
 
-    voxel_centers, voxel_size = image_3d_to_voxel_centers(image_3d)
+    voxels_position, voxels_size = image_3d_to_voxels_position(image_3d)
 
-    assert voxel_centers[0] == (1., 2., 3.)
-    assert voxel_centers[1] == (1., 2., 19.)
-    assert len(voxel_centers) == image_3d.size
+    assert voxels_position[0] == (1., 2., 3.)
+    assert voxels_position[1] == (1., 2., 19.)
+    assert len(voxels_position) == image_3d.size
 
 
 def test_simply_working_2():
 
     image_3d = Image3D.ones((10, 10, 10),
-                            voxel_size=16,
+                            voxels_size=16,
                             dtype=numpy.uint8,
                             world_coordinate=(1, 2, 3))
 
-    voxel_centers, voxel_size = image_3d_to_voxel_centers(image_3d)
+    voxels_position, voxels_size = image_3d_to_voxels_position(image_3d)
 
-    assert voxel_centers[0] == (1., 2., 3.)
-    assert voxel_centers[1] == (1., 2., 19.)
-    assert len(voxel_centers) == image_3d.size
+    assert voxels_position[0] == (1., 2., 3.)
+    assert voxels_position[1] == (1., 2., 19.)
+    assert len(voxels_position) == image_3d.size
 
-    im = voxel_centers_to_image_3d(voxel_centers, voxel_size)
+    im = voxels_position_to_image_3d(voxels_position, voxels_size)
 
     assert im.ndim == 3
-    assert im.size == len(voxel_centers)
+    assert im.size == len(voxels_position)
     assert (im == image_3d).all()
     assert image_3d.world_coordinate == (1, 2, 3)
 

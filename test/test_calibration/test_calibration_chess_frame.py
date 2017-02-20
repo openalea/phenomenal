@@ -14,6 +14,7 @@ from math import cos, sin, radians
 import numpy
 
 from alinea.phenomenal.calibration.frame import Frame, x_axis, y_axis, z_axis
+
 from alinea.phenomenal.calibration.transformations import (
     concatenate_matrices,
     rotation_matrix)
