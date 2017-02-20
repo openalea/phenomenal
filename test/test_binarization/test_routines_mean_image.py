@@ -11,13 +11,13 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.binarization.routines import mean
+from alinea.phenomenal.binarization.routines import mean_image
 # ==============================================================================
 
 
 def test_wrong_parameters_1():
     try:
-        mean(None)
+        mean_image(None)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -26,7 +26,7 @@ def test_wrong_parameters_1():
 
 def test_wrong_parameters_2():
     try:
-        mean(list())
+        mean_image(list())
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -35,7 +35,7 @@ def test_wrong_parameters_2():
 
 def test_wrong_parameters_3():
     try:
-        mean([[]])
+        mean_image([[]])
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -44,7 +44,7 @@ def test_wrong_parameters_3():
 
 def test_wrong_parameters_4():
     try:
-        mean([[]])
+        mean_image([[]])
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -54,7 +54,7 @@ def test_wrong_parameters_4():
 def test_wrong_parameters_5():
     try:
         image = numpy.zeros((25, 25, 3))
-        mean(image)
+        mean_image(image)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -64,7 +64,7 @@ def test_wrong_parameters_5():
 def test_wrong_parameters_6():
     try:
         image = numpy.zeros((25, 25, 3))
-        mean(image)
+        mean_image(image)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -77,7 +77,7 @@ def test_wrong_parameters_7():
     images.append(numpy.zeros((15, 15, 3)))
 
     try:
-        mean(images)
+        mean_image(images)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -89,7 +89,7 @@ def test_simply_working_1():
     for i in range(10):
         images.append(numpy.zeros((25, 25, 3)))
 
-    image = mean(images)
+    image = mean_image(images)
     assert numpy.count_nonzero(image) == 0
     assert image.ndim == 3
     assert image.shape == (25, 25, 3)
@@ -100,7 +100,7 @@ def test_simply_working_2():
     for i in range(10):
         images.append(numpy.ones((25, 25, 3)))
 
-    image = mean(images)
+    image = mean_image(images)
 
     assert image.ndim == 3
     assert image.shape == (25, 25, 3)
@@ -114,7 +114,7 @@ def test_simply_working_3():
     for i in range(1, 10):
         images.append(numpy.zeros((25, 25, 3)))
 
-    image = mean(images)
+    image = mean_image(images)
     assert (image == 0.1).all()
     assert image.ndim == 3
     assert image.shape == (25, 25, 3)

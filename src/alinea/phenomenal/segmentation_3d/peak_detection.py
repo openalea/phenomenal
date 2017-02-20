@@ -12,24 +12,16 @@
 import numpy
 import scipy.signal
 
-from alinea.phenomenal.segmentation_3d.peak_detection_algorithm import (
-    peakdetect)
 # ==============================================================================
 
 
 def peak_detection(values, lookahead):
     lookahead = max(1, int(lookahead))
 
-    max_peaks, min_peaks = peakdetect(
-        values, range(len(values)), lookahead=lookahead)
-
-    return max_peaks, min_peaks
-
-
-def peak_detection_with_scipy(values, lookahead):
-    lookahead = max(1, int(lookahead))
-
     max_peaks = scipy.signal.argrelmax(numpy.array(values), order=lookahead)[0]
     min_peaks = scipy.signal.argrelmin(numpy.array(values), order=lookahead)[0]
+
+    max_peaks = [(i, values[i]) for i in max_peaks]
+    min_peaks = [(i, values[i]) for i in min_peaks]
 
     return max_peaks, min_peaks

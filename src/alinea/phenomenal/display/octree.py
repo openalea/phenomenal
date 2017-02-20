@@ -13,6 +13,7 @@ import random
 import mayavi.mlab
 import numpy
 
+from alinea.phenomenal.display.center_axis import plot_center_axis
 # ==============================================================================
 
 __all__ = ["show_octree",
@@ -20,32 +21,28 @@ __all__ = ["show_octree",
 # ==============================================================================
 
 
-def show_octree(octree, figure_name="", color=None, scale_factor=1):
-    fg = mayavi.mlab.figure(figure_name)
-    mayavi.mlab.quiver3d(0, 0, 0,
-                         100, 0, 0,
-                         line_width=5.0,
-                         scale_factor=1,
-                         color=(1, 0, 0))
+def show_octree(octree,
+                scale_factor=1,
+                color=None,
+                figure_name="",
+                size=(800, 700),
+                with_center_axis=False,
+                azimuth=None,
+                elevation=None,
+                distance=None,
+                focalpoint=None):
 
-    mayavi.mlab.quiver3d(0, 0, 0,
-                         0, 100, 0,
-                         line_width=5.0,
-                         scale_factor=1,
-                         color=(0, 1, 0))
+    fg = mayavi.mlab.figure(figure=figure_name, size=size)
 
-    mayavi.mlab.quiver3d(0, 0, 0,
-                         0, 0, 100,
-                         line_width=5.0,
-                         scale_factor=1,
-                         color=(0, 0, 1))
+    if with_center_axis:
+        plot_center_axis()
 
     leafs = octree.get_leafs()
 
     depth = octree.root.depth()
     root_size = octree.root.size
 
-    for i in xrange(depth + 1):
+    for i in range(depth + 1):
 
         voxel_size = root_size / (2 ** i)
 
@@ -68,11 +65,25 @@ def show_octree(octree, figure_name="", color=None, scale_factor=1):
                 color=c,
                 scale_factor=voxel_size * scale_factor)
 
+    mayavi.mlab.view(azimuth=azimuth,
+                     elevation=elevation,
+                     distance=distance,
+                     focalpoint=focalpoint)
+
     mayavi.mlab.show()
     mayavi.mlab.clf(fg)
 
 
-def show_each_stage_of_octree(octree, color=None, scale_factor=1):
+def show_each_stage_of_octree(octree,
+                              scale_factor=1,
+                              color=None,
+                              size=(800, 700),
+                              with_center_axis=False,
+                              azimuth=None,
+                              elevation=None,
+                              distance=None,
+                              focalpoint=None):
+
     if color is None:
         color = (random.uniform(0, 1),
                  random.uniform(0, 1),
@@ -81,38 +92,31 @@ def show_each_stage_of_octree(octree, color=None, scale_factor=1):
     depth = octree.root.depth()
     root_size = octree.root.size
 
-    for i in xrange(depth + 1):
-        voxel_size = root_size / (2 ** i)
+    for i in range(depth + 1):
+        voxels_size = root_size / (2 ** i)
 
-        nodes = octree.get_nodes_with_size_equal_to(voxel_size)
-        voxel_centers = [node.position for node in nodes if node.data is True]
+        voxels_position = octree.get_nodes_position(voxels_size)
 
-        fg = mayavi.mlab.figure(voxel_size)
-        mayavi.mlab.quiver3d(0, 0, 0,
-                             100, 0, 0,
-                             line_width=5.0,
-                             scale_factor=1,
-                             color=(1, 0, 0))
+        fg = mayavi.mlab.figure(figure=str(voxels_size), size=size)
 
-        mayavi.mlab.quiver3d(0, 0, 0,
-                             0, 100, 0,
-                             line_width=5.0,
-                             scale_factor=1,
-                             color=(0, 1, 0))
+        if with_center_axis:
+            plot_center_axis()
 
-        mayavi.mlab.quiver3d(0, 0, 0,
-                             0, 0, 100,
-                             line_width=5.0,
-                             scale_factor=1,
-                             color=(0, 0, 1))
+        print len(voxels_position)
 
-        if voxel_centers:
-            voxel_centers = numpy.array(voxel_centers)
-            mayavi.mlab.points3d(
-                voxel_centers[:, 0], voxel_centers[:, 1], voxel_centers[:, 2],
-                mode='cube',
-                color=color,
-                scale_factor=voxel_size * scale_factor)
+        if voxels_position:
+            voxels_position = numpy.array(voxels_position)
+            mayavi.mlab.points3d(voxels_position[:, 0],
+                                 voxels_position[:, 1],
+                                 voxels_position[:, 2],
+                                 mode='cube',
+                                 color=color,
+                                 scale_factor=voxels_size * scale_factor)
+
+        mayavi.mlab.view(azimuth=azimuth,
+                         elevation=elevation,
+                         distance=distance,
+                         focalpoint=focalpoint)
 
         mayavi.mlab.show()
         mayavi.mlab.clf(fg)

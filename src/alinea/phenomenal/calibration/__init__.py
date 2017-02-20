@@ -70,23 +70,14 @@ Frame
 """
 # ==============================================================================
 
-from alinea.phenomenal.calibration.calibration import (
-    CalibrationCamera,
-    CalibrationCameraTop,
-    CalibrationCameraSideWith2TargetYXZ)
+from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.calibration.calibration_manual import (
-    CalibrationCameraManual, EnvironmentCamera)
+from alinea.phenomenal.calibration.calibration import *
+from alinea.phenomenal.calibration.calibration_manual import *
+from alinea.phenomenal.calibration.calibration_opencv import *
+from alinea.phenomenal.calibration.chessboard import *
+from alinea.phenomenal.calibration.frame import *
 
-from alinea.phenomenal.calibration.calibration_opencv import (
-    CalibrationCameraOpenCv)
+# ==============================================================================
 
-from alinea.phenomenal.calibration.chessboard import (
-    Target,
-    Chessboard)
-
-from alinea.phenomenal.calibration.frame import (
-    Frame,
-    x_axis,
-    y_axis,
-    z_axis)
+__all__ = [s for s in dir() if not s.startswith('_')]

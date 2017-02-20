@@ -17,12 +17,17 @@ import cv2
 import numpy
 # ==============================================================================
 
-__all__ = ["meanshift", "hsv"]
+__all__ = ["threshold_meanshift",
+           "threshold_hsv",
+           "threshold_meanshift_enhance"]
 
 # ==============================================================================
 
 
-def meanshift(image, mean_image, threshold=0.3, reverse=False, mask=None):
+def threshold_meanshift(image, mean_image,
+                        threshold=0.3,
+                        reverse=False,
+                        mask=None):
     """
     Threshold pixels in numpy array such as::
 
@@ -92,9 +97,11 @@ def meanshift(image, mean_image, threshold=0.3, reverse=False, mask=None):
         img[~ numpy.isfinite(img)] = 0
 
     if reverse:
+        # Take max value of RGB tuple
         img = img.max(2)
         out = img >= (1. + threshold)
     else:
+        # Take min value of RGB tuple
         img = img.min(2)
         out = img <= (1. - threshold)
 
@@ -105,10 +112,37 @@ def meanshift(image, mean_image, threshold=0.3, reverse=False, mask=None):
 
     del img
 
-    return out
+    return out * 255
 
 
-def hsv(image, hsv_min, hsv_max, mask=None):
+def threshold_meanshift_enhance(image, mean_image,
+                                threshold=0.3,
+                                mask=None):
+    # ==========================================================================
+
+    image[image[:, :, 0] == 0] = 1
+    image[image[:, :, 1] == 0] = 1
+    image[image[:, :, 2] == 0] = 1
+
+    mean_image[mean_image[:, :, 0] == 0] = 1
+    mean_image[mean_image[:, :, 1] == 0] = 1
+    mean_image[mean_image[:, :, 2] == 0] = 1
+
+    img = numpy.divide(numpy.float32(image), numpy.float32(mean_image))
+
+    # Take min value of RGB tuple
+    out = img.min(2) <= (1. - threshold)
+    out = numpy.uint8(out)
+
+    if mask is not None:
+        out = cv2.bitwise_and(out, mask)
+
+    del img
+
+    return out * 255
+
+
+def threshold_hsv(image, hsv_min, hsv_max, mask=None):
     """
     Binarize HSV image with hsv_min and hsv_max parameters.
     => cv2.inRange(hsv_image, hsv_min, hsv_max)

@@ -63,19 +63,13 @@ Thinning
     thinning_3d
 """
 # ==============================================================================
-from alinea.phenomenal.segmentation_3d.graph import (
-    create_graph, add_nodes)
+from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.segmentation_3d.peak_detection_algorithm import (
-    peakdetect)
 
-from alinea.phenomenal.segmentation_3d.thinning import (
-    thinning_3d)
+from alinea.phenomenal.segmentation_3d.graph import *
+from alinea.phenomenal.segmentation_3d.thinning import *
+from alinea.phenomenal.segmentation_3d.maize import *
 
-from alinea.phenomenal.segmentation_3d.maize import (
-    maize_base_stem_position_image3d,
-    maize_stem_segmentation,
-    maize_plant_segmentation)
+# ==============================================================================
 
-from alinea.phenomenal.segmentation_3d.routines import (
-    find_position_base_plant)
+__all__ = [s for s in dir() if not s.startswith('_')]

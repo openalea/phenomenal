@@ -119,9 +119,9 @@ def build_mask():
 def check_mask(T, M):
     x_present = False
     x_ok = False
-    for i in xrange(3):
-        for j in xrange(3):
-            for k in xrange(3):
+    for i in range(3):
+        for j in range(3):
+            for k in range(3):
                 if M[i, j, k] == '.':
                     continue
                 if M[i, j, k] == '0' and T[i, j, k] != 0:
