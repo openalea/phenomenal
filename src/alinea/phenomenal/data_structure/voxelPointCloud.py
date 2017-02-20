@@ -123,17 +123,18 @@ class VoxelPointCloud(object):
 
     @staticmethod
     def read_from_csv(filename):
-
         with open(filename, 'rb') as f:
             reader = csv.reader(f)
 
             next(reader)
+            x, y, z, vs = next(reader)
+
+            voxels_size = float(vs)
 
             voxels_position = list()
-            for number_id, position, size in reader:
-                position = literal_eval(position)
-                voxels_position.append(position)
+            voxels_position.append((float(x), float(y), float(z)))
 
-            voxels_size
+            for x, y, z, vs in reader:
+                voxels_position.append((float(x), float(y), float(z)))
 
             return VoxelPointCloud(voxels_position, voxels_size)
