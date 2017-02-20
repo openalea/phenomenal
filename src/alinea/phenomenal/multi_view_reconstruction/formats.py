@@ -107,12 +107,12 @@ def read_from_csv(filename):
 
         next(reader)
 
-        voxels_center = dict()
+        voxels_center = list()
         for number_id, position, size in reader:
             position = literal_eval(position)
             voxels_center.append(position)
 
-        return
+        return voxels_center, voxels_size
 
 
 def write_to_csv_with_label(filename, label_voxel_centers, voxel_size):
