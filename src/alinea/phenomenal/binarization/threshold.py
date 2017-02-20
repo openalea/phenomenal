@@ -17,10 +17,9 @@ import cv2
 import numpy
 # ==============================================================================
 
-__all__ = ["meanshift",
-           "hsv",
-           "threshold_meanshift_enhance",
-           "threshold_meanshift_HSV_values"]
+__all__ = ["threshold_meanshift",
+           "threshold_hsv",
+           "threshold_meanshift_enhance"]
 
 # ==============================================================================
 

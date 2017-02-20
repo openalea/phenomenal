@@ -12,7 +12,7 @@
 import numpy
 import cv2
 
-from alinea.phenomenal.binarization.threshold import hsv
+from alinea.phenomenal.binarization.threshold import threshold_hsv
 # ==============================================================================
 
 
@@ -24,7 +24,7 @@ def test_wrong_parameters_1():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -39,7 +39,7 @@ def test_wrong_parameters_2():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -54,7 +54,7 @@ def test_wrong_parameters_3():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -69,7 +69,7 @@ def test_wrong_parameters_4():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -84,7 +84,7 @@ def test_wrong_parameters_5():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -99,7 +99,7 @@ def test_wrong_parameters_6():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -114,7 +114,7 @@ def test_wrong_parameters_7():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -129,7 +129,7 @@ def test_wrong_parameters_8():
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -144,7 +144,7 @@ def test_wrong_parameters_9():
     mask = 42
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -159,7 +159,7 @@ def test_wrong_parameters_10():
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -173,7 +173,7 @@ def test_wrong_parameters_13():
     mask = numpy.zeros((25, 26), dtype=numpy.uint8)
 
     try:
-        hsv(image, hsv_min, hsv_max, mask=mask)
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -185,7 +185,7 @@ def test_simply_working_1():
     hsv_max = (80, 250, 134)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    img_bin = hsv(image, hsv_min, hsv_max, mask=mask)
+    img_bin = threshold_hsv(image, hsv_min, hsv_max, mask=mask)
 
     assert img_bin.ndim == 2
     assert numpy.count_nonzero(img_bin) == 0
@@ -201,6 +201,6 @@ if __name__ == "__main__":
     test_wrong_parameters_8()
     test_wrong_parameters_9()
     test_wrong_parameters_10()
-    test_wrong_parameters_11()
+    test_wrong_parameters_13()
 
     test_simply_working_1()

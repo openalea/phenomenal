@@ -73,33 +73,15 @@ Routines
     image_3d_to_voxel_centers
     voxel_centers_to_image_3d
 """
+# ==============================================================================
 
-from alinea.phenomenal.multi_view_reconstruction.formats import (
-    read_from_csv,
-    read_from_xyz,
-    save_matrix_to_stack_image,
-    write_to_csv,
-    write_to_xyz)
+from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
-    import (error_reconstruction,
-            error_reconstruction_lost,
-            error_reconstruction_precision,
-            get_bounding_box_voxel_projected,
-            get_voxel_corners, kept_visible_voxel,
-            project_voxel_centers_on_image,
-            reconstruction_3d,
-            split_voxel_centers_in_eight,
-            split_voxel_centers_in_four,
-            volume,
-            voxel_is_visible_in_image)
+from alinea.phenomenal.multi_view_reconstruction.formats import *
+from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction import *
+from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction_without_loss import *
+from alinea.phenomenal.multi_view_reconstruction.routines import *
 
-from alinea.phenomenal.multi_view_reconstruction.\
-    multi_view_reconstruction_without_loss import (
-        reconstruction_without_loss)
+# ==============================================================================
 
-from alinea.phenomenal.multi_view_reconstruction.routines import (
-    kept_biggest_connected_component,
-    labeling_connected_component,
-    remove_internal)
-
+__all__ = [s for s in dir() if not s.startswith('_')]

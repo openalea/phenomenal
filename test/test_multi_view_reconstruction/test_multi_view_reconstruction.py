@@ -32,14 +32,13 @@ def test_multi_view_reconstruction_reconstruction_3d():
 
         images_and_projections.append((img, function))
 
-    voxel_size = 8
+    voxel_size = 64
     # Multi-view reconstruction
     voxel_centers = reconstruction_3d(images_and_projections,
                                       voxel_size=voxel_size,
                                       verbose=True)
 
-    if voxel_size == 8:
-        assert len(voxel_centers) == 22993
+    assert len(voxel_centers) == 437
 
-    # # Viewing
-    # show_points_3d(voxel_centers, scale_factor=20)
+if __name__ == "__main__":
+    test_multi_view_reconstruction_reconstruction_3d()

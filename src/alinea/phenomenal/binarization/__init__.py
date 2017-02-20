@@ -57,18 +57,14 @@ Formats
 
 """
 # ==============================================================================
-from alinea.phenomenal.binarization.formats import (
-    read_image, write_image)
 
-from alinea.phenomenal.binarization.morphology import (
-    close, dilate_erode, erode_dilate)
+from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.binarization.routines import (
-    mean_image)
-
-from alinea.phenomenal.binarization.threshold import (
-    threshold_hsv,
-    threshold_meanshift,
-    threshold_meanshift_enhance)
+from alinea.phenomenal.binarization.formats import *
+from alinea.phenomenal.binarization.morphology import *
+from alinea.phenomenal.binarization.routines import *
+from alinea.phenomenal.binarization.threshold import *
 
 # ==============================================================================
+
+__all__ = [s for s in dir() if not s.startswith('_')]

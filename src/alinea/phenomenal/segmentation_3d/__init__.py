@@ -63,12 +63,13 @@ Thinning
     thinning_3d
 """
 # ==============================================================================
-from alinea.phenomenal.segmentation_3d.graph import (
-    create_graph, add_nodes)
+from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.segmentation_3d.thinning import (
-    thinning_3d)
 
-from alinea.phenomenal.segmentation_3d.maize import (
-    labelize_maize_skeleton)
+from alinea.phenomenal.segmentation_3d.graph import *
+from alinea.phenomenal.segmentation_3d.thinning import *
+from alinea.phenomenal.segmentation_3d.maize import *
 
+# ==============================================================================
+
+__all__ = [s for s in dir() if not s.startswith('_')]

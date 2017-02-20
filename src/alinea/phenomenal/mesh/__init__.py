@@ -74,24 +74,15 @@ VTK Transformation
     from_numpy_matrix_to_vtk_image_data
 
 """
+# ==============================================================================
 
-from alinea.phenomenal.mesh.algorithms import (
-    meshing,
-    marching_cubes,
-    smoothing, decimation)
+from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.mesh.formats import (
-    write_vertices_faces_to_json_file,
-    write_vertices_faces_to_ply_file,
-    write_vtk_poly_data_to_ply_file,
-    read_json_file_to_vertices_faces)
+from alinea.phenomenal.mesh.algorithms import *
+from alinea.phenomenal.mesh.formats import *
+from alinea.phenomenal.mesh.routines import *
+from alinea.phenomenal.mesh.vtk_transformation import *
 
-from alinea.phenomenal.mesh.routines import (
-    centers,
-    normals)
+# ==============================================================================
 
-from alinea.phenomenal.mesh.vtk_transformation import (
-    from_numpy_matrix_to_vtk_image_data,
-    from_vertices_faces_to_vtk_poly_data,
-    from_voxel_centers_to_vtk_image_data,
-    from_vtk_poly_data_to_vertices_faces)
+__all__ = [s for s in dir() if not s.startswith('_')]

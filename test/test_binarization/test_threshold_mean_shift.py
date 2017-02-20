@@ -13,15 +13,15 @@ import numpy
 import os
 import cv2
 
-from alinea.phenomenal.binarization.threshold import meanshift
-from alinea.phenomenal.binarization.routines import mean
+from alinea.phenomenal.binarization.threshold import threshold_meanshift
+from alinea.phenomenal.binarization.routines import mean_image
 # ==============================================================================
 
 
 def test_wrong_parameters_1():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        meanshift(None, mean_image)
+        threshold_meanshift(None, mean_image)
     except Exception, e:
         assert e.message == 'image should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -32,7 +32,7 @@ def test_wrong_parameters_1():
 def test_wrong_parameters_2():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        meanshift(image, None)
+        threshold_meanshift(image, None)
     except Exception, e:
         assert e.message == 'mean should be a numpy.ndarray'
         assert type(e) == TypeError
@@ -46,7 +46,7 @@ def test_wrong_parameters_3():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        meanshift(image, mean_image)
+        threshold_meanshift(image, mean_image)
     except Exception, e:
         assert e.message == 'image should be 3D array'
         assert type(e) == ValueError
@@ -60,7 +60,7 @@ def test_wrong_parameters_4():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        meanshift(image, mean_image)
+        threshold_meanshift(image, mean_image)
     except Exception, e:
         assert e.message == 'image should be 3D array'
         assert type(e) == ValueError
@@ -74,7 +74,7 @@ def test_wrong_parameters_5():
     mean_image = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        meanshift(image, mean_image)
+        threshold_meanshift(image, mean_image)
     except Exception, e:
         assert e.message == 'mean should be 3D array'
         assert type(e) == ValueError
@@ -87,7 +87,7 @@ def test_wrong_parameters_6():
     mean_image = numpy.zeros((10, 10, 3), dtype=numpy.uint8)
 
     try:
-        meanshift(image, mean_image)
+        threshold_meanshift(image, mean_image)
     except Exception, e:
         assert e.message == 'image and mean must have equal sizes'
         assert type(e) == ValueError
@@ -100,7 +100,7 @@ def test_wrong_parameters_7():
     mean_image = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        meanshift(image, mean_image)
+        threshold_meanshift(image, mean_image)
     except Exception, e:
         assert e.message == 'mean should be 3D array'
         assert type(e) == ValueError
@@ -113,7 +113,7 @@ def test_wrong_parameters_8():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        meanshift(image, mean_image, threshold=2)
+        threshold_meanshift(image, mean_image, threshold=2)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -125,7 +125,7 @@ def test_wrong_parameters_9():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        meanshift(image, mean_image, reverse=None)
+        threshold_meanshift(image, mean_image, reverse=None)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -138,7 +138,7 @@ def test_wrong_parameters_10():
     mask = [[1, 1, 1]]
 
     try:
-        meanshift(image, mean_image, mask=mask)
+        threshold_meanshift(image, mean_image, mask=mask)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -151,7 +151,7 @@ def test_wrong_parameters_11():
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        meanshift(image, mean_image, mask=mask)
+        threshold_meanshift(image, mean_image, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -164,7 +164,7 @@ def test_wrong_parameters_12():
     mask = numpy.zeros((25, 26), dtype=numpy.uint8)
 
     try:
-        meanshift(image, mean_image, mask=mask)
+        threshold_meanshift(image, mean_image, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -176,9 +176,9 @@ def test_simply_working_1():
     im1 = numpy.zeros((25, 25, 3), numpy.uint8)
     im2 = numpy.zeros((25, 25, 3), numpy.uint8)
 
-    mean_image = mean(list([im1, im2]))
+    mean_im = mean_image(list([im1, im2]))
 
-    bin_img = meanshift(im1, mean_image)
+    bin_img = threshold_meanshift(im1, mean_im)
 
     assert bin_img.shape == (25, 25)
 
@@ -188,9 +188,9 @@ def test_simply_working_2():
     im2 = numpy.zeros((25, 25, 3), numpy.uint8)
     mask = numpy.zeros((25, 25), numpy.uint8)
 
-    mean_image = mean(list([im1, im2]))
+    mean_im = mean_image(list([im1, im2]))
 
-    bin_img = meanshift(im1, mean_image, mask=mask)
+    bin_img = threshold_meanshift(im1, mean_im, mask=mask)
     assert bin_img.shape == (25, 25)
 
 
@@ -199,9 +199,9 @@ def test_simply_working_3():
     im2 = numpy.zeros((25, 25, 3), numpy.uint8)
     mask = numpy.zeros((25, 25), numpy.uint8)
 
-    mean_image = mean(list([im1, im2]))
+    mean_im = mean_image(list([im1, im2]))
 
-    bin_img = meanshift(im1, mean_image, mask=mask, threshold=1)
+    bin_img = threshold_meanshift(im1, mean_im, mask=mask, threshold=1)
     assert bin_img.shape == (25, 25)
 
 
@@ -210,9 +210,9 @@ def test_simply_working_4():
     im2 = numpy.zeros((25, 25, 3), numpy.uint8)
     mask = numpy.zeros((25, 25), numpy.uint8)
 
-    mean_image = mean(list([im1, im2]))
+    mean_im = mean_image(list([im1, im2]))
 
-    bin_img = meanshift(im1, mean_image, mask=mask, reverse=True)
+    bin_img = threshold_meanshift(im1, mean_im, mask=mask, reverse=True)
     assert bin_img.shape == (25, 25)
 
 
@@ -227,7 +227,7 @@ def test_no_regression_1():
     file_name_mask = os.path.dirname(__file__) + "/data/mask_mean_shift.png"
     mask = cv2.imread(file_name_mask, flags=cv2.IMREAD_GRAYSCALE)
 
-    mean_image = mean(images.values())
+    mean_im = mean_image(images.values())
 
     refs = [(0, 4798),
             (30, 4114),
@@ -244,7 +244,7 @@ def test_no_regression_1():
 
     for angle, ref in refs:
 
-        im_bin = meanshift(images[angle], mean_image, mask=mask)
+        im_bin = threshold_meanshift(images[angle], mean_im, mask=mask)
         im_bin *= 255
         # Acceptation error of 0.01 %
         acceptation_error = ref * 0.001
