@@ -15,7 +15,7 @@ import copy
 # ==============================================================================
 
 
-class OcNode(object):
+class VoxelNode(object):
     def __init__(self, position, size, data, father):
         self.position = position
         self.size = size
@@ -48,14 +48,14 @@ class OcNode(object):
         z_max = self.position[2] + r
 
         self.sons = [
-            OcNode((x_min, y_min, z_min), d, self.data, self),
-            OcNode((x_max, y_min, z_min), d, self.data, self),
-            OcNode((x_min, y_max, z_min), d, self.data, self),
-            OcNode((x_min, y_min, z_max), d, self.data, self),
-            OcNode((x_max, y_max, z_min), d, self.data, self),
-            OcNode((x_max, y_min, z_max), d, self.data, self),
-            OcNode((x_min, y_max, z_max), d, self.data, self),
-            OcNode((x_max, y_max, z_max), d, self.data, self)]
+            VoxelNode((x_min, y_min, z_min), d, self.data, self),
+            VoxelNode((x_max, y_min, z_min), d, self.data, self),
+            VoxelNode((x_min, y_max, z_min), d, self.data, self),
+            VoxelNode((x_min, y_min, z_max), d, self.data, self),
+            VoxelNode((x_max, y_max, z_min), d, self.data, self),
+            VoxelNode((x_max, y_min, z_max), d, self.data, self),
+            VoxelNode((x_min, y_max, z_max), d, self.data, self),
+            VoxelNode((x_max, y_max, z_max), d, self.data, self)]
 
         self.is_leaf = False
 
@@ -254,13 +254,13 @@ class OcNode(object):
                     "sons": sons}
 
 
-class Octree(object):
+class VoxelOctree(object):
 
     def __init__(self):
         self.root = None
 
     @classmethod
-    def from_oc_node(cls, node):
+    def from_voxel_node(cls, node):
         octree = cls()
         octree.root = node
         return octree
@@ -268,7 +268,7 @@ class Octree(object):
     @classmethod
     def from_position(cls, position, size, data):
         octree = cls()
-        octree.root = OcNode(position, size, data, None)
+        octree.root = VoxelNode(position, size, data, None)
         return octree
 
     def get_leafs(self):
@@ -278,10 +278,10 @@ class Octree(object):
 
         return self.root.get_leafs()
 
-    def get_nodes(self,
-                  func_if_true_add_node=lambda n: True,
-                  func_if_true_look_in_sons=lambda n: True,
-                  func_get=lambda n: n):
+    def get_voxel_nodes(self,
+                        func_if_true_add_node=lambda n: True,
+                        func_if_true_look_in_sons=lambda n: True,
+                        func_get=lambda n: n):
 
         if self.root is None:
             raise ValueError("No root define")
@@ -308,7 +308,7 @@ class Octree(object):
 
         return nodes
 
-    def get_nodes_position(self, voxels_size):
+    def get_voxel_nodes_position(self, voxels_size):
 
         def f(node):
             if node.data is True:
@@ -338,6 +338,29 @@ class Octree(object):
         nodes = self.root.get_nodes_with_size_equal_to(size)
         return [node for node in nodes if node.data == data]
 
+    @staticmethod
+    def create_oc_node(dict_node, father):
+
+        position = dict_node["position"]
+        data = dict_node["data"]
+        size = dict_node["size"]
+        dict_sons = dict_node["sons"]
+
+        node = VoxelNode(position, size, data, father)
+
+        if dict_sons is not None:
+            node.is_leaf = False
+            for i in range(len(dict_sons)):
+                node.sons[i] = VoxelOctree.create_oc_node(dict_sons[i], node)
+        else:
+            node.is_leaf = True
+
+        return node
+
+    # ==========================================================================
+    # READ / WRITES
+    # ==========================================================================
+
     def write_to_json(self, file_path):
 
         if self.root is None:
@@ -355,30 +378,11 @@ class Octree(object):
             json.dump(dict_nodes, outfile)
 
     @staticmethod
-    def create_oc_node(dict_node, father):
-
-        position = dict_node["position"]
-        data = dict_node["data"]
-        size = dict_node["size"]
-        dict_sons = dict_node["sons"]
-
-        node = OcNode(position, size, data, father)
-
-        if dict_sons is not None:
-            node.is_leaf = False
-            for i in range(len(dict_sons)):
-                node.sons[i] = Octree.create_oc_node(dict_sons[i], node)
-        else:
-            node.is_leaf = True
-
-        return node
-
-    @staticmethod
     def read_from_json(file_path):
 
         with open(file_path, 'r') as infile:
             load_dict_octree = json.load(infile)
 
-        root = Octree.create_oc_node(load_dict_octree, None)
+        root = VoxelOctree.create_oc_node(load_dict_octree, None)
 
-        return Octree.from_oc_node(root)
+        return VoxelOctree.from_voxel_node(root)

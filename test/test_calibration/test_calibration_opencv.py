@@ -100,6 +100,10 @@ def test_camera_opencv_parameters():
 
     os.remove('test_camera_opencv_parameters.json')
 
+# ==============================================================================
+
 if __name__ == "__main__":
-    test_camera_opencv_parameters()
-    test_calibration_opencv()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

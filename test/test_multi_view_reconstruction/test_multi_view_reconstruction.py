@@ -13,8 +13,8 @@ from alinea.phenomenal.data_access.plant_1 import (
     plant_1_calibration_camera_side,
     plant_1_images_binarize)
 
-from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
-    import (reconstruction_3d)
+from alinea.phenomenal.multi_view_reconstruction import (
+    reconstruction_3d)
 
 # ==============================================================================
 
@@ -32,13 +32,18 @@ def test_multi_view_reconstruction_reconstruction_3d():
 
         images_and_projections.append((img, function))
 
-    voxel_size = 64
+    voxels_size = 64
     # Multi-view reconstruction
     voxel_centers = reconstruction_3d(images_and_projections,
-                                      voxel_size=voxel_size,
+                                      voxels_size=voxels_size,
                                       verbose=True)
 
     assert len(voxel_centers) == 437
 
+# ==============================================================================
+
 if __name__ == "__main__":
-    test_multi_view_reconstruction_reconstruction_3d()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

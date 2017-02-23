@@ -20,13 +20,13 @@ from alinea.phenomenal.segmentation_3d.plane_interception import (
 
 from alinea.phenomenal.data_structure import (VoxelSkeleton,
                                               VoxelSegment,
-                                              voxels_position_to_image_3d)
+                                              VoxelPointCloud)
 # ==============================================================================
 
 
 def find_base_stem_position(voxels_position, voxels_size, neighbor_size=50):
 
-    image_3d = voxels_position_to_image_3d(voxels_position, voxels_size)
+    image_3d = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
 
     x = int(round(0 - image_3d.world_coordinate[0] / image_3d.voxels_size))
     y = int(round(0 - image_3d.world_coordinate[1] / image_3d.voxels_size))
@@ -105,7 +105,7 @@ def segment_path(voxels,
         return leaf, remain, leaf_skeleton_path
 
 
-def skeletonize(graph, voxels_size, distance_plane=1):
+def compute_all_shorted_path(graph, voxels_size):
 
     # ==========================================================================
     # Get the high points in the matrix and the supposed base plant points
@@ -116,6 +116,13 @@ def skeletonize(graph, voxels_size, distance_plane=1):
 
     all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
         graph, (x_stem, y_stem, z_stem), weight="weight")
+
+    return all_shorted_path_to_stem_base
+
+
+def skeletonize(graph, voxels_size, distance_plane=1):
+
+    all_shorted_path_to_stem_base = compute_all_shorted_path(graph, voxels_size)
 
     # ==========================================================================
     voxels_position_remain = graph.nodes()
@@ -143,4 +150,5 @@ def skeletonize(graph, voxels_size, distance_plane=1):
     skeleton = VoxelSkeleton(voxel_segments)
 
     return skeleton
+
 

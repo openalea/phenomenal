@@ -9,7 +9,9 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import os
 import numpy
+import cv2
 # ==============================================================================
 
 
@@ -41,6 +43,46 @@ class Image3D(numpy.ndarray):
 
         self.voxels_size = getattr(obj, 'voxels_size', 1)
         self.world_coordinate = getattr(obj, 'world_coordinate', (0, 0, 0))
+
+    # ==========================================================================
+    # READ / WRITE
+    # ==========================================================================
+
+    def write_to_npz(self, filename):
+
+        if (os.path.dirname(filename) and not os.path.exists(
+                os.path.dirname(filename))):
+            os.makedirs(os.path.dirname(filename))
+
+        numpy.savez_compressed(filename,
+                               image=self,
+                               voxels_size=self.voxels_size,
+                               world_coordinate=self.world_coordinate,
+                               allow_pickle=False)
+
+    @staticmethod
+    def read_from_npz(filename):
+        npz = numpy.load(filename, allow_pickle=False)
+
+        image = npz['image']
+        voxels_size = int(npz['voxels_size'])
+        world_coordinate = tuple(npz['world_coordinate'])
+
+        return Image3D(image,
+                       voxels_size=voxels_size,
+                       world_coordinate=world_coordinate)
+
+    def write_to_stack_image(self, folder_name):
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+
+        xl, yl, zl = self.shape
+        for i in range(zl):
+            mat = self[:, :, i] * 255
+            cv2.imwrite(folder_name + '%d.png' % i, mat)
+    # ==========================================================================
+    # CREATION ROUTINE
+    # ==========================================================================
 
     @staticmethod
     def zeros(shape,

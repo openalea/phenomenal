@@ -32,7 +32,7 @@ def test_multi_view_reconstruction_opencv_1():
     size = 10
     voxel_size = 10
     voxel_center = (0, 0, 0)
-    voxel_centers, _ = build_object_1(size, voxel_size, voxel_center)
+    voxel_centers = build_object_1(size, voxel_size, voxel_center)
 
     # ==========================================================================
     calibration = CalibrationCameraOpenCv.load(plant_1_params_camera_opencv_path())
@@ -53,7 +53,7 @@ def test_multi_view_reconstruction_opencv_1():
     # ==========================================================================
     voxel_size = 20
     voxel_centers = reconstruction_3d(images_projections,
-                                      voxel_size=voxel_size,
+                                      voxels_size=voxel_size,
                                       verbose=True)
 
     assert len(voxel_centers) == 465
@@ -75,7 +75,7 @@ def test_multi_view_reconstruction_opencv_2():
         images_projections.append((img, projection))
 
     voxel_centers = reconstruction_3d(
-        images_projections, voxel_size=voxel_size, verbose=True)
+        images_projections, voxels_size=voxel_size, verbose=True)
 
     assert len(voxel_centers) == 9929
 
@@ -89,5 +89,7 @@ def test_multi_view_reconstruction_opencv_2():
 # ==============================================================================
 
 if __name__ == "__main__":
-    test_multi_view_reconstruction_opencv_1()
-    test_multi_view_reconstruction_opencv_2()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

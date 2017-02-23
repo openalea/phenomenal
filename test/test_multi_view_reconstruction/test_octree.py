@@ -11,7 +11,8 @@
 # ==============================================================================
 import os
 
-from alinea.phenomenal.data_structure.octree import Octree
+from alinea.phenomenal.data_structure import (
+    VoxelOctree)
 # ==============================================================================
 
 
@@ -21,7 +22,7 @@ def test_octree():
     voxel_size = 20
     data = True
 
-    octree = Octree.from_position(world_coordinate, voxel_size, data)
+    octree = VoxelOctree.from_position(world_coordinate, voxel_size, data)
 
     assert octree.root.position == world_coordinate
     assert octree.root.size == voxel_size
@@ -36,7 +37,7 @@ def test_octree_1():
     voxel_size = 20
     data = True
 
-    octree = Octree.from_position(world_coordinate, voxel_size, data)
+    octree = VoxelOctree.from_position(world_coordinate, voxel_size, data)
     sons = octree.root.creates_sons()
 
     assert octree.root.is_leaf is False
@@ -51,7 +52,7 @@ def test_octree_2():
     voxel_size = 20
     data = True
 
-    octree = Octree.from_position(world_coordinate, voxel_size, data)
+    octree = VoxelOctree.from_position(world_coordinate, voxel_size, data)
     root = octree.root
     node = root.insert_node((10, 10, 10), True)
 
@@ -61,7 +62,7 @@ def test_octree_3():
     voxel_size = 20
     data = True
 
-    octree = Octree.from_position(world_coordinate, voxel_size, data)
+    octree = VoxelOctree.from_position(world_coordinate, voxel_size, data)
     octree.root.creates_sons()
     octree.root.sons[0].creates_sons()
 
@@ -75,7 +76,7 @@ def test_octree_4():
     voxel_size = 20
     data = True
 
-    octree = Octree.from_position(world_coordinate, voxel_size, data)
+    octree = VoxelOctree.from_position(world_coordinate, voxel_size, data)
     octree.root.creates_sons()
     octree.root.sons[0].creates_sons()
 
@@ -89,8 +90,7 @@ def test_octree_4():
     print(octree.root.sons[0])
 
 if __name__ == "__main__":
-    test_octree()
-    test_octree_1()
-    test_octree_2()
-    test_octree_3()
-    test_octree_4()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

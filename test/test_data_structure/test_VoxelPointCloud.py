@@ -9,27 +9,23 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction\
-    import (get_voxel_corners)
+import os
+
+from alinea.phenomenal.data_access import plant_1_voxel_point_cloud
+from alinea.phenomenal.data_structure import VoxelPointCloud, Image3D
 # ==============================================================================
 
 
-def test_get_voxel_corners_1():
-    voxel_center = (0.0, 0.0, 0.0)
-    voxel_size = 16
+def test_read_write():
 
-    voxel_corners = get_voxel_corners(voxel_center, voxel_size / 2)
+    voxels_size = 8
+    vpc = plant_1_voxel_point_cloud(voxels_size)
 
-    assert len(voxel_corners) == 8
+    filename = 'test.npz'
+    vpc.write_to_npz(filename)
+    vpc = VoxelPointCloud.read_from_npz(filename)
+    os.remove(filename)
 
-    assert voxel_corners[0] == (-4., -4., -4.)
-    assert voxel_corners[1] == (4., -4., -4.)
-    assert voxel_corners[2] == (-4., 4., -4.)
-    assert voxel_corners[3] == (-4., -4., 4.)
-    assert voxel_corners[4] == (4., 4., -4.)
-    assert voxel_corners[5] == (4., -4., 4.)
-    assert voxel_corners[6] == (-4., 4., 4.)
-    assert voxel_corners[7] == (4., 4., 4.)
 
 # ==============================================================================
 

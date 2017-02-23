@@ -110,7 +110,11 @@ def test_chessboard_3():
     ref = numpy.around(ref, decimals=5)
     assert numpy.array_equiv(res, ref)
 
+# ==============================================================================
+
 if __name__ == "__main__":
-    test_chessboard_1()
-    test_chessboard_2()
-    test_chessboard_3()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()
+
