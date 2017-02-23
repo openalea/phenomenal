@@ -54,8 +54,8 @@ Plant 1
 
 from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.data_access.data_creation import *
-from alinea.phenomenal.data_access.plant_1 import *
+from .data_creation import *
+from .plant_1 import *
 
 # ==============================================================================
 

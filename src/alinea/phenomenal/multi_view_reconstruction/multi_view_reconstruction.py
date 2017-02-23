@@ -338,11 +338,11 @@ def kept_visible_voxel(voxel_centers,
 
 
 def reconstruction_3d(images_projections,
-                      voxel_size=4,
+                      voxels_size=4,
                       error_tolerance=0,
                       voxel_center_origin=(0.0, 0.0, 0.0),
-                      world_size=4096,
-                      voxel_centers=None,
+                      origin_voxels_size=4096,
+                      voxels_position=None,
                       verbose=False):
     """
     Construct a list of voxel represented object with positive value on binary
@@ -386,37 +386,33 @@ def reconstruction_3d(images_projections,
     if len(images_projections) == 0:
         raise ValueError("images_projection list is empty")
 
-    if voxel_centers is None:
-        voxel_centers = collections.deque()
-        voxel_centers.append(voxel_center_origin)
+    if voxels_position is None:
+        voxels_position = collections.deque()
+        voxels_position.append(voxel_center_origin)
 
     nb_iteration = 0
-    while voxel_size < world_size:
-        voxel_size *= 2.0
+    while voxels_size < origin_voxels_size:
+        voxels_size *= 2.0
         nb_iteration += 1
 
     for i in range(nb_iteration):
 
-        if len(images_projections) == 1:
-            voxel_centers = split_voxel_centers_in_four(voxel_centers,
-                                                        voxel_size)
-        else:
-            voxel_centers = split_voxel_centers_in_eight(voxel_centers,
-                                                         voxel_size)
+        voxels_position = split_voxel_centers_in_eight(
+            voxels_position, voxels_size)
 
-        voxel_size /= 2.0
+        voxels_size /= 2.0
 
         if verbose is True:
             print('Iteration', i + 1, '/', nb_iteration, end="")
-            print(' : ', len(voxel_centers), end="")
+            print(' : ', len(voxels_position), end="")
 
-        voxel_centers = kept_visible_voxel(
-            voxel_centers, voxel_size, images_projections, error_tolerance)
+        voxels_position = kept_visible_voxel(
+            voxels_position, voxels_size, images_projections, error_tolerance)
 
         if verbose is True:
-            print(' - ', len(voxel_centers))
+            print(' - ', len(voxels_position))
 
-    return voxel_centers
+    return voxels_position
 
 # ==============================================================================
 

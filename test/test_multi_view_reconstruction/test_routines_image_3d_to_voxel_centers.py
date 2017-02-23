@@ -13,8 +13,7 @@ import numpy
 
 from alinea.phenomenal.data_structure import(
     Image3D,
-    image_3d_to_voxels_position,
-    voxels_position_to_image_3d)
+    VoxelPointCloud)
 
 # ==============================================================================
 
@@ -25,11 +24,11 @@ def test_simply_working_1():
                             dtype=numpy.uint8,
                             world_coordinate=(1, 2, 3))
 
-    voxels_position, voxels_size = image_3d_to_voxels_position(image_3d)
+    vpc = VoxelPointCloud.from_image_3d(image_3d)
 
-    assert voxels_position[0] == (1., 2., 3.)
-    assert voxels_position[1] == (1., 2., 19.)
-    assert len(voxels_position) == image_3d.size
+    assert vpc.voxels_position[0] == (1., 2., 3.)
+    assert vpc.voxels_position[1] == (1., 2., 19.)
+    assert len(vpc.voxels_position) == image_3d.size
 
 
 def test_simply_working_2():
@@ -39,20 +38,22 @@ def test_simply_working_2():
                             dtype=numpy.uint8,
                             world_coordinate=(1, 2, 3))
 
-    voxels_position, voxels_size = image_3d_to_voxels_position(image_3d)
+    vpc = VoxelPointCloud.from_image_3d(image_3d)
 
-    assert voxels_position[0] == (1., 2., 3.)
-    assert voxels_position[1] == (1., 2., 19.)
-    assert len(voxels_position) == image_3d.size
+    assert vpc.voxels_position[0] == (1., 2., 3.)
+    assert vpc.voxels_position[1] == (1., 2., 19.)
+    assert len(vpc.voxels_position) == image_3d.size
 
-    im = voxels_position_to_image_3d(voxels_position, voxels_size)
+    im = vpc.to_image_3d()
 
     assert im.ndim == 3
-    assert im.size == len(voxels_position)
+    assert im.size == len(vpc.voxels_position)
     assert (im == image_3d).all()
     assert image_3d.world_coordinate == (1, 2, 3)
 
 
 if __name__ == "__main__":
-    test_simply_working_1()
-    test_simply_working_2()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

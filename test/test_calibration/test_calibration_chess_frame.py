@@ -122,6 +122,10 @@ def test_frame():
     # print fr_cam.local_point((5000, 100, 0))
 
 
+# ==============================================================================
+
 if __name__ == "__main__":
-    test_frame()
-    # test_chess_frame()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

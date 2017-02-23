@@ -9,27 +9,22 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import numpy
-import os
+from alinea.phenomenal.data_access import (
+    plant_1_voxel_point_cloud)
 
-from alinea.phenomenal.binarization.formats import write_image, read_image
+from alinea.phenomenal.segmentation_3d import (
+    skeletonize,
+    voxel_graph_from_voxel_point_cloud)
 # ==============================================================================
 
 
-def test_simply_working_1():
+def test_running():
 
-    im1 = numpy.zeros((400, 400))
-    im1[10:-10, 10:-10] = 255
+    voxels_size = 8
+    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
+    voxel_graph = voxel_graph_from_voxel_point_cloud(vpc)
+    voxel_skeleton = skeletonize(voxel_graph.graph, voxel_graph.voxels_size)
 
-    write_image(im1, "tmp.png")
-    im2 = read_image("tmp.png")
-
-    assert numpy.array_equal(im1, im2)
-
-    # delete the tmp file
-    os.remove("tmp.png")
-
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():

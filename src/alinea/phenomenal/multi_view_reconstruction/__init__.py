@@ -77,10 +77,10 @@ Routines
 
 from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.multi_view_reconstruction.formats import *
-from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction import *
-from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction_without_loss import *
-from alinea.phenomenal.multi_view_reconstruction.routines import *
+from .multi_view_reconstruction import *
+from .multi_view_reconstruction_without_loss import *
+from .multi_view_reconstruction_octree import *
+from .routines import *
 
 # ==============================================================================
 

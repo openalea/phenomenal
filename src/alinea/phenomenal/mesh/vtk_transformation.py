@@ -10,9 +10,8 @@
 #
 # ==============================================================================
 import vtk
-import numpy
 
-from vtk.util.numpy_support import get_vtk_array_type, numpy_to_vtk
+from vtk.util.numpy_support import get_vtk_array_type
 from operator import itemgetter
 # ==============================================================================
 
@@ -112,7 +111,6 @@ def from_vtk_image_data_to_voxels_center(image_data,
                                           z * spa_z + ori_z))
 
     return voxels_points
-
 
 
 def from_voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):

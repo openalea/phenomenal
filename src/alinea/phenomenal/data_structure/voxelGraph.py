@@ -11,10 +11,12 @@
 # ==============================================================================
 import os
 import json
-import pickle
+import networkx
+import numpy
+import scipy.sparse
 
+from networkx.readwrite.graphml import (read_graphml, write_graphml)
 from networkx.readwrite.json_graph import (node_link_data, node_link_graph)
-from networkx.readwrite.gpickle import (read_gpickle, write_gpickle)
 # ==============================================================================
 
 
@@ -23,6 +25,72 @@ class VoxelGraph(object):
     def __init__(self, graph, voxels_size):
         self.graph = graph
         self.voxels_size = voxels_size
+
+    # ==========================================================================
+    # READ / WRITE
+    # ==========================================================================
+
+    def write_to_npz(self, filename):
+
+        if (os.path.dirname(filename) and not os.path.exists(
+                os.path.dirname(filename))):
+            os.makedirs(os.path.dirname(filename))
+
+        nodes = self.graph.nodes()
+        matrix = networkx.to_scipy_sparse_matrix(self.graph)
+
+        numpy.savez_compressed(filename,
+                               data=matrix.data,
+                               indices=matrix.indices,
+                               indptr=matrix.indptr,
+                               shape=matrix.shape,
+                               nodes=nodes,
+                               voxels_size=self.voxels_size,
+                               allow_pickle=False)
+
+    @staticmethod
+    def read_from_npz(filename):
+
+        loader = numpy.load(filename, allow_pickle=True)
+
+        matrix = scipy.sparse.csr_matrix(
+            (loader['data'], loader['indices'], loader['indptr']),
+            shape=loader['shape'])
+
+        nodes = loader['nodes']
+        voxels_size = int(loader['voxels_size'])
+
+        graph = networkx.from_scipy_sparse_matrix(matrix)
+        # graph.add_nodes_from(nodes)
+
+        return VoxelGraph(graph, voxels_size)
+
+    def write_to_gml(self, filename):
+
+        if (os.path.dirname(filename) and not os.path.exists(
+                os.path.dirname(filename))):
+            os.makedirs(os.path.dirname(filename))
+
+        networkx.write_gml(self.graph, filename)
+
+    @staticmethod
+    def read_from_gml(filename, voxels_size):
+        graph = networkx.read_gml(filename)
+
+        VoxelGraph(graph, voxels_size)
+
+    def write_to_graphml(self, filename):
+        if (os.path.dirname(filename) and not os.path.exists(
+                os.path.dirname(filename))):
+            os.makedirs(os.path.dirname(filename))
+
+        write_graphml(self.graph, filename)
+
+    @staticmethod
+    def read_from_graphml(filename, voxels_size):
+        graph = read_graphml(filename, node_type=tuple)
+
+        return VoxelGraph(graph, voxels_size)
 
     def write_to_json(self, filename):
         if (os.path.dirname(filename) and not os.path.exists(

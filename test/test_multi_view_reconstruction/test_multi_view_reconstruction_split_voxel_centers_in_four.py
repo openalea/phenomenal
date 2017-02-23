@@ -32,4 +32,7 @@ def test_split_points_3d_plan_1():
     assert l[3] == (0., 4., 4.)
 
 if __name__ == "__main__":
-    test_split_points_3d_plan_1()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

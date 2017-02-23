@@ -30,7 +30,7 @@ def test_multi_view_reconstruction_manual_1():
     voxel_size = 10
     world_coordinate = (0, 0, 0)
 
-    voxel_centers, _ = build_object_1(size, voxel_size, world_coordinate)
+    voxel_centers = build_object_1(size, voxel_size, world_coordinate)
 
     # ==========================================================================
     env_feat = EnvironmentCamera()
@@ -52,7 +52,7 @@ def test_multi_view_reconstruction_manual_1():
     # ==========================================================================
     voxel_size = 20
     voxel_centers = reconstruction_3d(images_projections,
-                                      voxel_size=voxel_size,
+                                      voxels_size=voxel_size,
                                       verbose=True)
 
     print len(voxel_centers)
@@ -77,7 +77,7 @@ def test_multi_view_reconstruction_manual_2():
         images_projections.append((img, projection))
 
     voxel_centers = reconstruction_3d(
-        images_projections, voxel_size=voxel_size, verbose=True)
+        images_projections, voxels_size=voxel_size, verbose=True)
 
     print len(voxel_centers)
 
@@ -91,5 +91,7 @@ def test_multi_view_reconstruction_manual_2():
 # ==============================================================================
 
 if __name__ == "__main__":
-    test_multi_view_reconstruction_manual_1()
-    test_multi_view_reconstruction_manual_2()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

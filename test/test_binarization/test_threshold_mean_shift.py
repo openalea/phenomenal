@@ -252,3 +252,11 @@ def test_no_regression_1():
         print abs(numpy.count_nonzero(im_bin) - ref), acceptation_error
         if abs(numpy.count_nonzero(im_bin) - ref) > acceptation_error:
             assert False
+
+# ==============================================================================
+
+if __name__ == "__main__":
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()
