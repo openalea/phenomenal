@@ -102,8 +102,6 @@ def show_each_stage_of_octree(octree,
         if with_center_axis:
             plot_center_axis()
 
-        print len(voxels_position)
-
         if voxels_position:
             voxels_position = numpy.array(voxels_position)
             mayavi.mlab.points3d(voxels_position[:, 0],

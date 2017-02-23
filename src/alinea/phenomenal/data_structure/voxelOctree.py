@@ -9,9 +9,13 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import json
 import os
 import copy
+
+from .voxelPointCloud import VoxelPointCloud
 # ==============================================================================
 
 
@@ -140,7 +144,7 @@ class VoxelNode(object):
 
         return neighbors
 
-    def find_leaf_with_position(self, position):
+    def get_with_position(self, position):
 
         if self.in_it(position):
             if self.is_leaf:
@@ -295,7 +299,20 @@ class VoxelOctree(object):
         leafs = self.root.get_leafs()
         return [leaf for leaf in leafs if leaf.data == data]
 
-    def get_nodes_with_size_equal_to(self, voxels_size):
+    def get_voxel_point_cloud(self, voxels_size):
+
+        def f(node):
+            if node.data is True:
+                if node.size == voxels_size:
+                    return True
+            return False
+
+        voxels_position = self.root.get_nodes(func_if_true_add_node=f,
+                                              func_get=lambda n: n.position)
+
+        return VoxelPointCloud(voxels_position, voxels_size)
+
+    def get_voxels_nodes_with_size_equal_to(self, voxels_size):
 
         def f(node):
             if node.size == voxels_size and node.data is True:
@@ -338,10 +355,54 @@ class VoxelOctree(object):
         nodes = self.root.get_nodes_with_size_equal_to(size)
         return [node for node in nodes if node.data == data]
 
-    @staticmethod
-    def create_oc_node(dict_node, father):
+    # ==========================================================================
+    # READ / WRITES
+    # ==========================================================================
 
-        position = dict_node["position"]
+    def write(self, filename):
+        ext = filename.split(".")[-1]
+
+        if ext == "json":
+            return self.write_to_json(filename)
+
+        raise ValueError("No extension")
+
+    @staticmethod
+    def read(filename):
+        ext = filename.split(".")[-1]
+
+        if ext == "json":
+            return VoxelOctree.read_from_json(filename)
+
+        raise ValueError("No extension")
+
+    def write_to_json(self, filename):
+
+        if self.root is None:
+            raise ValueError("No root define")
+
+        if (os.path.dirname(filename) and not os.path.exists(
+                os.path.dirname(filename))):
+            os.makedirs(os.path.dirname(filename))
+
+        dict_nodes = self.root.get_dict_nodes()
+        with open(filename, 'w') as f:
+            json.dump(dict_nodes, f)
+
+    @staticmethod
+    def read_from_json(filename):
+
+        with open(filename, 'r') as f:
+            load_dict_octree = json.load(f)
+
+        root = VoxelOctree.from_dict(load_dict_octree, None)
+
+        return VoxelOctree.from_voxel_node(root)
+
+    @staticmethod
+    def from_dict(dict_node, father):
+
+        position = tuple(dict_node["position"])
         data = dict_node["data"]
         size = dict_node["size"]
         dict_sons = dict_node["sons"]
@@ -351,38 +412,9 @@ class VoxelOctree(object):
         if dict_sons is not None:
             node.is_leaf = False
             for i in range(len(dict_sons)):
-                node.sons[i] = VoxelOctree.create_oc_node(dict_sons[i], node)
+                node.sons[i] = VoxelOctree.from_dict(dict_sons[i], node)
         else:
             node.is_leaf = True
 
         return node
 
-    # ==========================================================================
-    # READ / WRITES
-    # ==========================================================================
-
-    def write_to_json(self, file_path):
-
-        if self.root is None:
-            raise ValueError("No root define")
-
-        dict_nodes = self.root.get_dict_nodes()
-
-        file_path = os.path.realpath(file_path)
-        path_directory, file_name = os.path.split(file_path)
-
-        if not os.path.exists(path_directory):
-            os.makedirs(path_directory)
-
-        with open(file_path, 'wb') as outfile:
-            json.dump(dict_nodes, outfile)
-
-    @staticmethod
-    def read_from_json(file_path):
-
-        with open(file_path, 'r') as infile:
-            load_dict_octree = json.load(infile)
-
-        root = VoxelOctree.create_oc_node(load_dict_octree, None)
-
-        return VoxelOctree.from_voxel_node(root)
