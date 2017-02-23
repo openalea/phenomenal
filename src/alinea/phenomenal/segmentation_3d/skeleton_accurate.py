@@ -19,26 +19,26 @@ from alinea.phenomenal.multi_view_reconstruction import (
 
 from alinea.phenomenal.segmentation_3d import (
     voxel_graph_from_voxel_point_cloud,
-    compute_all_shorted_path)
+    compute_all_shorted_path,
+    skeletonize)
 
 # ==============================================================================
 
 
-def skeletonize_accurate(voxel_skeleton, images_projection, accurate):
+def skeletonize_octree(voxel_octree,
+                       voxels_size_to_skeletonize=16,
+                       distance_planes=1,
+                       voxels_size_output=4):
+
+    vpc = voxel_octree.get_voxel_point_cloud(voxels_size_to_skeletonize)
+
+    voxel_graph = voxel_graph_from_voxel_point_cloud(vpc)
+
+    voxel_skeleton = skeletonize(voxel_graph.graph, voxel_graph.voxels_size,
+                                 distance_plane=distance_planes)
 
     for voxel_segment in voxel_skeleton.voxel_segments:
         voxels_position = voxel_segment.voxels_position
-        voxels_size = voxel_segment.voxels_position
 
-        voxels_position = reconstruction_3d(images_projection,
-                                            voxels_size=accurate,
-                                            origin_voxels_size=voxels_size)
 
-        vpc = VoxelPointCloud(voxels_position, accurate)
 
-        voxel_graph = voxel_graph_from_voxel_point_cloud(vpc)
-
-        all_shorted_path_to_stem_base = compute_all_shorted_path(
-            voxel_graph.graph, voxel_graph.voxels_size)
-
-        print type(all_shorted_path_to_stem_base)

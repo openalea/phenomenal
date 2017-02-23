@@ -147,8 +147,8 @@ def skeletonize(graph, voxels_size, distance_plane=1):
 
         voxel_segments.append(voxel_segment)
 
-    skeleton = VoxelSkeleton(voxel_segments)
+    voxel_skeleton = VoxelSkeleton(voxel_segments)
 
-    return skeleton
+    return voxel_skeleton
 
 
