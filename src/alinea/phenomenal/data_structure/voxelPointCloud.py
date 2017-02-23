@@ -130,6 +130,31 @@ class VoxelPointCloud(object):
     # READ / WRITE
     # ==========================================================================
 
+    def write(self, filename):
+        ext = filename.split(".")[-1]
+
+        if ext == "npz":
+            return self.write_to_npz(filename)
+        if ext == "json":
+            return self.write_to_json(filename)
+        if ext == "csv":
+            return self.write_to_csv(filename)
+
+        raise ValueError("No extension")
+
+    @staticmethod
+    def read(filename):
+        ext = filename.split(".")[-1]
+
+        if ext == "npz":
+            return VoxelPointCloud.read_from_npz(filename)
+        if ext == "json":
+            return VoxelPointCloud.read_from_json(filename)
+        if ext == "csv":
+            return VoxelPointCloud.read_from_csv(filename)
+
+        raise ValueError("No extension")
+
     def write_to_npz(self, filename):
         image_3d = self.to_image_3d()
         image_3d.write_to_npz(filename)
