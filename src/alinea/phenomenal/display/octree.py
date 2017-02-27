@@ -95,7 +95,7 @@ def show_each_stage_of_octree(octree,
     for i in range(depth + 1):
         voxels_size = root_size / (2 ** i)
 
-        voxels_position = octree.get_nodes_position(voxels_size)
+        voxels_position = octree.get_voxels_position(voxels_size)
 
         fg = mayavi.mlab.figure(figure=str(voxels_size), size=size)
 

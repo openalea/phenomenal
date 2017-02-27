@@ -16,7 +16,8 @@ from alinea.phenomenal.segmentation_3d.algorithm import (
     merge)
 
 from alinea.phenomenal.segmentation_3d.plane_interception import (
-    compute_closest_nodes)
+    compute_closest_nodes_with_planes,
+    compute_closest_nodes_with_ball)
 
 from alinea.phenomenal.data_structure import (VoxelSkeleton,
                                               VoxelSegment,
@@ -87,12 +88,16 @@ def segment_path(voxels,
 
     if leaf_skeleton_path:
 
-        planes, closest_nodes = compute_closest_nodes(
+        # closest_nodes = compute_closest_nodes_with_planes(
+        #     array_voxels,
+        #     leaf_skeleton_path,
+        #     radius=8,
+        #     dist=distance_plane,
+        #     graph=graph)
+
+        closest_nodes = compute_closest_nodes_with_ball(
             array_voxels,
-            leaf_skeleton_path,
-            radius=8,
-            dist=distance_plane,
-            graph=graph)
+            leaf_skeleton_path)
 
         leaf = set().union(*closest_nodes)
         remain = set(voxels).difference(leaf)

@@ -62,9 +62,6 @@ class VoxelGraph(object):
         nodes = loader['nodes']
         voxels_size = int(loader['voxels_size'])
 
-        graph = networkx.from_scipy_sparse_matrix(matrix)
-        # graph.add_nodes_from(nodes)
-
         return VoxelGraph(graph, voxels_size)
 
     def write_to_gml(self, filename):

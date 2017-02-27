@@ -84,6 +84,19 @@ class VoxelNode(object):
 
         return l
 
+    def get_sons_voxels_position_with_size(self, voxels_size):
+
+        l = list()
+        if self.data is True:
+            if self.size == voxels_size:
+                l.append(self.position)
+            else:
+                if not self.is_leaf:
+                    for son in self.sons:
+                        l.extend(son.get_sons_voxels_position_with_size(
+                            voxels_size))
+        return l
+
     def get_leafs(self):
 
         def func_if_true_add_node(node):
@@ -143,6 +156,23 @@ class VoxelNode(object):
                      (cx_max, cy_max, cz_min)]
 
         return neighbors
+
+    def get_node_position(self, position):
+
+        # print(position, self.position)
+
+        if (self.position[0] == position[0] and
+                self.position[1] == position[1] and
+                self.position[2] == position[2]):
+            return self
+        else:
+            if not self.is_leaf and self.in_it(position):
+                for son in self.sons:
+                    leaf = son.get_node_position(position)
+                    if leaf is not None:
+                        return leaf
+            else:
+                return None
 
     def get_with_position(self, position):
 
@@ -325,7 +355,10 @@ class VoxelOctree(object):
 
         return nodes
 
-    def get_voxel_nodes_position(self, voxels_size):
+    def get_node_position(self, position):
+        return self.root.get_node_position(position)
+
+    def get_voxels_position(self, voxels_size):
 
         def f(node):
             if node.data is True:
