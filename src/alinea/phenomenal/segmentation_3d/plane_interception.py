@@ -75,10 +75,10 @@ def get_node_close_to_planes(voxels, node_src, plane, dist=0.75,
     return map(tuple, closest_node)
 
 
-def compute_closest_nodes(voxels, path, radius=8, dist=0.75, graph=None):
-    planes = list()
-    closest_nodes = list()
+def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=0.75,
+                                  graph=None):
 
+    closest_nodes = list()
     length_path = len(path)
     for i in range(length_path):
         node = path[i]
@@ -106,11 +106,22 @@ def compute_closest_nodes(voxels, path, radius=8, dist=0.75, graph=None):
         d = k[0] * node[0] + k[1] * node[1] + k[2] * node[2]
         plane = (k[0], k[1], k[2], d)
 
-        planes.append(plane)
-
         nodes = get_node_close_to_planes(voxels, node, plane, dist=dist,
                                          graph=graph)
 
         closest_nodes.append(nodes)
 
-    return planes, closest_nodes
+    return  closest_nodes
+
+
+def compute_closest_nodes_with_ball(voxels, path, radius=50):
+
+    closest_nodes = list()
+    path = numpy.array(path)
+    for i, node in enumerate(path):
+        res = numpy.linalg.norm(voxels - node, axis=1)
+        index = numpy.where(res < radius)
+        nodes = voxels[index]
+        closest_nodes.append(map(tuple, nodes))
+
+    return closest_nodes
