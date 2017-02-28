@@ -63,8 +63,7 @@ def connect_all_node_with_nearest_neighbors(graph):
             distance, index_nodes = neigh.kneighbors(nodes)
 
             index_min = numpy.argmin(distance)
-            dist = distance[index_min]
-
+            dist = distance[index_min][0]
             if dist < min_dist:
                 min_dist = dist
                 pt_1 = nodes[index_min]
