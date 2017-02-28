@@ -13,7 +13,6 @@ from __future__ import division, print_function, absolute_import
 
 import mayavi.mlab
 
-
 from .voxels import (plot_voxels)
 from .center_axis import (plot_center_axis)
 # ==============================================================================
@@ -44,8 +43,8 @@ def show_voxel_skeleton(voxel_skeleton,
             if with_voxels:
                 plot_voxels(vs.voxels_position,
                             vs.voxels_size * 0.25,
-                            color=(0.0, 1.0, 0.0))
-
+                            # color=(0.0, 1.0, 0.0))
+                            )
     print("Number of segments : ", len(voxel_skeleton.voxel_segments))
 
     mayavi.mlab.view(azimuth=azimuth,

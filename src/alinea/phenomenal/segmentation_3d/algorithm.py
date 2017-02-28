@@ -20,7 +20,7 @@ from alinea.phenomenal.segmentation_3d.peak_detection import (
     peak_detection)
 
 from alinea.phenomenal.segmentation_3d.plane_interception import (
-    compute_closest_nodes)
+    compute_closest_nodes_with_planes)
 
 # ==============================================================================
 
@@ -275,7 +275,7 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
 
     arr_stem_segment_voxel = numpy.array(list(stem_segment_voxel))
 
-    planes, closest_nodes = compute_closest_nodes(
+    closest_nodes = compute_closest_nodes_with_planes(
         arr_stem_segment_voxel, stem_segment_path, radius=6,
         dist=distance_plane * voxel_size)
 

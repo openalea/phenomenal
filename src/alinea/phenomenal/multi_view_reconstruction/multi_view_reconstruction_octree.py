@@ -11,6 +11,7 @@
 # ==============================================================================
 from __future__ import division, print_function
 
+import scipy.sparse
 import collections
 import math
 import numpy

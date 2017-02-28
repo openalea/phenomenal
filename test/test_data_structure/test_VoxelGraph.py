@@ -11,12 +11,6 @@
 # ==============================================================================
 import networkx
 
-from alinea.phenomenal.segmentation_3d import (
-    voxel_graph_from_voxel_point_cloud)
-
-from alinea.phenomenal.data_access import (
-    plant_1_voxel_point_cloud)
-
 from alinea.phenomenal.data_structure import VoxelGraph
 # ==============================================================================
 
@@ -55,7 +49,6 @@ def test_read_write():
     vg = get_test_graph()
     vg.write_to_npz('test.npz')
     vg = VoxelGraph.read_from_npz('test.npz')
-
 
 
 # ==============================================================================

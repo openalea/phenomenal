@@ -141,6 +141,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
         leaf_voxel = None
         subgraph = graph.subgraph(supposed_leaf_voxels)
+
         i = -1
         while leaf_voxel is None:
             for voxels_group in networkx.connected_components(subgraph):
@@ -184,6 +185,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
     stem_voxel, not_stem_voxel, stem_path, stem_top = stem_detection(
         stem_segment_voxel, stem_segment_path, leafs, voxels_size)
+
 
     # stem_voxel, stem_neighbors, connected_components = merge(
     #     graph, stem_voxel, not_stem_voxel, percentage=50)
