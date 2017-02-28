@@ -9,6 +9,8 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import os
 import json
 import networkx
@@ -59,9 +61,6 @@ class VoxelGraph(object):
 
         nodes = loader['nodes']
         voxels_size = int(loader['voxels_size'])
-
-        graph = networkx.from_scipy_sparse_matrix(matrix)
-        # graph.add_nodes_from(nodes)
 
         return VoxelGraph(graph, voxels_size)
 

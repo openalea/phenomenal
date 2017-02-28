@@ -15,7 +15,7 @@ import math
 import scipy.spatial
 
 from alinea.phenomenal.segmentation_3d.plane_interception import (
-    compute_closest_nodes)
+    compute_closest_nodes_with_planes)
 
 # ==============================================================================
 
@@ -55,7 +55,7 @@ def voxels_path_analysis(voxel, path, voxel_size,
     info = dict()
 
     set_voxel = set(list(voxel))
-    planes, closest_nodes = compute_closest_nodes(
+    closest_nodes = compute_closest_nodes_with_planes(
         all_vs,
         path,
         radius=8,
@@ -155,22 +155,22 @@ def voxels_path_analysis(voxel, path, voxel_size,
     # ==========================================================================
 
     x, y, z = path[0]
-    vectors = list()
-    for i in range(1, len(path)):
-        xx, yy, zz = path[i]
 
-        v = (xx - x, yy - y, zz - z)
-        vectors.append(v)
+    if len(path) > 1:
+        vectors = list()
+        for i in range(1, len(path)):
+            xx, yy, zz = path[i]
 
-    vector_mean = numpy.array(vectors).mean(axis=0)
+            v = (xx - x, yy - y, zz - z)
+            vectors.append(v)
 
-    x, y, z = vector_mean
-    angle = math.atan2(y, x)
-    angle = angle + 2 * math.pi if angle < 0 else angle
-    info['azimuth'] = angle
-
-    info['vector_mean'] = tuple(vector_mean)
-    info['vector_base'] = path[0]
+        vector_mean = numpy.array(vectors).mean(axis=0)
+        x, y, z = vector_mean
+        angle = math.atan2(y, x)
+        angle = angle + 2 * math.pi if angle < 0 else angle
+        info['azimuth'] = angle
+        info['vector_mean'] = tuple(vector_mean)
+        info['vector_base'] = path[0]
 
     # ==========================================================================
 
