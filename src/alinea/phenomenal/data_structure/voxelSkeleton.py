@@ -27,12 +27,14 @@ class VoxelSkeleton(object):
         else:
             self.voxel_segments = voxel_segments
 
-    def add_voxel_segment(self, voxels_position, voxels_size, polylines, label):
+    def add_voxel_segment(self, voxels_position, voxels_size, polylines,
+                          label=None, info=None):
 
         voxel_segment = VoxelSegment(voxels_position,
                                      voxels_size,
                                      polylines,
-                                     label=label)
+                                     label=label,
+                                     info=info)
 
         self.voxel_segments.append(voxel_segment)
 
@@ -153,6 +155,7 @@ class VoxelSkeleton(object):
                     polylines.append(map(tuple, path))
 
                 vpcs.add_voxel_segment(
-                    voxels_position, d['voxels_size'], polylines, d['label'])
+                    voxels_position, d['voxels_size'], polylines, d['label'],
+                    d['info'])
 
         return vpcs

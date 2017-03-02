@@ -16,8 +16,10 @@
 class VoxelSegment(object):
 
     def __init__(self, voxels_position, voxels_size, polylines,
-                 label=None):
+                 label=None, info=None):
+
         self.voxels_position = voxels_position
         self.voxels_size = voxels_size
         self.polylines = polylines
         self.label = label
+        self.info = info

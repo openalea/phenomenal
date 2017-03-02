@@ -341,7 +341,7 @@ def reconstruction_3d(images_projections,
                       voxels_size=4,
                       error_tolerance=0,
                       voxel_center_origin=(0.0, 0.0, 0.0),
-                      origin_voxels_size=4096,
+                      world_size=4096,
                       voxels_position=None,
                       verbose=False):
     """
@@ -356,7 +356,7 @@ def reconstruction_3d(images_projections,
         who take (x, y, z) position on return (x, y) position according space
         representation of this image
 
-    voxel_size : float, optional
+    voxels_size : float, optional
         Size of side geometry of voxel that each voxel will have
 
     error_tolerance : int, optional
@@ -368,7 +368,7 @@ def reconstruction_3d(images_projections,
     world_size: int, optional
         Minimum size that the origin voxel size must include at beginning
 
-    voxel_centers : collections.deque, optional
+    voxels_position : collections.deque, optional
         List of first original voxel who will be split. If None, a list is
         create with the voxel_center_origin value.
 
@@ -391,7 +391,7 @@ def reconstruction_3d(images_projections,
         voxels_position.append(voxel_center_origin)
 
     nb_iteration = 0
-    while voxels_size < origin_voxels_size:
+    while voxels_size < world_size:
         voxels_size *= 2.0
         nb_iteration += 1
 
@@ -417,8 +417,8 @@ def reconstruction_3d(images_projections,
 # ==============================================================================
 
 
-def project_voxel_centers_on_image(voxel_centers,
-                                   voxel_size,
+def project_voxel_centers_on_image(voxels_position,
+                                   voxels_size,
                                    shape_image,
                                    projection):
     """
@@ -427,10 +427,10 @@ def project_voxel_centers_on_image(voxel_centers,
 
     Parameters
     ----------
-    voxel_centers : [(x, y, z)]
+    voxels_position : [(x, y, z)]
         cList (collections.deque) of center position of voxel
 
-    voxel_size : float
+    voxels_size : float
         Size of side geometry of voxel
 
     shape_image: Tuple
@@ -448,9 +448,9 @@ def project_voxel_centers_on_image(voxel_centers,
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=numpy.uint8)
 
-    for voxel_center in voxel_centers:
+    for voxel_position in voxels_position:
         x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
-            voxel_center, voxel_size, projection)
+            voxel_position, voxels_size, projection)
 
         x_min = int(min(max(math.floor(x_min), 0), length - 1))
         x_max = int(min(max(math.ceil(x_max), 0), length - 1))
@@ -462,10 +462,10 @@ def project_voxel_centers_on_image(voxel_centers,
     return img
 
 
-def error_reconstruction(image_binary_ref,
-                         projection,
-                         voxel_centers,
-                         voxel_size):
+def error_reconstruction(voxels_position,
+                         voxels_size,
+                         image_binary_ref,
+                         projection):
     """
     Project voxel_centers on a binary image and compare this image with
     image_binary_ref. Error is the number of all different pixel.
@@ -479,10 +479,10 @@ def error_reconstruction(image_binary_ref,
         Function of projection who take 1 argument (tuple of position (x, y, z))
          and return this position 2D (x, y)
 
-    voxel_centers : [(x, y, z)]
+    voxels_position : [(x, y, z)]
         cList (collections.deque) of center position of voxel
 
-    voxel_size : float
+    voxels_size : float
         Size of side geometry of voxel
 
     Returns
@@ -491,7 +491,7 @@ def error_reconstruction(image_binary_ref,
         Error value
     """
     img = project_voxel_centers_on_image(
-        voxel_centers, voxel_size, image_binary_ref.shape, projection)
+        voxels_position, voxels_size, image_binary_ref.shape, projection)
 
     img_src = img.astype(numpy.int32)
     img_ref = image_binary_ref.astype(numpy.int32)

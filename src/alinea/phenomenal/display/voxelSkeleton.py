@@ -69,36 +69,39 @@ def show_voxel_skeleton_labeled(voxel_skeleton,
     if with_center_axis:
         plot_center_axis()
 
-    nb_cornet_leaf, nb_mature_leaf = (0, 0)
+    nb_non_mature_leaf, nb_mature_leaf, unknown_size = 0, 0, 0
 
-    len_voxels_unknown = 0
     for vs in voxel_skeleton.voxel_segments:
-
-        if vs.label == "stem":
+        if vs.label == "unknown":
             plot_voxels(vs.voxels_position, vs.voxels_size,
-                        color=(0.0, 0.0, 0.0))
+                        color=(0.1, 0.9, 0.9))
+            unknown_size += len(vs.voxels_position)
 
+    for vs in voxel_skeleton.voxel_segments:
+        if vs.label == "cornet_leaf":
+            plot_voxels(vs.voxels_position, vs.voxels_size,
+                        color=(0.9, 0.1, 0.1))
+            nb_non_mature_leaf += 1
+
+    for vs in voxel_skeleton.voxel_segments:
         if vs.label == "mature_leaf":
             plot_voxels(vs.voxels_position, vs.voxels_size,
                         color=None)
             nb_mature_leaf += 1
 
-        if vs.label == "cornet_leaf":
+    for vs in voxel_skeleton.voxel_segments:
+        if vs.label == "stem":
             plot_voxels(vs.voxels_position, vs.voxels_size,
-                        color=(0.9, 0.1, 0.1))
-            nb_cornet_leaf += 1
+                        color=(0.0, 0.0, 0.0))
 
-        if vs.label == "unknown":
-            plot_voxels(vs.voxels_position, vs.voxels_size,
-                        color=(0.1, 0.9, 0.9))
+    s = ("Mature leaf {nb_mature_leaf}\n"
+         "Non Mature leaf {nb_non_mature_leaf}\n"
+         "Unknown size {nb_unknown}".format(
+            nb_mature_leaf=nb_mature_leaf,
+            nb_non_mature_leaf=nb_non_mature_leaf,
+            nb_unknown=unknown_size))
 
-            len_voxels_unknown += len(vs.voxels_position)
-
-    print("Number of segments : ", len(voxel_skeleton.voxel_segments))
-    print("Number of mature leaf : ", nb_mature_leaf)
-    print("Number of cornet leaf: ", nb_cornet_leaf)
-    print("Size of unknown voxels: ", len_voxels_unknown)
-    print("Number of total leaf", (nb_mature_leaf + nb_cornet_leaf))
+    mayavi.mlab.text3d(-500, -500, -500, s, scale=50, color=(1, 1, 1))
 
     mayavi.mlab.view(azimuth=azimuth,
                      elevation=elevation,
@@ -106,3 +109,67 @@ def show_voxel_skeleton_labeled(voxel_skeleton,
                      focalpoint=focalpoint)
 
     mayavi.mlab.show()
+
+
+def screenshot_voxel_skeleton_labeled(voxel_skeleton,
+                                      figure_name="",
+                                      size=(800, 700),
+                                      with_center_axis=False,
+                                      azimuths=None,
+                                      elevation=None,
+                                      distance=None,
+                                      focalpoint=None):
+
+    mayavi.mlab.figure(figure=figure_name, size=size)
+
+    if with_center_axis:
+        plot_center_axis()
+
+    nb_non_mature_leaf, nb_mature_leaf, unknown_size = 0, 0, 0
+
+    for vs in voxel_skeleton.voxel_segments:
+        if vs.label == "unknown":
+            plot_voxels(vs.voxels_position, vs.voxels_size,
+                        color=(0.1, 0.9, 0.9))
+            unknown_size += len(vs.voxels_position)
+
+    for vs in voxel_skeleton.voxel_segments:
+        if vs.label == "cornet_leaf":
+            plot_voxels(vs.voxels_position, vs.voxels_size,
+                        color=(0.9, 0.1, 0.1))
+            nb_non_mature_leaf += 1
+
+    for vs in voxel_skeleton.voxel_segments:
+        if vs.label == "mature_leaf":
+            plot_voxels(vs.voxels_position, vs.voxels_size,
+                        color=None)
+            nb_mature_leaf += 1
+
+    for vs in voxel_skeleton.voxel_segments:
+        if vs.label == "stem":
+            plot_voxels(vs.voxels_position, vs.voxels_size,
+                        color=(0.0, 0.0, 0.0))
+
+    s = ("Mature leaf {nb_mature_leaf}\n"
+         "Non Mature leaf {nb_non_mature_leaf}\n"
+         "Unknown size {nb_unknown}".format(
+            nb_mature_leaf=nb_mature_leaf,
+            nb_non_mature_leaf=nb_non_mature_leaf,
+            nb_unknown=unknown_size))
+
+    mayavi.mlab.text3d(-500, -500, -500, s, scale=50, color=(1, 1, 1))
+
+    images = list()
+
+    for azimuth in azimuths:
+
+        mayavi.mlab.view(azimuth=azimuth,
+                         elevation=elevation,
+                         distance=distance,
+                         focalpoint=focalpoint)
+
+        images.append(mayavi.mlab.screenshot())
+
+    mayavi.mlab.close()
+
+    return images
