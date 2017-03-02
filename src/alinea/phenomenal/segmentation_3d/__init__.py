@@ -72,6 +72,7 @@ from .maize import *
 from .skeleton import *
 from .graph import *
 from .skeleton_accurate import *
+from .plant_analysis import *
 
 # ==============================================================================
 

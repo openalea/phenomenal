@@ -35,13 +35,13 @@ def get_vector_mean(path):
 
 def show_voxel_point_cloud_segments_with_plant_info(voxel_point_cloud_segments,
                                                     plant_info,
-                                    figure_name="",
-                                    size=(800, 700),
-                                    with_center_axis=False,
-                                    azimuth=None,
-                                    elevation=None,
-                                    distance=None,
-                                    focalpoint=None):
+                                                    figure_name="",
+                                                    size=(800, 700),
+                                                    with_center_axis=False,
+                                                    azimuth=None,
+                                                    elevation=None,
+                                                    distance=None,
+                                                    focalpoint=None):
 
     mayavi.mlab.figure(figure=figure_name, size=size)
 

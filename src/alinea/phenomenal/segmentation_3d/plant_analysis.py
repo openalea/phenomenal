@@ -16,7 +16,6 @@ import scipy.spatial
 
 from alinea.phenomenal.segmentation_3d.plane_interception import (
     compute_closest_nodes_with_planes)
-
 # ==============================================================================
 
 
@@ -180,9 +179,8 @@ def voxels_path_analysis(voxel, path, voxel_size,
     return info
 
 
-def plant_analysis(voxel_skeleton_labeled):
+def maize_analysis(voxel_skeleton_labeled):
 
-    plant_info = list()
     z_max = float("-inf")
     higher_path = None
     all_vs = set()
@@ -215,6 +213,6 @@ def plant_analysis(voxel_skeleton_labeled):
 
         info['label'] = label
 
-        plant_info.append(info)
+        vsl.info = info
 
-    return plant_info
+    return voxel_skeleton_labeled
