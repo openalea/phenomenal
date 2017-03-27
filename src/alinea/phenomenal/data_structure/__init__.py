@@ -49,6 +49,7 @@ from .voxelSegment import *
 from .voxelPointCloud import *
 from .voxelGraph import *
 from .voxelSkeleton import *
+from .imageView import *
 
 # ==============================================================================
 

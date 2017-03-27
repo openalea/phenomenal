@@ -25,7 +25,7 @@ from alinea.phenomenal.segmentation_3d import create_graph
 
 def test_time_graph():
 
-    voxels_size = 4
+    voxels_size = 16
     vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
     number_of_loop = 2
     best_time = float('inf')

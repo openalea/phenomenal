@@ -92,36 +92,40 @@ def remove_surrounded_fully_visible(leaf_nodes,
 # ==============================================================================
 
 
-def _keep_visible(voxels_nodes,
-                  images_projections,
+def _keep_visible(voxels_node,
+                  image_views,
                   error_tolerance=0):
 
     kept = collections.deque()
-    for voxels_node in voxels_nodes:
+    for voxel_node in voxels_node:
 
-        voxels_position = voxels_node.position
-        voxels_size = voxels_node.size
+        voxel_position = voxel_node.position
+        voxel_size = voxel_node.size
         negative_weight = 0
 
-        for image, projection in images_projections:
+        for image_view in image_views:
             if not voxel_is_visible_in_image(
-                    voxels_position, voxels_size, image, projection):
+                    voxel_position,
+                    voxel_size,
+                    image_view.image,
+                    image_view.projection,
+                    image_view.inclusive):
                 negative_weight += 1
                 if negative_weight > error_tolerance:
                     break
 
         if negative_weight <= error_tolerance:
-            kept.append(voxels_node)
+            kept.append(voxel_node)
 
         else:
-            voxels_node.data = False
+            voxel_node.data = False
 
     return kept
 
 
 # ==============================================================================
 
-def reconstruction_3d_octree(images_projections,
+def reconstruction_3d_octree(image_views,
                              voxels_size=4,
                              error_tolerance=0,
                              voxel_center_origin=(0.0, 0.0, 0.0),
@@ -166,8 +170,8 @@ def reconstruction_3d_octree(images_projections,
         the error_tolerance
     """
 
-    if len(images_projections) == 0:
-        raise ValueError("images_projection list is empty")
+    if len(image_views) == 0:
+        raise ValueError("Len images view have not length")
 
     voxel_octree = VoxelOctree.from_position(
         voxel_center_origin, world_size, True)
@@ -192,7 +196,7 @@ def reconstruction_3d_octree(images_projections,
             print(' : ', len(leaf_nodes), end="")
 
         leaf_nodes = _keep_visible(leaf_nodes,
-                                   images_projections,
+                                   image_views,
                                    error_tolerance)
 
         # Gain time is not enough for keeping that
