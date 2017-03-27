@@ -212,7 +212,8 @@ def split_voxel_centers_in_four(voxel_centers, voxel_size):
 def voxel_is_visible_in_image(voxel_center,
                               voxel_size,
                               image,
-                              projection):
+                              projection,
+                              inclusive):
     """
     Return True or False if the voxel projected on image with the function
     projection (projection) have positive value on image.
@@ -268,6 +269,14 @@ def voxel_is_visible_in_image(voxel_center,
     x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
         voxel_center, voxel_size, projection)
 
+    if (x_max < 0 or x_min >= length_image or
+            y_max < 0 or y_min >= height_image):
+        return inclusive
+
+    # if ((not (0 <= x_min < length_image or 0 <= x_max < length_image)) or
+    #         (not (0 <= y_min < height_image or 0 <= y_max < height_image))):
+    #     return inclusive
+
     x_min = int(min(max(math.floor(x_min), 0), length_image - 1))
     x_max = int(min(max(math.ceil(x_max), 0), length_image - 1))
     y_min = int(min(max(math.floor(y_min), 0), height_image - 1))
@@ -287,9 +296,9 @@ def voxel_is_visible_in_image(voxel_center,
     return False
 
 
-def kept_visible_voxel(voxel_centers,
-                       voxel_size,
-                       images_projections,
+def kept_visible_voxel(voxels_position,
+                       voxels_size,
+                       image_views,
                        error_tolerance=0):
     """
     Kept in a new collections.deque the voxel who is visible on each image of
@@ -320,24 +329,28 @@ def kept_visible_voxel(voxel_centers,
 
     """
     kept = collections.deque()
-    for voxel_center in voxel_centers:
+    for voxel_position in voxels_position:
         negative_weight = 0
-        for image, projection in images_projections:
+        for image_view in image_views:
             if not voxel_is_visible_in_image(
-                    voxel_center, voxel_size, image, projection):
+                    voxel_position,
+                    voxels_size,
+                    image_view.image,
+                    image_view.projection,
+                    image_view.inclusive):
                 negative_weight += 1
                 if negative_weight > error_tolerance:
                     break
 
         if negative_weight <= error_tolerance:
-            kept.append(voxel_center)
+            kept.append(voxel_position)
 
     return kept
 
 # ==============================================================================
 
 
-def reconstruction_3d(images_projections,
+def reconstruction_3d(image_views,
                       voxels_size=4,
                       error_tolerance=0,
                       voxel_center_origin=(0.0, 0.0, 0.0),
@@ -383,8 +396,8 @@ def reconstruction_3d(images_projections,
         the error_tolerance
     """
 
-    if len(images_projections) == 0:
-        raise ValueError("images_projection list is empty")
+    if len(image_views) == 0:
+        raise ValueError("Len images view have not length")
 
     if voxels_position is None:
         voxels_position = collections.deque()
@@ -407,7 +420,10 @@ def reconstruction_3d(images_projections,
             print(' : ', len(voxels_position), end="")
 
         voxels_position = kept_visible_voxel(
-            voxels_position, voxels_size, images_projections, error_tolerance)
+            voxels_position,
+            voxels_size,
+            image_views,
+            error_tolerance)
 
         if verbose is True:
             print(' - ', len(voxels_position))

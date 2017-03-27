@@ -50,20 +50,6 @@ class VoxelGraph(object):
                                voxels_size=self.voxels_size,
                                allow_pickle=False)
 
-    @staticmethod
-    def read_from_npz(filename):
-
-        loader = numpy.load(filename, allow_pickle=True)
-
-        matrix = scipy.sparse.csr_matrix(
-            (loader['data'], loader['indices'], loader['indptr']),
-            shape=loader['shape'])
-
-        nodes = loader['nodes']
-        voxels_size = int(loader['voxels_size'])
-
-        return VoxelGraph(graph, voxels_size)
-
     def write_to_gml(self, filename):
 
         if (os.path.dirname(filename) and not os.path.exists(

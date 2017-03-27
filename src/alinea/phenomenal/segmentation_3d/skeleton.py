@@ -70,6 +70,7 @@ def segment_path(voxels,
                  array_voxels,
                  skeleton_path,
                  graph,
+                 radius=50,
                  distance_plane=0.75):
 
     # ==========================================================================
@@ -97,7 +98,9 @@ def segment_path(voxels,
 
         closest_nodes = compute_closest_nodes_with_ball(
             array_voxels,
-            leaf_skeleton_path)
+            leaf_skeleton_path,
+            radius=radius,
+            graph=graph)
 
         leaf = set().union(*closest_nodes)
         remain = set(voxels).difference(leaf)
@@ -125,7 +128,7 @@ def compute_all_shorted_path(graph, voxels_size):
     return all_shorted_path_to_stem_base
 
 
-def skeletonize(graph, voxels_size, distance_plane=1):
+def skeletonize(graph, voxels_size, distance_plane=1, radius=50):
 
     all_shorted_path_to_stem_base = compute_all_shorted_path(graph, voxels_size)
 
@@ -144,6 +147,7 @@ def skeletonize(graph, voxels_size, distance_plane=1):
             np_arr_all_graph_voxels_plant,
             all_shorted_path_to_stem_base,
             graph,
+            radius=radius,
             distance_plane=distance_plane * voxels_size)
 
         voxel_segment = VoxelSegment(voxels_position_segment,

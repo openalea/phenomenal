@@ -17,6 +17,9 @@ from alinea.phenomenal.data_access.data_creation import (
     build_object_1,
     build_images_1)
 
+from alinea.phenomenal.data_structure import (
+    ImageView)
+
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction\
     import (project_voxel_centers_on_image,
             reconstruction_3d,
@@ -36,8 +39,8 @@ def test_multi_view_reconstruction_manual_1():
     env_feat = EnvironmentCamera()
     calibration = CalibrationCameraManual(env_feat)
 
-    images_projections = list()
     shape_image = (2454, 2056)
+    image_views = list()
     for angle in range(0, 360, 30):
 
         projection = calibration.get_projection(angle)
@@ -47,11 +50,12 @@ def test_multi_view_reconstruction_manual_1():
                                              shape_image,
                                              projection)
 
-        images_projections.append((img, projection))
+        iv = ImageView(img, projection, inclusive=False)
+        image_views.append(iv)
 
     # ==========================================================================
     voxel_size = 20
-    voxel_centers = reconstruction_3d(images_projections,
+    voxel_centers = reconstruction_3d(image_views,
                                       voxels_size=voxel_size,
                                       verbose=True)
 
@@ -63,29 +67,28 @@ def test_multi_view_reconstruction_manual_1():
 
 def test_multi_view_reconstruction_manual_2():
 
-    voxel_size = 1
+    voxels_size = 1
 
     env_feat = EnvironmentCamera()
     calibration = CalibrationCameraManual(env_feat)
 
     images = build_images_1()
 
-    images_projections = list()
+    image_views = list()
     for angle in range(0, 360, 30):
         projection = calibration.get_projection(angle)
-        img = images[angle]
-        images_projections.append((img, projection))
+        iv = ImageView(images[angle], projection, inclusive=False)
+        image_views.append(iv)
 
-    voxel_centers = reconstruction_3d(
-        images_projections, voxels_size=voxel_size, verbose=True)
+    voxels_position = reconstruction_3d(
+        image_views, voxels_size=voxels_size, verbose=True)
 
-    print len(voxel_centers)
+    for iv in image_views:
+        err = error_reconstruction(voxels_position,
+                                   voxels_size,
+                                   iv.image,
+                                   iv.projection)
 
-    for image, projection in images_projections:
-        err = error_reconstruction(
-            image, projection, voxel_centers, voxel_size)
-
-        print 'err : ', err
         assert err < 6000
 
 # ==============================================================================
