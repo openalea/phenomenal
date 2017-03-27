@@ -51,34 +51,35 @@ def get_neighbors(graph, voxels):
     return set(voxels_neighbors) - voxels
 
 
-def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
-
-    # ==========================================================================
-    # Stem segment attribution
-
-    graph = voxel_graph.graph
-    voxels_size = voxel_graph.voxels_size
-    segments = list()
-    for voxel_segment in voxel_skeleton.voxel_segments:
-        segments.append((voxel_segment.voxels_position,
-                         voxel_segment.polylines[0]))
+def get_highest_segment(voxel_segments):
 
     z_max = float("-inf")
-    stem_segment = None
-    for voxels, path in segments:
-
-        z = numpy.max(numpy.array(path)[:, 2])
+    highest_voxel_segment = None
+    for voxel_segment in voxel_segments:
+        z = numpy.max(numpy.array(voxel_segment.polylines[0])[:, 2])
 
         if z > z_max:
             z_max = z
-            stem_segment = voxels, path
+            highest_voxel_segment = voxel_segment
 
-    # all_voxels = set().union(*[voxels for voxels, path in segments])
-    # all_paths = set().union(*[path for voxels, path in segments])
+    return highest_voxel_segment
 
-    segments.remove(stem_segment)
-    stem_segment_voxel, stem_segment_path = stem_segment
 
+def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
+
+    # ==========================================================================
+    # Select the more highest segment on the skeleton
+
+    graph = voxel_graph.graph
+    voxels_size = voxel_graph.voxels_size
+
+    highest_voxel_segment = get_highest_segment(voxel_skeleton.voxel_segments)
+
+    stem_segment_voxel = highest_voxel_segment.voxels_position
+    stem_segment_path = highest_voxel_segment.polylines[0]
+
+
+    # ==========================================================================
     # from alinea.phenomenal.display.multi_view_reconstruction import (
     #     show_list_points_3d)
     #
@@ -116,51 +117,39 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     # Fusion little segment close to the stem to the stem
 
     tmp_segments = list()
-    for voxels, path in segments:
-        supposed_leaf_voxels = voxels - stem_segment_voxel
-        leaf_path = set(path).intersection(supposed_leaf_voxels)
+    for voxel_segment in voxel_skeleton.voxel_segments:
+
+        voxels_position = voxel_segment.voxels_position
+        polyline = voxel_segment.polylines[0]
+        voxels_size = voxel_segment.voxels_size
+
+        supposed_leaf_voxels = voxels_position - stem_segment_voxel
+
+        leaf_path = set(polyline).intersection(supposed_leaf_voxels)
 
         if len(leaf_path) == 0:
             stem_segment_voxel = stem_segment_voxel.union(supposed_leaf_voxels)
         else:
-            tmp_segments.append((voxels, path))
-    segments = tmp_segments
+
+            leaf_voxel = None
+            subgraph = graph.subgraph(voxels_position)
+
+            i = -1
+            while leaf_voxel is None:
+                for voxels_group in networkx.connected_components(subgraph):
+                    if polyline[i] in voxels_group:
+                        leaf_voxel = voxels_group
+                i -= 1
+
+            neighbors = get_neighbors(graph, leaf_voxel)
+            stem_neighbors = neighbors.intersection(stem_segment_voxel)
+            tmp_segments.append((leaf_voxel, polyline, stem_neighbors))
 
     # ==========================================================================
-    # Fusion leaf
-
-    # 1. Remove stem voxel to voxels segments
-    # 2. Compute subgraph of the result
-    # 3. Kept the connected components with the last position of the path is
-    # in that
-    # 4. Compute the Stem neighbors of this voxels
-
-    new_segments = list()
-    for voxels, path in segments:
-        supposed_leaf_voxels = voxels - stem_segment_voxel
-
-        leaf_voxel = None
-        subgraph = graph.subgraph(supposed_leaf_voxels)
-
-        i = -1
-        while leaf_voxel is None:
-            for voxels_group in networkx.connected_components(subgraph):
-                if path[i] in voxels_group:
-                    leaf_voxel = voxels_group
-            i -= 1
-
-        neighbors = get_neighbors(graph, leaf_voxel)
-        stem_neighbors = neighbors.intersection(stem_segment_voxel)
-        new_segments.append((voxels, path, stem_neighbors))
-
-    # print len(new_segments)
-
     # Fusion segments if is have at least 1 voxels stem neighbors in common
-    # TODO : BUG HERE don't do that for cornet voxels
-    leafs = list()
-    while new_segments:
-        segment_voxel, segment_path, stem_neighbors = \
-            new_segments.pop()
+    tmp_leafs = list()
+    while tmp_segments:
+        segment_voxel, segment_path, stem_neighbors = tmp_segments.pop()
 
         paths = [segment_path]
 
@@ -168,24 +157,24 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
         while again:
             again = False
             for i, (segment_voxel_2, segment_path_2, stem_neighbors_2) in \
-                    enumerate(new_segments):
+                    enumerate(tmp_segments):
 
-                if stem_neighbors.intersection(stem_neighbors_2):
+                if (stem_neighbors.intersection(stem_neighbors_2) and
+                        segment_voxel.intersection(segment_voxel_2)):
                     segment_voxel = segment_voxel.union(segment_voxel_2)
                     stem_neighbors = stem_neighbors.union(stem_neighbors_2)
                     paths.append(segment_path_2)
-                    new_segments.pop(i)
+                    tmp_segments.pop(i)
                     again = True
                     break
 
-        leafs.append((segment_voxel, paths))
+        tmp_leafs.append((segment_voxel, paths))
 
     # ==========================================================================
     # Compute Stem detection
 
     stem_voxel, not_stem_voxel, stem_path, stem_top = stem_detection(
-        stem_segment_voxel, stem_segment_path, leafs, voxels_size)
-
+        stem_segment_voxel, stem_segment_path, tmp_leafs, voxels_size)
 
     # stem_voxel, stem_neighbors, connected_components = merge(
     #     graph, stem_voxel, not_stem_voxel, percentage=50)
@@ -202,11 +191,11 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     #                     focalpoint=(0, 0, -250))
 
     # ==========================================================================
+    # Compute Stem top neighbors
 
     stem_top_neighbors = set()
     for node in stem_top:
         stem_top_neighbors = stem_top_neighbors.union(graph[node].keys())
-    # stem_top_neighbors = stem_neighbors - stem_voxel
 
     stem_without_top = stem_voxel - stem_top
     stem_without_top_neighbors = set()
@@ -217,35 +206,29 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     stem_top_neighbors = stem_top_neighbors - stem_without_top_neighbors
 
     # ==========================================================================
-    # Take back the leaf segment from original stem_segment
+    # Remove
 
     real_leaf = list()
-    result = stem_segment_voxel - stem_voxel
-    leaf_voxel = None
-    subgraph = graph.subgraph(result)
-    for voxel_group in networkx.connected_components(subgraph):
-        if stem_segment_path[-1] in voxel_group:
-            leaf_voxel = voxel_group
+    for voxel_segment in voxel_skeleton.voxel_segments:
 
-    if leaf_voxel is not None:
-        real_leaf.append((leaf_voxel, [stem_segment_path]))
-
-    # Get the real leaf by remove real stem_voxel compute to the segment voxel
-    for segment_voxel, paths in leafs:
-        result = segment_voxel - stem_voxel
+        voxels_position = voxel_segment.voxels_position
+        polylines = voxel_segment.polylines
+        voxels_size = voxel_segment.voxels_size
 
         leaf_voxel = None
-        subgraph = graph.subgraph(result)
+        subgraph = graph.subgraph(voxels_position - stem_voxel)
         for voxel_group in networkx.connected_components(subgraph):
-            if paths[0][-1] in voxel_group:
+            if polylines[0][-1] in voxel_group:
                 leaf_voxel = voxel_group
 
-        real_leaf.append((leaf_voxel, paths))
+        if leaf_voxel is not None:
+            real_leaf.append((leaf_voxel, polylines))
 
     # ==========================================================================
+    # Merge voxels
 
-    for leaf, paths in real_leaf:
-        not_stem_voxel = not_stem_voxel - leaf
+    for voxels_position, polylines in real_leaf:
+        not_stem_voxel -= voxels_position
 
     stem_voxel, stem_neighbors, connected_components = merge(
         graph, stem_voxel, not_stem_voxel, percentage=50)
@@ -257,29 +240,90 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
         real_leaf[i] = (l, paths)
 
     voxels_remain = set().union(*connected_components)
+    # ==========================================================================
+    leaf_mature, leaf_cornet = list(), list()
 
+    for leaf, polylines in real_leaf:
+        if len(stem_top_neighbors.intersection(leaf)) > 0:
+            leaf_cornet.append((leaf, polylines))
+        else:
+            leaf_mature.append((leaf, polylines))
+
+    # ==========================================================================
+    new_segments = list()
+    for voxels_position, polylines in leaf_mature:
+        neighbors = get_neighbors(graph, voxels_position)
+        stem_neighbors = neighbors.intersection(stem_segment_voxel)
+        new_segments.append((voxels_position, polylines, stem_neighbors))
+
+    percentage = 50
+    leafs = list()
+    while new_segments:
+        segment_voxel, polylines, stem_neighbors = new_segments.pop()
+
+        again = True
+        while again:
+            again = False
+            for i, (segment_voxel_2, polylines_2, stem_neighbors_2) in \
+                    enumerate(new_segments):
+
+                nb = len(segment_voxel.intersection(segment_voxel_2))
+
+                if (stem_neighbors.intersection(stem_neighbors_2) and (
+                        (nb * 100 / len(segment_voxel) >= percentage) or
+                        (nb * 100 / len(segment_voxel_2) >= percentage))):
+
+                    segment_voxel = segment_voxel.union(segment_voxel_2)
+                    stem_neighbors = stem_neighbors.union(stem_neighbors_2)
+                    polylines += polylines_2
+                    new_segments.pop(i)
+                    again = True
+                    break
+
+        leafs.append((segment_voxel, polylines))
+
+    leaf_mature = leafs
+    # ==========================================================================
+    # ==========================================================================
+    new_segments = list()
+    for voxels_position, polylines in leaf_cornet:
+        new_segments.append((voxels_position, polylines))
+
+    percentage = 85
+    leafs = list()
+    while new_segments:
+        segment_voxel, polylines = new_segments.pop()
+
+        again = True
+        while again:
+            again = False
+            for i, (segment_voxel_2, polylines_2) in enumerate(new_segments):
+
+                nb = len(segment_voxel.intersection(segment_voxel_2))
+
+                if ((nb * 100 / len(segment_voxel) >= percentage) or
+                    (nb * 100 / len(segment_voxel_2) >= percentage)):
+
+                    segment_voxel = segment_voxel.union(segment_voxel_2)
+                    polylines += polylines_2
+                    new_segments.pop(i)
+                    again = True
+                    break
+
+        leafs.append((segment_voxel, polylines))
+
+    leaf_cornet = leafs
     # ==========================================================================
 
     vss = VoxelSkeleton()
     vss.add_voxel_segment(voxels_remain, voxels_size, list(), "unknown")
     vss.add_voxel_segment(stem_voxel, voxels_size, [stem_path], "stem")
 
-    for leaf, paths in real_leaf:
+    for leaf, polylines in leaf_cornet:
+        vss.add_voxel_segment(leaf, voxels_size, polylines, "cornet_leaf")
 
-        if len(stem_top_neighbors.intersection(leaf)) > 0:
-            label = "cornet_leaf"
-        else:
-            label = "mature_leaf"
-
-        vss.add_voxel_segment(leaf, voxels_size, paths, label)
-
-    # ==========================================================================
-
-    # TODO :  put voxel intersection in the nearest neighbors
-
-    # for i in range(len(simple_leafs)):
-    #     r = simple_leafs[i].intersection(voxels_cornet)
-    #     simple_leafs[i] = simple_leafs[i] - r
+    for leaf, polylines in leaf_mature:
+        vss.add_voxel_segment(leaf, voxels_size, polylines, "mature_leaf")
 
     # ==========================================================================
 

@@ -96,7 +96,7 @@ def screenshot_voxels(voxels_position, voxels_size,
                       figure_name="",
                       size=(800, 700),
                       with_center_axis=False,
-                      azimuth=None,
+                      azimuths=None,
                       elevation=None,
                       distance=None,
                       focalpoint=None):
@@ -108,16 +108,21 @@ def screenshot_voxels(voxels_position, voxels_size,
 
     plot_voxels(voxels_position, voxels_size, color=color)
 
-    mayavi.mlab.view(azimuth=azimuth,
-                     elevation=elevation,
-                     distance=distance,
-                     focalpoint=focalpoint)
+    if azimuths is None:
+        azimuths = [None]
 
-    img = mayavi.mlab.screenshot()
+    images = list()
+    for azimuth in azimuths:
+        mayavi.mlab.view(azimuth=azimuth,
+                         elevation=elevation,
+                         distance=distance,
+                         focalpoint=focalpoint)
+
+        images.append(mayavi.mlab.screenshot())
 
     mayavi.mlab.close()
 
-    return img
+    return images
 
 # ==============================================================================
 # ==============================================================================

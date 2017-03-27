@@ -44,7 +44,7 @@ if __name__ == '__main__':
     voxels_size = 4
     error_tolerance = 1
     voxels_position = reconstruction_3d(images_projections,
-                                        voxel_size=voxels_size,
+                                        voxelz_size=voxels_size,
                                         error_tolerance=error_tolerance,
                                         verbose=True)
 

@@ -50,17 +50,18 @@ def test_1():
     #     images_and_projections, voxels_size=voxels_size, verbose=True)
     #
     # voxel_octree.write_to_json("test.json")
-    voxel_octree = VoxelOctree.read_from_json("test.json")
+    # voxel_octree = VoxelOctree.read_from_json("test.json")
+    #
+    # # show_each_stage_of_octree(voxel_octree)
+    # t0 = time.time()
+    # voxel_skeleton, voxel_graph = skeletonize_octree(voxel_octree)
+    # print time.time() - t0
+    # show_voxel_skeleton(voxel_skeleton, with_voxels=True)
+    #
+    # vsl = labelize_maize_skeleton(voxel_skeleton, voxel_graph)
+    # show_voxel_skeleton_labeled(vsl)
 
-    # show_each_stage_of_octree(voxel_octree)
-    t0 = time.time()
-    voxel_skeleton, voxel_graph = skeletonize_octree(voxel_octree)
-    print time.time() - t0
-    show_voxel_skeleton(voxel_skeleton, with_voxels=True)
-
-    vsl = labelize_maize_skeleton(voxel_skeleton, voxel_graph)
-    show_voxel_skeleton_labeled(vsl)
-
+    pass
 
 # ==============================================================================
 
