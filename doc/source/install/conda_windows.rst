@@ -22,31 +22,12 @@ Create virtual environment
 Install Requirements:
 ---------------------
 
-Core :
-
 .. code:: shell
 
-    conda install numpy, scipy, networkx, vtk, scikit-image
-    conda install -c menpo opencv
-
-Visualization :
-
-.. code:: shell
-
-    conda install -c menpo mayavi
-    conda install matplotlib
-
-Notebooks :
-
-.. code:: shell
-
-    conda install jupyter
-
-Tests tools:
-
-.. code:: shell
-
-    conda install nose, coverage
+    conda install numpy matplotlib scipy networkx scikit-image scikit-learn pandas
+    conda install -c menpo opencv mayavi wxpython
+    conda install jupyter nose coverage
+    conda install -c openalea openalea.deploy openalea.core
 
 
 Install Phenomenal

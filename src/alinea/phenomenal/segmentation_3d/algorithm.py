@@ -20,7 +20,8 @@ from alinea.phenomenal.segmentation_3d.peak_detection import (
     peak_detection)
 
 from alinea.phenomenal.segmentation_3d.plane_interception import (
-    compute_closest_nodes)
+    compute_closest_nodes_with_planes,
+    compute_closest_nodes_with_ball)
 
 # ==============================================================================
 
@@ -150,7 +151,7 @@ def peak_stem_detection(closest_nodes, leafs):
 
     # import matplotlib.pyplot
     # from alinea.phenomenal.display.peak import plot_values, show_values
-
+    #
     # show_values([nodes_length],
     #             ['r'],
     #             normalize_values=False,
@@ -186,21 +187,20 @@ def peak_stem_detection(closest_nodes, leafs):
     #             normalize_values=True,
     #             smooth_values=False,
     #             plot_peak=True)
-
-    stop = mix.index(max(mix))
-
+    #
     # show_values([nodes_length, mix],
     #             ['r', 'm'],
     #             normalize_values=True,
     #             smooth_values=True,
     #             plot_peak=True)
     #
-
     # label_color = collections.defaultdict(lambda: 'co')
     # label_color[0] = 'ro'
     # label_color[1] = 'bo'
     # label_color[2] = 'go'
     # label_color[3] = 'ko'
+
+    stop = mix.index(max(mix))
 
     def find_stem_min_peak(values):
 
@@ -275,14 +275,16 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
 
     arr_stem_segment_voxel = numpy.array(list(stem_segment_voxel))
 
-    planes, closest_nodes = compute_closest_nodes(
-        arr_stem_segment_voxel, stem_segment_path, radius=6,
-        dist=distance_plane * voxel_size)
+    closest_nodes_planes = compute_closest_nodes_with_planes(
+        arr_stem_segment_voxel, stem_segment_path,
+        radius=8,
+        dist=distance_plane * voxel_size,
+        radius_dist=50)
 
     stem_segment_centred_path = [
-        numpy.array(nodes).mean(axis=0) for nodes in closest_nodes]
+        numpy.array(nodes).mean(axis=0) for nodes in closest_nodes_planes]
 
-    min_peaks_stem, distances = peak_stem_detection(closest_nodes, leafs)
+    min_peaks_stem, distances = peak_stem_detection(closest_nodes_planes, leafs)
 
     # ==========================================================================
 
@@ -294,7 +296,7 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
         max_index_min_peak = max(max_index_min_peak, index)
         radius[index] = distances[index] / 2.0
         stem_centred_path_min_peak.append(stem_segment_centred_path[index])
-        stem_voxel = stem_voxel.union(closest_nodes[index])
+        stem_voxel = stem_voxel.union(closest_nodes_planes[index])
 
     # ==========================================================================
     # Interpolate
@@ -316,12 +318,12 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
     # ==========================================================================
 
     arr_stem_voxels = set()
-    for nodes in closest_nodes[:max_index_min_peak + 1]:
+    for nodes in closest_nodes_planes[:max_index_min_peak + 1]:
         arr_stem_voxels = arr_stem_voxels.union(set(nodes))
 
     arr_stem_voxels = numpy.array(list(arr_stem_voxels))
 
-    stem_top = set(closest_nodes[max_index_min_peak])
+    stem_top = set(closest_nodes_planes[max_index_min_peak])
 
     # ==========================================================================
 

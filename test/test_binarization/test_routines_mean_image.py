@@ -123,15 +123,8 @@ def test_simply_working_3():
 # ==============================================================================
 
 if __name__ == "__main__":
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()
 
-    test_wrong_parameters_1()
-    test_wrong_parameters_2()
-    test_wrong_parameters_3()
-    test_wrong_parameters_4()
-    test_wrong_parameters_5()
-    test_wrong_parameters_6()
-    test_wrong_parameters_7()
-
-    test_simply_working_1()
-    test_simply_working_2()
-    test_simply_working_3()

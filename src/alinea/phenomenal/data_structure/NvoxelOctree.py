@@ -13,13 +13,7 @@
 # ==============================================================================
 
 
-class VoxelSegment(object):
+class NVoxelOctree(object):
 
-    def __init__(self, voxels_position, voxels_size, polylines,
-                 label=None, info=None):
-
-        self.voxels_position = voxels_position
-        self.voxels_size = voxels_size
-        self.polylines = polylines
-        self.label = label
-        self.info = info
+    def __init__(self):
+        self.root = None

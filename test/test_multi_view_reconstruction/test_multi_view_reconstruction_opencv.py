@@ -15,6 +15,8 @@ from alinea.phenomenal.calibration.calibration_opencv import (
 from alinea.phenomenal.data_access.plant_1 import (
     plant_1_params_camera_opencv_path)
 
+from alinea.phenomenal.data_structure import (
+    ImageView)
 
 from alinea.phenomenal.data_access.data_creation import (
     build_object_1,
@@ -32,13 +34,13 @@ def test_multi_view_reconstruction_opencv_1():
     size = 10
     voxel_size = 10
     voxel_center = (0, 0, 0)
-    voxel_centers, _ = build_object_1(size, voxel_size, voxel_center)
+    voxel_centers = build_object_1(size, voxel_size, voxel_center)
 
     # ==========================================================================
     calibration = CalibrationCameraOpenCv.load(plant_1_params_camera_opencv_path())
 
-    images_projections = list()
     shape_image = (2454, 2056)
+    image_views = list()
     for angle in [0, 30, 60, 90]:
 
         projection = calibration.get_projection(angle)
@@ -48,12 +50,13 @@ def test_multi_view_reconstruction_opencv_1():
                                              shape_image,
                                              projection)
 
-        images_projections.append((img, projection))
+        iv = ImageView(img, projection, inclusive=False)
+        image_views.append(iv)
 
     # ==========================================================================
     voxel_size = 20
-    voxel_centers = reconstruction_3d(images_projections,
-                                      voxel_size=voxel_size,
+    voxel_centers = reconstruction_3d(image_views,
+                                      voxels_size=voxel_size,
                                       verbose=True)
 
     assert len(voxel_centers) == 465
@@ -62,32 +65,35 @@ def test_multi_view_reconstruction_opencv_1():
 
 
 def test_multi_view_reconstruction_opencv_2():
-    voxel_size = 8
+    voxels_size = 8
     calibration = CalibrationCameraOpenCv.load(
         plant_1_params_camera_opencv_path())
 
     images = build_images_1()
 
-    images_projections = list()
+    image_views = list()
     for angle in [0, 30, 60, 90]:
         projection = calibration.get_projection(angle)
-        img = images[angle]
-        images_projections.append((img, projection))
+        iv = ImageView(images[angle], projection, inclusive=False)
+        image_views.append(iv)
 
-    voxel_centers = reconstruction_3d(
-        images_projections, voxel_size=voxel_size, verbose=True)
+    voxels_position = reconstruction_3d(
+        image_views, voxels_size=voxels_size, verbose=True)
 
-    assert len(voxel_centers) == 9929
+    assert len(voxels_position) == 9929
 
-    for image, projection in images_projections:
-        err = error_reconstruction(
-            image, projection, voxel_centers, voxel_size)
-
+    for iv in image_views:
+        err = error_reconstruction(voxels_position,
+                                   voxels_size,
+                                   iv.image,
+                                   iv.projection)
         assert err < 9000
 
 
 # ==============================================================================
 
 if __name__ == "__main__":
-    test_multi_view_reconstruction_opencv_1()
-    test_multi_view_reconstruction_opencv_2()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

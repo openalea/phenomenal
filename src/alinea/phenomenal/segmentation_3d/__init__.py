@@ -66,9 +66,13 @@ Thinning
 from __future__ import division, print_function, absolute_import
 
 
-from alinea.phenomenal.segmentation_3d.graph import *
-from alinea.phenomenal.segmentation_3d.thinning import *
-from alinea.phenomenal.segmentation_3d.maize import *
+from .graph import *
+from .thinning import *
+from .maize import *
+from .skeleton import *
+from .graph import *
+from .skeleton_accurate import *
+from .plant_analysis import *
 
 # ==============================================================================
 

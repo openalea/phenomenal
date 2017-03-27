@@ -36,4 +36,7 @@ def test_simply_working_1():
     assert l[7] == (4., 4., 4.)
 
 if __name__ == "__main__":
-    test_simply_working_1()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

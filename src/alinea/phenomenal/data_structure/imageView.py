@@ -13,13 +13,11 @@
 # ==============================================================================
 
 
-class VoxelSegment(object):
+class ImageView(object):
 
-    def __init__(self, voxels_position, voxels_size, polylines,
-                 label=None, info=None):
+    def __init__(self, image, projection, inclusive=False, ref=False):
+        self.image = image
+        self.projection = projection
+        self.inclusive = inclusive
+        self.ref = ref
 
-        self.voxels_position = voxels_position
-        self.voxels_size = voxels_size
-        self.polylines = polylines
-        self.label = label
-        self.info = info

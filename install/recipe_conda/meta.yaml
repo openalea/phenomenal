@@ -1,0 +1,42 @@
+package:
+  name: phenomenal
+  version: "1.0.0"
+
+source:
+  path: ../../
+
+build:
+  number: 0
+  string: phenomenal
+  preserve_egg_dir: True
+  script: python setup.py install
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - pywin32
+    - openalea.deploy
+  run:
+    - python
+    - openalea.deploy
+    - numpy
+    - scipy
+    - networkx
+    - vtk
+    - scikit-image
+    - opencv
+    - mayavi
+    - matplotlib
+    - jupyter
+    - nose
+    - coverage
+
+test:
+  imports:
+    - alinea.phenomenal
+  script: nosetests test
+
+about:
+  home: http://openalea.gforge.inria.fr/
+  license: Cecill-C License

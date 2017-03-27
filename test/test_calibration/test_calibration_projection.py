@@ -41,7 +41,9 @@ def test_projection_1():
     assert pt_2d == (1125.9214666496891, 1262.0921778812051)
 
 # ==============================================================================
-# LOCAL TEST
 
 if __name__ == "__main__":
-    test_projection_1()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

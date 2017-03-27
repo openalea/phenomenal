@@ -13,17 +13,16 @@ from alinea.phenomenal.data_access.plant_1 import (
     plant_1_calibration_camera_side,
     plant_1_images_binarize)
 
+from alinea.phenomenal.multi_view_reconstruction import (
+    reconstruction_3d_octree)
+
 from alinea.phenomenal.data_structure import (
     ImageView)
-
-from alinea.phenomenal.multi_view_reconstruction import (
-    reconstruction_3d)
 
 # ==============================================================================
 
 
-def test_multi_view_reconstruction_reconstruction_3d():
-
+def test_working():
     # Load images binarize
     images = plant_1_images_binarize()
     calibration = plant_1_calibration_camera_side()
@@ -36,13 +35,9 @@ def test_multi_view_reconstruction_reconstruction_3d():
 
     voxels_size = 64
     # Multi-view reconstruction
-    voxel_centers = reconstruction_3d(image_views,
-                                      voxels_size=voxels_size,
-                                      verbose=True)
+    voxel_octree = reconstruction_3d_octree(
+        image_views, voxels_size=voxels_size, verbose=True)
 
-    assert len(voxel_centers) == 437
-
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():

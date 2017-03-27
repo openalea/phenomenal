@@ -16,17 +16,18 @@ from alinea.phenomenal.segmentation_3d.algorithm import (
     merge)
 
 from alinea.phenomenal.segmentation_3d.plane_interception import (
-    compute_closest_nodes)
+    compute_closest_nodes_with_planes,
+    compute_closest_nodes_with_ball)
 
 from alinea.phenomenal.data_structure import (VoxelSkeleton,
                                               VoxelSegment,
-                                              voxels_position_to_image_3d)
+                                              VoxelPointCloud)
 # ==============================================================================
 
 
 def find_base_stem_position(voxels_position, voxels_size, neighbor_size=50):
 
-    image_3d = voxels_position_to_image_3d(voxels_position, voxels_size)
+    image_3d = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
 
     x = int(round(0 - image_3d.world_coordinate[0] / image_3d.voxels_size))
     y = int(round(0 - image_3d.world_coordinate[1] / image_3d.voxels_size))
@@ -69,6 +70,7 @@ def segment_path(voxels,
                  array_voxels,
                  skeleton_path,
                  graph,
+                 radius=50,
                  distance_plane=0.75):
 
     # ==========================================================================
@@ -87,11 +89,17 @@ def segment_path(voxels,
 
     if leaf_skeleton_path:
 
-        planes, closest_nodes = compute_closest_nodes(
+        # closest_nodes = compute_closest_nodes_with_planes(
+        #     array_voxels,
+        #     leaf_skeleton_path,
+        #     radius=8,
+        #     dist=distance_plane,
+        #     graph=graph)
+
+        closest_nodes = compute_closest_nodes_with_ball(
             array_voxels,
             leaf_skeleton_path,
-            radius=8,
-            dist=distance_plane,
+            radius=radius,
             graph=graph)
 
         leaf = set().union(*closest_nodes)
@@ -105,7 +113,7 @@ def segment_path(voxels,
         return leaf, remain, leaf_skeleton_path
 
 
-def skeletonize(graph, voxels_size, distance_plane=1):
+def compute_all_shorted_path(graph, voxels_size):
 
     # ==========================================================================
     # Get the high points in the matrix and the supposed base plant points
@@ -116,6 +124,13 @@ def skeletonize(graph, voxels_size, distance_plane=1):
 
     all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
         graph, (x_stem, y_stem, z_stem), weight="weight")
+
+    return all_shorted_path_to_stem_base
+
+
+def skeletonize(graph, voxels_size, distance_plane=1, radius=50):
+
+    all_shorted_path_to_stem_base = compute_all_shorted_path(graph, voxels_size)
 
     # ==========================================================================
     voxels_position_remain = graph.nodes()
@@ -132,6 +147,7 @@ def skeletonize(graph, voxels_size, distance_plane=1):
             np_arr_all_graph_voxels_plant,
             all_shorted_path_to_stem_base,
             graph,
+            radius=radius,
             distance_plane=distance_plane * voxels_size)
 
         voxel_segment = VoxelSegment(voxels_position_segment,
@@ -140,7 +156,8 @@ def skeletonize(graph, voxels_size, distance_plane=1):
 
         voxel_segments.append(voxel_segment)
 
-    skeleton = VoxelSkeleton(voxel_segments)
+    voxel_skeleton = VoxelSkeleton(voxel_segments)
 
-    return skeleton
+    return voxel_skeleton
+
 
