@@ -75,6 +75,7 @@ def show_voxels(voxels_position, voxels_size,
                 elevation=None,
                 distance=None,
                 focalpoint=None):
+
     mayavi.mlab.figure(figure=figure_name, size=size)
 
     if with_center_axis:
@@ -88,6 +89,40 @@ def show_voxels(voxels_position, voxels_size,
                      focalpoint=focalpoint)
 
     mayavi.mlab.show()
+
+
+def screenshot_voxels(voxels_position, voxels_size,
+                      color=None,
+                      figure_name="",
+                      size=(800, 700),
+                      with_center_axis=False,
+                      azimuths=None,
+                      elevation=None,
+                      distance=None,
+                      focalpoint=None):
+
+    mayavi.mlab.figure(figure=figure_name, size=size)
+
+    if with_center_axis:
+        plot_center_axis()
+
+    plot_voxels(voxels_position, voxels_size, color=color)
+
+    if azimuths is None:
+        azimuths = [None]
+
+    images = list()
+    for azimuth in azimuths:
+        mayavi.mlab.view(azimuth=azimuth,
+                         elevation=elevation,
+                         distance=distance,
+                         focalpoint=focalpoint)
+
+        images.append(mayavi.mlab.screenshot())
+
+    mayavi.mlab.close()
+
+    return images
 
 # ==============================================================================
 # ==============================================================================

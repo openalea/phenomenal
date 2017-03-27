@@ -12,8 +12,7 @@
 import numpy
 
 from alinea.phenomenal.data_structure import (
-    image_3d_to_voxels_position,
-    voxels_position_to_image_3d)
+    VoxelPointCloud)
 
 
 # ==============================================================================
@@ -27,7 +26,7 @@ def test_simply_working_1():
 
     voxels_size = 2
 
-    im = voxels_position_to_image_3d(voxels_position, voxels_size)
+    im = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
 
     assert im.ndim == 3
 
@@ -45,18 +44,20 @@ def test_simply_working_2():
     voxels_position = list()
     voxels_position.append((1, 42, 1))
 
-    im = voxels_position_to_image_3d(voxels_position, voxels_size)
+    im = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
 
     assert im == [[[1]]]
     assert im.world_coordinate == (1, 42, 1)
 
-    vcs, vs = image_3d_to_voxels_position(im)
+    vpc = VoxelPointCloud.from_image_3d(im)
 
-    assert len(vcs) == 1
-    assert vcs[0] == (1, 42, 1)
-    assert vs == 16
+    assert len(vpc.voxels_position) == 1
+    assert vpc.voxels_position[0] == (1, 42, 1)
+    assert vpc.voxels_size == 16
 
 
 if __name__ == "__main__":
-    test_simply_working_1()
-    test_simply_working_2()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

@@ -17,17 +17,15 @@ import collections
 import openalea.deploy.shared_data
 import alinea.phenomenal
 
-from alinea.phenomenal.calibration.chessboard import (
+from alinea.phenomenal.calibration import (
     Chessboard)
 
-from alinea.phenomenal.calibration.calibration import (
+from alinea.phenomenal.calibration import (
     CalibrationCameraSideWith2Target,
     CalibrationCameraTop)
 
-from alinea.phenomenal.multi_view_reconstruction.formats import (
-    read_from_xyz)
-
-from alinea.phenomenal.data_structure import VoxelPointCloud
+from alinea.phenomenal.data_structure import (
+    VoxelPointCloud)
 
 # ==============================================================================
 
@@ -36,7 +34,7 @@ __all__ = ["plant_1_images",
            "plant_1_chessboards",
            "plant_1_calibration_camera_side",
            "plant_1_calibration_camera_top",
-           "plant_1_voxel_centers"]
+           "plant_1_voxel_point_cloud"]
 
 # ==============================================================================
 
@@ -252,19 +250,24 @@ def plant_1_params_camera_opencv_path():
     return params_camera_opencv_path
 
 
-def plant_1_voxel_centers(voxel_size=10):
+def plant_1_voxel_point_cloud(voxels_size=10):
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
 
     data_directory = shared_directory + '/plant_1/'
 
-    if 3 <= int(voxel_size) <= 20:
-        path = (data_directory + 'voxel_centers_size_' + str(int(voxel_size)) +
-                '.xyz')
+    if 3 <= int(voxels_size) <= 20:
 
-        return read_from_xyz(path)
+        filename = ("{data_directory}"
+                    "voxel_centers_size_"
+                    "{voxels_size}.xyz".format(
+                                        data_directory=data_directory,
+                                        voxels_size=str(int(voxels_size))))
+
+        return VoxelPointCloud.read_from_xyz(filename, voxels_size)
 
     return None
+
 
 def plant_1_voxels_size_4_without_loss_120():
     shared_directory = openalea.deploy.shared_data.shared_data(

@@ -212,7 +212,8 @@ def split_voxel_centers_in_four(voxel_centers, voxel_size):
 def voxel_is_visible_in_image(voxel_center,
                               voxel_size,
                               image,
-                              projection):
+                              projection,
+                              inclusive):
     """
     Return True or False if the voxel projected on image with the function
     projection (projection) have positive value on image.
@@ -268,6 +269,14 @@ def voxel_is_visible_in_image(voxel_center,
     x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
         voxel_center, voxel_size, projection)
 
+    if (x_max < 0 or x_min >= length_image or
+            y_max < 0 or y_min >= height_image):
+        return inclusive
+
+    # if ((not (0 <= x_min < length_image or 0 <= x_max < length_image)) or
+    #         (not (0 <= y_min < height_image or 0 <= y_max < height_image))):
+    #     return inclusive
+
     x_min = int(min(max(math.floor(x_min), 0), length_image - 1))
     x_max = int(min(max(math.ceil(x_max), 0), length_image - 1))
     y_min = int(min(max(math.floor(y_min), 0), height_image - 1))
@@ -287,9 +296,9 @@ def voxel_is_visible_in_image(voxel_center,
     return False
 
 
-def kept_visible_voxel(voxel_centers,
-                       voxel_size,
-                       images_projections,
+def kept_visible_voxel(voxels_position,
+                       voxels_size,
+                       image_views,
                        error_tolerance=0):
     """
     Kept in a new collections.deque the voxel who is visible on each image of
@@ -320,29 +329,33 @@ def kept_visible_voxel(voxel_centers,
 
     """
     kept = collections.deque()
-    for voxel_center in voxel_centers:
+    for voxel_position in voxels_position:
         negative_weight = 0
-        for image, projection in images_projections:
+        for image_view in image_views:
             if not voxel_is_visible_in_image(
-                    voxel_center, voxel_size, image, projection):
+                    voxel_position,
+                    voxels_size,
+                    image_view.image,
+                    image_view.projection,
+                    image_view.inclusive):
                 negative_weight += 1
                 if negative_weight > error_tolerance:
                     break
 
         if negative_weight <= error_tolerance:
-            kept.append(voxel_center)
+            kept.append(voxel_position)
 
     return kept
 
 # ==============================================================================
 
 
-def reconstruction_3d(images_projections,
-                      voxel_size=4,
+def reconstruction_3d(image_views,
+                      voxels_size=4,
                       error_tolerance=0,
                       voxel_center_origin=(0.0, 0.0, 0.0),
                       world_size=4096,
-                      voxel_centers=None,
+                      voxels_position=None,
                       verbose=False):
     """
     Construct a list of voxel represented object with positive value on binary
@@ -356,7 +369,7 @@ def reconstruction_3d(images_projections,
         who take (x, y, z) position on return (x, y) position according space
         representation of this image
 
-    voxel_size : float, optional
+    voxels_size : float, optional
         Size of side geometry of voxel that each voxel will have
 
     error_tolerance : int, optional
@@ -368,7 +381,7 @@ def reconstruction_3d(images_projections,
     world_size: int, optional
         Minimum size that the origin voxel size must include at beginning
 
-    voxel_centers : collections.deque, optional
+    voxels_position : collections.deque, optional
         List of first original voxel who will be split. If None, a list is
         create with the voxel_center_origin value.
 
@@ -383,46 +396,45 @@ def reconstruction_3d(images_projections,
         the error_tolerance
     """
 
-    if len(images_projections) == 0:
-        raise ValueError("images_projection list is empty")
+    if len(image_views) == 0:
+        raise ValueError("Len images view have not length")
 
-    if voxel_centers is None:
-        voxel_centers = collections.deque()
-        voxel_centers.append(voxel_center_origin)
+    if voxels_position is None:
+        voxels_position = collections.deque()
+        voxels_position.append(voxel_center_origin)
 
     nb_iteration = 0
-    while voxel_size < world_size:
-        voxel_size *= 2.0
+    while voxels_size < world_size:
+        voxels_size *= 2.0
         nb_iteration += 1
 
     for i in range(nb_iteration):
 
-        if len(images_projections) == 1:
-            voxel_centers = split_voxel_centers_in_four(voxel_centers,
-                                                        voxel_size)
-        else:
-            voxel_centers = split_voxel_centers_in_eight(voxel_centers,
-                                                         voxel_size)
+        voxels_position = split_voxel_centers_in_eight(
+            voxels_position, voxels_size)
 
-        voxel_size /= 2.0
+        voxels_size /= 2.0
 
         if verbose is True:
             print('Iteration', i + 1, '/', nb_iteration, end="")
-            print(' : ', len(voxel_centers), end="")
+            print(' : ', len(voxels_position), end="")
 
-        voxel_centers = kept_visible_voxel(
-            voxel_centers, voxel_size, images_projections, error_tolerance)
+        voxels_position = kept_visible_voxel(
+            voxels_position,
+            voxels_size,
+            image_views,
+            error_tolerance)
 
         if verbose is True:
-            print(' - ', len(voxel_centers))
+            print(' - ', len(voxels_position))
 
-    return voxel_centers
+    return voxels_position
 
 # ==============================================================================
 
 
-def project_voxel_centers_on_image(voxel_centers,
-                                   voxel_size,
+def project_voxel_centers_on_image(voxels_position,
+                                   voxels_size,
                                    shape_image,
                                    projection):
     """
@@ -431,10 +443,10 @@ def project_voxel_centers_on_image(voxel_centers,
 
     Parameters
     ----------
-    voxel_centers : [(x, y, z)]
+    voxels_position : [(x, y, z)]
         cList (collections.deque) of center position of voxel
 
-    voxel_size : float
+    voxels_size : float
         Size of side geometry of voxel
 
     shape_image: Tuple
@@ -452,9 +464,9 @@ def project_voxel_centers_on_image(voxel_centers,
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=numpy.uint8)
 
-    for voxel_center in voxel_centers:
+    for voxel_position in voxels_position:
         x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
-            voxel_center, voxel_size, projection)
+            voxel_position, voxels_size, projection)
 
         x_min = int(min(max(math.floor(x_min), 0), length - 1))
         x_max = int(min(max(math.ceil(x_max), 0), length - 1))
@@ -466,10 +478,10 @@ def project_voxel_centers_on_image(voxel_centers,
     return img
 
 
-def error_reconstruction(image_binary_ref,
-                         projection,
-                         voxel_centers,
-                         voxel_size):
+def error_reconstruction(voxels_position,
+                         voxels_size,
+                         image_binary_ref,
+                         projection):
     """
     Project voxel_centers on a binary image and compare this image with
     image_binary_ref. Error is the number of all different pixel.
@@ -483,10 +495,10 @@ def error_reconstruction(image_binary_ref,
         Function of projection who take 1 argument (tuple of position (x, y, z))
          and return this position 2D (x, y)
 
-    voxel_centers : [(x, y, z)]
+    voxels_position : [(x, y, z)]
         cList (collections.deque) of center position of voxel
 
-    voxel_size : float
+    voxels_size : float
         Size of side geometry of voxel
 
     Returns
@@ -495,7 +507,7 @@ def error_reconstruction(image_binary_ref,
         Error value
     """
     img = project_voxel_centers_on_image(
-        voxel_centers, voxel_size, image_binary_ref.shape, projection)
+        voxels_position, voxels_size, image_binary_ref.shape, projection)
 
     img_src = img.astype(numpy.int32)
     img_ref = image_binary_ref.astype(numpy.int32)

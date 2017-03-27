@@ -60,6 +60,10 @@ def test_bbox_projection_2():
 
     check_values(values, refs)
 
+# ==============================================================================
+
 if __name__ == "__main__":
-    test_bbox_projection_1()
-    test_bbox_projection_2()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

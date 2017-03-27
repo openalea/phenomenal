@@ -72,11 +72,11 @@ Frame
 
 from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.calibration.calibration import *
-from alinea.phenomenal.calibration.calibration_manual import *
-from alinea.phenomenal.calibration.calibration_opencv import *
-from alinea.phenomenal.calibration.chessboard import *
-from alinea.phenomenal.calibration.frame import *
+from .calibration import *
+from .calibration_manual import *
+from .calibration_opencv import *
+from .chessboard import *
+from .frame import *
 
 # ==============================================================================
 

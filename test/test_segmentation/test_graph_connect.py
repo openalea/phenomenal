@@ -9,22 +9,29 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.data_structure import VoxelPointCloud
+import networkx
+import numpy
+import time
 
+from alinea.phenomenal.segmentation_3d import (
+    voxel_graph_from_voxel_point_cloud)
+
+from alinea.phenomenal.data_access import (
+    plant_1_voxel_point_cloud)
+
+from alinea.phenomenal.segmentation_3d import (
+    create_graph,
+    connect_all_node_with_nearest_neighbors)
 # ==============================================================================
 
+def test_():
 
-def test_simply_working_1():
+    voxels_size = 8
+    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
+    graph = create_graph(vpc.voxels_position, vpc.voxels_size)
+    graph = connect_all_node_with_nearest_neighbors(graph)
 
-    voxels_position = list()
-    voxels_position.append((0, 0, 0))
-    voxels_position.append((10, 10, 10))
-    voxels_size = 1
-    vpc = VoxelPointCloud(voxels_position, voxels_size)
-    pt_min, pt_max = vpc.bounding_box()
 
-    assert pt_min == (0, 0, 0)
-    assert pt_max == (10, 10, 10)
 
 if __name__ == "__main__":
     for func_name in dir():

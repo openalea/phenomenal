@@ -60,10 +60,10 @@ Formats
 
 from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.binarization.formats import *
-from alinea.phenomenal.binarization.morphology import *
-from alinea.phenomenal.binarization.routines import *
-from alinea.phenomenal.binarization.threshold import *
+from .formats import *
+from .morphology import *
+from .routines import *
+from .threshold import *
 
 # ==============================================================================
 

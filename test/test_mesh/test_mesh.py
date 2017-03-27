@@ -10,10 +10,10 @@
 #
 # ==============================================================================
 from alinea.phenomenal.data_structure import (
-    voxels_position_to_image_3d)
+    VoxelPointCloud)
 
-from alinea.phenomenal.mesh.algorithms import meshing
-from alinea.phenomenal.data_access.plant_1 import plant_1_voxel_centers
+from alinea.phenomenal.mesh import meshing
+from alinea.phenomenal.data_access import plant_1_voxel_point_cloud
 # ==============================================================================
 
 
@@ -22,7 +22,7 @@ def test_mesh_empty_voxel_centers():
     voxels_size = 8
     voxels_position = list()
     try:
-        image_3d = voxels_position_to_image_3d(voxels_position, voxels_size)
+        image_3d = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
 
     except Exception, e:
         assert type(e) == ValueError
@@ -36,7 +36,7 @@ def test_mesh_one_voxel_centers():
     voxels_position.append((0, 0, 0))
 
     try:
-        image_3d = voxels_position_to_image_3d(voxels_position, voxels_size)
+        image_3d = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
         vertices, faces = meshing(image_3d)
 
     except Exception, e:
@@ -59,9 +59,9 @@ def test_mesh_two_voxel_center():
 
 def test_mesh_normal():
     voxels_size = 20
-    voxels_position = plant_1_voxel_centers(voxel_size=voxels_size)
+    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
 
-    image_3d = voxels_position_to_image_3d(voxels_position, voxels_size)
+    image_3d = vpc.to_image_3d()
 
     vertices, faces = meshing(image_3d,
                               smoothing_iteration=2,
@@ -71,8 +71,10 @@ def test_mesh_normal():
     assert 100 <= len(vertices) <= 273
     assert 200 <= len(faces) <= 542
 
+# ==============================================================================
+
 if __name__ == "__main__":
-    test_mesh_empty_voxel_centers()
-    test_mesh_one_voxel_centers()
-    test_mesh_two_voxel_center()
-    test_mesh_normal()
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()

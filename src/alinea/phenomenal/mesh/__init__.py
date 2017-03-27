@@ -78,10 +78,10 @@ VTK Transformation
 
 from __future__ import division, print_function, absolute_import
 
-from alinea.phenomenal.mesh.algorithms import *
-from alinea.phenomenal.mesh.formats import *
-from alinea.phenomenal.mesh.routines import *
-from alinea.phenomenal.mesh.vtk_transformation import *
+from .algorithms import *
+from .formats import *
+from .routines import *
+from .vtk_transformation import *
 
 # ==============================================================================
 

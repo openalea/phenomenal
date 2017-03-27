@@ -13,7 +13,7 @@ import numpy
 
 from alinea.phenomenal.data_structure import (
     Image3D,
-    image_3d_to_voxels_position)
+    VoxelPointCloud)
 
 # ==============================================================================
 
@@ -53,4 +53,4 @@ def build_object_1(size, voxels_size, world_coordinate):
                             voxels_size=voxels_size,
                             world_coordinate=world_coordinate)
 
-    return image_3d_to_voxels_position(image_3d)
+    return VoxelPointCloud.from_image_3d(image_3d).voxels_position
