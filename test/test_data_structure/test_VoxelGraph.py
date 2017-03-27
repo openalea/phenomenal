@@ -47,8 +47,6 @@ def get_test_graph():
 def test_read_write():
 
     vg = get_test_graph()
-    vg.write_to_npz('test.npz')
-    vg = VoxelGraph.read_from_npz('test.npz')
 
 
 # ==============================================================================

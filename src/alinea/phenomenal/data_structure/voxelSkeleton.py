@@ -27,6 +27,10 @@ class VoxelSkeleton(object):
         else:
             self.voxel_segments = voxel_segments
 
+    def get_voxels_size(self):
+        if len(self.voxel_segments) > 0:
+            return self.voxel_segments[0].voxels_size
+
     def add_voxel_segment(self, voxels_position, voxels_size, polylines,
                           label=None, info=None):
 
@@ -37,6 +41,32 @@ class VoxelSkeleton(object):
                                      info=info)
 
         self.voxel_segments.append(voxel_segment)
+
+    def get_stem(self):
+        for vs in self.voxel_segments:
+            if vs.label == "stem":
+                return vs
+        return None
+
+    def get_unknown(self):
+        for vs in self.voxel_segments:
+            if vs.label == "unknown":
+                return vs
+
+    def get_mature_leafs(self):
+        mature_leafs = list()
+        for vs in self.voxel_segments:
+            if vs.label == "mature_leaf":
+                mature_leafs.append(vs)
+        return mature_leafs
+
+    def get_cornet_leafs(self):
+        cornet_leafs = list()
+        for vs in self.voxel_segments:
+            if vs.label == "cornet_leaf":
+                cornet_leafs.append(vs)
+        return cornet_leafs
+
 
     # ==========================================================================
     # READ / WRITE
@@ -134,7 +164,6 @@ class VoxelSkeleton(object):
             for v in self.voxel_segments:
                 d = v.__dict__.copy()
                 d['voxels_position'] = list(d['voxels_position'])
-
                 data.append(d)
 
             json.dump(data, f)
@@ -152,7 +181,7 @@ class VoxelSkeleton(object):
 
                 polylines = list()
                 for path in d["polylines"]:
-                    polylines.append(map(tuple, path))
+                    polylines.append(map(tuple, list(path)))
 
                 vpcs.add_voxel_segment(
                     voxels_position, d['voxels_size'], polylines, d['label'],

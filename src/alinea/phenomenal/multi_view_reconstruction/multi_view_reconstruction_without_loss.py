@@ -249,7 +249,7 @@ def check_groups(kept, groups, weight_points, voxel_size,
 
 
 def reconstruction_without_loss(images_projections_refs,
-                                voxel_size=4,
+                                voxels_size=4,
                                 error_tolerance=0,
                                 voxel_center_origin=(0.0, 0.0, 0.0),
                                 world_size=4096,
@@ -264,17 +264,14 @@ def reconstruction_without_loss(images_projections_refs,
         voxel_centers.append(voxel_center_origin)
 
     nb_iteration = 0
-    while voxel_size < world_size:
-        voxel_size *= 2.0
+    while voxels_size < world_size:
+        voxels_size *= 2.0
         nb_iteration += 1
 
     # ==========================================================================
     # Create Groups
 
-    t0 = time.time()
     groups = create_groups(images_projections_refs)
-    print "Time create groups", time.time() - t0
-    t0 = time.time()
     # ==========================================================================
 
     for i in range(nb_iteration):
@@ -284,19 +281,15 @@ def reconstruction_without_loss(images_projections_refs,
 
         if len(images_projections_refs) == 1:
             voxel_centers = split_voxel_centers_in_four(voxel_centers,
-                                                        voxel_size)
+                                                        voxels_size)
         else:
             voxel_centers = split_voxel_centers_in_eight(voxel_centers,
-                                                         voxel_size)
-        voxel_size /= 2.0
-        print "Time split_voxel", time.time() - t0
-        t0 = time.time()
+                                                         voxels_size)
+        voxels_size /= 2.0
         # ======================================================================
 
         voxel_centers, groups, weight_points = fill_groups(
-            images_projections_refs, groups, voxel_centers, voxel_size)
-        print "Time fill groups", time.time() - t0
-        t0 = time.time()
+            images_projections_refs, groups, voxel_centers, voxels_size)
 
         # ======================================================================
 
@@ -304,12 +297,8 @@ def reconstruction_without_loss(images_projections_refs,
         voxel_centers = kept_points_3d(
             acceptation_criteria, voxel_centers, weight_points)
 
-        print "Time kept_points_3d", time.time() - t0
-        t0 = time.time()
-        voxel_centers = check_groups(voxel_centers, groups, weight_points, voxel_size)
+        voxel_centers = check_groups(voxel_centers, groups, weight_points, voxels_size)
 
-        print "Time check_groups", time.time() - t0
-        t0 = time.time()
         # ======================================================================
 
         # if verbose is True:

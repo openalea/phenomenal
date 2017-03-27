@@ -13,6 +13,9 @@ from alinea.phenomenal.data_access.plant_1 import (
     plant_1_calibration_camera_side,
     plant_1_images_binarize)
 
+from alinea.phenomenal.data_structure import (
+    ImageView)
+
 from alinea.phenomenal.multi_view_reconstruction import (
     reconstruction_3d)
 
@@ -25,16 +28,15 @@ def test_multi_view_reconstruction_reconstruction_3d():
     images = plant_1_images_binarize()
     calibration = plant_1_calibration_camera_side()
 
-    images_and_projections = list()
+    image_views = list()
     for angle in range(0, 360, 30):
-        img = images[angle]
-        function = calibration.get_projection(angle)
-
-        images_and_projections.append((img, function))
+        projection = calibration.get_projection(angle)
+        iv = ImageView(images[angle], projection, inclusive=False)
+        image_views.append(iv)
 
     voxels_size = 64
     # Multi-view reconstruction
-    voxel_centers = reconstruction_3d(images_and_projections,
+    voxel_centers = reconstruction_3d(image_views,
                                       voxels_size=voxels_size,
                                       verbose=True)
 
