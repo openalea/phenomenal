@@ -152,42 +152,6 @@ def peak_stem_detection(closest_nodes, leafs):
     # import matplotlib.pyplot
     # from alinea.phenomenal.display.peak import plot_values, show_values
     #
-    # show_values([nodes_length],
-    #             ['r'],
-    #             normalize_values=False,
-    #             smooth_values=False,
-    #             plot_peak=False)
-    #
-    # show_values([nodes_length, distances],
-    #             ['r', 'g'],
-    #             normalize_values=False,
-    #             smooth_values=False,
-    #             plot_peak=False)
-    #
-    # show_values([nodes_length, distances, values_stem],
-    #             ['r', 'g', 'b'],
-    #             normalize_values=False,
-    #             smooth_values=False,
-    #             plot_peak=False)
-    #
-    # show_values([nodes_length, distances, values_stem],
-    #             ['r', 'g', 'b'],
-    #             normalize_values=True,
-    #             smooth_values=False,
-    #             plot_peak=False)
-    #
-    # show_values([nodes_length, distances, values_stem, mix],
-    #             ['r', 'g', 'b', 'm'],
-    #             normalize_values=True,
-    #             smooth_values=False,
-    #             plot_peak=False)
-    #
-    # show_values([nodes_length, distances, mix],
-    #             ['r', 'g', 'm'],
-    #             normalize_values=True,
-    #             smooth_values=False,
-    #             plot_peak=True)
-    #
     # show_values([nodes_length, mix],
     #             ['r', 'm'],
     #             normalize_values=True,
@@ -220,35 +184,29 @@ def peak_stem_detection(closest_nodes, leafs):
         lookahead = 1
 
         max_peaks, min_peaks = peak_detection(values, lookahead)
+        min_peaks = [(0, values[0]), (1, values[1])] + min_peaks
 
         min_peaks_values = [v for i, v in min_peaks if i <= stop]
 
-        if len(min_peaks_values) > 0:
+        if len(min_peaks_values) <= 0:
+            return [(0, values[0]), (1, values[1])]
 
-            bandwith = max(values) / 5.0
+        bandwith = max(values) / 5.0  # Meanshift
+        a = numpy.array(min_peaks_values).reshape(
+            (len(min_peaks_values), 1))
 
-            # Meanshift
-            a = numpy.array(min_peaks_values).reshape(
-                (len(min_peaks_values), 1))
+        meanshift = sklearn.cluster.MeanShift(bandwidth=bandwith)
+        meanshift.fit(a)
 
-            meanshift = sklearn.cluster.MeanShift(
-                bandwidth=bandwith)
-            meanshift.fit(a)
+        # Option, maybe resolve stem cut problem
+        c = collections.Counter(meanshift.labels_)
+        ref_label = max(c, key=c.get)
 
-            # Option, maybe resolve stem cut problem
-            c = collections.Counter(meanshift.labels_)
-            ref_label = max(c, key=c.get)
-
-            min_peaks_stem = list()
-            min_peaks_stem.append((0, values[0]))
-            for (index, value), label in zip(min_peaks, meanshift.labels_):
-                if ref_label == label:
-                    min_peaks_stem.append((index, value))
-
-        else:
-            min_peaks_stem = list()
-            for i, v in enumerate(values):
-                min_peaks_stem.append((i, v))
+        min_peaks_stem = list()
+        # min_peaks_stem.append((0, values[0]))
+        for (index, value), label in zip(min_peaks, meanshift.labels_):
+            if ref_label == label:
+                min_peaks_stem.append((index, value))
 
         return min_peaks_stem
 
@@ -268,6 +226,19 @@ def peak_stem_detection(closest_nodes, leafs):
     return min_peaks_stem, distances
 
 
+def get_nodes_radius(center, points, radius):
+    x, y, z = center
+
+    result = numpy.sqrt((points[:, 0] - x) ** 2 +
+                        (points[:, 1] - y) ** 2 +
+                        (points[:, 2] - z) ** 2)
+
+    index = numpy.where(result <= numpy.array(radius))
+    result = set(map(tuple, list(points[index])))
+
+    return result
+
+
 def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
                    distance_plane=0.50):
 
@@ -276,7 +247,8 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
     arr_stem_segment_voxel = numpy.array(list(stem_segment_voxel))
 
     closest_nodes_planes = compute_closest_nodes_with_planes(
-        arr_stem_segment_voxel, stem_segment_path,
+        arr_stem_segment_voxel,
+        stem_segment_path,
         radius=8,
         dist=distance_plane * voxel_size,
         radius_dist=50)
@@ -301,18 +273,14 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
     # ==========================================================================
     # Interpolate
 
-    new_centred_shorted_path = list()
-    # new_centred_shorted_path.append(stem_segment_centred_path[0])
-    new_centred_shorted_path += stem_centred_path_min_peak
-
-    len_new_centred_shorted_path = len(new_centred_shorted_path)
-    new_centred_shorted_path = numpy.array(new_centred_shorted_path).transpose()
+    arr_stem_centred_path_min_peak = numpy.array(
+        stem_centred_path_min_peak).transpose()
 
     k = 2
-    if len_new_centred_shorted_path <= k:
+    if len(stem_centred_path_min_peak) <= k:
         k = 1
 
-    tck, u = scipy.interpolate.splprep(new_centred_shorted_path, k=k)
+    tck, u = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=k)
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
 
     # ==========================================================================
@@ -320,25 +288,9 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
     arr_stem_voxels = set()
     for nodes in closest_nodes_planes[:max_index_min_peak + 1]:
         arr_stem_voxels = arr_stem_voxels.union(set(nodes))
-
     arr_stem_voxels = numpy.array(list(arr_stem_voxels))
 
-    stem_top = set(closest_nodes_planes[max_index_min_peak])
-
     # ==========================================================================
-
-    def get_nodes_radius(center, points, radius):
-
-        x, y, z = center
-
-        result = numpy.sqrt((points[:, 0] - x) ** 2 +
-                            (points[:, 1] - y) ** 2 +
-                            (points[:, 2] - z) ** 2)
-
-        index = numpy.where(result <= numpy.array(radius))
-        result = set(map(tuple, list(points[index])))
-
-        return result
 
     real_path = list()
     for i in range(len(xxx)):
@@ -354,6 +306,7 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
 
     not_stem_voxel = stem_segment_voxel - stem_voxel
     stem_path = stem_segment_path[:max_index_min_peak + 1]
+    stem_top = set(closest_nodes_planes[max_index_min_peak])
 
     return stem_voxel, not_stem_voxel, stem_path, stem_top
 
