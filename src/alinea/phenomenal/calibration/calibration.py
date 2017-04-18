@@ -94,6 +94,30 @@ class CalibrationCamera(object):
         return u, v
 
     @staticmethod
+    def arr_pixel_coordinates(points_3d,
+                              width_image, height_image,
+                              focal_length_x, focal_length_y):
+        """ Compute image coordinates of a 3d point
+
+        Args:
+         - point (float, float, float): a point in space
+                    expressed in camera frame coordinates
+
+        return:
+         - (int, int): coordinate of point in image in pix
+        """
+        # if point[2] < 1:
+        #     raise UserWarning("point too close to the camera")
+
+        u = (points_3d[:, 0] / points_3d[:, 2] *
+             focal_length_x + width_image / 2.0)
+
+        v = (points_3d[:, 1] / points_3d[:, 2] *
+             focal_length_y + height_image / 2.0)
+
+        return numpy.column_stack((u, v))
+
+    @staticmethod
     def pixel_coordinates_2(point_3d, cx, cy, fx, fy):
         """ Compute image coordinates of a 3d point
 
@@ -146,12 +170,17 @@ class CalibrationCamera(object):
 
         return Frame(rot[:3, :3].T, origin)
 
-    def get_projection(self, alpha):
-
-        fr_cam = self.camera_frame(
+    def get_camera_frame(self):
+        return self.camera_frame(
             self._cam_pos_x, self._cam_pos_y, self._cam_pos_z,
             self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
             self._cam_origin_axis)
+
+    def get_projection(self, alpha):
+
+        # return self.get_arr_projection(alpha)
+
+        fr_cam = self.get_camera_frame()
 
         angle = math.radians(alpha * self._angle_factor)
 
@@ -166,6 +195,28 @@ class CalibrationCamera(object):
                                           self._cam_height_image,
                                           self._cam_focal_length_x,
                                           self._cam_focal_length_y)
+
+        return projection
+
+    def get_arr_projection(self, alpha):
+
+        fr_cam = self.get_camera_frame()
+
+        angle = math.radians(alpha * self._angle_factor)
+
+        def projection(pts):
+
+            x = - pts[:, 0] * math.cos(angle) - pts[:, 1] * math.sin(angle)
+            y = - pts[:, 0] * math.sin(angle) + pts[:, 1] * math.cos(angle)
+            z = pts[:, 2]
+
+            origin = numpy.column_stack((x, y, z))
+
+            return self.arr_pixel_coordinates(fr_cam.arr_local_point(origin),
+                                              self._cam_width_image,
+                                              self._cam_height_image,
+                                              self._cam_focal_length_x,
+                                              self._cam_focal_length_y)
 
         return projection
 

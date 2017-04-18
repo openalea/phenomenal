@@ -28,7 +28,7 @@ class VoxelPointCloud(object):
 
     def bounding_box(self):
 
-        if not self.voxels_position:
+        if len(self.voxels_position) == 0:
             raise ValueError("Empty list")
 
         x_min = float("inf")
