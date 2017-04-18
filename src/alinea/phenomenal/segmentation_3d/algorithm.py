@@ -184,29 +184,36 @@ def peak_stem_detection(closest_nodes, leafs):
         lookahead = 1
 
         max_peaks, min_peaks = peak_detection(values, lookahead)
-        min_peaks = [(0, values[0]), (1, values[1])] + min_peaks
+        min_peaks = [(i, v) for i, v in min_peaks if i <= stop]
+        min_peaks_values = [v for i, v in min_peaks]
 
-        min_peaks_values = [v for i, v in min_peaks if i <= stop]
-
-        if len(min_peaks_values) <= 0:
+        if len(min_peaks) == 0:
             return [(0, values[0]), (1, values[1])]
+        if len(min_peaks) == 1:
+            return [(0, values[0])] + min_peaks
+        if len(min_peaks) == 2:
+            return min_peaks
 
-        bandwith = max(values) / 5.0  # Meanshift
-        a = numpy.array(min_peaks_values).reshape(
-            (len(min_peaks_values), 1))
+        for k in [5.0, 4.0, 3.0, 2.0, 1.0]:
+            bandwith = max(values) / k  # Meanshift
+            a = numpy.array(min_peaks_values).reshape(
+                (len(min_peaks_values), 1))
 
-        meanshift = sklearn.cluster.MeanShift(bandwidth=bandwith)
-        meanshift.fit(a)
+            meanshift = sklearn.cluster.MeanShift(bandwidth=bandwith)
+            meanshift.fit(a)
 
-        # Option, maybe resolve stem cut problem
-        c = collections.Counter(meanshift.labels_)
-        ref_label = max(c, key=c.get)
+            # Option, maybe resolve stem cut problem
+            c = collections.Counter(meanshift.labels_)
+            ref_label = max(c, key=c.get)
 
-        min_peaks_stem = list()
-        # min_peaks_stem.append((0, values[0]))
-        for (index, value), label in zip(min_peaks, meanshift.labels_):
-            if ref_label == label:
-                min_peaks_stem.append((index, value))
+            min_peaks_stem = list()
+            # min_peaks_stem.append((0, values[0]))
+            for (index, value), label in zip(min_peaks, meanshift.labels_):
+                if ref_label == label:
+                    min_peaks_stem.append((index, value))
+
+            if len(min_peaks_stem) >= 2:
+                return min_peaks_stem
 
         return min_peaks_stem
 
@@ -219,6 +226,10 @@ def peak_stem_detection(closest_nodes, leafs):
     # plot_values(mix, 'm', plot_peak=True)
     # for index, value in min_peaks_stem:
     #     matplotlib.pyplot.plot(index, value, 'bo')
+    #
+    # # matplotlib.pyplot.plot(stop, max(mix), 'ko')
+    # matplotlib.pyplot.plot(stop, 0, 'ko')
+    #
     # matplotlib.pyplot.show()
 
     distances = smooth(numpy.array(distances))
@@ -279,6 +290,8 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
     k = 2
     if len(stem_centred_path_min_peak) <= k:
         k = 1
+
+    r = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=k)
 
     tck, u = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=k)
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
