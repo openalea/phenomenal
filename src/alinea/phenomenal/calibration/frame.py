@@ -116,7 +116,6 @@ class Frame(object):
 
         :Returns Type: array
         """
-
         return dot(self._axes, vec)
 
     def local_vecs(self, vecs):
@@ -127,7 +126,7 @@ class Frame(object):
 
         :Returns Type: array
         """
-        return dot(self._axes, transpose(vecs))
+        return transpose(dot(self._axes, transpose(vecs)))
 
     def global_vec(self, vec):
         """Global coordinates of a local vector
@@ -159,6 +158,17 @@ class Frame(object):
         :Returns Type: array
         """
         return self.local_vec(subtract(point, self._origin))
+
+    def arr_local_point(self, point):
+        """Local coordinates of a global point
+
+        :Parameters:
+         `point` (float,float,float) - a position in the global frame
+
+        :Returns Type: array
+        """
+
+        return self.local_vecs(subtract(point, self._origin))
 
     def global_point(self, point):
         """Global coordinates of a local point
