@@ -451,7 +451,8 @@ def maize_cornet_leaf_analysis(cornet_leaf_voxel_segment,
         radius=8,
         dist=distance_plane * voxels_size)
 
-    voxels = list(set(voxels_position).intersection(set(voxels_higher_path)))
+    voxels = list(set(polyline).intersection(set(voxels_higher_path)))
+
     z = numpy.max(numpy.array(voxels)[:, 2])
     index = numpy.argmax(numpy.array(voxels)[:, 2])
 
@@ -551,10 +552,12 @@ def maize_cornet_leaf_analysis(cornet_leaf_voxel_segment,
 def maize_analysis(voxel_skeleton_labeled, distance_plane=0.5):
 
 
-    # from alinea.phenomenal.display import show_voxel_skeleton
-    #
+    # from alinea.phenomenal.display import show_voxel_skeleton, show_voxel_skeleton_labeled
+
     # show_voxel_skeleton(voxel_skeleton_labeled, with_voxels=True)
-    #
+
+    # show_voxel_skeleton_labeled(voxel_skeleton_labeled)
+
     # import mayavi.mlab
     # from alinea.phenomenal.display import show_voxels, plot_voxels
     #
@@ -567,6 +570,7 @@ def maize_analysis(voxel_skeleton_labeled, distance_plane=0.5):
     #     plot_voxels(vsl.voxels_position, 2)
     #
     #     mayavi.mlab.show()
+
     z_max = float("-inf")
     higher_path = None
     all_vs = set()

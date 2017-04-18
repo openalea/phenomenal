@@ -121,7 +121,7 @@ def show_voxel_point_cloud_segments(voxel_point_cloud_segments,
     len_voxels_unknown = 0
 
     # voxels_path = set()
-    for vs in voxel_point_cloud_segments.voxel_point_cloud_segment:
+    for vs in voxel_point_cloud_segments.voxel_segments:
 
         # if len(vs.paths) > 0:
         #     voxels_path = voxels_path.union(*vs.paths)
