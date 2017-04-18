@@ -26,11 +26,6 @@ from alinea.phenomenal.segmentation_3d import (
     skeletonize_octree,
     labelize_maize_skeleton)
 
-from alinea.phenomenal.display import (
-    show_each_stage_of_octree,
-    show_voxel_skeleton,
-    show_voxel_skeleton_labeled)
-
 # ==============================================================================
 
 def test_1():

@@ -14,7 +14,6 @@ import numpy
 from alinea.phenomenal.data_structure import Image3D
 # ==============================================================================
 
-
 def remove_internal(image_3d):
 
     len_x, len_y, len_z = image_3d.shape

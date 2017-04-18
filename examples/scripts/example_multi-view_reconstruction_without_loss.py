@@ -12,8 +12,11 @@
 from alinea.phenomenal.display import (
     show_voxels)
 
-from alinea.phenomenal.multi_view_reconstruction\
-    .multi_view_reconstruction_without_loss import (reconstruction_without_loss)
+from alinea.phenomenal.multi_view_reconstruction import (
+    reconstruction_without_loss)
+
+from alinea.phenomenal.data_structure import (
+    ImageView)
 
 from alinea.phenomenal.data_access.plant_1 import (
     plant_1_images_binarize,
@@ -32,25 +35,30 @@ if __name__ == '__main__':
 
     # Select images
     refs_angle_list = [120]
-    images_projections_refs = list()
+    # Select images
+    image_views = list()
     for angle in range(0, 360, 30):
+        projection = calibration_side.get_projection(angle)
+
         ref = False
-        if angle in refs_angle_list:
+        if angle == 120:
             ref = True
 
-        img = images[angle]
-        projection = calibration_side.get_projection(angle)
-        images_projections_refs.append((img, projection, ref))
+        image_views.append(ImageView(images[angle],
+                                     projection,
+                                     inclusive=False,
+                                     ref=ref))
 
-    img = images[-1]
     projection = calibration_top.get_projection(0)
-    images_projections_refs.append((img, projection, False))
+    image_views.append(ImageView(images[-1],
+                                 projection,
+                                 inclusive=True))
 
     voxels_size = 4
     error_tolerance = 0
     voxels_position = reconstruction_without_loss(
-        images_projections_refs,
-        voxel_size=voxels_size,
+        image_views,
+        voxels_size=voxels_size,
         error_tolerance=error_tolerance,
         verbose=True)
 

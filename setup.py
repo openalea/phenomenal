@@ -17,6 +17,7 @@
 """
 # ==============================================================================
 from setuptools import setup, find_packages
+from Cython.Build import cythonize
 # ==============================================================================
 
 # Packages list, namespace and root directory of packages
@@ -43,6 +44,9 @@ setup(
     url="http://openalea.gforge.inria.fr",
     license="Cecill-C",
     keywords='',
+
+    ext_modules=cythonize("src/alinea/phenomenal/multi_view_reconstruction/algo"
+                          ".pyx"),
 
     # package installation
     packages=packages,

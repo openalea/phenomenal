@@ -9,8 +9,10 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import numpy
+
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction\
-    import (get_voxel_corners)
+    import (get_voxel_corners, get_voxels_corners)
 # ==============================================================================
 
 
@@ -30,6 +32,18 @@ def test_get_voxel_corners_1():
     assert voxel_corners[5] == (4., -4., 4.)
     assert voxel_corners[6] == (-4., 4., 4.)
     assert voxel_corners[7] == (4., 4., 4.)
+
+def test_get_voxels_corners():
+
+    voxels_position = numpy.array([[0.0, 0.0, 0.0],
+                                   [4.0, 4.0, 4.0]])
+    voxels_size = 16
+
+    voxels_corners = get_voxels_corners(voxels_position, voxels_size / 2)
+
+    print voxels_corners
+
+
 
 # ==============================================================================
 

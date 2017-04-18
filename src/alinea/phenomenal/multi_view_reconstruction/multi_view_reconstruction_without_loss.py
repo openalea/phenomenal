@@ -9,27 +9,27 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import collections
 import math
 import numpy
-import time
 import scipy.spatial
 
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
-    import (split_voxel_centers_in_four,
-            split_voxel_centers_in_eight,
+    import (split_voxel_centers_in_eight,
             get_bounding_box_voxel_projected,
             voxel_is_visible_in_image)
 # ==============================================================================
 
 
-def create_groups(images_projections_refs):
+def create_groups(image_views):
     groups = dict()
 
     group_id = 0
-    for image, projection, ref in images_projections_refs:
-        if ref is True:
-            xx, yy = numpy.where(image > 0)
+    for iv in image_views:
+        if iv.ref is True:
+            xx, yy = numpy.where(iv.image > 0)
             for x, y in zip(xx, yy):
                 groups[(group_id, x, y)] = [list(), 0, group_id]
 
@@ -38,7 +38,7 @@ def create_groups(images_projections_refs):
     return groups
 
 
-def fill_groups(images_projections_refs, groups, voxel_centers, voxel_size):
+def fill_groups(image_views, groups, voxel_centers, voxel_size):
 
     # ==========================================================================
     # Clear groups
@@ -58,20 +58,20 @@ def fill_groups(images_projections_refs, groups, voxel_centers, voxel_size):
         kept.append(new_point)
 
         group_id = 0
-        for image, projection, ref in images_projections_refs:
-            if ref is True:
+        for iv in image_views:
+            if iv.ref is True:
 
-                height_image, length_image = image.shape
+                height_image, length_image = iv.image.shape
 
                 x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
-                    voxel_center, voxel_size, projection)
+                    voxel_center, voxel_size, iv.projection)
 
                 x_min = int(min(max(math.floor(x_min), 0), length_image - 1))
                 x_max = int(min(max(math.ceil(x_max), 0), length_image - 1))
                 y_min = int(min(max(math.floor(y_min), 0), height_image - 1))
                 y_max = int(min(max(math.ceil(y_max), 0), height_image - 1))
 
-                img = image[y_min:y_max + 1, x_min:x_max + 1]
+                img = iv.image[y_min:y_max + 1, x_min:x_max + 1]
 
                 xx, yy = numpy.where(img > 0)
 
@@ -90,8 +90,11 @@ def fill_groups(images_projections_refs, groups, voxel_centers, voxel_size):
                     weight_points[voxel_center] += 1
 
             else:
-                if voxel_is_visible_in_image(
-                        voxel_center, voxel_size, image, projection):
+                if voxel_is_visible_in_image(voxel_center,
+                                             voxel_size,
+                                             iv.image,
+                                             iv.projection,
+                                             iv.inclusive):
                     weight_points[voxel_center] += 1
 
             group_id += 1
@@ -248,20 +251,20 @@ def check_groups(kept, groups, weight_points, voxel_size,
     return collections.deque(set(kept))
 
 
-def reconstruction_without_loss(images_projections_refs,
+def reconstruction_without_loss(image_views,
                                 voxels_size=4,
                                 error_tolerance=0,
                                 voxel_center_origin=(0.0, 0.0, 0.0),
                                 world_size=4096,
-                                voxel_centers=None,
+                                voxels_position=None,
                                 verbose=False):
 
-    if len(images_projections_refs) == 0:
-        return
+    if len(image_views) == 0:
+        raise ValueError("Len images view have not length")
 
-    if voxel_centers is None:
-        voxel_centers = collections.deque()
-        voxel_centers.append(voxel_center_origin)
+    if voxels_position is None:
+        voxels_position = collections.deque()
+        voxels_position.append(voxel_center_origin)
 
     nb_iteration = 0
     while voxels_size < world_size:
@@ -270,38 +273,40 @@ def reconstruction_without_loss(images_projections_refs,
 
     # ==========================================================================
     # Create Groups
-
-    groups = create_groups(images_projections_refs)
+    groups = create_groups(image_views)
     # ==========================================================================
 
     for i in range(nb_iteration):
-        if verbose is True:
-            print 'Iteration', i + 1, '/', nb_iteration
-            # print ' : ', len(voxel_centers),
 
-        if len(images_projections_refs) == 1:
-            voxel_centers = split_voxel_centers_in_four(voxel_centers,
-                                                        voxels_size)
-        else:
-            voxel_centers = split_voxel_centers_in_eight(voxel_centers,
-                                                         voxels_size)
+        voxels_position = split_voxel_centers_in_eight(
+            voxels_position, voxels_size)
+
         voxels_size /= 2.0
-        # ======================================================================
 
-        voxel_centers, groups, weight_points = fill_groups(
-            images_projections_refs, groups, voxel_centers, voxels_size)
-
-        # ======================================================================
-
-        acceptation_criteria = len(images_projections_refs) - error_tolerance
-        voxel_centers = kept_points_3d(
-            acceptation_criteria, voxel_centers, weight_points)
-
-        voxel_centers = check_groups(voxel_centers, groups, weight_points, voxels_size)
+        if verbose is True:
+            print('Iteration', i + 1, '/', nb_iteration, end="")
+            print(' : ', len(voxels_position), end="")
 
         # ======================================================================
 
-        # if verbose is True:
-            # print ' - ', len(voxel_centers)
+        voxels_position, groups, weight_points = fill_groups(
+            image_views, groups, voxels_position, voxels_size)
 
-    return voxel_centers
+        # ======================================================================
+
+        acceptation_criteria = len(image_views) - error_tolerance
+
+        voxels_position = kept_points_3d(
+            acceptation_criteria, voxels_position, weight_points)
+
+        voxels_position = check_groups(voxels_position,
+                                     groups,
+                                     weight_points,
+                                     voxels_size)
+
+        # ======================================================================
+
+        if verbose is True:
+            print(' - ', len(voxels_position))
+
+    return voxels_position
