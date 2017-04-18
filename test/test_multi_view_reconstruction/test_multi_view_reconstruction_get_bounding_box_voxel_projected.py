@@ -9,11 +9,17 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import numpy
+
 from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction\
-    import (get_bounding_box_voxel_projected)
+    import (get_bounding_box_voxel_projected,
+            get_bounding_box_voxel_arr_projected,
+            project_voxel_centers_on_image,
+            voxels_is_visible_in_image)
 
 from alinea.phenomenal.data_access.plant_1 import (
-    plant_1_calibration_camera_side)
+    plant_1_calibration_camera_side,
+    plant_1_images_binarize)
 # ==============================================================================
 
 
@@ -59,6 +65,76 @@ def test_bbox_projection_2():
     values = get_bounding_box_voxel_projected(voxel_center, voxel_size, projection)
 
     check_values(values, refs)
+
+
+def test_bbox_arr_projected():
+
+    angle = 0
+    calibration = plant_1_calibration_camera_side()
+    projection = calibration.get_arr_projection(angle)
+
+    voxels_position = numpy.array([[0, 0, 0],
+                                   [32, 32, 32],
+                                   [0, 0, 0],
+                                   [0, 0, 0],
+                                   [0, 0, 0],
+                                   [0, 0, 0]])
+    voxels_size = 8
+    refs = (1017.3089948473056,
+            1025.7875288183795,
+            1258.2799614482235,
+            1265.171426935121)
+
+    values = get_bounding_box_voxel_arr_projected(
+        voxels_position, voxels_size, projection)
+
+    print values
+
+#
+# def test_bbox_arr_projected():
+#
+#     angle = 0
+#     calibration = plant_1_calibration_camera_side()
+#     projection = calibration.get_arr_projection(angle)
+#
+#     voxels_position = numpy.array([[0, 0, 0],
+#                                    [32, 32, 32],
+#                                    [0, 0, 0],
+#                                    [0, 0, 0],
+#                                    [0, 0, 0],
+#                                    [0, 0, 0]])
+#     voxels_size = 8
+#
+#     img = project_voxel_centers_on_image(voxels_position,
+#                                          voxels_size,
+#                                          (2048, 2448),
+#                                          projection)
+
+#
+# def test_voxels_is_visible_in_image():
+#
+#     angle = 0
+#     calibration = plant_1_calibration_camera_side()
+#     projection = calibration.get_arr_projection(angle)
+#
+#     voxels_position = numpy.array([[0, 0, 0],
+#                                    [32, 32, 32],
+#                                    [0, 0, 0],
+#                                    [0, 0, 0],
+#                                    [0, 0, 0],
+#                                    [0, 0, 0]])
+#     voxels_size = 16
+#
+#     image_bin = plant_1_images_binarize()
+#
+#     r = voxels_is_visible_in_image(voxels_position,
+#                                    voxels_size,
+#                                    image_bin[0],
+#                                    projection,
+#                                    False)
+#     print r
+
+
 
 # ==============================================================================
 

@@ -39,6 +39,7 @@ def plot_values(values, color,
 
     if smooth_values:
         values = smooth(numpy.array(values))
+        values = smooth(numpy.array(values))
 
     matplotlib.pyplot.plot(range(len(values)), values, color)
     if plot_peak:
