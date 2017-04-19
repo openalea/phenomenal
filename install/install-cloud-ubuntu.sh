@@ -87,9 +87,10 @@ git checkout feature/cloud
 cd ..
 
 # ==============================================================================
-# Local Installation
+#                           Local Installation
+# ==============================================================================
 
-
+# CONDA Installation
 chmod +x  Miniconda2-latest-Linux-x86_64.sh
 ./Miniconda2-latest-Linux-x86_64.sh -b
 
@@ -97,9 +98,22 @@ echo "# added by Miniconda2 4.3.11 installer" >> ~/.bashrc
 echo "export PATH=\"/home/ubuntu/miniconda2/bin:\$PATH\"" >> ~/.bashrc
 source ~/.bashrc
 
+# CONDA create and activate virtual environement
+
 conda create --name phenome --file ~/phenomenal/install/dependency-cloud-ubuntu.txt
 source activate phenome
 
-python ~/phenomenal/setup.py develop --prefix=$CONDA_PREFIX
-python ~/phenoarch/setup.py develop --prefix=$CONDA_PREFIX
-python ~/python-irodsclient/setup.py develop --prefix=$CONDA_PREFIX
+# Install phenomenal
+cd ~/phenomenal/
+python setup.py develop --prefix=$CONDA_PREFIX
+cd ~
+
+# Install phenomenal
+cd ~/phenoarch/
+python setup.py develop --prefix=$CONDA_PREFIX
+cd ~
+
+# python-irodsclient
+cd ~/python-irodsclient/
+python setup.py develop --prefix=$CONDA_PREFIX
+cd ~
