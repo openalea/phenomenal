@@ -64,7 +64,7 @@ R+N/GuZD9NEcT/+Y4S+GtUN6A0eKs5e4PkUEu+duWfRyrQ/92S6Hh+zkilD41RqA
 MXl7tsRhHEL779cnBEF7Z3Y9cHgIN6WredKuuqJw2dZAWFvL9rpTdJ3OwzU=
 -----END RSA PRIVATE KEY-----" > gitlab_private_key
 
-chmod 400 gitlab_private_key
+chmod 600 gitlab_private_key
 export GIT_SSH_COMMAND="ssh -i ~/gitlab_private_key"
 
 # ==============================================================================
@@ -93,8 +93,8 @@ cd ..
 chmod +x  Miniconda2-latest-Linux-x86_64.sh
 ./Miniconda2-latest-Linux-x86_64.sh -b
 
-"# added by Miniconda2 4.3.11 installer" >> ~/.bashrc
-"export PATH=\"/home/ubuntu/miniconda2/bin:\$PATH\"" >> ~/.bashrc
+echo "# added by Miniconda2 4.3.11 installer" >> ~/.bashrc
+echo "export PATH=\"/home/ubuntu/miniconda2/bin:\$PATH\"" >> ~/.bashrc
 source ~/.bashrc
 
 conda create --name phenome --file ~/phenomenal/install/dependency-cloud-ubuntu.txt
