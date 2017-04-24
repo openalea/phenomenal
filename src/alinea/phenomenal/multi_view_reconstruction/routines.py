@@ -18,7 +18,8 @@ from alinea.phenomenal.data_structure import Image3D
 def remove_internal(image_3d):
 
     len_x, len_y, len_z = image_3d.shape
-    im = Image3D.zeros((len_x + 2, len_y + 2, len_z + 2))
+    im = Image3D.zeros((len_x + 2, len_y + 2, len_z + 2),
+                       voxels_size=image_3d.voxels_size)
     im[1:-1, 1:-1, 1:-1] = image_3d
 
     xx, yy, zz = numpy.where(image_3d == 1)
