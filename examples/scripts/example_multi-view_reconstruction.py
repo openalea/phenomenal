@@ -37,17 +37,18 @@ if __name__ == '__main__':
     # Select images
     image_views = list()
     for angle in range(0, 360, 30):
-        projection = calibration_side.get_projection(angle)
+        projection = calibration_side.get_arr_projection(angle)
         image_views.append(ImageView(images[angle],
                                      projection,
                                      inclusive=False))
 
-    projection = calibration_top.get_projection(0)
+    projection = calibration_top.get_arr_projection(0)
     image_views.append(ImageView(images[-1],
                                  projection,
                                  inclusive=True))
+
     t0 = time.time()
-    voxels_size = 4
+    voxels_size = 8
     error_tolerance = 1
     voxels_position = reconstruction_3d(image_views,
                                         voxels_size=voxels_size,
@@ -56,7 +57,7 @@ if __name__ == '__main__':
 
     print("Number of voxel : {number_voxel}".format(
         number_voxel=len(voxels_position)))
-    print time.time() - t0
+    print(time.time() - t0)
 
     # Viewing
     show_voxels(voxels_position, voxels_size,

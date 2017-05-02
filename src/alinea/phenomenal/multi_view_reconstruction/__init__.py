@@ -78,7 +78,6 @@ Routines
 from __future__ import division, print_function, absolute_import
 
 from .multi_view_reconstruction import *
-from .multi_view_reconstruction_without_loss import *
 from .multi_view_reconstruction_octree import *
 from .routines import *
 

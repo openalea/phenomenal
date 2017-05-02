@@ -9,11 +9,13 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import time
+
 from alinea.phenomenal.display import (
     show_voxels)
 
 from alinea.phenomenal.multi_view_reconstruction import (
-    reconstruction_without_loss)
+    reconstruction_3d)
 
 from alinea.phenomenal.data_structure import (
     ImageView)
@@ -34,14 +36,14 @@ if __name__ == '__main__':
     calibration_top = plant_1_calibration_camera_top()
 
     # Select images
-    refs_angle_list = [120]
+    refs_angle_list = [120, 210]
     # Select images
     image_views = list()
     for angle in range(0, 360, 30):
-        projection = calibration_side.get_projection(angle)
+        projection = calibration_side.get_arr_projection(angle)
 
-        ref = False
-        if angle == 120:
+        ref = True
+        if angle in refs_angle_list:
             ref = True
 
         image_views.append(ImageView(images[angle],
@@ -49,14 +51,15 @@ if __name__ == '__main__':
                                      inclusive=False,
                                      ref=ref))
 
-    projection = calibration_top.get_projection(0)
+    projection = calibration_top.get_arr_projection(0)
     image_views.append(ImageView(images[-1],
                                  projection,
                                  inclusive=True))
 
+    t0 = time.time()
     voxels_size = 4
-    error_tolerance = 0
-    voxels_position = reconstruction_without_loss(
+    error_tolerance = 1
+    voxels_position = reconstruction_3d(
         image_views,
         voxels_size=voxels_size,
         error_tolerance=error_tolerance,
@@ -64,6 +67,7 @@ if __name__ == '__main__':
 
     print("Number of voxel : {number_voxel}".format(
         number_voxel=len(voxels_position)))
+    print(time.time() - t0)
 
     # Viewing
     show_voxels(voxels_position, voxels_size,

@@ -11,9 +11,11 @@
 # ==============================================================================
 from __future__ import division, print_function
 
+import scipy.spatial
 import collections
 import math
 import numpy
+import sklearn.neighbors
 # ==============================================================================
 
 
@@ -60,14 +62,6 @@ def get_voxels_corners(voxels_position, voxels_size):
 
     return a
 
-    # return [(x_minus, y_minus, z_minus),
-    #         (x_plus, y_minus, z_minus),
-    #         (x_minus, y_plus, z_minus),
-    #         (x_minus, y_minus, z_plus),
-    #         (x_plus, y_plus, z_minus),
-    #         (x_plus, y_minus, z_plus),
-    #         (x_minus, y_plus, z_plus),
-    #         (x_plus, y_plus, z_plus)]
 
 def get_bounding_box_voxel_arr_projected(voxels_position,
                                          voxels_size,
@@ -332,7 +326,6 @@ def voxels_is_visible_in_image(voxels_position,
     (min_xy_max_xy[:, 3])[min_xy_max_xy[:, 3] >= height] = height - 1
     min_xy_max_xy = min_xy_max_xy.astype(int)
 
-
     for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
         if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
             bb[i] = 1
@@ -429,6 +422,8 @@ def voxel_is_visible_in_image(voxel_center,
 
     return False
 
+# ==============================================================================
+
 
 def kept_visible_voxel(voxels_position,
                        voxels_size,
@@ -464,6 +459,7 @@ def kept_visible_voxel(voxels_position,
     """
 
     photo_consistent = numpy.zeros((len(voxels_position), ),  dtype=int)
+    no_kept = None
 
     for i, image_view in enumerate(image_views):
         photo_consistent += voxels_is_visible_in_image(
@@ -475,10 +471,120 @@ def kept_visible_voxel(voxels_position,
 
         cond = photo_consistent >= i + 1 - error_tolerance
 
+        if no_kept is None:
+            no_kept = voxels_position[numpy.logical_not(cond)]
+        else:
+            no_kept = numpy.insert(no_kept,
+                                   0,
+                                   voxels_position[numpy.logical_not(cond)],
+                                   axis=0)
+
         voxels_position = voxels_position[cond]
         photo_consistent = photo_consistent[cond]
 
-    return voxels_position
+    return voxels_position, no_kept
+
+
+def create_groups(image_views, kept, no_kept, voxels_size):
+
+    groups = collections.defaultdict(list)
+    kept_groups = collections.defaultdict(list)
+
+    group_id = 0
+    for iv in image_views:
+        if iv.ref is True:
+
+            height, length = iv.image.shape
+
+            res = get_bounding_box_voxel_arr_projected(
+                no_kept, voxels_size, iv.projection)
+
+            res = res[(res[:, 2] >= 0) & (res[:, 0] < length) &
+                      (res[:, 3] >= 0) & (res[:, 1] < height)]
+
+            res[:, 0] = numpy.floor(res[:, 0])
+            res[:, 1] = numpy.floor(res[:, 1])
+            res[:, 2] = numpy.ceil(res[:, 2])
+            res[:, 3] = numpy.ceil(res[:, 3])
+
+            res[res < 0] = 0
+            (res[:, 0])[res[:, 0] >= length] = length - 1
+            (res[:, 2])[res[:, 2] >= length] = length - 1
+            (res[:, 1])[res[:, 1] >= height] = height - 1
+            (res[:, 3])[res[:, 3] >= height] = height - 1
+            res = res.astype(int)
+
+            for i, (x_min, y_min, x_max, y_max) in enumerate(res):
+                img = iv.image[y_min:y_max + 1, x_min:x_max + 1]
+                xx, yy = numpy.where(img > 0)
+
+                xx += y_min
+                yy += x_min
+
+                for x, y in zip(xx, yy):
+                    groups[(group_id, x, y)].append(i)
+
+            im = project_voxel_centers_on_image(kept, voxels_size,
+                                                iv.image.shape,
+                                                iv.projection)
+
+            il = iv.image - im
+            xx, yy = numpy.where(il > 0)
+
+            for x, y in zip(xx, yy):
+                if len(groups[(group_id, x, y)]) > 0:
+                    kept_groups[(group_id, x, y)] = groups[(group_id, x, y)]
+
+        group_id += 1
+
+    return kept_groups
+
+
+def check_groups(kept, no_kept, groups):
+
+    l_index = groups.values()
+    if l_index:
+
+        l_index = [numpy.array(index) for index in l_index]
+
+        neigh = sklearn.neighbors.NearestNeighbors(
+            n_neighbors=1, metric='euclidean')
+
+        neigh.fit(kept)
+        distance, index_nodes = neigh.kneighbors(no_kept)
+
+        min_dist = [numpy.min(distance[index]) for index in l_index]
+        l_index = [y for (x, y) in sorted(zip(min_dist, l_index),
+                                          key=lambda x: x[0])]
+
+        kk = set()
+        for index in l_index:
+
+            if len(kk.intersection(set(index))) > 0:
+                continue
+
+            distance, index_nodes = neigh.kneighbors(no_kept[index])
+
+            if len(list(kk)) > 0:
+
+                dist = scipy.spatial.distance.cdist(no_kept[index],
+                                                    no_kept[numpy.array(list(kk))],
+                                                    'euclidean')
+
+                a = numpy.insert(dist, [0], distance, axis=1)
+                distance = a.min(axis=1)
+
+            else:
+                distance = distance[:, 0]
+
+            m = numpy.min(distance)
+            xx = numpy.unique(numpy.where(distance == m))
+            pts = no_kept[index[xx]]
+            kk = kk.union(set(list(index[xx])))
+            kept = numpy.insert(kept, 0, pts, axis=0)
+
+    return kept
+
 
 # ==============================================================================
 
@@ -551,17 +657,21 @@ def reconstruction_3d(image_views,
         voxels_size /= 2.0
 
         if verbose is True:
-            print('Iteration', i + 1, '/', nb_iteration, end="")
-            print(' : ', len(voxels_position), end="")
+            print("Iteration {} / {} : {}".format(
+                i + 1, nb_iteration, len(voxels_position)))
 
-        voxels_position = kept_visible_voxel(
-            voxels_position,
-            voxels_size,
-            image_views,
-            error_tolerance)
+        if voxels_size >= 512:
+            continue
 
-        if verbose is True:
-            print(' - ', len(voxels_position))
+        voxels_position, no_kept = kept_visible_voxel(
+            voxels_position, voxels_size, image_views,
+            error_tolerance=error_tolerance)
+
+        groups = create_groups(
+            image_views, voxels_position, no_kept, voxels_size)
+
+        voxels_position = check_groups(
+            voxels_position, no_kept,  groups)
 
     return voxels_position
 
