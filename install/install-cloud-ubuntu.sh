@@ -64,15 +64,14 @@ R+N/GuZD9NEcT/+Y4S+GtUN6A0eKs5e4PkUEu+duWfRyrQ/92S6Hh+zkilD41RqA
 MXl7tsRhHEL779cnBEF7Z3Y9cHgIN6WredKuuqJw2dZAWFvL9rpTdJ3OwzU=
 -----END RSA PRIVATE KEY-----" > gitlab_private_key
 
-chmod 400 gitlab_private_key
+chmod 600 gitlab_private_key
 echo "export GIT_SSH_COMMAND=\"ssh -i ~/gitlab_private_key\"" >> ~/.bashrc
-source ~/.bashrc
+source .bashrc
 
 # ==============================================================================
 # Download
 
 git clone git@gitlab.inria.fr:phenome/phenomenal.git
-yes
 git clone git@gitlab.inria.fr:phenome/phenoarch.git
 git clone https://github.com/irods/python-irodsclient
 wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
@@ -110,7 +109,7 @@ cd ~/phenomenal/
 python setup.py develop --prefix=$CONDA_PREFIX
 cd ~
 
-# Install phenomenal
+# Install phenoarch
 cd ~/phenoarch/
 python setup.py develop --prefix=$CONDA_PREFIX
 cd ~
