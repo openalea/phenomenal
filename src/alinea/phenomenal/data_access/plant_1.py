@@ -45,20 +45,15 @@ def plant_1_images():
     shared_directory = openalea.deploy.shared_data.shared_data(
         alinea.phenomenal)
 
-    print alinea.phenomenal.__path__
-
     data_directory = pkg_resources.resource_filename(
         'alinea.phenomenal', 'share/data/plant_1/images/')
 
-    print data_directory
     import pkgutil
     data = pkgutil.get_data('alinea.phenomenal', 'share/data/plant_1/images/')
-    print data
 
     # data_directory = shared_directory + ''
     files_path = glob.glob(data_directory + '*.png')
 
-    print files_path
     images = collections.defaultdict(lambda: collections.defaultdict())
 
     for path in files_path:
