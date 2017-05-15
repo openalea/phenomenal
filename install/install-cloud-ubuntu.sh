@@ -66,7 +66,7 @@ MXl7tsRhHEL779cnBEF7Z3Y9cHgIN6WredKuuqJw2dZAWFvL9rpTdJ3OwzU=
 
 chmod 600 gitlab_private_key
 echo "export GIT_SSH_COMMAND=\"ssh -i ~/gitlab_private_key\"" >> ~/.bashrc
-source .bashrc
+export GIT_SSH_COMMAND="ssh -i ~/gitlab_private_key"
 
 # ==============================================================================
 # Download
@@ -81,10 +81,12 @@ wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
 
 cd phenomenal
 git checkout develop
+git pull
 cd ..
 
 cd phenoarch
-git checkout feature/cloud
+git checkout feature/deploy_cloud
+git pull
 cd ..
 
 # ==============================================================================
@@ -97,7 +99,7 @@ chmod +x  Miniconda2-latest-Linux-x86_64.sh
 
 echo "# added by Miniconda2 4.3.11 installer" >> ~/.bashrc
 echo "export PATH=\"/home/ubuntu/miniconda2/bin:\$PATH\"" >> ~/.bashrc
-source ~/.bashrcubuntu
+export PATH="/home/ubuntu/miniconda2/bin:$PATH"
 
 # CONDA create and activate virtual environement
 
