@@ -615,3 +615,18 @@ def maize_analysis(voxel_skeleton_labeled, distance_plane=0.5):
         vs.info['label'] = vs.label
 
     return voxel_skeleton_labeled
+
+
+def maize_order_leaf(voxel_skeleton_labeled):
+
+    l = list()
+    for seg in voxel_skeleton_labeled.voxel_segments:
+        if seg.info is not None and "z_intersection" in seg.info:
+            l.append((seg.info, seg.info["z_intersection"]))
+
+    l.sort(key=lambda x: x[1])
+
+    for i, (info, z) in enumerate(l):
+        info["order"] = i
+
+    return voxel_skeleton_labeled
