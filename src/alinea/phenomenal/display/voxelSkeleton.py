@@ -17,6 +17,7 @@ import collections
 
 from .voxels import (plot_voxels)
 from .center_axis import (plot_center_axis)
+from .colormap import random_color_map
 # ==============================================================================
 
 
@@ -110,7 +111,10 @@ def show_voxel_skeleton_labeled(voxel_skeleton,
 
 
 
+
 def plot_voxel_skeleton_labeled_with_info(voxel_skeleton):
+
+    random_color_leaf = random_color_map()
 
     color_label = {"cornet_leaf": (0.9, 0.1, 0.1),
                    "mature_leaf": None,
@@ -122,12 +126,18 @@ def plot_voxel_skeleton_labeled_with_info(voxel_skeleton):
     for vs in voxel_skeleton.voxel_segments:
 
         nb_label[vs.label] += 1
-        color = color_label[vs.label]
+
+        if 'order' in vs.info:
+            color = tuple(random_color_leaf[int(vs.info['order'])])
+        else:
+            color = color_label[vs.label]
+
         plot_voxels(vs.voxels_position, vs.voxels_size, color=color)
 
         if ((vs.label == "mature_leaf" or vs.label == "cornet_leaf") and
                     'length' in vs.info):
             x, y, z = vs.info['position_tip']
+
             mayavi.mlab.points3d(x, y, z, mode="sphere",
                                  color=(1, 0, 0),
                                  scale_factor=30)

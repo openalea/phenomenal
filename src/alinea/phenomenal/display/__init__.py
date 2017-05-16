@@ -97,6 +97,7 @@ from .segmentation3d import *
 from .voxelPointCloud import *
 from .voxels import *
 from .voxelSkeleton import *
+from .colormap import *
 
 # ==============================================================================
 

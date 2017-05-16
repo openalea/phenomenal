@@ -42,6 +42,18 @@ class VoxelSkeleton(object):
 
         self.voxel_segments.append(voxel_segment)
 
+    def get_leaf_order(self, number):
+        for vs in self.voxel_segments:
+            if "order" in vs.info and vs.info["order"] == number:
+                return vs
+
+    def swap_leaf_order(self, number_1, number_2):
+        vs1 = self.get_leaf_order(number_1)
+        vs2 = self.get_leaf_order(number_2)
+
+        vs1.info['order'] = number_2
+        vs2.info['order'] = number_1
+
     def get_stem(self):
         for vs in self.voxel_segments:
             if vs.label == "stem":
