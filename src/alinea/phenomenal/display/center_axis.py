@@ -13,22 +13,28 @@ import mayavi.mlab
 # ==============================================================================
 
 
-def plot_center_axis():
+def plot_center_axis(figure=None):
+
+    if figure is None:
+        figure = mayavi.mlab.gcf()
 
     mayavi.mlab.quiver3d(0, 0, 0,
                          100, 0, 0,
                          line_width=5.0,
                          scale_factor=1,
-                         color=(1, 0, 0))
+                         color=(1, 0, 0),
+                         figure=figure)
 
     mayavi.mlab.quiver3d(0, 0, 0,
                          0, 100, 0,
                          line_width=5.0,
                          scale_factor=1,
-                         color=(0, 1, 0))
+                         color=(0, 1, 0),
+                         figure=figure)
 
     mayavi.mlab.quiver3d(0, 0, 0,
                          0, 0, 100,
                          line_width=5.0,
                          scale_factor=1,
-                         color=(0, 0, 1))
+                         color=(0, 0, 1),
+                         figure=figure)

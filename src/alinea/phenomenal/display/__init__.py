@@ -98,7 +98,7 @@ from .voxelPointCloud import *
 from .voxels import *
 from .voxelSkeleton import *
 from .colormap import *
-
+from .display_vtk import *
 # ==============================================================================
 
 __all__ = [s for s in dir() if not s.startswith('_')]

@@ -31,6 +31,7 @@ def show_voxel_skeleton(voxel_skeleton,
                         distance=None,
                         focalpoint=None):
 
+
     mayavi.mlab.figure(figure=figure_name, size=size)
 
     if with_center_axis:
@@ -112,7 +113,10 @@ def show_voxel_skeleton_labeled(voxel_skeleton,
 
 
 
-def plot_voxel_skeleton_labeled_with_info(voxel_skeleton):
+def plot_voxel_skeleton_labeled_with_info(voxel_skeleton, figure=None):
+
+    if figure is None:
+        figure = mayavi.mlab.gcf()
 
     random_color_leaf = random_color_map()
 
@@ -132,20 +136,23 @@ def plot_voxel_skeleton_labeled_with_info(voxel_skeleton):
         else:
             color = color_label[vs.label]
 
-        plot_voxels(vs.voxels_position, vs.voxels_size, color=color)
+        plot_voxels(vs.voxels_position, vs.voxels_size, color=color,
+                    figure=figure)
 
         if ((vs.label == "mature_leaf" or vs.label == "cornet_leaf") and
-                    'length' in vs.info):
+                'length' in vs.info):
             x, y, z = vs.info['position_tip']
 
             mayavi.mlab.points3d(x, y, z, mode="sphere",
                                  color=(1, 0, 0),
-                                 scale_factor=30)
+                                 scale_factor=30,
+                                 figure=figure)
 
             x, y, z = vs.info['position_base']
             mayavi.mlab.points3d(x, y, z, mode="sphere",
                                  color=(0, 0, 1),
-                                 scale_factor=30)
+                                 scale_factor=30,
+                                 figure=figure)
 
             s = ("{length}\n{max_width}\n{mean_width}".format(
                 length=int(vs.info['length']) / 10.0,
@@ -155,7 +162,8 @@ def plot_voxel_skeleton_labeled_with_info(voxel_skeleton):
             xt, yt, zt = vs.info['position_tip']
             mayavi.mlab.text3d(xt, yt, zt, s,
                                scale=30,
-                               color=(0, 0, 1))
+                               color=(0, 0, 1),
+                               figure=figure)
 
             xb, yb, zb = vs.info['position_base']
             xm, ym, zm = vs.info['vector_mean']
@@ -163,7 +171,8 @@ def plot_voxel_skeleton_labeled_with_info(voxel_skeleton):
                                  xm, ym, zm,
                                  line_width=5.0,
                                  scale_factor=1,
-                                 color=(1, 1, 1))
+                                 color=(1, 1, 1),
+                                 figure=figure)
 
         if vs.label == "mature_leaf" and 'vector_mean_one_quarter' in vs.info:
             xb, yb, zb = vs.info['position_base']
@@ -172,7 +181,8 @@ def plot_voxel_skeleton_labeled_with_info(voxel_skeleton):
                                  xm, ym, zm,
                                  line_width=5.0,
                                  scale_factor=2,
-                                 color=(0, 0, 1))
+                                 color=(0, 0, 1),
+                                 figure=figure)
 
 
 def show_voxel_skeleton_labeled_with_info(voxel_skeleton,
@@ -197,6 +207,8 @@ def show_voxel_skeleton_labeled_with_info(voxel_skeleton,
                      focalpoint=focalpoint)
 
     mayavi.mlab.show()
+
+
 
 
 def screenshot_voxel_skeleton_labeled_with_info(voxel_skeleton,

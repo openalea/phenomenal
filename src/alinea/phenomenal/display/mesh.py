@@ -63,6 +63,7 @@ def show_mesh(vertices, faces,
 
 
 def show_poly_data(poly_data, colored=True):
+
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(poly_data)
 
@@ -93,7 +94,6 @@ def show_poly_data(poly_data, colored=True):
     renderer.SetActiveCamera(camera)
     renderer.ResetCamera()
     renderer.SetBackground(0, 0, 0)
-
     render_window.SetSize(600, 600)
 
     # interact with data

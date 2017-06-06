@@ -50,6 +50,8 @@ from .voxelPointCloud import *
 from .voxelGraph import *
 from .voxelSkeleton import *
 from .imageView import *
+from .voxelOrgan import *
+from .voxelMaize import *
 
 # ==============================================================================
 

@@ -14,20 +14,23 @@ import json
 import numpy
 
 from alinea.phenomenal.data_structure import (
-    VoxelSegment,
-    VoxelPointCloud)
+    VoxelOrgan)
 # ==============================================================================
 
 
-class VoxelSkeleton(object):
+class VoxelMaizeSegmentation(object):
 
-    def __init__(self, voxels_size, ball_radius):
-        self.voxel_segments = list()
+    def __init__(self, voxels_size):
+        self.voxel_organs = list()
         self.voxels_size = voxels_size
-        self.ball_radius = ball_radius
 
-    def add_voxel_segment(self, voxels_position, polyline):
-        self.voxel_segments.append(VoxelSegment(voxels_position, polyline))
+    def add_voxel_segment(self, voxels_position, voxels_size, polyline):
+
+        voxel_segment = VoxelSegment(voxels_position,
+                                     voxels_size,
+                                     polyline)
+
+        self.voxel_segments.append(voxel_segment)
 
     def get_leaf_order(self, number):
         for vs in self.voxel_segments:
@@ -159,12 +162,13 @@ class VoxelSkeleton(object):
         with open(filename, 'w') as f:
 
             data = dict()
-            data['voxels_size'] = self.voxels_size
             data['ball_radius'] = self.ball_radius
+            data['voxels_size'] = self.voxels_size
 
             data['voxel_segments'] = list()
             for v in self.voxel_segments:
                 d = dict()
+                d['voxels_size'] = v.voxels_size
                 d['polyline'] = v.polyline
                 d['voxels_position'] = list(v.voxels_position)
                 data['voxel_segments'].append(d)
@@ -177,13 +181,12 @@ class VoxelSkeleton(object):
         with open(filename, 'rb') as f:
             data = json.load(f)
 
-            voxel_skeleton = VoxelSkeleton(data['voxels_size'],
-                                           data['ball_radius'])
+            voxel_skeleton = VoxelSkeleton()
 
             for d in data['voxel_segments']:
                 voxels_position = set(map(tuple, d['voxels_position']))
                 polyline = map(tuple, list(d["polyline"]))
                 voxel_skeleton.add_voxel_segment(
-                    voxels_position, polyline)
+                    voxels_position, d['voxels_size'], polyline)
 
         return voxel_skeleton

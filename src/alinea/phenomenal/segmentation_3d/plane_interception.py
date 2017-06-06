@@ -124,18 +124,19 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=0.75,
                                          graph=graph,
                                          radius_dist=radius_dist,
                                          without_connexity=without_connexity)
+
         closest_nodes.append(nodes)
 
     return closest_nodes
 
 
-def compute_closest_nodes_with_ball(voxels, path, radius=50, graph=None):
+def compute_closest_nodes_with_ball(voxels, path, ball_radius=50, graph=None):
 
     closest_nodes = list()
     path = numpy.array(path)
     for i, node in enumerate(path):
         res = numpy.linalg.norm(voxels - node, axis=1)
-        index = numpy.where(res < radius)
+        index = numpy.where(res < ball_radius)
         nodes = voxels[index]
 
         if graph is not None:

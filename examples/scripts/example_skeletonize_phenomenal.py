@@ -9,12 +9,19 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.data_access import plant_1_voxel_centers
-from alinea.phenomenal.display import (
-    show_voxels)
+from alinea.phenomenal.data_access import plant_1_voxel_point_cloud
+from alinea.phenomenal.display import (vtk_show_voxel_points_cloud,
+                                       vtk_show_voxel_skeleton,
+                                       vtk_show_voxel_maize_segmentation)
 
 from alinea.phenomenal.display.segmentation3d import show_segments
-from alinea.phenomenal.segmentation_3d.skeleton import skeletonize
+
+from alinea.phenomenal.data_structure import (VoxelSkeleton)
+
+from alinea.phenomenal.segmentation_3d import (
+    voxel_graph_from_voxel_point_cloud,
+    skeletonize,
+    labelize_maize_skeleton)
 
 # ==============================================================================
 
@@ -22,26 +29,26 @@ from alinea.phenomenal.segmentation_3d.skeleton import skeletonize
 def main():
 
     voxels_size = 16
+    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
 
-    voxels_center = plant_1_voxel_centers(voxel_size=voxels_size)
+    vtk_show_voxel_points_cloud(vpc)
 
-    show_voxels(voxels_center, voxels_size,
-                   color=(0.1, 0.9, 0.1),
-                   size=(5000, 5000),
-                   azimuth=310,
-                   distance=3000,
-                   elevation=90,
-                   focalpoint=(0, 0, 200))
+    voxel_graph = voxel_graph_from_voxel_point_cloud(vpc)
+    voxel_skeleton = skeletonize(voxel_graph.graph,
+                                 voxel_graph.voxels_size,
+                                 ball_radius=50)
 
-    segments, graph = skeletonize(voxels_center, voxels_size)
+    vtk_show_voxel_skeleton(voxel_skeleton)
 
-    show_segments(segments, voxels_size,
-                  with_voxels=True,
-                  size=(5000, 5000),
-                  azimuth=310,
-                  distance=3000,
-                  elevation=90,
-                  focalpoint=(0, 0, 200))
+    filename = 'voxel_skeleton.json'
+    voxel_skeleton.write_to_json(filename)
+    voxel_skeleton = VoxelSkeleton.read_from_json(filename)
+    vtk_show_voxel_skeleton(voxel_skeleton)
+
+    vms = labelize_maize_skeleton(voxel_skeleton, voxel_graph)
+
+    vtk_show_voxel_maize_segmentation(vms)
+
 
 
 if __name__ == "__main__":

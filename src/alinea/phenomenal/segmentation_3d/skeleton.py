@@ -70,8 +70,7 @@ def segment_path(voxels,
                  array_voxels,
                  skeleton_path,
                  graph,
-                 radius=50,
-                 distance_plane=0.75):
+                 ball_radius=50):
 
     # ==========================================================================
     # Get the longest shorted path of voxels
@@ -99,7 +98,7 @@ def segment_path(voxels,
         closest_nodes = compute_closest_nodes_with_ball(
             array_voxels,
             leaf_skeleton_path,
-            radius=radius,
+            ball_radius=ball_radius,
             graph=graph)
 
         leaf = set().union(*closest_nodes)
@@ -128,7 +127,7 @@ def compute_all_shorted_path(graph, voxels_size):
     return all_shorted_path_to_stem_base
 
 
-def skeletonize(graph, voxels_size, distance_plane=1, radius=50):
+def skeletonize(graph, voxels_size, ball_radius=50):
 
     all_shorted_path_to_stem_base = compute_all_shorted_path(graph, voxels_size)
 
@@ -137,7 +136,7 @@ def skeletonize(graph, voxels_size, distance_plane=1, radius=50):
     np_arr_all_graph_voxels_plant = numpy.array(graph.nodes())
     # ==========================================================================
 
-    voxel_segments = list()
+    voxel_skeleton = VoxelSkeleton(voxels_size, ball_radius)
     while len(voxels_position_remain) != 0:
 
         (voxels_position_segment,
@@ -147,16 +146,10 @@ def skeletonize(graph, voxels_size, distance_plane=1, radius=50):
             np_arr_all_graph_voxels_plant,
             all_shorted_path_to_stem_base,
             graph,
-            radius=radius,
-            distance_plane=distance_plane * voxels_size)
+            ball_radius=ball_radius)
 
-        voxel_segment = VoxelSegment(voxels_position_segment,
-                                     voxels_size,
-                                     [voxels_segments_polyline])
-
-        voxel_segments.append(voxel_segment)
-
-    voxel_skeleton = VoxelSkeleton(voxel_segments)
+        voxel_skeleton.add_voxel_segment(voxels_position_segment,
+                                         voxels_segments_polyline)
 
     return voxel_skeleton
 
