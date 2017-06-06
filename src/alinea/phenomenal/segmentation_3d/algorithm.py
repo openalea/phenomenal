@@ -134,20 +134,20 @@ def peak_stem_detection(closest_nodes, leafs):
         distance = get_length_point_cloud(closest_nodes[i])
         distances.append(float(distance))
 
-    values_stem = [1] * len(closest_nodes)
-    for i in range(len(closest_nodes)):
-        for voxels, paths in leafs:
-            v = len(set(closest_nodes[i]).intersection(voxels))
-            values_stem[i] += float(v) / float(len(closest_nodes[i]))
-
-    distances_length = list()
-    for i in range(len(values_stem)):
-        distances_length.append(float(distances[i]) * float(nodes_length[i]))
-
-    mix = list()
-    for i in range(len(values_stem)):
-        mix.append(float(distances[i]) * float(nodes_length[i]) /
-                   float(values_stem[i]))
+    # values_stem = [1] * len(closest_nodes)
+    # for i in range(len(closest_nodes)):
+    #     for voxels, paths in leafs:
+    #         v = len(set(closest_nodes[i]).intersection(voxels))
+    #         values_stem[i] += float(v) / float(len(closest_nodes[i]))
+    #
+    # distances_length = list()
+    # for i in range(len(values_stem)):
+    #     distances_length.append(float(distances[i]) * float(nodes_length[i]))
+    #
+    # mix = list()
+    # for i in range(len(values_stem)):
+    #     mix.append(float(distances[i]) * float(nodes_length[i]) /
+    #                float(values_stem[i]))
 
     # import matplotlib.pyplot
     # from alinea.phenomenal.display.peak import plot_values, show_values
@@ -164,7 +164,8 @@ def peak_stem_detection(closest_nodes, leafs):
     # label_color[2] = 'go'
     # label_color[3] = 'ko'
 
-    stop = mix.index(max(mix))
+    # stop = mix.index(max(mix))
+    stop = nodes_length.index((max(nodes_length)))
 
     def find_stem_min_peak(values):
 
@@ -219,18 +220,18 @@ def peak_stem_detection(closest_nodes, leafs):
 
     min_peaks_stem = find_stem_min_peak(nodes_length)
 
-    # import matplotlib.pyplot
-    # from alinea.phenomenal.display.peak import plot_values
-    # matplotlib.pyplot.figure()
-    # plot_values(nodes_length, 'r', plot_peak=True)
+    import matplotlib.pyplot
+    from alinea.phenomenal.display.peak import plot_values
+    matplotlib.pyplot.figure()
+    plot_values(nodes_length, 'r', plot_peak=True)
     # plot_values(mix, 'm', plot_peak=True)
-    # for index, value in min_peaks_stem:
-    #     matplotlib.pyplot.plot(index, value, 'bo')
-    #
-    # # matplotlib.pyplot.plot(stop, max(mix), 'ko')
-    # matplotlib.pyplot.plot(stop, 0, 'ko')
-    #
-    # matplotlib.pyplot.show()
+    for index, value in min_peaks_stem:
+        matplotlib.pyplot.plot(index, value, 'bo')
+
+    # matplotlib.pyplot.plot(stop, max(mix), 'ko')
+    matplotlib.pyplot.plot(stop, 0, 'ko')
+
+    matplotlib.pyplot.show()
 
     distances = smooth(numpy.array(distances))
 
@@ -256,13 +257,23 @@ def stem_detection(stem_segment_voxel, stem_segment_path, leafs, voxel_size,
     # ==========================================================================
 
     arr_stem_segment_voxel = numpy.array(list(stem_segment_voxel))
+    stem_segment_path = numpy.array(stem_segment_path)
 
-    closest_nodes_planes = compute_closest_nodes_with_planes(
+    print arr_stem_segment_voxel
+    print stem_segment_path
+    print voxel_size
+
+    # closest_nodes_planes = compute_closest_nodes_with_planes(
+    #     arr_stem_segment_voxel,
+    #     stem_segment_path,
+    #     radius=8,
+    #     dist=distance_plane * voxel_size,
+    #     radius_dist=50)
+
+    closest_nodes_planes = compute_closest_nodes_with_ball(
         arr_stem_segment_voxel,
         stem_segment_path,
-        radius=8,
-        dist=distance_plane * voxel_size,
-        radius_dist=50)
+        ball_radius=50)
 
     stem_segment_centred_path = [
         numpy.array(nodes).mean(axis=0) for nodes in closest_nodes_planes]

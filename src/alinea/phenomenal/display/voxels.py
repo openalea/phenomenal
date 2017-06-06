@@ -127,7 +127,11 @@ def screenshot_voxels(voxels_position, voxels_size,
 # ==============================================================================
 # ==============================================================================
 
-def plot_voxels(voxels_position, voxels_size, color=None):
+
+def plot_voxels(voxels_position, voxels_size, color=None, figure=None):
+
+    if figure is None:
+        figure = mayavi.mlab.gcf()
 
     pts = numpy.array(list(voxels_position))
     pts = pts.astype(int)
@@ -141,15 +145,16 @@ def plot_voxels(voxels_position, voxels_size, color=None):
         mayavi.mlab.points3d(pts[:, 0], pts[:, 1], pts[:, 2],
                              mode='cube',
                              color=color,
-                             scale_factor=voxels_size)
+                             scale_factor=voxels_size,
+                             figure=figure)
 
-    del pts
+    # del pts
 
     return color
 
 
 def plot_list_voxels(list_voxels_position, list_voxels_size,
-                     list_color=None):
+                     list_color=None, figure=None):
 
     if list_color is None:
         list_color = [None] * len(list_voxels_position)
@@ -158,7 +163,7 @@ def plot_list_voxels(list_voxels_position, list_voxels_size,
                                                    list_voxels_size,
                                                    list_color):
 
-        plot_voxels(voxels_position, voxels_size, color=color)
+        plot_voxels(voxels_position, voxels_size, color=color, figure=figure)
 
 # ==============================================================================
 # ==============================================================================
