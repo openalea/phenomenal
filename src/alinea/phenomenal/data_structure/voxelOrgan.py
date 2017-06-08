@@ -32,3 +32,33 @@ class VoxelOrgan(object):
                 voxel_segment.voxels_position)
 
         return voxels_position
+
+    def longest_polyline(self):
+        long_polyline = list()
+
+        for vs in self.voxel_segments:
+            if len(vs.polyline) > len(long_polyline):
+                long_polyline = vs.polyline
+
+        return long_polyline
+
+    def real_longest_polyline(self):
+
+        voxels_position = set(self.voxels_position())
+
+        long_polyline = list()
+
+        for vs in self.voxel_segments:
+            if len(vs.polyline) > len(long_polyline):
+                long_polyline = vs.polyline
+
+        index_position_tip = -1
+        index_position_base = len(long_polyline) - 1
+        for i in range(len(long_polyline) - 1, -1, -1):
+            if long_polyline[i] not in voxels_position:
+                index_position_base = i
+                break
+
+        real_polyline = long_polyline[index_position_base:index_position_tip]
+
+        return real_polyline

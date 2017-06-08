@@ -1,5 +1,17 @@
-import vtk
+# -*- python -*-
+#
+#       Copyright 2015 INRIA - CIRAD - INRA
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       OpenAlea WebSite : http://openalea.gforge.inria.fr
+#
+# ==============================================================================
 
+import vtk
+import random
 
 def vtk_show_voxel_points_cloud(voxel_points_cloud,
                                 color=(0, 1, 0)):
@@ -31,7 +43,7 @@ def vtk_show_actor(actors):
         renderer.AddActor(actor)
     renderer.SetActiveCamera(camera)
     renderer.ResetCamera()
-    renderer.SetBackground(0.5, 0.5, 0.5)
+    renderer.SetBackground(0.4, 0.4, 0.4)
     render_window.SetSize(600, 600)
 
     # interact with data
@@ -66,44 +78,43 @@ def vtk_show_voxel_skeleton(voxel_skeleton):
     vtk_show_actor(actors)
 
 
-def vtk_show_voxel_maize_segmentation(voxel_skeleton_segmentation):
+def vtk_show_voxel_maize_segmentation(voxel_maize_segmentation):
 
-    vsm = voxel_skeleton_segmentation
+    vms = voxel_maize_segmentation
 
     actors = list()
 
-    # color = {"stem":(0, 0, 0),
-    #          "mature_leaf": (0, 0, 1),
-    #          "cornet_leaf": (1, 0, 0),
-    #          "unknown": (0, 0, 0)}
-    import random
+    color = {"stem": (0, 0, 0),
+             "mature_leaf": None,
+             "cornet_leaf": (1, 0, 0),
+             "unknown": (1, 1, 1)}
 
-
-    for organ in vsm.voxel_organs:
-
-        print(organ.label)
-        color = (random.uniform(0, 1),
-                 random.uniform(0, 1),
-                 random.uniform(0, 1))
+    for vo in vms.voxel_organs:
 
         actor_voxels = vtk_get_actor_from_voxels(
-            organ.voxels_position(),
-            vsm.voxels_size * 0.25,
-            color=color)
+            vo.voxels_position(),
+            vms.voxels_size * 0.50,
+            color=color[vo.label])
 
         actors.append(actor_voxels)
 
-        # actor_polyline = vtk_get_actor_from_voxels(
-        #     vs.polyline, vs.voxels_size, color=(0, 0, 0))
-        #
-        # actors.append(actor_polyline)
+        for vs in vo.voxel_segments:
+            actor_polyline = vtk_get_actor_from_voxels(
+                vs.polyline,
+                vms.voxels_size * 0.50,
+                color=(1, 1, 1))
+
+            actors.append(actor_polyline)
 
     vtk_show_actor(actors)
 
 
+def vtk_get_actor_from_voxels(voxels_position, voxels_size, color=None):
 
-def vtk_get_actor_from_voxels(voxels_position, voxels_size,
-                              color=(0, 1, 0)):
+    if color is None:
+        color = (random.uniform(0, 1),
+                 random.uniform(0, 1),
+                 random.uniform(0, 1))
 
     points = vtk.vtkPoints()
     for v in voxels_position:

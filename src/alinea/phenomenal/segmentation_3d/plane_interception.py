@@ -12,14 +12,26 @@
 import math
 import numpy
 import networkx
+import scipy
 
 # ==============================================================================
+
+def get_length_point_cloud(nodes):
+    if len(nodes) == 0:
+        return 0
+
+    res = scipy.spatial.distance.pdist(nodes, 'euclidean')
+
+    if len(res) > 0:
+        return res.max()
+    else:
+        return 0
 
 
 def get_node_close_to_planes(voxels, node_src, plane,
                              dist=0.75,
                              radius_dist=None,
-                             voxel_size=4,
+                             voxels_size=8,
                              graph=None,
                              without_connexity=False):
     """
@@ -57,9 +69,10 @@ def get_node_close_to_planes(voxels, node_src, plane,
 
     if graph is not None:
         closest_voxel = map(tuple, closest_voxel)
+
         subgraph = graph.subgraph(closest_voxel)
-        connected_component = networkx.connected_component_subgraphs(
-            subgraph, copy=False)
+        connected_component = networkx.connected_components(
+            subgraph)
 
         for cc in connected_component:
             if node_src in cc:
@@ -72,9 +85,9 @@ def get_node_close_to_planes(voxels, node_src, plane,
 
         rr = abs(closest_voxel - node)
 
-        index = numpy.where((rr[:, 0] <= voxel_size) &
-                            (rr[:, 1] <= voxel_size) &
-                            (rr[:, 2] <= voxel_size))[0]
+        index = numpy.where((rr[:, 0] <= voxels_size) &
+                            (rr[:, 1] <= voxels_size) &
+                            (rr[:, 2] <= voxels_size))[0]
 
         nodes += list(closest_voxel[index])
         closest_node += list(closest_voxel[index])
@@ -87,14 +100,19 @@ def get_node_close_to_planes(voxels, node_src, plane,
     return map(tuple, closest_node)
 
 
-def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=0.75,
-                                      radius_dist=None, graph=None,
-                                      without_connexity=False):
+def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
+                                      radius_dist=None,
+                                      graph=None,
+                                      without_connexity=False,
+                                      voxels_size=4):
 
     closest_nodes = list()
     length_path = len(path)
+
+    # radius_dist = 100
+    b = False
     for i in range(length_path):
-        node = path[i]
+        node = tuple(path[i])
 
         # ======================================================================
 
@@ -119,13 +137,32 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=0.75,
         d = k[0] * node[0] + k[1] * node[1] + k[2] * node[2]
         plane = (k[0], k[1], k[2], d)
 
+        # if i > 0:
+        #     nodes = closest_nodes[i - 1]
+        #     distance = get_length_point_cloud(numpy.array(list(nodes)))
+        #     if distance == 0:
+        #         radius_dist = 100
+        #     else:
+        #         radius_dist = min(distance * 1.5, 100)
+        #
+
         nodes = get_node_close_to_planes(voxels, node, plane,
                                          dist=dist,
                                          graph=graph,
                                          radius_dist=radius_dist,
-                                         without_connexity=without_connexity)
+                                         without_connexity=without_connexity,
+                                         voxels_size=voxels_size)
 
         closest_nodes.append(nodes)
+
+        if b is True:
+            import alinea.phenomenal.display
+
+            alinea.phenomenal.display.show_list_voxels(
+                [voxels, nodes, path],
+                [voxels_size * 0.75, voxels_size * 0.75, voxels_size * 0.75],
+                [(0, 0, 0), (0, 0, 1), (1, 0, 0)])
+
 
     return closest_nodes
 
@@ -135,6 +172,7 @@ def compute_closest_nodes_with_ball(voxels, path, ball_radius=50, graph=None):
     closest_nodes = list()
     path = numpy.array(path)
     for i, node in enumerate(path):
+
         res = numpy.linalg.norm(voxels - node, axis=1)
         index = numpy.where(res < ball_radius)
         nodes = voxels[index]
