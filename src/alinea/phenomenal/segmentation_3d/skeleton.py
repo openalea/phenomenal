@@ -70,7 +70,9 @@ def segment_path(voxels,
                  array_voxels,
                  skeleton_path,
                  graph,
-                 ball_radius=50):
+                 ball_radius=50,
+                 voxels_size=4,
+                 distance_plane=1.0):
 
     # ==========================================================================
     # Get the longest shorted path of voxels
@@ -86,28 +88,35 @@ def segment_path(voxels,
 
     # ==========================================================================
 
+    # import alinea.phenomenal.display
+    #
+    # alinea.phenomenal.display.show_list_voxels(
+    #     [voxels, leaf_skeleton_path],
+    #     [voxels_size * 0.25, voxels_size * 0.25])
+
+
     if leaf_skeleton_path:
 
-        # closest_nodes = compute_closest_nodes_with_planes(
-        #     array_voxels,
-        #     leaf_skeleton_path,
-        #     radius=8,
-        #     dist=distance_plane,
-        #     graph=graph)
-
-        closest_nodes = compute_closest_nodes_with_ball(
+        closest_nodes = compute_closest_nodes_with_planes(
             array_voxels,
             leaf_skeleton_path,
-            ball_radius=ball_radius,
+            radius=8,
+            dist=distance_plane * voxels_size,
             graph=graph)
+
+        # closest_nodes = compute_closest_nodes_with_ball(
+        #     array_voxels,
+        #     leaf_skeleton_path,
+        #     ball_radius=ball_radius,
+        #     graph=graph)
 
         leaf = set().union(*closest_nodes)
         remain = set(voxels).difference(leaf)
 
-        leaf, leaf_neighbors, connected_components_remain = merge(
-            graph, leaf, remain)
-
-        remain = set().union(*connected_components_remain)
+        # leaf, leaf_neighbors, connected_components_remain = merge(
+        #     graph, leaf, remain, percentage=50)
+        #
+        # remain = set().union(*connected_components_remain)
 
         return leaf, remain, leaf_skeleton_path
 
@@ -146,7 +155,14 @@ def skeletonize(graph, voxels_size, ball_radius=50):
             np_arr_all_graph_voxels_plant,
             all_shorted_path_to_stem_base,
             graph,
-            ball_radius=ball_radius)
+            ball_radius=ball_radius,
+            voxels_size=voxels_size)
+
+        # import alinea.phenomenal.display
+        #
+        # alinea.phenomenal.display.show_list_voxels(
+        #     [voxels_position_segment, voxels_segments_polyline],
+        #     [voxels_size * 0.25, voxels_size * 0.25])
 
         voxel_skeleton.add_voxel_segment(voxels_position_segment,
                                          voxels_segments_polyline)

@@ -35,7 +35,8 @@ __all__ = ["plant_1_images",
            "plant_1_chessboards",
            "plant_1_calibration_camera_side",
            "plant_1_calibration_camera_top",
-           "plant_1_voxel_point_cloud"]
+           "plant_1_voxel_point_cloud",
+           "plant_2_voxel_point_cloud"]
 
 # ==============================================================================
 
@@ -276,6 +277,24 @@ def plant_1_voxel_point_cloud(voxels_size=10):
 
     return None
 
+def plant_2_voxel_point_cloud(voxels_size=10):
+    shared_directory = openalea.deploy.shared_data.shared_data(
+        alinea.phenomenal)
+
+    data_directory = shared_directory + '/plant_2/'
+
+    if 3 <= int(voxels_size) <= 20:
+
+        filename = ("{data_directory}"
+                    "ZA16__0001_Lo1270_H_ZM2887_"
+                    "d151_WD_3_01_01_ARCH2016-04-15_"
+                    "_2016-05-20_06-52-56.492283.npz".format(
+                                        data_directory=data_directory,
+                                        voxels_size=str(int(voxels_size))))
+
+        return VoxelPointCloud.read_from_npz(filename)
+
+    return None
 
 def plant_1_voxels_size_4_without_loss_120():
     shared_directory = openalea.deploy.shared_data.shared_data(

@@ -68,12 +68,12 @@ from __future__ import division, print_function, absolute_import
 
 from .graph import *
 from .thinning import *
-from .maize import *
+from .algorithm import *
 from .skeleton import *
 from .graph import *
 from .skeleton_accurate import *
 from .plant_analysis import *
-
+from .maize import *
 # ==============================================================================
 
 __all__ = [s for s in dir() if not s.startswith('_')]
