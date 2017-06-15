@@ -109,6 +109,37 @@ def vtk_show_voxel_maize_segmentation(voxel_maize_segmentation):
     vtk_show_actor(actors)
 
 
+def vtk_voxel_point_cloud_to_polydata(vpc, color=None):
+
+    voxels_position = vpc.voxels_position
+    voxels_size = vpc.voxels_size
+
+    points = vtk.vtkPoints()
+    for v in voxels_position:
+        points.InsertNextPoint(v[0], v[1], v[2])
+
+    polydata = vtk.vtkPolyData()
+    polydata.SetPoints(points)
+
+    cubeSource = vtk.vtkCubeSource()
+    cubeSource.SetXLength(voxels_size)
+    cubeSource.SetYLength(voxels_size)
+    cubeSource.SetZLength(voxels_size)
+
+    glyph3D = vtk.vtkGlyph3D()
+
+    if vtk.VTK_MAJOR_VERSION <= 5:
+        glyph3D.SetSource(cubeSource.GetOutput())
+        glyph3D.SetInput(polydata)
+    else:
+        glyph3D.SetSourceConnection(cubeSource.GetOutputPort())
+        glyph3D.SetInputData(polydata)
+
+    glyph3D.Update()
+
+    return glyph3D.GetOutput()
+
+
 def vtk_get_actor_from_voxels(voxels_position, voxels_size, color=None):
 
     if color is None:

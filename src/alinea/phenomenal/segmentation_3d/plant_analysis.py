@@ -367,7 +367,6 @@ def maize_mature_leaf_analysis(mature_leaf_voxel_organ,
         radius=8,
         dist=distance_plane * voxels_size)
 
-
     # ==========================================================================
     # Compute extremity
 
@@ -498,7 +497,7 @@ def maize_analysis(voxel_maize_segmentation):
     voxels = set(vo_stem.voxels_position())
     lorder.sort(key=lambda x: x[1])
     for vo, _ in lorder:
-        vo.info["order"] = num_order
+        # vo.info["order"] = num_order
         num_order += 1
 
         vo = maize_cornet_leaf_analysis(vo,
@@ -506,7 +505,5 @@ def maize_analysis(voxel_maize_segmentation):
                                         voxels)
 
         voxels = voxels.union(set(vo.voxels_position()))
-
-
 
     return voxel_maize_segmentation

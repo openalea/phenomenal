@@ -94,7 +94,6 @@ def segment_path(voxels,
     #     [voxels, leaf_skeleton_path],
     #     [voxels_size * 0.25, voxels_size * 0.25])
 
-
     if leaf_skeleton_path:
 
         closest_nodes = compute_closest_nodes_with_planes(
