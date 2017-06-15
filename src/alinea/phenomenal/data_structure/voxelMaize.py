@@ -28,6 +28,7 @@ class VoxelMaizeSegmentation(object):
         for vs in self.voxel_segments:
             if "order" in vs.info and vs.info["order"] == number:
                 return vs
+        return None
 
     def swap_leaf_order(self, number_1, number_2):
         vs1 = self.get_leaf_order(number_1)

@@ -17,7 +17,7 @@ import collections
 
 from .voxels import (plot_voxels)
 from .center_axis import (plot_center_axis)
-from .colormap import random_color_map
+from .colormap import order_color_map
 # ==============================================================================
 
 
@@ -30,7 +30,6 @@ def show_voxel_skeleton(voxel_skeleton,
                         elevation=None,
                         distance=None,
                         focalpoint=None):
-
 
     mayavi.mlab.figure(figure=figure_name, size=size)
 
@@ -116,7 +115,7 @@ def plot_voxel_maize_segmentation_with_info(vms, figure=None):
     if figure is None:
         figure = mayavi.mlab.gcf()
 
-    random_color_leaf = random_color_map()
+    color_map = order_color_map()
 
     color_label = {"cornet_leaf": (0.9, 0.1, 0.1),
                    "mature_leaf": None,
@@ -130,7 +129,7 @@ def plot_voxel_maize_segmentation_with_info(vms, figure=None):
         nb_label[vo.label] += 1
 
         if 'order' in vo.info:
-            color = tuple(random_color_leaf[int(vo.info['order'])])
+            color = tuple(color_map[int(vo.info['order'])])
         else:
             color = color_label[vo.label]
 
@@ -154,13 +153,15 @@ def plot_voxel_maize_segmentation_with_info(vms, figure=None):
                                  scale_factor=30,
                                  figure=figure)
 
-            s = ("{length} - {max_width} - {mean_width}\n"
-                 "{label} - {order}".format(
-                length=int(vo.info['length']) / 10.0,
-                max_width=int(vo.info['width_max']) / 10.0,
-                mean_width=int(vo.info['width_mean']) / 10.0,
-                label=vo.label,
-                order=vo.info['order']))
+            # s = ("{length} - {max_width} - {mean_width}\n"
+            #      "{label} - {order}".format(
+            #     length=int(vo.info['length']) / 10.0,
+            #     max_width=int(vo.info['width_max']) / 10.0,
+            #     mean_width=int(vo.info['width_mean']) / 10.0,
+            #     label=vo.label,
+            #     order=vo.info['order']))
+
+            s = ("{order}".format(order=vo.info['order']))
 
             xt, yt, zt = vo.info['position_tip']
             mayavi.mlab.text3d(xt, yt, zt, s,

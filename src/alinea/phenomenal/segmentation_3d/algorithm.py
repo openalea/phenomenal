@@ -59,7 +59,7 @@ def peak_stem_detection(closest_nodes):
         distance = get_length_point_cloud(closest_nodes[i])
         distances.append(float(distance))
 
-    window_length = len(nodes_length) / 8
+    window_length = max(4, len(nodes_length) / 8)
     window_length = window_length + 1 if window_length % 2 == 0 else window_length
 
     distances_smooth = savgol_filter(numpy.array(distances),
