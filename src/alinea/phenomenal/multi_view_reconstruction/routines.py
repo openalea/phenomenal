@@ -14,6 +14,7 @@ import numpy
 from alinea.phenomenal.data_structure import Image3D
 # ==============================================================================
 
+
 def remove_internal(image_3d):
 
     len_x, len_y, len_z = image_3d.shape
@@ -40,7 +41,7 @@ def remove_internal(image_3d):
         return True
 
     im2 = Image3D.zeros_like(im)
-    for i in xrange(len(xx)):
+    for i in range(len(xx)):
         x, y, z = xx[i], yy[i], zz[i]
         if removable(x, y, z):
             im2[(x, y, z)] = 1

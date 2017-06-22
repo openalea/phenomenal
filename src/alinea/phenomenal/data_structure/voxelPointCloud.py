@@ -9,13 +9,15 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import os
 import re
 import json
 import numpy
 import csv
 
-from alinea.phenomenal.data_structure.image3d import Image3D
+from .image3d import Image3D
 # ==============================================================================
 
 
@@ -23,12 +25,44 @@ class VoxelPointCloud(object):
 
     def __init__(self, voxels_position, voxels_size):
 
-        self.voxels_position = voxels_position
-        self.voxels_size = voxels_size
+        self._voxels_position = voxels_position
+        self._voxels_size = voxels_size
+
+    # ==========================================================================
+    # GETTER & SETTER
+    # ==========================================================================
+
+    @property
+    def voxels_position(self):
+        return self._voxels_position
+
+    @voxels_position.setter
+    def voxels_position(self, voxels_position):
+        self._voxels_position = voxels_position
+
+    @voxels_position.deleter
+    def voxels_position(self):
+        del self._voxels_position
+
+    @property
+    def voxels_size(self):
+        return self._voxels_size
+
+    @voxels_size.setter
+    def voxels_size(self, voxels_size):
+        self._voxels_size = voxels_size
+
+    @voxels_size.deleter
+    def voxels_size(self):
+        del self._voxels_size
+
+    # ==========================================================================
+    # Analysis Data
+    # ==========================================================================
 
     def bounding_box(self):
 
-        if len(self.voxels_position) == 0:
+        if len(self._voxels_position) == 0:
             raise ValueError("Empty list")
 
         x_min = float("inf")
@@ -39,7 +73,7 @@ class VoxelPointCloud(object):
         y_max = - float("inf")
         z_max = - float("inf")
 
-        for x, y, z in self.voxels_position:
+        for x, y, z in self._voxels_position:
             x_min = min(x_min, x)
             y_min = min(y_min, y)
             z_min = min(z_min, z)
@@ -55,10 +89,20 @@ class VoxelPointCloud(object):
         Compute the volume of the voxel point cloud
         """
 
-        return len(self.voxels_position) * self.voxels_size ** 3
+        return len(self._voxels_position) * self._voxels_size ** 3
+
+    def __len__(self):
+        return len(self._voxels_position)
 
     # ==========================================================================
-    # CONVERSION
+    # SHOW
+    # ==========================================================================
+
+    def show(self):
+        raise NotImplementedError
+
+    # ==========================================================================
+    # TRANSFORM
     # ==========================================================================
 
     def to_image_3d(self):
@@ -80,51 +124,6 @@ class VoxelPointCloud(object):
             image_3d[r[:, 0], r[:, 1], r[:, 2]] = 1
 
             return image_3d
-
-    @staticmethod
-    def from_image_3d(image_3d,
-                      voxels_value=1,
-                      voxels_size=None,
-                      world_coordinate=None):
-
-        xx, yy, zz = numpy.where(image_3d >= voxels_value)
-
-        if voxels_size is None:
-            voxels_size = image_3d.voxels_size
-
-        if world_coordinate is None:
-            world_coordinate = image_3d.world_coordinate
-
-        xxx = world_coordinate[0] + xx * voxels_size
-        yyy = world_coordinate[1] + yy * voxels_size
-        zzz = world_coordinate[2] + zz * voxels_size
-
-        voxels_position = zip(xxx, yyy, zzz)
-
-        return VoxelPointCloud(voxels_position, voxels_size)
-
-    @staticmethod
-    def from_numpy_image(image_3d, voxels_value, voxels_size, world_coordinate):
-
-        xx, yy, zz = numpy.where(image_3d >= voxels_value)
-
-        if voxels_size is None:
-            voxels_size = image_3d.voxels_size
-
-        if world_coordinate is None:
-            world_coordinate = image_3d.world_coordinate
-
-        xxx = world_coordinate[0] + xx * voxels_size
-        yyy = world_coordinate[1] + yy * voxels_size
-        zzz = world_coordinate[2] + zz * voxels_size
-
-        voxels_position = zip(xxx, yyy, zzz)
-
-        # voxels_position = list()
-        # for i in range(len(xxx)):
-        #     voxels_position.append((xxx[i], yyy[i], zzz[i]))
-
-        return VoxelPointCloud(voxels_position, voxels_size)
 
     # ==========================================================================
     # READ / WRITE
@@ -174,7 +173,7 @@ class VoxelPointCloud(object):
 
             data = dict()
             data['voxels_size'] = self.voxels_size
-            data['voxels_position'] = list(self.voxels_position)
+            data['voxels_position'] = list(map(tuple, self.voxels_position))
             json.dump(data, f)
 
     @staticmethod
@@ -184,7 +183,6 @@ class VoxelPointCloud(object):
             data = json.load(f)
             voxels_size = data['voxels_size']
             voxels_position = data['voxels_position']
-            voxels_position = map(tuple, voxels_position)
 
             return VoxelPointCloud(voxels_position, voxels_size)
 

@@ -1,3 +1,16 @@
+# -*- python -*-
+#
+#       Copyright 2015 INRIA - CIRAD - INRA
+#
+#       Distributed under the Cecill-C License.
+#       See accompanying file LICENSE.txt or copy at
+#           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
+#
+#       OpenAlea WebSite : http://openalea.gforge.inria.fr
+#
+# ==============================================================================
+
+
 def order_color_map():
     return [[0.99659628, 0.98889581, 0.16417371],
             [0.83230529, 0.00593472, 0.32600936],

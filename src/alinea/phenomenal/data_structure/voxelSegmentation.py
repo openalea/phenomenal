@@ -16,7 +16,7 @@ from alinea.phenomenal.data_structure import VoxelOrgan
 # ==============================================================================
 
 
-class VoxelMaizeSegmentation(object):
+class VoxelSegmentation(object):
 
     def __init__(self, voxels_size, ball_radius):
         self.voxel_organs = list()
@@ -25,9 +25,9 @@ class VoxelMaizeSegmentation(object):
         self.voxels_size = voxels_size
 
     def get_leaf_order(self, number):
-        for vs in self.voxel_segments:
-            if "order" in vs.info and vs.info["order"] == number:
-                return vs
+        for vo in self.voxel_organs:
+            if "order" in vo.info and vo.info["order"] == number:
+                return vo
         return None
 
     def swap_leaf_order(self, number_1, number_2):
@@ -103,8 +103,8 @@ class VoxelMaizeSegmentation(object):
         with open(filename, 'rb') as f:
             data = json.load(f)
 
-            vms = VoxelMaizeSegmentation(data['voxels_size'],
-                                         data['ball_radius'])
+            vms = VoxelSegmentation(data['voxels_size'],
+                                    data['ball_radius'])
 
             for dvo in data['voxel_organs']:
 
