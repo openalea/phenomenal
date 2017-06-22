@@ -18,7 +18,7 @@ from .algorithm import (merge,
 from alinea.phenomenal.data_structure import (
     VoxelSkeleton,
     VoxelOrgan,
-    VoxelMaizeSegmentation)
+    VoxelSegmentation)
 
 # ==============================================================================
 
@@ -241,7 +241,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
     # ==========================================================================
 
-    vms = VoxelMaizeSegmentation(voxels_size, voxel_skeleton.ball_radius)
+    vms = VoxelSegmentation(voxels_size, voxel_skeleton.ball_radius)
     vms.voxel_organs.append(organ_unknown)
 
     organ_stem = VoxelOrgan("stem")

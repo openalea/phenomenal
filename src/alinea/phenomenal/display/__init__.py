@@ -87,18 +87,16 @@ Multi_view_reconstruction
 from __future__ import division, print_function, absolute_import
 
 from .calibration import *
-from .center_axis import *
 from .image import *
 from .mesh import *
-from .octree import *
-from .old_segmentation_3d import *
 from .peak import *
-from .segmentation3d import *
-from .voxelPointCloud import *
-from .voxels import *
-from .voxelSkeleton import *
-from .colormap import *
+
 from .display_vtk import *
+from .display_voxel import *
+from .display_voxel_skeleton import *
+from .display_voxel_point_cloud import *
+from .display_voxel_segmentation import *
+
 # ==============================================================================
 
 __all__ = [s for s in dir() if not s.startswith('_')]

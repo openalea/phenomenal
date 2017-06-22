@@ -9,9 +9,13 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import os
 import numpy
 import cv2
+
+# from .voxelPointCloud import  VoxelPointCloud
 # ==============================================================================
 
 
@@ -43,6 +47,31 @@ class Image3D(numpy.ndarray):
 
         self.voxels_size = getattr(obj, 'voxels_size', 1)
         self.world_coordinate = getattr(obj, 'world_coordinate', (0, 0, 0))
+
+    # ==========================================================================
+    # TRANSFORM
+    # ==========================================================================
+
+    # def to_VoxelPointCloud(self,
+    #                        voxels_value=1,
+    #                        voxels_size=None,
+    #                        world_coordinate=None):
+    #
+    #     xx, yy, zz = numpy.where(self >= voxels_value)
+    #
+    #     if voxels_size is None:
+    #         voxels_size = self.voxels_size
+    #
+    #     if world_coordinate is None:
+    #         world_coordinate = self.world_coordinate
+    #
+    #     xxx = world_coordinate[0] + xx * voxels_size
+    #     yyy = world_coordinate[1] + yy * voxels_size
+    #     zzz = world_coordinate[2] + zz * voxels_size
+    #
+    #     voxels_position = zip(xxx, yyy, zzz)
+    #
+    #     return VoxelPointCloud(voxels_position, voxels_size)
 
     # ==========================================================================
     # READ / WRITE
@@ -80,6 +109,7 @@ class Image3D(numpy.ndarray):
         for i in range(zl):
             mat = self[:, :, i] * 255
             cv2.imwrite(folder_name + '%d.png' % i, mat)
+
     # ==========================================================================
     # CREATION ROUTINE
     # ==========================================================================

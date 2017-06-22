@@ -43,15 +43,15 @@ Routines
 
 from __future__ import division, print_function, absolute_import
 
+from .imageView import *
 from .image3d import *
 from .voxelOctree import *
-from .voxelSegment import *
 from .voxelPointCloud import *
+from .voxelSegment import *
 from .voxelGraph import *
 from .voxelSkeleton import *
-from .imageView import *
 from .voxelOrgan import *
-from .voxelMaize import *
+from .voxelSegmentation import *
 
 # ==============================================================================
 

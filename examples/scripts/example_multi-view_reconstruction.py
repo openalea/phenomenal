@@ -12,9 +12,10 @@
 import time
 
 from alinea.phenomenal.display import (
-    show_voxels)
+    DisplayVoxelPointCloud)
 
-from alinea.phenomenal.data_structure import (ImageView)
+from alinea.phenomenal.data_structure import (
+    ImageView)
 
 from alinea.phenomenal.multi_view_reconstruction import (
     reconstruction_3d)
@@ -50,20 +51,15 @@ if __name__ == '__main__':
     t0 = time.time()
     voxels_size = 8
     error_tolerance = 1
-    voxels_position = reconstruction_3d(image_views,
-                                        voxels_size=voxels_size,
-                                        error_tolerance=error_tolerance,
-                                        verbose=True)
+    vpc = reconstruction_3d(image_views,
+                            voxels_size=voxels_size,
+                            error_tolerance=error_tolerance,
+                            verbose=True)
 
     print("Number of voxel : {number_voxel}".format(
-        number_voxel=len(voxels_position)))
+        number_voxel=len(vpc)))
     print(time.time() - t0)
 
     # Viewing
-    show_voxels(voxels_position, voxels_size,
-                # size=(5000, 5000),
-                color=(0.1, 0.9, 0.1),
-                azimuth=310,
-                distance=3000,
-                elevation=90,
-                focalpoint=(0, 0, 0))
+    dvpc = DisplayVoxelPointCloud()
+    dvpc.show(vpc, color=(0.1, 0.9, 0.1))

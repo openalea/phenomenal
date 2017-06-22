@@ -11,6 +11,8 @@
 # ==============================================================================
 from __future__ import division, print_function
 
+from alinea.phenomenal.data_structure.voxelPointCloud import VoxelPointCloud
+
 import scipy.spatial
 import collections
 import math
@@ -602,6 +604,7 @@ def reconstruction_3d(image_views,
 
     Parameters
     ----------
+    
     images_projections : [(image, projection), ...]
         List of tuple (image, projection) where image is a binary image
         (numpy.ndarray) and function projection (function (x, y, z) -> (x, y))
@@ -673,7 +676,7 @@ def reconstruction_3d(image_views,
         voxels_position = check_groups(
             voxels_position, no_kept,  groups)
 
-    return voxels_position
+    return VoxelPointCloud(voxels_position, voxels_size)
 
 # ==============================================================================
 
@@ -781,23 +784,3 @@ def compute_reconstruction_error(voxels_position,
         voxels_position, voxels_size, img_ref.shape, projection)
 
     return compute_image_error(img_ref, img_src)
-
-
-def volume(voxels_center, voxels_size):
-    """
-    Compute the volume of voxel list.
-
-    Parameters
-    ----------
-    voxels_center : [(x, y, z)]
-        cList (collections.deque) of center position of voxel
-
-    voxels_size : float
-        Size of side geometry of voxel
-
-    Returns
-    -------
-    out : int
-        Error value
-    """
-    return len(voxels_center) * voxels_size ** 3
