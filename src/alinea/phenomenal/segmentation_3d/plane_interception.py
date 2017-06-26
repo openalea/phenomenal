@@ -109,8 +109,8 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
     closest_nodes = list()
     length_path = len(path)
 
-    # radius_dist = 100
-    b = False
+    # radius_dist = 200
+    # b = False
     for i in range(length_path):
         node = tuple(path[i])
 
@@ -143,8 +143,8 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
         #     if distance == 0:
         #         radius_dist = 100
         #     else:
-        #         radius_dist = min(distance * 1.5, 100)
-        #
+        #         radius_dist = min(distance * 1.5, 200)
+
 
         nodes = get_node_close_to_planes(voxels, node, plane,
                                          dist=dist,
@@ -155,13 +155,13 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
 
         closest_nodes.append(nodes)
 
-        if b is True:
-            import alinea.phenomenal.display
-
-            alinea.phenomenal.display.show_list_voxels(
-                [voxels, nodes, path],
-                [voxels_size * 0.75, voxels_size * 0.75, voxels_size * 0.75],
-                [(0, 0, 0), (0, 0, 1), (1, 0, 0)])
+        # if b is True:
+        #     import alinea.phenomenal.display
+        #
+        #     alinea.phenomenal.display.show_list_voxels(
+        #         [voxels, nodes, path],
+        #         [voxels_size * 0.75, voxels_size * 0.75, voxels_size * 0.75],
+        #         [(0, 0, 0), (0, 0, 1), (1, 0, 0)])
 
 
     return closest_nodes

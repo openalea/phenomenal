@@ -125,6 +125,29 @@ class VoxelPointCloud(object):
 
             return image_3d
 
+
+    @staticmethod
+    def from_image_3d(image_3d, voxels_value=1,
+                      voxels_size=None,
+                      world_coordinate=None):
+
+        xx, yy, zz = numpy.where(image_3d >= voxels_value)
+
+        if voxels_size is None:
+            voxels_size = image_3d.voxels_size
+
+        if world_coordinate is None:
+            world_coordinate = image_3d.world_coordinate
+
+        xxx = world_coordinate[0] + xx * voxels_size
+        yyy = world_coordinate[1] + yy * voxels_size
+        zzz = world_coordinate[2] + zz * voxels_size
+
+        voxels_position = zip(xxx, yyy, zzz)
+
+        return VoxelPointCloud(voxels_position, voxels_size)
+
+
     # ==========================================================================
     # READ / WRITE
     # ==========================================================================

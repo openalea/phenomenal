@@ -13,7 +13,6 @@ import random
 import mayavi.mlab
 import numpy
 
-from alinea.phenomenal.display.center_axis import plot_center_axis
 # ==============================================================================
 
 __all__ = ["show_octree",

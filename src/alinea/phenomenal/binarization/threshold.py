@@ -18,8 +18,8 @@ import numpy
 # ==============================================================================
 
 __all__ = ["threshold_meanshift",
-           "threshold_hsv",
-           "threshold_meanshift_enhance"]
+           "threshold_meanshift_enhance",
+           "threshold_hsv"]
 
 # ==============================================================================
 

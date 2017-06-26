@@ -9,8 +9,9 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import ast
 import os
-import json
+import gzip
 
 from alinea.phenomenal.data_structure import VoxelOrgan
 # ==============================================================================
@@ -19,8 +20,8 @@ from alinea.phenomenal.data_structure import VoxelOrgan
 class VoxelSegmentation(object):
 
     def __init__(self, voxels_size, ball_radius):
-        self.voxel_organs = list()
 
+        self.voxel_organs = list()
         self.ball_radius = ball_radius
         self.voxels_size = voxels_size
 
@@ -67,12 +68,14 @@ class VoxelSegmentation(object):
     # READ / WRITE
     # ==========================================================================
 
-    def write_to_json(self, filename):
+    def write_to_json_gz(self, file_prefix):
+
+        filename = file_prefix + ".json.gz"
         if (os.path.dirname(filename) and not os.path.exists(
                 os.path.dirname(filename))):
             os.makedirs(os.path.dirname(filename))
 
-        with open(filename, 'wb') as f:
+        with gzip.open(filename, 'wb') as f:
 
             data = dict()
             data['ball_radius'] = self.ball_radius
@@ -95,13 +98,16 @@ class VoxelSegmentation(object):
 
                 data['voxel_organs'].append(dvo)
 
-            json.dump(data, f)
+            f.write(str(data))
 
     @staticmethod
-    def read_from_json(filename):
+    def read_from_json_gz(file_prefix):
 
-        with open(filename, 'rb') as f:
-            data = json.load(f)
+        filename = file_prefix + ".json.gz"
+
+        with gzip.open(filename, 'rb') as f:
+
+            data = ast.literal_eval(f.read())
 
             vms = VoxelSegmentation(data['voxels_size'],
                                     data['ball_radius'])
@@ -120,3 +126,33 @@ class VoxelSegmentation(object):
                 vms.voxel_organs.append(vo)
 
         return vms
+
+    # def write_to_hdf5(self, file_prefix):
+    #
+    #     filename = file_prefix + '.hdf5'
+    #     if (os.path.dirname(filename) and not os.path.exists(
+    #             os.path.dirname(filename))):
+    #         os.makedirs(os.path.dirname(filename))
+    #
+    #     f = h5py.File(filename, "w")
+    #
+    #     f.attrs['ball_radius'] = self.ball_radius
+    #     f.attrs['voxels_size'] = self.voxels_size
+    #     grp_voxel_organs = f.create_group("voxel_organs")
+    #
+    #     for i, vo in enumerate(self.voxel_organs):
+    #         grp_vo = grp_voxel_organs.create_group("voxel_organ_{}".format(i))
+    #         grp_vo.attrs['label'] = vo.label
+    #
+    #         grp_vo_info = grp_vo.create_group('info')
+    #         grp_vo_info.attrs.update(vo.info)
+    #
+    #         grp_segments = grp_vo.create_group('voxel_segments')
+    #         for j, vs in enumerate(vo.voxel_segments):
+    #             grp_vs = grp_segments.create_group("voxel_segment_{}".format(j))
+    #
+    #             tmp = numpy.array(list(vs.polyline))
+    #             grp_vs.create_dataset('polyline', tmp.shape, tmp.dtype, tmp)
+    #             tmp = numpy.array(list(vs.voxels_position))
+    #             grp_vs.create_dataset('voxel_position', tmp.shape, tmp.dtype, tmp)
+    #
