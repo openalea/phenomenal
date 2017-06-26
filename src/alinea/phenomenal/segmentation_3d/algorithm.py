@@ -163,8 +163,6 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     arr_stem_centred_path_min_peak = numpy.array(
         stem_centred_path_min_peak).transpose()
 
-    print len(min_peaks_stem), len(stem_centred_path_min_peak)
-
     k = 2
     if len(stem_centred_path_min_peak) <= k:
         k = 1
