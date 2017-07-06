@@ -13,6 +13,7 @@
 Formats module to read/write image
 """
 # ==============================================================================
+import os
 import cv2
 # ==============================================================================
 
@@ -21,9 +22,14 @@ __all__ = ["read_image", "write_image"]
 # ==============================================================================
 
 
-def read_image(file_name, cv2_flag=cv2.IMREAD_UNCHANGED):
-    return cv2.imread(file_name, flags=cv2_flag)
+def read_image(filename, flags=cv2.IMREAD_UNCHANGED):
+    return cv2.imread(filename, flags=flags)
 
 
-def write_image(image, file_name):
-    cv2.imwrite(file_name, image)
+def write_image(filename, image):
+
+    if (os.path.dirname(filename) and not os.path.exists(
+            os.path.dirname(filename))):
+        os.makedirs(os.path.dirname(filename))
+
+    cv2.imwrite(filename, image)

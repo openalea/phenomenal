@@ -12,6 +12,7 @@
 import ast
 import os
 import gzip
+import json
 
 from alinea.phenomenal.data_structure import VoxelOrgan
 # ==============================================================================
@@ -22,8 +23,8 @@ class VoxelSegmentation(object):
     def __init__(self, voxels_size, ball_radius):
 
         self.voxel_organs = list()
-        self.ball_radius = ball_radius
         self.voxels_size = voxels_size
+        self.ball_radius = ball_radius
 
     def get_leaf_order(self, number):
         for vo in self.voxel_organs:
@@ -127,7 +128,29 @@ class VoxelSegmentation(object):
 
         return vms
 
-    # def write_to_hdf5(self, file_prefix):
+    @staticmethod
+    def read_from_json_gz_info(file_prefix):
+
+        filename = file_prefix + ".json.gz"
+
+        with gzip.open(filename, 'rb') as f:
+
+            data = ast.literal_eval(f.read())
+
+            vms = VoxelSegmentation(int(data['voxels_size']),
+                                    int(data['ball_radius']))
+
+            for dvo in data['voxel_organs']:
+
+                vo = VoxelOrgan(dvo['label'])
+                vo.info = dvo['info']
+                vms.voxel_organs.append(vo)
+
+        return vms
+
+
+
+            # def write_to_hdf5(self, file_prefix):
     #
     #     filename = file_prefix + '.hdf5'
     #     if (os.path.dirname(filename) and not os.path.exists(

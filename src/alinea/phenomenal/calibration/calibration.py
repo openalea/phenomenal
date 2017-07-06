@@ -27,7 +27,8 @@ from alinea.phenomenal.calibration.transformations import (
 __all__ = ["CalibrationCamera",
            "CalibrationCameraTop",
            "CalibrationCameraSideWith1Target",
-           "CalibrationCameraSideWith2Target"]
+           "CalibrationCameraSideWith2Target",
+           "CalibrationCameraSideWith2TargetYXZ"]
 
 # ==============================================================================
 
@@ -1209,6 +1210,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         self._ref_target_2_points_2d = None
 
         self._cam_pos_z = 0.0
+
         self._cam_rot_y = 0.0
         self._cam_origin_axis = numpy.array([[0., 0., 1., 0.],
                                              [1., 0., 0., 0.],
@@ -1622,7 +1624,6 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
 
         self._cam_pos_z = 0.0
 
-        self._cam_rot_z = 0.0
         self._cam_rot_y = 0.0
         self._cam_origin_axis = numpy.array([[1., 0., 0., 0.],
                                              [0., 0., -1., 0.],
