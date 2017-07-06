@@ -19,9 +19,31 @@ import numpy
 from .threshold import threshold_hsv, threshold_meanshift
 # ==============================================================================
 
-__all__ = ["mean_image"]
+__all__ = ["mean_image", "meanshift_hsv"]
 
 # ==============================================================================
+
+
+def meanshift_hsv(image,
+                  mean_image,
+                  threshold=0.3,
+                  dark_background=False,
+                  hsv_min=(30, 25, 0),
+                  hsv_max=(150, 254, 165),
+                  mask_mean_shift=None,
+                  mask_hsv=None):
+
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    binary_hsv_image = threshold_hsv(hsv_image, hsv_min, hsv_max, mask_hsv)
+
+    binary_mean_shift_image = threshold_meanshift(
+        image, mean_image, threshold, dark_background, mask_mean_shift)
+
+    result = cv2.add(binary_hsv_image, binary_mean_shift_image)
+
+    result = cv2.medianBlur(result, 3)
+
+    return result
 
 
 def mean_image(images):

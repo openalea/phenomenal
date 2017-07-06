@@ -47,13 +47,19 @@ def plant_1_images():
         alinea.phenomenal)
 
     data_directory = pkg_resources.resource_filename(
-        'alinea.phenomenal', 'share/data/plant_1/images/')
+        'alinea.phenomenal', 'data/plant_1/images/')
 
     import pkgutil
-    data = pkgutil.get_data('alinea.phenomenal', 'share/data/plant_1/images/')
+    data = pkgutil.get_data('alinea.phenomenal',
+                            'share/data/plant_1/images/*.png')
+
+    print data
 
     # data_directory = shared_directory + ''
+    print data_directory + '*.png'
     files_path = glob.glob(data_directory + '*.png')
+    print files_path
+
 
     images = collections.defaultdict(lambda: collections.defaultdict())
 

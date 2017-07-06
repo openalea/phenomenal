@@ -19,53 +19,38 @@
 from setuptools import setup, find_packages
 # ==============================================================================
 
-# Packages list, namespace and root directory of packages
-
-pkg_root_dir = 'src'
-namespace = "alinea"
-
-packages = [package for package in find_packages(pkg_root_dir)]
-top_packages = [package for package in packages if len(package.split('.')) < 2]
-
-package_dir = dict()
-package_dir[''] = pkg_root_dir
-
-for package in top_packages:
-    package_dir[namespace + "." + package] = pkg_root_dir + "/" + package
 
 setup(
     name="phenomenal",
     version="1.4.0",
     description="",
     long_description="",
-    author="",
+
+    author="* Simon Artzet\n"
+           "* Christian Fournier\n"
+           "* Mielewczik Michael\n"
+           "* Brichet Nicolas\n"
+           "* Chopard Jerome\n"
+           "* Christophe Pradal\n",
+
     author_email="",
-    url="http://openalea.gforge.inria.fr",
+    maintainer="Simon Artzet",
+    maintainer_email="simon.artzet@gmail.com",
+
+    url="https://gitlab.inria.fr/phenome/phenomenal",
     license="Cecill-C",
     keywords='',
 
     # package installation
-    packages=packages,
-    package_dir=package_dir,
+    packages=find_packages('src'),
+    package_dir={'alinea': 'src/alinea'},
     zip_safe=False,
 
     # Dependencies
     setup_requires=[],
     install_requires=[],
-    dependency_links=['http://openalea.gforge.inria.fr/pi'],
+    dependency_links=[''],
 
-    # # Eventually include data in your package
-    # # (flowing is to include all versioned files other than .py)
-    #include_package_data=True,
-
-    package_data={'data': ['*']},
-    # share_dirs={'share': './share'},
-    # postinstall_scripts = ['',],
-
-    # Declare scripts and wralea as entry_points (extensions) of your package
-    entry_points={
-        'wralea': ['phenomenal = alinea.phenomenal_wralea'],
-        'openalea.image': ['AlineaPhenomenalBinarizationPlugin =  alinea.phenomenal.plugin.binarization'],},
-    )
+    package_data={'alinea.phenomenal': ['data/*']})
 
 
