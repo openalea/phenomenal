@@ -43,14 +43,11 @@ setup(
 
     # package installation
     packages=find_packages('src'),
-    package_dir={'alinea': 'src/alinea'},
+    package_dir={'': 'src'},
     zip_safe=False,
 
-    # Dependencies
-    setup_requires=[],
-    install_requires=[],
-    dependency_links=[''],
-
-    package_data={'alinea.phenomenal': ['data/*']})
+    # See MANIFEST.in
+    include_package_data=True,
+    )
 
 
