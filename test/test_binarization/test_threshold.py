@@ -9,16 +9,201 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import numpy
 import os
+import numpy
 import cv2
 
-from alinea.phenomenal.binarization.threshold import threshold_meanshift
-from alinea.phenomenal.binarization.routines import mean_image
+from alinea.phenomenal.binarization import (
+    threshold_hsv,
+    threshold_meanshift,
+    mean_image)
+
+# ==============================================================================
+# THRESHOLD HSV TEST
 # ==============================================================================
 
 
-def test_wrong_parameters_1():
+def test_threshold_hsv_wrong_parameters_1():
+
+    image = None
+    hsv_min = (42, 75, 28)
+    hsv_max = (80, 250, 134)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == TypeError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_2():
+
+    image = numpy.zeros((25, 25), dtype=numpy.uint8)
+    hsv_min = (42, 75, 28)
+    hsv_max = (80, 250, 134)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == ValueError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_3():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = None
+    hsv_max = (80, 250, 134)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == TypeError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_4():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = (80, 250, 1, 1)
+    hsv_max = (80, 250, 134)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == ValueError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_5():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = (80.6, 250.0, 56.9)
+    hsv_max = (80, 250, 134)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == ValueError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_6():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = (42, 75, 28)
+    hsv_max = None
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == TypeError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_7():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = (42, 75, 28)
+    hsv_max = (80, 250)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == ValueError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_8():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = (42, 75, 28)
+    hsv_max = (80, 250, 134.2)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == ValueError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_9():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = (42, 75, 28)
+    hsv_max = (80, 250, 134)
+    mask = 42
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == TypeError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_10():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = (42, 75, 28)
+    hsv_max = (80, 250, 134)
+    mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == ValueError
+    else:
+        assert False
+
+
+def test_threshold_hsv_wrong_parameters_13():
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = (42, 75, 28)
+    hsv_max = (80, 250, 134)
+    mask = numpy.zeros((25, 26), dtype=numpy.uint8)
+
+    try:
+        threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+    except Exception, e:
+        assert type(e) == ValueError
+    else:
+        assert False
+
+
+def test_threshold_hsv_1():
+
+    image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    hsv_min = (42, 75, 28)
+    hsv_max = (80, 250, 134)
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+
+    img_bin = threshold_hsv(image, hsv_min, hsv_max, mask=mask)
+
+    assert img_bin.ndim == 2
+    assert numpy.count_nonzero(img_bin) == 0
+
+
+# ==============================================================================
+
+
+def test_threshold_meanshift_wrong_parameters_1():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         threshold_meanshift(None, mean_image)
@@ -29,7 +214,7 @@ def test_wrong_parameters_1():
         assert False
 
 
-def test_wrong_parameters_2():
+def test_threshold_meanshift_wrong_parameters_2():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         threshold_meanshift(image, None)
@@ -40,7 +225,7 @@ def test_wrong_parameters_2():
         assert False
 
 
-def test_wrong_parameters_3():
+def test_threshold_meanshift_wrong_parameters_3():
 
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
@@ -54,7 +239,7 @@ def test_wrong_parameters_3():
         assert False
 
 
-def test_wrong_parameters_4():
+def test_threshold_meanshift_wrong_parameters_4():
 
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
@@ -68,7 +253,7 @@ def test_wrong_parameters_4():
         assert False
 
 
-def test_wrong_parameters_5():
+def test_threshold_meanshift_wrong_parameters_5():
 
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25), dtype=numpy.uint8)
@@ -82,7 +267,7 @@ def test_wrong_parameters_5():
         assert False
 
 
-def test_wrong_parameters_6():
+def test_threshold_meanshift_wrong_parameters_6():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((10, 10, 3), dtype=numpy.uint8)
 
@@ -95,7 +280,7 @@ def test_wrong_parameters_6():
         assert False
 
 
-def test_wrong_parameters_7():
+def test_threshold_meanshift_wrong_parameters_7():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25), dtype=numpy.uint8)
 
@@ -108,7 +293,7 @@ def test_wrong_parameters_7():
         assert False
 
 
-def test_wrong_parameters_8():
+def test_threshold_meanshift_wrong_parameters_8():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
@@ -120,7 +305,7 @@ def test_wrong_parameters_8():
         assert False
 
 
-def test_wrong_parameters_9():
+def test_threshold_meanshift_wrong_parameters_9():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
@@ -132,7 +317,7 @@ def test_wrong_parameters_9():
         assert False
 
 
-def test_wrong_parameters_10():
+def test_threshold_meanshift_wrong_parameters_10():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mask = [[1, 1, 1]]
@@ -145,7 +330,7 @@ def test_wrong_parameters_10():
         assert False
 
 
-def test_wrong_parameters_11():
+def test_threshold_meanshift_wrong_parameters_11():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
@@ -158,7 +343,7 @@ def test_wrong_parameters_11():
         assert False
 
 
-def test_wrong_parameters_12():
+def test_threshold_meanshift_wrong_parameters_12():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     mask = numpy.zeros((25, 26), dtype=numpy.uint8)
@@ -171,7 +356,7 @@ def test_wrong_parameters_12():
         assert False
 
 
-def test_simply_working_1():
+def test_threshold_meanshift_1():
 
     im1 = numpy.zeros((25, 25, 3), numpy.uint8)
     im2 = numpy.zeros((25, 25, 3), numpy.uint8)
@@ -183,7 +368,7 @@ def test_simply_working_1():
     assert bin_img.shape == (25, 25)
 
 
-def test_simply_working_2():
+def test_threshold_meanshift_2():
     im1 = numpy.zeros((25, 25, 3), numpy.uint8)
     im2 = numpy.zeros((25, 25, 3), numpy.uint8)
     mask = numpy.zeros((25, 25), numpy.uint8)
@@ -194,7 +379,7 @@ def test_simply_working_2():
     assert bin_img.shape == (25, 25)
 
 
-def test_simply_working_3():
+def test_threshold_meanshift_3():
     im1 = numpy.zeros((25, 25, 3), numpy.uint8)
     im2 = numpy.zeros((25, 25, 3), numpy.uint8)
     mask = numpy.zeros((25, 25), numpy.uint8)
@@ -205,7 +390,7 @@ def test_simply_working_3():
     assert bin_img.shape == (25, 25)
 
 
-def test_simply_working_4():
+def test_threshold_meanshift_4():
     im1 = numpy.zeros((25, 25, 3), numpy.uint8)
     im2 = numpy.zeros((25, 25, 3), numpy.uint8)
     mask = numpy.zeros((25, 25), numpy.uint8)
@@ -216,7 +401,7 @@ def test_simply_working_4():
     assert bin_img.shape == (25, 25)
 
 
-def test_no_regression_1():
+def test_threshold_meanshift_no_regression_1():
 
     images = dict()
     for angle in range(0, 360, 30):
