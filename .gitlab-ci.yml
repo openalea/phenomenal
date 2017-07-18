@@ -15,6 +15,9 @@ after_script:
 
 build_conda_phenome_env:
  stage: build
+ cache:
+  key: "$CI_JOB_NAME"
+  paths: /
  script:
    - conda create --name phenome python --yes
    - source activate phenome
@@ -37,6 +40,7 @@ build_conda_phenome_env:
 test_phenome:
  stage: test
  script:
+   - conda info --envs
    - source activate phenome
    - nosetests test
    - source deactivate
