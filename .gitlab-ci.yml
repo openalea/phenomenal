@@ -31,7 +31,7 @@ build_conda_phenome_env:
    - conda install coverage --yes
    - conda install matplotlib --yes
 
-   - python setup.py develop --prefix
+   - python setup.py develop --prefix=$CONDA_PREFIX
    - source deactivate
 
 test_phenome:
@@ -40,7 +40,7 @@ test_phenome:
    - source activate phenome
    - nosetests test
    - source deactivate
-   
+
 deploy_1:
  stage: deploy
  script:
