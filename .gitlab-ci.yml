@@ -2,7 +2,7 @@
 # see https://docs.gitlab.com/ce/ci/yaml/README.html for all available options
 
 # you can delete this line if you're not using Docker
-image: busybox:latest
+image: continuumio/miniconda:latest
 
 before_script:
    - echo "Before script section"
@@ -13,21 +13,34 @@ after_script:
   - echo "After script section"
   - echo "For example you might do some cleanup here"
 
-build_1:
+build_conda_phenome_env:
  stage: build
  script:
-   - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
-   - chmod +x Miniconda2-latest-Linux-x86_64.sh
-   - ./Miniconda2-latest-Linux-x86_64.sh -b
-   - conda create --name phenome python
+   - conda create --name phenome python --yes
    - source activate phenome
-   - conda install opencv
+   - echo "Dependency"
+   - conda install numpy --yes
+   - conda install opencv --yes
+   - conda install scipy --yes
+   - conda install scikit-learn --yes
+   - conda install networkx --yes
+   - conda install vtk --yes
+   - echo "Optional dependency"
+   - conda install jupyter --yes
+   - conda install nose --yes
+   - conda install coverage --yes
+   - conda install matplotlib --yes
 
-test_1:
+   - python setup.py develop --prefix
+   - source deactivate
+
+test_phenome:
  stage: test
  script:
-   - echo "nosetests"
-
+   - source activate phenome
+   - nosetests test
+   - source deactivate
+   
 deploy_1:
  stage: deploy
  script:
