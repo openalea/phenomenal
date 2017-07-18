@@ -13,11 +13,8 @@ after_script:
   - echo "After script section"
   - echo "For example you might do some cleanup here"
 
-build_conda_phenome_env:
+build_develop:
  stage: build
- cache:
-  paths:
-   - /
  script:
    - conda create --name phenome python --yes
    - source activate phenome
@@ -35,20 +32,29 @@ build_conda_phenome_env:
    - conda install matplotlib --yes
 
    - python setup.py develop --prefix=$CONDA_PREFIX
-   - source deactivate
-
-test_phenome:
- stage: test
- cache:
-  paths:
-   - /
- script:
-   - conda info --envs
-   - source activate phenome
    - nosetests test
    - source deactivate
 
-deploy_1:
- stage: deploy
+build_install:
+ stage: build
  script:
-   - echo "Do your deploy here"
+   - conda create --name phenome python --yes
+   - source activate phenome
+   - echo "Dependency"
+   - conda install numpy --yes
+   - conda install opencv --yes
+   - conda install scipy --yes
+   - conda install scikit-learn --yes
+   - conda install networkx --yes
+   - conda install vtk --yes
+   - echo "Optional dependency"
+   - conda install jupyter --yes
+   - conda install nose --yes
+   - conda install coverage --yes
+   - conda install matplotlib --yes
+   - conda install sphinx --yes
+   - conda install pandoc --yes
+
+   - python setup.py install --prefix=$CONDA_PREFIX
+   - nosetests test
+   - source deactivate
