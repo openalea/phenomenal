@@ -15,9 +15,6 @@ import os
 import collections
 import pkg_resources
 
-import openalea.deploy.shared_data
-import alinea.phenomenal
-
 from alinea.phenomenal.calibration import (
     Chessboard)
 
@@ -43,23 +40,13 @@ __all__ = ["plant_1_images",
 
 def plant_1_images():
 
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
-
     data_directory = pkg_resources.resource_filename(
         'alinea.phenomenal', 'data/plant_1/images/')
 
-    import pkgutil
-    data = pkgutil.get_data('alinea.phenomenal',
-                            'share/data/plant_1/images/*.png')
+    # data = pkgutil.get_data('alinea.phenomenal',
+    #                         'share/data/plant_1/images/*.png')
 
-    print data
-
-    # data_directory = shared_directory + ''
-    print data_directory + '*.png'
     files_path = glob.glob(data_directory + '*.png')
-    print files_path
-
 
     images = collections.defaultdict(lambda: collections.defaultdict())
 
@@ -74,10 +61,9 @@ def plant_1_images():
 
 
 def plant_1_images_chessboard():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
+    data_directory = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/images_chessboard/')
 
-    data_directory = shared_directory + '/plant_1/images_chessboard/'
     files_path = glob.glob(data_directory + '*.png')
     files_name = [os.path.basename(path) for path in files_path]
 
@@ -92,10 +78,10 @@ def plant_1_images_chessboard():
 
 
 def plant_1_images_binarize():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    data_directory = shared_directory + '/plant_1/images_binarize/'
+    data_directory = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/images_binarize/')
+
     files_path = glob.glob(data_directory + '*.png')
     files_name = [os.path.basename(path) for path in files_path]
 
@@ -109,10 +95,9 @@ def plant_1_images_binarize():
 
 
 def plant_1_mask_meanshift():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/mask_mean_shift.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/mask_mean_shift.png')
 
     mask_mean_shift = cv2.imread(file_path, flags=cv2.IMREAD_UNCHANGED)
 
@@ -120,10 +105,9 @@ def plant_1_mask_meanshift():
 
 
 def plant_1_mask_hsv():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/mask_hsv.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/mask_hsv.png')
 
     mask_hsv = cv2.imread(file_path, flags=cv2.IMREAD_UNCHANGED)
 
@@ -131,10 +115,9 @@ def plant_1_mask_hsv():
 
 
 def plant_1_mask_clean_noise():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/mask_clean_noise.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/mask_clean_noise.png')
 
     mask_clean_noise = cv2.imread(file_path, flags=cv2.IMREAD_UNCHANGED)
 
@@ -142,10 +125,9 @@ def plant_1_mask_clean_noise():
 
 
 def plant_1_mask_adaptive_threshold():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/mask_adaptive_threshold.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/mask_adaptive_threshold.png')
 
     mask_adaptive_threshold = cv2.imread(file_path, flags=cv2.IMREAD_UNCHANGED)
 
@@ -153,10 +135,9 @@ def plant_1_mask_adaptive_threshold():
 
 
 def plant_1_mask_elcom_mean_shift():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/mask_elcom_mean_shift.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/mask_elcom_mean_shift.png')
 
     mask_elcom_mean_shift = cv2.imread(file_path, flags=cv2.IMREAD_UNCHANGED)
 
@@ -164,10 +145,9 @@ def plant_1_mask_elcom_mean_shift():
 
 
 def plant_1_mask_elcom_hsv():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/mask_elcom_hsv.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/mask_elcom_hsv.png')
 
     mask_elcom_hsv = cv2.imread(file_path, flags=cv2.IMREAD_UNCHANGED)
 
@@ -175,10 +155,9 @@ def plant_1_mask_elcom_hsv():
 
 
 def plant_1_mask_hsv_roi_main():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/mask_hsv_roi_main.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/mask_hsv_roi_main.png')
 
     mask_hsv_roi_main = cv2.imread(file_path, flags=cv2.IMREAD_GRAYSCALE)
 
@@ -186,10 +165,9 @@ def plant_1_mask_hsv_roi_main():
 
 
 def plant_1_mask_hsv_roi_band():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/mask_hsv_roi_band.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/mask_hsv_roi_band.png')
 
     mask_hsv_roi_band = cv2.imread(file_path, flags=cv2.IMREAD_GRAYSCALE)
 
@@ -197,10 +175,9 @@ def plant_1_mask_hsv_roi_band():
 
 
 def plant_1_mask_hsv_roi_pot():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/mask_hsv_roi_pot.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/mask_hsv_roi_pot.png')
 
     mask_hsv_roi_pot = cv2.imread(file_path, flags=cv2.IMREAD_GRAYSCALE)
 
@@ -208,10 +185,9 @@ def plant_1_mask_hsv_roi_pot():
 
 
 def plant_1_background_hsv():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    file_path = shared_directory + '/plant_1/mask/background_hsv.png'
+    file_path = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data/plant_1/mask/background_hsv.png')
 
     background_hsv = cv2.imread(file_path, flags=cv2.IMREAD_COLOR)
 
@@ -220,10 +196,8 @@ def plant_1_background_hsv():
 
 def plant_1_chessboards():
 
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
-
-    data_directory = shared_directory + '/plant_1/'
+    data_directory = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data//plant_1/')
 
     chess_1 = Chessboard.load(
         data_directory + 'chessboard_2013-07-11_15-49-42_vis_wide_chess_1')
@@ -235,30 +209,28 @@ def plant_1_chessboards():
 
 
 def plant_1_calibration_camera_side():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    data_directory = shared_directory + '/plant_1/'
+    data_directory = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data//plant_1/')
+
     file_path = data_directory + 'calibration_camera_side'
 
     return CalibrationCameraSideWith2Target.load(file_path)
 
 
 def plant_1_calibration_camera_top():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    data_directory = shared_directory + '/plant_1/'
+    data_directory = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data//plant_1/')
+
     file_path = data_directory + 'calibration_camera_top'
 
     return CalibrationCameraTop.load(file_path)
 
 
 def plant_1_params_camera_opencv_path():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
-
-    data_directory = shared_directory + '/plant_1/'
+    data_directory = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data//plant_1/')
 
     params_camera_opencv_path = data_directory + 'params_camera_opencv'
 
@@ -266,10 +238,8 @@ def plant_1_params_camera_opencv_path():
 
 
 def plant_1_voxel_point_cloud(voxels_size=10):
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
-
-    data_directory = shared_directory + '/plant_1/'
+    data_directory = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data//plant_1/')
 
     if 3 <= int(voxels_size) <= 20:
 
@@ -283,11 +253,11 @@ def plant_1_voxel_point_cloud(voxels_size=10):
 
     return None
 
-def plant_2_voxel_point_cloud(voxels_size=10):
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    data_directory = shared_directory + '/plant_2/'
+def plant_2_voxel_point_cloud(voxels_size=10):
+
+    data_directory = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data//plant_2/')
 
     if 3 <= int(voxels_size) <= 20:
 
@@ -302,11 +272,12 @@ def plant_2_voxel_point_cloud(voxels_size=10):
 
     return None
 
-def plant_1_voxels_size_4_without_loss_120():
-    shared_directory = openalea.deploy.shared_data.shared_data(
-        alinea.phenomenal)
 
-    data_directory = shared_directory + '/plant_1/'
+def plant_1_voxels_size_4_without_loss_120():
+
+    data_directory = pkg_resources.resource_filename(
+        'alinea.phenomenal', 'data//plant_1/')
+
     filename = data_directory + "voxel_centers_size_4_without_loss.json"
 
     return VoxelPointCloud.read_from_json(filename)

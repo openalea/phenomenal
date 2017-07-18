@@ -65,9 +65,9 @@ def get_voxels_corners(voxels_position, voxels_size):
     return a
 
 
-def get_bounding_box_voxel_arr_projected(voxels_position,
-                                         voxels_size,
-                                         arr_projection):
+def get_bounding_box_voxel_projected(voxels_position,
+                                     voxels_size,
+                                     projection):
     """
     Compute the bounding box value according the radius, angle and calibration
     parameters of point_3d projection
@@ -92,43 +92,13 @@ def get_bounding_box_voxel_arr_projected(voxels_position,
 
     voxels_corners = get_voxels_corners(voxels_position, voxels_size)
 
-    pt = arr_projection(voxels_corners)
+    pt = projection(voxels_corners)
 
     pt = numpy.reshape(pt, (pt.shape[0] // 8, 8, 2))
 
     bbox = numpy.column_stack((pt.min(axis=1), pt.max(axis=1)))
 
     return bbox
-
-
-def get_bounding_box_voxel_projected(voxel_center, voxel_size, projection):
-    """
-    Compute the bounding box value according the radius, angle and calibration
-    parameters of point_3d projection
-
-    Parameters
-    ----------
-    voxel_center : (x, y, z)
-        Center position of voxel
-
-    voxel_size : float
-        Size of side geometry of voxel
-
-    projection : function ((x, y, z)) -> (x, y)
-        Function of projection who take 1 argument (tuple of position (x, y, z))
-         and return this position 2D (x, y)
-
-    Returns
-    -------
-    out : (x_min, x_max, y_min, y_max)
-        Containing min and max value of point_3d projection in x and y axes.
-    """
-
-    voxel_corners = get_voxel_corners(voxel_center, voxel_size)
-    pt_projected = [projection(voxel_corner) for voxel_corner in voxel_corners]
-    lx, ly = zip(*pt_projected)
-
-    return min(lx), max(lx), min(ly), max(ly)
 
 
 def get_voxel_corners(voxel_center, voxel_size):
@@ -304,7 +274,7 @@ def voxels_is_visible_in_image(voxels_position,
 
     # ==========================================================================
 
-    min_xy_max_xy = get_bounding_box_voxel_arr_projected(
+    min_xy_max_xy = get_bounding_box_voxel_projected(
         voxels_position, voxels_size, projection)
 
     vv = ((min_xy_max_xy[:, 2] < 0) | (min_xy_max_xy[:, 0] >= length) |
@@ -498,7 +468,7 @@ def create_groups(image_views, kept, no_kept, voxels_size):
 
             height, length = iv.image.shape
 
-            res = get_bounding_box_voxel_arr_projected(
+            res = get_bounding_box_voxel_projected(
                 no_kept, voxels_size, iv.projection)
 
             res = res[(res[:, 2] >= 0) & (res[:, 0] < length) &
@@ -684,7 +654,7 @@ def reconstruction_3d(image_views,
 def project_voxel_centers_on_image(voxels_position,
                                    voxels_size,
                                    shape_image,
-                                   arr_projection):
+                                   projection):
     """
     Create a image with same shape that shape_image and project each voxel on
     image and write positive value (255) on it.
@@ -714,8 +684,8 @@ def project_voxel_centers_on_image(voxels_position,
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=numpy.uint8)
 
-    res = get_bounding_box_voxel_arr_projected(
-        voxels_position, voxels_size, arr_projection)
+    res = get_bounding_box_voxel_projected(
+        voxels_position, voxels_size, projection)
 
     res = res[(res[:, 2] >= 0) & (res[:, 0] < length) &
               (res[:, 3] >= 0) & (res[:, 1] < height)]

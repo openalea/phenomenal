@@ -16,8 +16,12 @@ after_script:
 build_develop:
  stage: build
  script:
+   - apt-get update
+   - apt-get -y install freeglut3-dev
+
    - conda create --name phenome python --yes
    - source activate phenome
+
    - echo "Dependency"
    - conda install numpy --yes
    - conda install opencv --yes
@@ -25,6 +29,7 @@ build_develop:
    - conda install scikit-learn --yes
    - conda install networkx --yes
    - conda install vtk --yes
+
    - echo "Optional dependency"
    - conda install jupyter --yes
    - conda install nose --yes
@@ -38,8 +43,12 @@ build_develop:
 build_install:
  stage: build
  script:
+   - apt-get update
+   - apt-get -y install freeglut3-dev
+
    - conda create --name phenome python --yes
    - source activate phenome
+
    - echo "Dependency"
    - conda install numpy --yes
    - conda install opencv --yes
@@ -47,6 +56,7 @@ build_install:
    - conda install scikit-learn --yes
    - conda install networkx --yes
    - conda install vtk --yes
+
    - echo "Optional dependency"
    - conda install jupyter --yes
    - conda install nose --yes

@@ -9,25 +9,37 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import numpy
 import os
+import numpy
 
-from alinea.phenomenal.binarization.formats import write_image, read_image
+
+from alinea.phenomenal.binarization.formats import (
+    read_image, write_image)
+
 # ==============================================================================
 
 
 def test_simply_working_1():
 
+    file_name = os.path.dirname(__file__) + "/data/150.png"
+    im = read_image(file_name)
+
+    assert im.shape == (495, 415, 3)
+
+
+def test_write_image():
+
     im1 = numpy.zeros((400, 400))
     im1[10:-10, 10:-10] = 255
 
-    write_image(im1, "tmp.png")
+    write_image("tmp.png", im1)
     im2 = read_image("tmp.png")
 
     assert numpy.array_equal(im1, im2)
 
     # delete the tmp file
     os.remove("tmp.png")
+
 
 # ==============================================================================
 

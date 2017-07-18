@@ -179,28 +179,6 @@ class CalibrationCamera(object):
 
     def get_projection(self, alpha):
 
-        # return self.get_arr_projection(alpha)
-
-        fr_cam = self.get_camera_frame()
-
-        angle = math.radians(alpha * self._angle_factor)
-
-        def projection(pt):
-            # -pt[0] = x <=> For inverse X axis orientation
-            origin = [-pt[0] * math.cos(angle) - pt[1] * math.sin(angle),
-                      -pt[0] * math.sin(angle) + pt[1] * math.cos(angle),
-                      pt[2]]
-
-            return self.pixel_coordinates(fr_cam.local_point(origin),
-                                          self._cam_width_image,
-                                          self._cam_height_image,
-                                          self._cam_focal_length_x,
-                                          self._cam_focal_length_y)
-
-        return projection
-
-    def get_arr_projection(self, alpha):
-
         fr_cam = self.get_camera_frame()
 
         angle = math.radians(alpha * self._angle_factor)

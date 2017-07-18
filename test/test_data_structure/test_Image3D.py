@@ -17,9 +17,7 @@ from alinea.phenomenal.display import show_image
 
 def test_image3d():
     images = plant_1_images()
-    print images.keys()
-    print images['side'].keys()
-    show_image(images['side'][0])
+    # show_image(images['side'][0])
 
 
 # ==============================================================================
