@@ -9,6 +9,11 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import numpy
+
+from alinea.phenomenal.data_access.data_creation import (
+    build_cube)
+
 from alinea.phenomenal.data_access.plant_1 import (
     plant_1_calibration_camera_side,
     plant_1_images_binarize)
@@ -17,12 +22,137 @@ from alinea.phenomenal.data_structure import (
     ImageView)
 
 from alinea.phenomenal.multi_view_reconstruction import (
+    get_voxels_corners,
+    get_bounding_box_voxel_projected,
+    project_voxel_centers_on_image,
+    compute_reconstruction_error,
+    split_voxel_centers_in_eight,
     reconstruction_3d)
 
 # ==============================================================================
 
 
-def test_multi_view_reconstruction_reconstruction_3d():
+def test_split_voxel_centers_in_eight_1():
+
+    voxels_size = 16
+    voxels_position = numpy.array([[0.0, 0.0, 0.0]])
+
+    res = split_voxel_centers_in_eight(voxels_position, voxels_size)
+
+    ref = numpy.array([[-4., -4., -4.],
+                       [4., -4., -4.],
+                       [-4., 4., -4.],
+                       [-4., -4., 4.],
+                       [4., 4., -4.],
+                       [4., -4., 4.],
+                       [-4., 4., 4.],
+                       [4., 4., 4.]])
+
+    assert numpy.array_equal(ref, res)
+
+
+# ==============================================================================
+
+
+def test_get_voxels_corners():
+
+    voxels_position = numpy.array([[0.0, 0.0, 0.0],
+                                   [4.0, 4.0, 4.0]])
+    voxels_size = 16
+
+    res = get_voxels_corners(voxels_position, voxels_size / 2)
+    ref = numpy.array([[-4., - 4., - 4.],
+                        [4., -4., -4.],
+                        [-4., 4., -4.],
+                        [-4., -4., 4.],
+                        [4., 4., -4.],
+                        [4., -4., 4.],
+                        [-4., 4., 4.],
+                        [4., 4., 4.],
+                        [0., 0., 0.],
+                        [8., 0., 0.],
+                        [0., 8., 0.],
+                        [0., 0., 8.],
+                        [8., 8., 0.],
+                        [8., 0., 8.],
+                        [0., 8., 8.],
+                        [8., 8., 8.]])
+
+    assert numpy.array_equal(ref, res)
+
+# ==============================================================================
+
+
+def test_get_bounding_box_voxel_projected_1():
+
+    voxel_center = numpy.array([[0, 0, 0]])
+    voxel_size = 20
+
+    projection = lambda pt: numpy.column_stack((pt[:, 0], pt[:, 1]))
+
+    res = get_bounding_box_voxel_projected(voxel_center, voxel_size, projection)
+    ref = numpy.array([[-10, -10, 10, 10]])
+
+    assert numpy.allclose(ref, res)
+
+
+def test_get_bounding_box_voxel_projected_2():
+
+    angle = 0
+    calibration = plant_1_calibration_camera_side()
+    projection = calibration.get_projection(angle)
+
+    voxels_position = numpy.array([[0, 0, 0],
+                                   [0, 0, 0],
+                                   [0, 0, 0]])
+    voxels_size = 8
+
+    res = get_bounding_box_voxel_projected(voxels_position,
+                                           voxels_size,
+                                           projection)
+
+    ref = numpy.array([[1017.309, 1258.280, 1025.788, 1265.171],
+                       [1017.309, 1258.280, 1025.788, 1265.171],
+                       [1017.309, 1258.280, 1025.788, 1265.171]])
+
+    assert numpy.allclose(ref, res)
+
+# ==============================================================================
+
+
+def get_image_views_cube_projected():
+
+    # ==========================================================================
+    # Create object
+    voxels_size = 10
+    voxels_position = build_cube(cube_size=10,
+                                 voxels_size=voxels_size,
+                                 voxels_position=(0, 0, 0))
+
+    assert len(voxels_position) == 1000
+    volume = len(voxels_position) * (10**3)
+    assert volume == 1000000
+
+    # ==========================================================================
+    calibration = plant_1_calibration_camera_side()
+
+    shape_image = (2454, 2056)
+    image_views = list()
+    for angle in range(0, 360, 30):
+        projection = calibration.get_projection(angle)
+
+        img = project_voxel_centers_on_image(voxels_position,
+                                             voxels_size,
+                                             shape_image,
+                                             projection)
+
+        iv = ImageView(img, projection, inclusive=False)
+        image_views.append(iv)
+
+    return image_views
+
+
+def test_reconstruction_3d_1():
 
     # Load images binarize
     images = plant_1_images_binarize()
@@ -42,6 +172,30 @@ def test_multi_view_reconstruction_reconstruction_3d():
                                       verbose=True)
 
     assert len(voxel_centers) == 437
+
+
+def test_reconstruction_3d_2():
+
+    image_views = get_image_views_cube_projected()
+
+    # ==========================================================================
+
+    vpc = reconstruction_3d(image_views, voxels_size=20, verbose=True)
+
+    assert len(vpc.voxels_position) == 288
+    assert len(vpc.voxels_position) * vpc.voxels_size ** 3 == 2304000
+
+    for iv in image_views:
+
+        false_positive, true_negative = compute_reconstruction_error(
+            vpc.voxels_position,
+            vpc.voxels_size,
+            iv.image,
+            iv.projection)
+
+        assert false_positive < 70
+        assert true_negative == 0
+
 
 # ==============================================================================
 

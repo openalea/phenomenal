@@ -15,7 +15,7 @@ from alinea.phenomenal.binarization.routines import mean_image
 # ==============================================================================
 
 
-def test_wrong_parameters_1():
+def test_mean_image_wrong_parameters_1():
     try:
         mean_image(None)
     except Exception, e:
@@ -24,7 +24,7 @@ def test_wrong_parameters_1():
         assert False
 
 
-def test_wrong_parameters_2():
+def test_mean_image_wrong_parameters_2():
     try:
         mean_image(list())
     except Exception, e:
@@ -33,7 +33,7 @@ def test_wrong_parameters_2():
         assert False
 
 
-def test_wrong_parameters_3():
+def test_mean_image_wrong_parameters_3():
     try:
         mean_image([[]])
     except Exception, e:
@@ -42,7 +42,7 @@ def test_wrong_parameters_3():
         assert False
 
 
-def test_wrong_parameters_4():
+def test_mean_image_wrong_parameters_4():
     try:
         mean_image([[]])
     except Exception, e:
@@ -51,7 +51,7 @@ def test_wrong_parameters_4():
         assert False
 
 
-def test_wrong_parameters_5():
+def test_mean_image_wrong_parameters_5():
     try:
         image = numpy.zeros((25, 25, 3))
         mean_image(image)
@@ -61,7 +61,7 @@ def test_wrong_parameters_5():
         assert False
 
 
-def test_wrong_parameters_6():
+def test_mean_image_wrong_parameters_6():
     try:
         image = numpy.zeros((25, 25, 3))
         mean_image(image)
@@ -71,7 +71,7 @@ def test_wrong_parameters_6():
         assert False
 
 
-def test_wrong_parameters_7():
+def test_mean_image_wrong_parameters_7():
     images = list()
     images.append(numpy.ones((25, 25, 3)))
     images.append(numpy.zeros((15, 15, 3)))
@@ -84,7 +84,7 @@ def test_wrong_parameters_7():
         assert False
 
 
-def test_simply_working_1():
+def test_mean_image_1():
     images = list()
     for i in range(10):
         images.append(numpy.zeros((25, 25, 3)))
@@ -95,7 +95,7 @@ def test_simply_working_1():
     assert image.shape == (25, 25, 3)
 
 
-def test_simply_working_2():
+def test_mean_image_2():
     images = list()
     for i in range(10):
         images.append(numpy.ones((25, 25, 3)))
@@ -107,7 +107,7 @@ def test_simply_working_2():
     assert numpy.count_nonzero(image) == 25 * 25 * 3
 
 
-def test_simply_working_3():
+def test_mean_image_3():
     images = list()
     for i in range(0, 1):
         images.append(numpy.ones((25, 25, 3)))

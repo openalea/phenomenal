@@ -100,48 +100,6 @@ def get_bounding_box_voxel_projected(voxels_position,
 
     return bbox
 
-
-def get_voxel_corners(voxel_center, voxel_size):
-    """
-    According center voxel position and this size, return a list of 8 corners
-    of this voxel.
-
-    Parameters
-    ----------
-    voxel_center : (x, y, z)
-        Center position of voxel
-
-    voxel_size : float
-        Size of side geometry of voxel
-
-    Returns
-    -------
-    [(x, y, z), ...] : numpy.ndarray
-         List of 8 tuple position
-
-    """
-
-    r = voxel_size / 2.0
-
-    x_minus = voxel_center[0] - r
-    x_plus = voxel_center[0] + r
-
-    y_minus = voxel_center[1] - r
-    y_plus = voxel_center[1] + r
-
-    z_minus = voxel_center[2] - r
-    z_plus = voxel_center[2] + r
-
-    return [(x_minus, y_minus, z_minus),
-            (x_plus, y_minus, z_minus),
-            (x_minus, y_plus, z_minus),
-            (x_minus, y_minus, z_plus),
-            (x_plus, y_plus, z_minus),
-            (x_plus, y_minus, z_plus),
-            (x_minus, y_plus, z_plus),
-            (x_plus, y_plus, z_plus)]
-
-
 # ==============================================================================
 
 
