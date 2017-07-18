@@ -13,22 +13,23 @@ after_script:
   - echo "After script section"
   - echo "For example you might do some cleanup here"
 
-build1:
+stages:
+ - build
+
+build_1:
  stage: build
  script:
-   - echo "Do your build here"
+   - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+   - chmod +x Miniconda2-latest-Linux-x86_64.sh
+   - ./Miniconda2-latest-Linux-x86_64.sh -b
+   - conda create --name phenome python
+   - source activate phenome
+   - conda install opencv
 
 test1:
  stage: test
  script:
-   - echo "Do a test here"
-   - echo "For example run a test suite"
-
-test2:
- stage: test
- script:
-   - echo "Do another parallel test here"
-   - echo "For example run a lint test"
+   - echo "nosetests"
 
 deploy1:
  stage: deploy
