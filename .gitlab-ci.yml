@@ -69,7 +69,7 @@ build_install:
    - nosetests test
    - source deactivate
 
-build_develop:
+test_coverage:
  stage: coverage
 
  script:
