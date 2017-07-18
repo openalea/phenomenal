@@ -1,3 +1,7 @@
+[![build status](https://gitlab.inria.fr/phenome/phenomenal/badges/master/build.svg)](https://gitlab.inria.fr/phenome/phenomenal/commits/master)
+[![coverage report](https://gitlab.inria.fr/phenome/phenomenal/badges/master/coverage.svg)](https://gitlab.inria.fr/phenome/phenomenal/commits/master)
+
+
 ==========
 Phenomenal
 ==========
