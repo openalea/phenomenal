@@ -35,6 +35,7 @@ def test_multi_view_reconstruction_reconstruction_3d():
         image_views.append(iv)
 
     voxels_size = 64
+
     # Multi-view reconstruction
     voxel_centers = reconstruction_3d(image_views,
                                       voxels_size=voxels_size,

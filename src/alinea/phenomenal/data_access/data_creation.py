@@ -17,7 +17,7 @@ from alinea.phenomenal.data_structure import (
 
 # ==============================================================================
 
-__all__ = ["write_circle_on_image", "build_images_1", "build_object_1"]
+__all__ = ["write_circle_on_image", "build_images_1", "build_cube"]
 
 # ==============================================================================
 
@@ -46,11 +46,11 @@ def build_images_1():
     return images
 
 
-def build_object_1(size, voxels_size, world_coordinate):
+def build_cube(cube_size, voxels_size, voxels_position):
 
-    image_3d = Image3D.ones((size, size, size),
+    image_3d = Image3D.ones((cube_size, cube_size, cube_size),
                             dtype=numpy.uint8,
                             voxels_size=voxels_size,
-                            world_coordinate=world_coordinate)
+                            world_coordinate=voxels_position)
 
     return VoxelPointCloud.from_image_3d(image_3d).voxels_position
