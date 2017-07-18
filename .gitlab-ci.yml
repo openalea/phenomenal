@@ -39,6 +39,9 @@ build_conda_phenome_env:
 
 test_phenome:
  stage: test
+ cache:
+  paths:
+   - /
  script:
    - conda info --envs
    - source activate phenome
