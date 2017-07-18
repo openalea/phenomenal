@@ -13,9 +13,6 @@ after_script:
   - echo "After script section"
   - echo "For example you might do some cleanup here"
 
-stages:
- - build
-
 build_1:
  stage: build
  script:
@@ -26,12 +23,12 @@ build_1:
    - source activate phenome
    - conda install opencv
 
-test1:
+test_1:
  stage: test
  script:
    - echo "nosetests"
 
-deploy1:
+deploy_1:
  stage: deploy
  script:
    - echo "Do your deploy here"
