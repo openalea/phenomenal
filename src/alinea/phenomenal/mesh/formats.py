@@ -28,6 +28,9 @@ __all__ = ["write_vertices_faces_to_ply_file",
 
 
 def write_vertices_faces_to_ply_file(filename, vertices, faces):
+    """
+    Write methods to save vertices and faces in ply format. 
+    """
     vtk_poly_data = from_vertices_faces_to_vtk_poly_data(vertices, faces)
 
     ply_writer = vtk.vtkPLYWriter()
@@ -38,6 +41,9 @@ def write_vertices_faces_to_ply_file(filename, vertices, faces):
 
 
 def read_ply_to_vertices_faces(filename):
+    """
+    Read ply file to vertices and faces
+    """
 
     poly_data = read_ply_to_vtk_poly_data(filename)
 
