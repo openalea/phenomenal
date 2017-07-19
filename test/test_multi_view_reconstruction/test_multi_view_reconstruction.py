@@ -51,6 +51,16 @@ def test_split_voxel_centers_in_eight_1():
     assert numpy.array_equal(ref, res)
 
 
+def test_split_voxel_centers_in_eight_2():
+
+    voxels_size = 16
+    voxels_position = numpy.array([])
+
+    res = split_voxel_centers_in_eight(voxels_position, voxels_size)
+
+    assert numpy.array_equal(res, numpy.array([]))
+
+
 # ==============================================================================
 
 
@@ -120,7 +130,7 @@ def test_get_bounding_box_voxel_projected_2():
 # ==============================================================================
 
 
-def get_image_views_cube_projected():
+def get_image_views_cube_projected(with_ref=False):
 
     # ==========================================================================
     # Create object
@@ -146,7 +156,14 @@ def get_image_views_cube_projected():
                                              shape_image,
                                              projection)
 
-        iv = ImageView(img, projection, inclusive=False)
+        ref = False
+        if with_ref:
+            if angle == 0:
+                img[:] = 0
+            if angle == 90:
+                ref = True
+
+        iv = ImageView(img, projection, inclusive=False, ref=ref)
         image_views.append(iv)
 
     return image_views
@@ -169,7 +186,7 @@ def test_reconstruction_3d_1():
     # Multi-view reconstruction
     voxel_centers = reconstruction_3d(image_views,
                                       voxels_size=voxels_size,
-                                      verbose=True)
+                                      verbose=False)
 
     assert len(voxel_centers) == 437
 
@@ -178,9 +195,9 @@ def test_reconstruction_3d_2():
 
     image_views = get_image_views_cube_projected()
 
-    # ==========================================================================
-
-    vpc = reconstruction_3d(image_views, voxels_size=20, verbose=True)
+    vpc = reconstruction_3d(image_views,
+                            voxels_size=20,
+                            verbose=False)
 
     assert len(vpc.voxels_position) == 288
     assert len(vpc.voxels_position) * vpc.voxels_size ** 3 == 2304000
@@ -195,6 +212,19 @@ def test_reconstruction_3d_2():
 
         assert false_positive < 70
         assert true_negative == 0
+
+
+def test_reconstruction_3d_3():
+
+    image_views = get_image_views_cube_projected(with_ref=True)
+
+    vpc = reconstruction_3d(image_views,
+                            voxels_size=20,
+                            verbose=False,
+                            error_tolerance=0)
+
+    assert len(vpc.voxels_position) == 177
+    assert len(vpc.voxels_position) * vpc.voxels_size ** 3 == 1416000
 
 
 # ==============================================================================

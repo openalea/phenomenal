@@ -30,7 +30,7 @@ def skeletonize_thinning(image):
     :param image: binary image with 0 or 255
     :return: skeleton of a binary image.
     """
-    img = image.copy()
+    img = image.copy().astype(numpy.uint8)
 
     img[img == 255] = 1
     skeleton = skimage.morphology.skeletonize(img)
@@ -47,7 +47,7 @@ def skeletonize_erode_dilate(image):
     :param image: binary image with 0 or 255
     :return: skeleton of a binary image.
     """
-    img = image.copy()
+    img = image.copy().astype(numpy.uint8)
 
     skeleton = numpy.zeros(img.shape, numpy.uint8)
 

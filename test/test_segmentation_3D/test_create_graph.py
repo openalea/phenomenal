@@ -37,7 +37,6 @@ def test_time_graph():
     print("{number_of_loop} loop, best of {number_of_loop}: "
           "{best_time}s per loop".format(best_time=best_time,
                                          number_of_loop=number_of_loop))
-    # Best 12 secondes
 
 
 def test_graph_1():

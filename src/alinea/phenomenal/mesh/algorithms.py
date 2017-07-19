@@ -19,7 +19,11 @@ from alinea.phenomenal.mesh.vtk_transformation import (
     from_numpy_matrix_to_vtk_image_data)
 # ==============================================================================
 
-__all__ = ["meshing", "marching_cubes", "smoothing", "decimation"]
+__all__ = ["meshing",
+           "marching_cubes",
+           "smoothing",
+           "decimation",
+           "voxelization"]
 
 # ==============================================================================
 
@@ -72,7 +76,7 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
 
     vtk_poly_data = marching_cubes(vtk_image_data, verbose=verbose)
 
-    if 1 < smoothing_iteration:
+    if smoothing_iteration > 1:
         vtk_poly_data = smoothing(
             vtk_poly_data,
             number_of_iteration=smoothing_iteration,
@@ -219,6 +223,69 @@ def smoothing(vtk_poly_data,
     return smoother.GetOutput()
 
 
+def decimation(vtk_poly_data, reduction=0.95, verbose=False):
+    """
+    Call of vtkQuadricDecimation on a vtk_poly_data to decimate the mesh
+
+    Parameters
+    ----------
+    vtk_poly_data : vtkPolyData
+        vtkPolyData is a data object that is a concrete implementation of
+        vtkDataSet. vtkPolyData represents a geometric structure consisting
+        of vertices, lines, polygons, and/or triangle strips.
+        Point and cell attribute values (e.g., scalars, vectors, etc.)
+        also are represented.
+
+    reduction : float, optional
+        Percentage of reduction for the decimation 0.95 will reduce the
+        vtk_poly_date of 95%
+
+    verbose : bool, optional
+        If True, print for some information of each part of the algorithms
+
+    Returns
+    -------
+    out : vtkPolyData
+        vtkPolyData is a data object that is a concrete implementation of
+        vtkDataSet. vtkPolyData represents a geometric structure consisting
+        of vertices, lines, polygons, and/or triangle strips.
+        Point and cell attribute values (e.g., scalars, vectors, etc.)
+    """
+    if verbose:
+        print "================================================================"
+        print "Decimation :"
+        print "\tReduction (percentage) :", reduction
+        print ""
+        print "\tBefore decimation"
+        print "\t-----------------"
+        print "\tThere are", vtk_poly_data.GetNumberOfPoints(), "points."
+        print "\tThere are", vtk_poly_data.GetNumberOfPolys(), "polygons.\n"
+
+    decimate = vtk.vtkQuadricDecimation()
+    decimate.SetTargetReduction(reduction)
+
+    if vtk.VTK_MAJOR_VERSION <= 5:
+        decimate.SetInputConnection(vtk_poly_data.GetProducerPort())
+        decimate.SetInput(vtk_poly_data)
+    else:
+        decimate.SetInputData(vtk_poly_data)
+
+    decimate.Update()
+
+    vtk_poly_decimated = vtk.vtkPolyData()
+    vtk_poly_decimated.ShallowCopy(decimate.GetOutput())
+
+    if verbose:
+        print "\tAfter decimation"
+        print "\t-----------------"
+        print "\tThere are", vtk_poly_decimated.GetNumberOfPoints(), "points."
+        print "\tThere are", vtk_poly_decimated.GetNumberOfPolys(),
+        print "polygons."
+        print "================================================================"
+
+    return vtk_poly_decimated
+
+
 def voxelization(vtk_poly_data, voxels_size=1):
 
     # ==========================================================================
@@ -285,65 +352,3 @@ def voxelization(vtk_poly_data, voxels_size=1):
 
     return imgstenc.GetOutput()
 
-
-def decimation(vtk_poly_data, reduction=0.95, verbose=False):
-    """
-    Call of vtkQuadricDecimation on a vtk_poly_data to decimate the mesh
-
-    Parameters
-    ----------
-    vtk_poly_data : vtkPolyData
-        vtkPolyData is a data object that is a concrete implementation of
-        vtkDataSet. vtkPolyData represents a geometric structure consisting
-        of vertices, lines, polygons, and/or triangle strips.
-        Point and cell attribute values (e.g., scalars, vectors, etc.)
-        also are represented.
-
-    reduction : float, optional
-        Percentage of reduction for the decimation 0.95 will reduce the
-        vtk_poly_date of 95%
-
-    verbose : bool, optional
-        If True, print for some information of each part of the algorithms
-
-    Returns
-    -------
-    out : vtkPolyData
-        vtkPolyData is a data object that is a concrete implementation of
-        vtkDataSet. vtkPolyData represents a geometric structure consisting
-        of vertices, lines, polygons, and/or triangle strips.
-        Point and cell attribute values (e.g., scalars, vectors, etc.)
-    """
-    if verbose:
-        print "================================================================"
-        print "Decimation :"
-        print "\tReduction (percentage) :", reduction
-        print ""
-        print "\tBefore decimation"
-        print "\t-----------------"
-        print "\tThere are", vtk_poly_data.GetNumberOfPoints(), "points."
-        print "\tThere are", vtk_poly_data.GetNumberOfPolys(), "polygons.\n"
-
-    decimate = vtk.vtkQuadricDecimation()
-    decimate.SetTargetReduction(reduction)
-
-    if vtk.VTK_MAJOR_VERSION <= 5:
-        decimate.SetInputConnection(vtk_poly_data.GetProducerPort())
-        decimate.SetInput(vtk_poly_data)
-    else:
-        decimate.SetInputData(vtk_poly_data)
-
-    decimate.Update()
-
-    vtk_poly_decimated = vtk.vtkPolyData()
-    vtk_poly_decimated.ShallowCopy(decimate.GetOutput())
-
-    if verbose:
-        print "\tAfter decimation"
-        print "\t-----------------"
-        print "\tThere are", vtk_poly_decimated.GetNumberOfPoints(), "points."
-        print "\tThere are", vtk_poly_decimated.GetNumberOfPolys(),
-        print "polygons."
-        print "================================================================"
-
-    return vtk_poly_decimated

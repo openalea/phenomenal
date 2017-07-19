@@ -17,14 +17,100 @@ import math
 import numpy
 
 from alinea.phenomenal.multi_view_reconstruction import (
-    get_bounding_box_voxel_projected,
-    voxel_is_visible_in_image)
+    get_bounding_box_voxel_projected)
 
 from alinea.phenomenal.data_structure import (
     VoxelOctree)
 
 # ==============================================================================
 # Function for no kep
+
+def voxel_is_visible_in_image(voxel_center,
+                              voxel_size,
+                              image,
+                              projection,
+                              inclusive):
+    """
+    Return True or False if the voxel projected on image with the function
+    projection (projection) have positive value on image.
+
+    **Algorithm**
+
+    1. Project the center voxel position on image if the position projected
+       (x, y) is positive on image return True
+
+    |
+
+    2. Project the bounding box of voxel in image, if one of the 4 corners
+       position of the bounding box projected have positive value on image
+       return True
+
+    |
+
+    3. Check if one pixel containing in the bounding box projected on image
+       have positive value, if yes return True else return False
+
+    Parameters
+    ----------
+    voxel_center : (x, y, z)
+        Center position of voxel
+
+    voxel_size : float
+        Size of side geometry of voxel
+
+    image: numpy.ndarray
+        binary image
+
+    projection : function ((x, y, z)) -> (x, y)
+        Function of projection who take 1 argument (tuple of position (x, y, z))
+         and return this position 2D (x, y)
+
+    Returns
+    -------
+    out : bool
+        True if voxel have a positive correspondence on image otherwise return
+        False
+    """
+
+    height_image, length_image = image.shape
+    x, y = projection(voxel_center)
+
+    if (0 <= x < length_image and
+        0 <= y < height_image and
+            image[int(y), int(x)] > 0):
+        return True
+
+    # ==========================================================================
+
+    x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
+        voxel_center, voxel_size, projection)
+
+    if (x_max < 0 or x_min >= length_image or
+            y_max < 0 or y_min >= height_image):
+        return inclusive
+
+    # if ((not (0 <= x_min < length_image or 0 <= x_max < length_image)) or
+    #         (not (0 <= y_min < height_image or 0 <= y_max < height_image))):
+    #     return inclusive
+
+    x_min = int(min(max(math.floor(x_min), 0), length_image - 1))
+    x_max = int(min(max(math.ceil(x_max), 0), length_image - 1))
+    y_min = int(min(max(math.floor(y_min), 0), height_image - 1))
+    y_max = int(min(max(math.ceil(y_max), 0), height_image - 1))
+
+    if (image[y_min, x_min] > 0 or
+        image[y_max, x_min] > 0 or
+        image[y_min, x_max] > 0 or
+            image[y_max, x_max] > 0):
+        return True
+
+    # ==========================================================================
+
+    if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
+        return True
+
+    return False
+
 
 
 def voxel_is_fully_visible_in_image(voxel_center,
