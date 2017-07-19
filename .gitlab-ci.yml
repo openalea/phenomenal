@@ -33,6 +33,7 @@ build_develop:
    - conda install scikit-learn --yes
    - conda install networkx --yes
    - conda install vtk --yes
+   - conda install scikit-image --yes
 
    - echo "Optional dependency"
    - conda install jupyter --yes
@@ -60,6 +61,7 @@ build_install:
    - conda install scikit-learn --yes
    - conda install networkx --yes
    - conda install vtk --yes
+   - conda install scikit-image --yes
 
    - echo "Optional dependency"
    - conda install jupyter --yes
@@ -90,6 +92,7 @@ test_coverage:
    - conda install scikit-learn --yes
    - conda install networkx --yes
    - conda install vtk --yes
+   - conda install scikit-image --yes
 
    - echo "Optional dependency"
    - conda install jupyter --yes

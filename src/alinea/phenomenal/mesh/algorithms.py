@@ -30,24 +30,31 @@ __all__ = ["meshing",
 
 def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     """
-    Build a  polygonal mesh representation (vertices and faces) from voxels.
+    Build a polygonal mesh representation (= list of vertices and faces) 
+    from a 3d image (= numpy array 3D).
+    
+    More, some option, is available to smooth the 3D object representation and 
+    reduce the number triangle.
 
     Firstly :
         A marching cubes algorithm is apply to compute the polygonal mesh.
 
     Secondly :
         A smoothing algorithm is apply according the number of iteration
-        indicate/
+        given
 
     Thirdly :
         A mesh decimation algorithm is apply according the percentage of
-        reduction indicate.
+        reduction given.
 
     Parameters
     ----------
-
+    
+    image_3d : 3D numpy array
+        3D Array with positive values 
+        
     smoothing_iteration : int, optional
-
+        Number of iteration for smoothing
 
     reduction : float, optional
         Center position of the first original voxel, who will be split.
@@ -133,10 +140,9 @@ def marching_cubes(vtk_image_data, iso_value=1.0, verbose=False):
 
     """
     if verbose:
-        print "================================================================"
-        print "Marching cubes :"
-        print "\tIso value :", iso_value
-        print ""
+        print(("=" * 80 + "\n" +
+               "Marching cubes : \n"
+               "\tIso value :{}\n").format(iso_value))
 
     surface = vtk.vtkMarchingCubes()
     if vtk.VTK_MAJOR_VERSION <= 5:
@@ -151,9 +157,11 @@ def marching_cubes(vtk_image_data, iso_value=1.0, verbose=False):
     vtk_poly_data = surface.GetOutput()
 
     if verbose:
-        print "\tThere are", vtk_poly_data.GetNumberOfPoints(), "points."
-        print "\tThere are", vtk_poly_data.GetNumberOfPolys(), "polygons.\n"
-        print "================================================================"
+
+        print(("\tThere are {} points.\n"
+               "\tThere are {} polygons.\n"
+               + "=" * 80).format(vtk_poly_data.GetNumberOfPoints(),
+                                  vtk_poly_data.GetNumberOfPolys()))
 
     return vtk_poly_data
 
@@ -199,13 +207,12 @@ def smoothing(vtk_poly_data,
     """
 
     if verbose:
-        print "================================================================"
-        print "Smoothing :"
-        print "\tFeature angle :", feature_angle
-        print "\tNumber of iteration :", number_of_iteration
-        print "\tPass band :", pass_band
-        print ""
-        print "================================================================"
+        print(("=" * 80 + "\n" +
+               "Smoothing : \n"
+               "\tFeature angle :{}\n"
+               "\tNumber of iteration :{}\n"
+               "\tPass band : {}\n\n" +
+               "=" * 80).format(feature_angle, number_of_iteration, pass_band))
 
     smoother = vtk.vtkWindowedSincPolyDataFilter()
 
@@ -252,14 +259,18 @@ def decimation(vtk_poly_data, reduction=0.95, verbose=False):
         Point and cell attribute values (e.g., scalars, vectors, etc.)
     """
     if verbose:
-        print "================================================================"
-        print "Decimation :"
-        print "\tReduction (percentage) :", reduction
-        print ""
-        print "\tBefore decimation"
-        print "\t-----------------"
-        print "\tThere are", vtk_poly_data.GetNumberOfPoints(), "points."
-        print "\tThere are", vtk_poly_data.GetNumberOfPolys(), "polygons.\n"
+
+        print(("=" * 80 + "\n" +
+               "Decimation : \n"
+               "\tReduction (percentage) :{}\n"
+               "\n"
+               "\tBefore decimation\n"
+               "\t-----------------\n"
+               "\tThere are {} points.\n"
+               "\tThere are {} polygons.\n").format(
+            reduction,
+            vtk_poly_data.GetNumberOfPoints(),
+            vtk_poly_data.GetNumberOfPolys()))
 
     decimate = vtk.vtkQuadricDecimation()
     decimate.SetTargetReduction(reduction)
@@ -276,18 +287,48 @@ def decimation(vtk_poly_data, reduction=0.95, verbose=False):
     vtk_poly_decimated.ShallowCopy(decimate.GetOutput())
 
     if verbose:
-        print "\tAfter decimation"
-        print "\t-----------------"
-        print "\tThere are", vtk_poly_decimated.GetNumberOfPoints(), "points."
-        print "\tThere are", vtk_poly_decimated.GetNumberOfPolys(),
-        print "polygons."
-        print "================================================================"
+        print(("\tAfter decimation\n"
+               "\t-----------------\n"
+               "\tThere are {} points.\n"
+               "\tThere are {} polygons.\n" +
+               80 * "=").format(reduction,
+                                vtk_poly_data.GetNumberOfPoints(),
+                                vtk_poly_data.GetNumberOfPolys()))
 
     return vtk_poly_decimated
 
 
 def voxelization(vtk_poly_data, voxels_size=1):
+    """
+    Transform a mesh vtk poly data mesh representation objet to a list of 
+    voxels position, according to a voxels size float.
+    
+    Parameters
+    ----------
+    vtk_poly_data : vtkPolyData
+        vtkPolyData is a data object that is a concrete implementation of
+        vtkDataSet. vtkPolyData represents a geometric structure consisting
+        of vertices, lines, polygons, and/or triangle strips.
+        Point and cell attribute values (e.g., scalars, vectors, etc.)
+        also are represented.
 
+    voxels_size : float, optional
+        Size of the voxels
+
+    verbose : bool, optional
+        If True, print for some information of each part of the algorithms
+
+    Returns
+    -------
+    vtk_image_data : vtkImageData
+        Topologically and geometrically regular array of data
+
+        vtkImageData is a data object that is a concrete implementation of 
+        vtkDataSet. vtkImageData represents a geometric structure that is a 
+        topological and geometrical regular array of points. 
+        Examples include volumes (voxel data) and pixmaps
+    
+    """
     # ==========================================================================
     # Build White Image
     white_image = vtk.vtkImageData()
