@@ -103,4 +103,4 @@ test_coverage:
 
  artifacts:
   paths:
-   - coverage/
+   - cover/
