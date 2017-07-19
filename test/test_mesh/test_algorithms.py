@@ -12,25 +12,30 @@
 from alinea.phenomenal.data_structure import (
     VoxelPointCloud)
 
-from alinea.phenomenal.mesh import meshing
+from alinea.phenomenal.mesh import (
+    meshing,
+    voxelization,
+    from_vertices_faces_to_vtk_poly_data,
+    from_vtk_image_data_to_voxels_center)
+
 from alinea.phenomenal.data_access import plant_1_voxel_point_cloud
 # ==============================================================================
 
 
-def test_mesh_empty_voxel_centers():
+def test_mesh_error_1():
 
     voxels_size = 8
     voxels_position = list()
     try:
         image_3d = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
 
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
 
 
-def test_mesh_one_voxel_centers():
+def test_mesh_error_2():
     voxels_size = 1
     voxels_position = list()
     voxels_position.append((0, 0, 0))
@@ -39,25 +44,14 @@ def test_mesh_one_voxel_centers():
         image_3d = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
         vertices, faces = meshing(image_3d)
 
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
 
 
-def test_mesh_two_voxel_center():
-    voxels_size = 4
-    voxels_position = list()
-    voxels_position.append((0, 0, 0))
-    voxels_position.append((4, 4, 8))
-    voxels_position.append((8, 8, 8))
+def test_meshing():
 
-    # image_3d = voxels_position_to_image_3d(voxel_centers, voxel_size)
-    # print image_3d.size
-    # vertices, faces = meshing(image_3d)
-
-
-def test_mesh_normal():
     voxels_size = 20
     vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
 
@@ -71,10 +65,17 @@ def test_mesh_normal():
     assert 100 <= len(vertices) <= 273
     assert 200 <= len(faces) <= 542
 
+    poly_data = from_vertices_faces_to_vtk_poly_data(vertices, faces)
+
+    vtk_image_data = voxelization(poly_data, voxels_size=voxels_size)
+    voxels_position = from_vtk_image_data_to_voxels_center(vtk_image_data)
+
+    assert len(voxels_position) == 1416
+
 # ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():
         if func_name.startswith('test_'):
-            print("{func_name}".format(func_name=func_name))
+            print("{func_name}".format(func_name=func_name).upper())
             eval(func_name)()
