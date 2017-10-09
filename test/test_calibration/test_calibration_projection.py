@@ -11,7 +11,7 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.data_access.plant_1 import (
+from openalea.phenomenal.data_access.plant_1 import (
     plant_1_calibration_camera_side)
 
 # ==============================================================================

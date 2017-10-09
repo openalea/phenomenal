@@ -11,8 +11,8 @@
 # ==============================================================================
 import numpy
 
-from alinea.phenomenal.data_structure import (
-    VoxelPointCloud)
+from openalea.phenomenal.data_structure import (
+    VoxelGrid)
 
 
 # ==============================================================================
@@ -26,7 +26,7 @@ def test_simply_working_1():
 
     voxels_size = 2
 
-    im = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
+    im = VoxelGrid(voxels_position, voxels_size).to_image_3d()
 
     assert im.ndim == 3
 
@@ -44,12 +44,12 @@ def test_simply_working_2():
     voxels_position = list()
     voxels_position.append((1, 42, 1))
 
-    im = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
+    im = VoxelGrid(voxels_position, voxels_size).to_image_3d()
 
     assert im == [[[1]]]
     assert im.world_coordinate == (1, 42, 1)
 
-    vpc = VoxelPointCloud.from_image_3d(im)
+    vpc = VoxelGrid.from_image_3d(im)
 
     assert len(vpc.voxels_position) == 1
     assert vpc.voxels_position[0] == (1, 42, 1)

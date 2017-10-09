@@ -11,30 +11,27 @@
 # ==============================================================================
 from __future__ import division, print_function
 
-from alinea.phenomenal.segmentation_3d import (
-    voxel_graph_from_voxel_point_cloud,
+from openalea.phenomenal.segmentation_3D import (
+    voxel_graph_from_voxel_grid,
     skeletonize,
     labelize_maize_skeleton,
     maize_analysis)
 
-from alinea.phenomenal.data_access import plant_1_voxel_point_cloud
+from openalea.phenomenal.data_access import plant_1_voxel_grid
 # ==============================================================================
 
 
 def test_maize():
 
     voxels_size = 10
-    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
+    vpc = plant_1_voxel_grid(voxels_size=voxels_size)
 
-    voxel_graph = voxel_graph_from_voxel_point_cloud(vpc)
+    voxel_graph = voxel_graph_from_voxel_grid(vpc)
     voxel_skeleton = skeletonize(voxel_graph.graph,
                                  voxel_graph.voxels_size)
 
     vms = labelize_maize_skeleton(voxel_skeleton, voxel_graph)
-
     vmsi = maize_analysis(vms)
-
-
 
 if __name__ == "__main__":
     for func_name in dir():
