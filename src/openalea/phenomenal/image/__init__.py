@@ -9,18 +9,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-"""
-=====
-Image
-=====
-
-Module for processing 2D image like plant segmentation, plant 
-skeletonization, read, write, treshold, ...
-
-"""
-# ==============================================================================
-# ==============================================================================
-
 from __future__ import division, print_function, absolute_import
 
 from .formats import *

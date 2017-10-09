@@ -9,38 +9,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-"""
-==============
-Data Structure
-==============
-
-.. currentmodule:: openalea.phenomenal.data_structure
-
-Sub-package for objects used in data structure.
-
-
-.. autosummary::
-   :toctree: generated/
-
-    Image3
-    Octree
-    OcNode
-    VoxelGrid
-
-Routines
-========
-
-.. autosummary::
-   :toctree: generated/
-
-    bounding_box
-    image_3d_to_voxel_centers
-    voxel_centers_to_image_3d
-
-
-"""
-# ==============================================================================
-
 from __future__ import division, print_function, absolute_import
 
 from .imageView import ImageView

@@ -103,15 +103,16 @@ export PATH="$HOME/miniconda/bin:$PATH"
 hash -r
 conda config --set always_yes yes --set changeps1 no
 conda update -q conda
+conda install conda-build
 
 # CONDA create and activate virtual environement
-
-conda create --name phenome --file ~/phenomenal/install/dependency-cloud-ubuntu.txt
+conda create --name phenome python
 source activate phenome
 
 # Install phenomenal
-cd ~/phenomenal/
-python setup.py develop --prefix=$CONDA_PREFIX
+cd ~/phenomenal/build_tools/conda
+conda build -c conda-forge -c openalea .
+conda install -c conda-forge -c openalea --use-local openalea.phenomenal
 cd ~
 
 # Install phenoarch

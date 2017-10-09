@@ -1,1 +1,0 @@
-.. automodule:: alinea.phenomenal.binarization

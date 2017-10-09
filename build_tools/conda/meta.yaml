@@ -22,6 +22,7 @@ requirements:
     - openalea.deploy
     - openalea.core
     - numpy
+    - scikit-learn
     - scipy
     - matplotlib
     - networkx
