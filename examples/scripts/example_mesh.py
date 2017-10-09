@@ -18,7 +18,7 @@ from alinea.phenomenal.data_access.plant_1 import (
 
 from alinea.phenomenal.mesh import meshing
 from alinea.phenomenal.display import (
-    DisplayVoxelPointCloud)
+    DisplayVoxelGrid)
 
 # ==============================================================================
 
@@ -27,7 +27,7 @@ def main():
 
     vpc = plant_1_voxels_size_4_without_loss_120()
 
-    DisplayVoxelPointCloud().show(vpc)
+    DisplayVoxelGrid().show(vpc)
 
     # show_voxel_point_cloud(vpc,
     #                        # size=(5000, 5000),

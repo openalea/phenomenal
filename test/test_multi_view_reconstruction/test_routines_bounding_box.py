@@ -9,7 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.data_structure import VoxelPointCloud
+from openalea.phenomenal.data_structure import VoxelGrid
 
 # ==============================================================================
 
@@ -20,7 +20,7 @@ def test_simply_working_1():
     voxels_position.append((0, 0, 0))
     voxels_position.append((10, 10, 10))
     voxels_size = 1
-    vpc = VoxelPointCloud(voxels_position, voxels_size)
+    vpc = VoxelGrid(voxels_position, voxels_size)
     pt_min, pt_max = vpc.bounding_box()
 
     assert pt_min == (0, 0, 0)

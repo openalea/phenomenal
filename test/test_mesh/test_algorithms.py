@@ -9,16 +9,16 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.data_structure import (
-    VoxelPointCloud)
+from openalea.phenomenal.data_structure import (
+    VoxelGrid)
 
-from alinea.phenomenal.mesh import (
+from openalea.phenomenal.mesh import (
     meshing,
     voxelization,
     from_vertices_faces_to_vtk_poly_data,
     from_vtk_image_data_to_voxels_center)
 
-from alinea.phenomenal.data_access import plant_1_voxel_point_cloud
+from openalea.phenomenal.data_access import plant_1_voxel_grid
 # ==============================================================================
 
 
@@ -27,7 +27,7 @@ def test_mesh_error_1():
     voxels_size = 8
     voxels_position = list()
     try:
-        image_3d = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
+        image_3d = VoxelGrid(voxels_position, voxels_size).to_image_3d()
 
     except Exception as e:
         assert type(e) == ValueError
@@ -41,7 +41,7 @@ def test_mesh_error_2():
     voxels_position.append((0, 0, 0))
 
     try:
-        image_3d = VoxelPointCloud(voxels_position, voxels_size).to_image_3d()
+        image_3d = VoxelGrid(voxels_position, voxels_size).to_image_3d()
         vertices, faces = meshing(image_3d)
 
     except Exception as e:
@@ -53,7 +53,7 @@ def test_mesh_error_2():
 def test_meshing():
 
     voxels_size = 20
-    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
+    vpc = plant_1_voxel_grid(voxels_size=voxels_size)
 
     image_3d = vpc.to_image_3d()
 

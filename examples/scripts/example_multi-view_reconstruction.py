@@ -12,7 +12,7 @@
 import time
 
 from alinea.phenomenal.display import (
-    DisplayVoxelPointCloud)
+    DisplayVoxelGrid)
 
 from alinea.phenomenal.data_structure import (
     ImageView)
@@ -61,5 +61,5 @@ if __name__ == '__main__':
     print(time.time() - t0)
 
     # Viewing
-    dvpc = DisplayVoxelPointCloud()
+    dvpc = DisplayVoxelGrid()
     dvpc.show(vpc, color=(0.1, 0.9, 0.1))

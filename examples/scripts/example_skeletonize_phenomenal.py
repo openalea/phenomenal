@@ -12,8 +12,8 @@
 
 
 from alinea.phenomenal.data_access import (
-    plant_1_voxel_point_cloud,
-    plant_2_voxel_point_cloud)
+    plant_1_voxel_grid,
+    plant_2_voxel_grid)
 
 from alinea.phenomenal.display import *
 from alinea.phenomenal.data_structure import (
@@ -32,9 +32,9 @@ from alinea.phenomenal.segmentation_3d import (
 def main():
 
     voxels_size = 16
-    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
+    vpc = plant_1_voxel_grid(voxels_size=voxels_size)
     # vpc = plant_2_voxel_point_cloud()
-    DisplayVoxelPointCloud().show(vpc)
+    DisplayVoxelGrid().show(vpc)
 
     voxel_graph = voxel_graph_from_voxel_point_cloud(vpc)
     voxel_skeleton = skeletonize(voxel_graph.graph,
@@ -43,20 +43,20 @@ def main():
     # filename = 'voxel_skeleton.json'
     # voxel_skeleton.write_to_json(filename)
     # voxel_skeleton = VoxelSkeleton.read_from_json(filename)
-    DisplayVoxelSkeleton().show(voxel_skeleton)
+    DisplaySkeleton().show(voxel_skeleton)
 
     vms = labelize_maize_skeleton(voxel_skeleton, voxel_graph)
     # filename = 'voxel_maize_segmentation.json'
     # vms.write_to_json(filename)
     # vms = VoxelSegmentation.read_from_json(filename)
-    DisplayVoxelSegmentation().show(vms)
+    DisplaySegmentation().show(vms)
 
     vmsi = maize_analysis(vms)
     file_prefix = 'voxel_maize_segmentation_info'
     vmsi.write_to_json_gz(file_prefix)
     vmsi = VoxelSegmentation.read_from_json_gz(file_prefix)
 
-    DisplayVoxelSegmentation().show(vmsi)
+    DisplaySegmentation().show(vmsi)
 
 if __name__ == "__main__":
     main()

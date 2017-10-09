@@ -17,7 +17,7 @@ from alinea.phenomenal.display import (
 from alinea.phenomenal.data_structure import (
     voxels_position_to_image_3d,
     image_3d_to_voxels_position,
-    VoxelPointCloud)
+    VoxelGrid)
 # ==============================================================================
 
 from alinea.phenomenal.data_access import plant_1_voxel_centers
@@ -29,7 +29,7 @@ def main():
     voxels_size = 4
     voxels_position = plant_1_voxel_centers(voxel_size=voxels_size)
 
-    vpc = VoxelPointCloud(voxels_position, voxels_size)
+    vpc = VoxelGrid(voxels_position, voxels_size)
     show_voxel_point_cloud(vpc,
                            size=(5000, 5000),
                            color=(0.1, 0.9, 0.1),
@@ -47,7 +47,7 @@ def main():
         voxels_size=voxels_size,
         world_coordinate=world_coordinate)
 
-    vpc = VoxelPointCloud(voxels_position, voxels_size)
+    vpc = VoxelGrid(voxels_position, voxels_size)
     show_voxel_point_cloud(vpc,
                            size=(5000, 5000),
                            color=(0.9, 0.1, 0.1),

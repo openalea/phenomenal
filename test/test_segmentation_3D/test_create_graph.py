@@ -13,20 +13,19 @@ import networkx
 import numpy
 import time
 
-from alinea.phenomenal.segmentation_3d import (
-    voxel_graph_from_voxel_point_cloud)
+from openalea.phenomenal.segmentation_3D import (
+    create_graph)
 
-from alinea.phenomenal.data_access import (
-    plant_1_voxel_point_cloud)
+from openalea.phenomenal.data_access import (
+    plant_1_voxel_grid)
 
-from alinea.phenomenal.segmentation_3d import create_graph
 # ==============================================================================
 
 
 def test_time_graph():
 
     voxels_size = 16
-    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
+    vpc = plant_1_voxel_grid(voxels_size=voxels_size)
     number_of_loop = 2
     best_time = float('inf')
     for i in range(number_of_loop):

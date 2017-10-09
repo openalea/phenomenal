@@ -11,19 +11,19 @@
 # ==============================================================================
 import os
 
-from alinea.phenomenal.data_access import plant_1_voxel_point_cloud
-from alinea.phenomenal.data_structure import VoxelPointCloud, Image3D
+from openalea.phenomenal.data_access import plant_1_voxel_grid
+from openalea.phenomenal.data_structure import VoxelGrid, Image3D
 # ==============================================================================
 
 
 def test_read_write():
 
     voxels_size = 8
-    vpc = plant_1_voxel_point_cloud(voxels_size)
+    vpc = plant_1_voxel_grid(voxels_size)
 
     filename = 'test.npz'
     vpc.write_to_npz(filename)
-    vpc = VoxelPointCloud.read_from_npz(filename)
+    vg = VoxelGrid.read_from_npz(filename)
     os.remove(filename)
 
 

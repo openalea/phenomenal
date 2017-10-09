@@ -11,7 +11,7 @@
 # ==============================================================================
 import networkx
 
-from alinea.phenomenal.data_structure import VoxelGraph
+from openalea.phenomenal.data_structure import VoxelGraph
 # ==============================================================================
 
 

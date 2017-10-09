@@ -9,28 +9,21 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import networkx
-import numpy
-import time
+from openalea.phenomenal.segmentation_3D import (
+    voxel_graph_from_voxel_grid)
 
-from alinea.phenomenal.segmentation_3d import (
-    voxel_graph_from_voxel_point_cloud)
+from openalea.phenomenal.data_access import (
+    plant_1_voxel_grid)
 
-from alinea.phenomenal.data_access import (
-    plant_1_voxel_point_cloud)
-
-from alinea.phenomenal.segmentation_3d import (
-    create_graph,
-    connect_all_node_with_nearest_neighbors)
 # ==============================================================================
 
-def test_():
+
+def test_graph():
 
     voxels_size = 8
-    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
-    graph = create_graph(vpc.voxels_position, vpc.voxels_size)
-    graph = connect_all_node_with_nearest_neighbors(graph)
+    vg = plant_1_voxel_grid(voxels_size=voxels_size)
 
+    graph = voxel_graph_from_voxel_grid(vg)
 
 
 if __name__ == "__main__":

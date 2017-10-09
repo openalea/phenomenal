@@ -21,7 +21,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name="phenomenal",
+    name="openalea.phenomenal",
     version="1.4.0",
     description="",
     long_description="",

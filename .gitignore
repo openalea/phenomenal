@@ -18,11 +18,9 @@
 .coverage
 cover
 
-# local directory
-local
-CHESSBOARD_PhenoArch_2013_sv_face1
-data_set_0962_A310_ARCH2013-05-13
-.ipynb_checkpoints
+# Documentation
+_build
+generated
 
 # Packages
 *.egg
@@ -68,3 +66,6 @@ nosetests.xml
 
 # svn
 .svn
+
+# Notebook
+.ipynb_checkpoints

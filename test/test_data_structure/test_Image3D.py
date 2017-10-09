@@ -9,15 +9,13 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.data_access import plant_1_images
+from openalea.phenomenal.data_access import plant_1_images
 
 
-from alinea.phenomenal.display import show_image
 # ==============================================================================
 
 def test_image3d():
     images = plant_1_images()
-    # show_image(images['side'][0])
 
 
 # ==============================================================================

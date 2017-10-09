@@ -9,20 +9,20 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from alinea.phenomenal.data_access import (
-    plant_1_voxel_point_cloud)
+from openalea.phenomenal.data_access import (
+    plant_1_voxel_grid)
 
-from alinea.phenomenal.segmentation_3d import (
+from openalea.phenomenal.segmentation_3D import (
     skeletonize,
-    voxel_graph_from_voxel_point_cloud)
+    voxel_graph_from_voxel_grid)
 # ==============================================================================
 
 
 def test_running():
 
     voxels_size = 8
-    vpc = plant_1_voxel_point_cloud(voxels_size=voxels_size)
-    voxel_graph = voxel_graph_from_voxel_point_cloud(vpc)
+    vpc = plant_1_voxel_grid(voxels_size=voxels_size)
+    voxel_graph = voxel_graph_from_voxel_grid(vpc)
     voxel_skeleton = skeletonize(voxel_graph.graph, voxel_graph.voxels_size)
 
 
