@@ -9,23 +9,13 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from pythreejs import (
-    BufferGeometry,
-    PointsMaterial,
-    Points,
-    Scene,
-    DirectionalLight,
-    PerspectiveCamera,
-    OrbitControls,
-    Renderer,
-    AmbientLight)
-
 import time
+from pythreejs import *
+import numpy as np
 from IPython.display import display
 from ipywidgets import HTML, Text
 from traitlets import link, dlink
 from itertools import chain
-
 
 # ==============================================================================
 class AnimateObjects(object):
@@ -103,25 +93,19 @@ def animate_voxel_point_cloud(list_voxel_point_cloud, t=1.00, size=("800", "600"
     return ao
 
 
-def show_voxel_point_cloud(voxel_point_cloud):
-
-    voxel_center = voxel_point_cloud.voxels_center
-    voxel_size = voxel_point_cloud.voxels_size
+def show_voxel_grid(vg,
+                    color_points='green',
+                    windows_size=("800", "600"),
+                    renderer_background_color="black",
+                    renderer_background_opacity=0.0):
 
     # Transform to vertices display format
-    vertices = list(chain.from_iterable(voxel_center))
-
-
-def show_points(vertices, size,
-                color_points='green',
-                windows_size=("800", "600"),
-                renderer_background_color="black",
-                renderer_background_opacity=0.5):
+    vertices = list(chain.from_iterable(vg.voxels_position))
 
     # Define points
     geometry = BufferGeometry(vertices=vertices)
     # Define colors and size points
-    material = PointsMaterial(size=size, color=color_points)
+    material = PointsMaterial(size=vg.voxels_size, color=color_points)
 
     points = Points(geometry=geometry, material=material)
 
@@ -152,3 +136,38 @@ def show_points(vertices, size,
     # launch display
     display(renderer)
 
+def show_mesh(vertices, faces, voxels_size):
+
+    vert = list()
+    for index_1, index_2, index_3 in faces:
+        vert.append(vertices[index_1])
+        vert.append(vertices[index_2])
+        vert.append(vertices[index_3])
+
+    vert = list(chain.from_iterable(vert))
+
+    geometry = BufferGeometry(vertices=vert)
+    material = PointsMaterial(size=voxels_size, color='yellow')
+    material = NormalMaterial()
+    material.wireframe = True
+    material.fog = True
+    # material.color = 'green'
+
+    points = Mesh(geometry=geometry, material=material)
+
+    scene = Scene(children=[points, AmbientLight(color='#788777')])
+    children = DirectionalLight(color='white', position=[0, 1000, 0],
+                                intensity=0.4)
+    camera = PerspectiveCamera(position=[-2000, 0, 0],
+                               up=[0, 0, 1],
+                               children=[children])
+    camera.far = 8000
+
+    controls = OrbitControls(controlling=camera)
+    renderer = Renderer(camera=camera, scene=scene, controls=[controls])
+    renderer.width = "800"
+    renderer.height = "600"
+    renderer.background_color = "black"
+    renderer.background_opacity = 0.0
+    renderer.fog = True
+    display(renderer)
