@@ -234,8 +234,12 @@ class DisplaySegmentation(DisplayVoxel):
                     i = vo.longest_polyline().index(vo.info['position_base'])
 
                     v_base = set.union(*[set(nodes) for nodes in
-                                         closest_nodes[0:i]])
+                                         closest_nodes[:i]])
 
+                    v_leaf = set.union(*[set(nodes) for nodes in
+                                         closest_nodes[i:]])
+
+                    v_base = v_base - v_leaf
                     if len(v_base) > 0:
                         voxels = numpy.array(map(tuple, list(v_base)))
 
@@ -243,9 +247,6 @@ class DisplaySegmentation(DisplayVoxel):
                             voxels + vm,
                             vmsi.voxels_size * 0.20,
                             color=(0, 0, 0))
-
-                    v_leaf = set.union(*[set(nodes) for nodes in
-                                         closest_nodes[i:]]) - v_base
 
                     voxels_position = numpy.array(map(tuple, list(v_leaf)))
 
@@ -289,7 +290,37 @@ class DisplaySegmentation(DisplayVoxel):
 
         for vo in vmsi.voxel_organs:
 
+            voxels_position = numpy.array(
+                map(tuple, list(vo.voxels_position())))
+
             self.add_actor_from_voxels(
-                vo.voxels_position(),
-                vmsi.voxels_size,
+                voxels_position,
+                vmsi.voxels_size * 0.50,
                 color=self.get_color(vo.label, vo.info))
+
+            if ((vo.label == "mature_leaf" or vo.label == "cornet_leaf") and
+                    len(vo.voxel_segments) > 0 and "position_tip" in vo.info):
+
+                pos = vo.info['position_base']
+
+                self.add_actor_from_ball_position(
+                    vo.info['position_tip'],
+                    radius=vmsi.voxels_size * 2,
+                    color=(1, 0, 0))
+
+                self.add_actor_from_ball_position(
+                    pos, radius=vmsi.voxels_size * 2, color=(0, 0, 1))
+
+                r, g, b = (0, 0, 1)
+                pos = vo.info['position_tip']
+                pos = (pos[0] - 10, pos[1] - 10, pos[2])
+
+                if 'order' in vo.info:
+                    order = str(vo.info['order'])
+                    vo.text_actor = self.add_actor_from_text(
+                        order,
+                        position=pos,
+                        scale=40,
+                        color=(r, g, b))
+
+                    vo.text_actor.SetCamera(self._renderer.GetActiveCamera())

@@ -19,3 +19,6 @@ class VoxelSegment(object):
 
         self.voxels_position = voxels_position
         self.polyline = polyline
+
+    def __len__(self):
+        return len(self.voxels_position)

@@ -11,16 +11,93 @@
 # ==============================================================================
 import numpy
 import networkx
+import collections
+
 
 from openalea.phenomenal.segmentation_3D import (
     merge,
     compute_closest_nodes_with_planes,
     compute_closest_nodes_with_ball)
 
+import openalea.phenomenal.multi_view_reconstruction
 
 from openalea.phenomenal.data_structure import (VoxelSkeleton,
-                                              VoxelSegment,
-                                              VoxelGrid)
+                                                VoxelSegment,
+                                                VoxelGrid)
+
+from openalea.phenomenal.display import DisplayVoxel, show_image
+# ==============================================================================
+
+
+def segment_reduction(voxel_skeleton, image_views, tolerance=4):
+    """
+
+    """
+
+    # Ordonner
+    #
+    orderer_voxel_segments = sorted(voxel_skeleton.voxel_segments,
+                                    key=lambda vs: len(vs.voxels_position))
+
+    d = dict()
+    for i, vs in enumerate(orderer_voxel_segments):
+        for j, iv in enumerate(image_views):
+
+            vp = numpy.array(list(vs.voxels_position))
+
+            d[(i, j)] = openalea.phenomenal.multi_view_reconstruction.\
+                project_voxel_centers_on_image(
+                vp,
+                voxel_skeleton.voxels_size,
+                iv.image.shape,
+                iv.projection)
+
+    list_negative_image = list()
+    for iv in image_views:
+
+        negative_image = iv.image.copy()
+        negative_image[negative_image == 255] = 125
+        negative_image[negative_image == 0] = 255
+        negative_image[negative_image == 125] = 0
+        list_negative_image.append(negative_image)
+
+    index_removed = list()
+    new_voxel_segments = list()
+    for i, vs in enumerate(orderer_voxel_segments):
+
+        # dv = DisplayVoxel()
+        # dv.add_actor_from_voxels(vs.voxels_position, voxel_skeleton.voxels_size)
+        # dv.show()
+
+        weight = 0
+        for j, iv in enumerate(image_views):
+            im1 = d[(i, j)]
+
+            im2 = numpy.zeros(iv.image.shape)
+            for k, _ in enumerate(voxel_skeleton.voxel_segments):
+                if k != i and k not in index_removed:
+                    im2 += d[(k, j)]
+
+            im = im1 - im2
+            im = im - list_negative_image[j]
+            im[im < 0] = 0
+
+            if numpy.count_nonzero(im) != 0:
+                # show_image(im)
+                weight += 1
+
+            if weight >= tolerance:
+                break
+
+        if weight >= tolerance:
+            new_voxel_segments.append(vs)
+        else:
+            index_removed.append(i)
+
+    voxel_skeleton.voxel_segments = new_voxel_segments
+
+    return voxel_skeleton
+
 # ==============================================================================
 
 
@@ -64,10 +141,6 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=50):
 
     return pos
 
-# ijk = 0
-# import alinea.phenomenal.display
-# dv = alinea.phenomenal.display.DisplayVoxel()
-
 
 def segment_path(voxels,
                  array_voxels,
@@ -91,30 +164,6 @@ def segment_path(voxels,
 
     # ==========================================================================
 
-    # global ijk
-    # global dv
-
-    # alinea.phenomenal.display.DisplayVoxel().show(
-    #     [voxels, leaf_skeleton_path],
-    #     [voxels_size * 0.25, voxels_size],
-    #     colors=[(0, 1, 0), (1, 0, 0)])
-
-    # dv.clean_all_actors()
-    # dv.add_actor_from_ball_position(leaf_skeleton_path[0], radius=10, color=(
-    #     0, 0, 1))
-    # dv.add_actor_from_ball_position(leaf_skeleton_path[-1], radius=10, color=(
-    #     1, 0, 0))
-    # dv.add_actors_from_voxels_list(
-    #     [voxels, leaf_skeleton_path],
-    #     [voxels_size * 0.50, voxels_size * 1.5],
-    #     colors=[(0, 1, 0), (1, 0, 0)])
-    #
-    # if ijk == 0:
-    #     dv.configure_camera(elevation=0, azimuth=0)
-    #     dv.reset_camera()
-    #
-    # dv.screenshot("2_" + str(ijk) + ".png")
-
     if leaf_skeleton_path:
 
         closest_nodes, planes_equation = compute_closest_nodes_with_planes(
@@ -122,9 +171,8 @@ def segment_path(voxels,
             leaf_skeleton_path,
             radius=8,
             dist=distance_plane * voxels_size,
-            graph=graph)
-
-        # ijk = ijk + 1
+            graph=graph,
+            voxels_size=voxels_size)
 
         # closest_nodes = compute_closest_nodes_with_ball(
         #     array_voxels,
@@ -137,7 +185,6 @@ def segment_path(voxels,
 
         # leaf, leaf_neighbors, connected_components_remain = merge(
         #     graph, leaf, remain, percentage=50)
-        #
         # remain = set().union(*connected_components_remain)
 
         return leaf, remain, leaf_skeleton_path
@@ -158,12 +205,16 @@ def compute_all_shorted_path(graph, voxels_size):
     return all_shorted_path_to_stem_base
 
 
-def skeletonize(graph, voxels_size, ball_radius=50):
+def skeletonize(graph, voxels_size, ball_radius=50, subgraph=None):
 
-    all_shorted_path_to_stem_base = compute_all_shorted_path(graph, voxels_size)
+    if subgraph is None:
+        subgraph = graph
+
+    all_shorted_path_to_stem_base = compute_all_shorted_path(subgraph,
+                                                             voxels_size)
 
     # ==========================================================================
-    voxels_position_remain = graph.nodes()
+    voxels_position_remain = subgraph.nodes()
     np_arr_all_graph_voxels_plant = numpy.array(graph.nodes())
     # ==========================================================================
 
@@ -179,11 +230,6 @@ def skeletonize(graph, voxels_size, ball_radius=50):
             graph,
             ball_radius=ball_radius,
             voxels_size=voxels_size)
-
-        # import alinea.phenomenal.display
-        # alinea.phenomenal.display.DisplayVoxel().show(
-        #     [voxels_position_segment, voxels_segments_polyline],
-        #     [voxels_size * 0.25, voxels_size * 0.25])
 
         voxel_skeleton.add_voxel_segment(voxels_position_segment,
                                          voxels_segments_polyline)

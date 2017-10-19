@@ -14,9 +14,7 @@ from __future__ import absolute_import
 import networkx
 import numpy
 import scipy.interpolate
-import sklearn.cluster
 import scipy.spatial
-import collections
 from scipy.signal import savgol_filter
 
 from openalea.phenomenal.segmentation_3D.peak_detection import (
@@ -51,12 +49,12 @@ def merge(graph, voxels, remaining_voxels, percentage=50):
     return voxels, voxels_neighbors, connected_components
 
 
-def peak_stem_detection(closest_nodes, verbose=False):
-    nodes_length = map(float, map(len, closest_nodes))
+def peak_stem_detection(closest_nodes_plane, stop_index, verbose=False):
+    nodes_length = map(float, map(len, closest_nodes_plane))
 
     distances = list()
-    for i in range(len(closest_nodes)):
-        distance = get_length_point_cloud(closest_nodes[i])
+    for i in range(len(closest_nodes_plane)):
+        distance = get_length_point_cloud(closest_nodes_plane[i])
         distances.append(float(distance))
 
     window_length = max(4, len(nodes_length) / 8)
@@ -71,7 +69,7 @@ def peak_stem_detection(closest_nodes, verbose=False):
                                         polyorder=3)
 
     nodes_length_smooth = list(nodes_length_smooth)
-    stop_index = nodes_length_smooth.index((max(nodes_length_smooth)))
+    # stop_index = nodes_length_smooth.index((max(nodes_length_smooth)))
 
     # a = nodes_length
     # stop_index = len(a) - a[::-1].index(max(a)) - 1
@@ -82,11 +80,11 @@ def peak_stem_detection(closest_nodes, verbose=False):
     max_peaks, min_peaks = peak_detection(nodes_length_smooth, lookahead)
 
     min_peaks = [(i, v) for i, v in min_peaks if i <= stop_index]
-    # min_peaks = [(0, nodes_length_smooth[0])] + \
-    #             [(1, nodes_length_smooth[1])] + min_peaks
 
     min_peaks = [(0, nodes_length_smooth[0]),
                  (1, nodes_length_smooth[1])] + min_peaks
+
+    min_peaks = list(set(min_peaks))
 
     if verbose:
         import matplotlib.pyplot
@@ -134,24 +132,32 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
         voxels_size=voxels_size,
         graph=graph)
 
-    # closest_nodes_planes = [numpy.array(list(nodes)) for nodes in
-    #                         closest_nodes_planes]
+    tmp_closest_nodes_planes = [numpy.array(list(nodes)) for nodes in
+                                closest_nodes_planes]
 
-    # closest_nodes_planes = compute_closest_nodes_with_ball(
-    #     arr_stem_segment_voxel,
-    #     stem_segment_path,
-    #     ball_radius=25,
-    #     graph=graph)
+    distances = list()
+    for i in range(len(tmp_closest_nodes_planes)):
+        distance = get_length_point_cloud(tmp_closest_nodes_planes[i])
+        distances.append(float(distance))
+    ball_radius = max(distances) / 2.0
+
+    closest_nodes_ball = compute_closest_nodes_with_ball(
+        arr_stem_segment_voxel,
+        stem_segment_path,
+        ball_radius=ball_radius,
+        graph=graph)
+
+    nodes_length = map(float, map(len, closest_nodes_ball))
+    stop_index = nodes_length.index((max(nodes_length)))
+
+    min_peaks_stem, distances = peak_stem_detection(tmp_closest_nodes_planes,
+                                                    stop_index,
+                                                    verbose=False)
+    # ==========================================================================
 
     stem_segment_centred_path = [
         numpy.array(list(nodes)).mean(axis=0) for nodes in closest_nodes_planes]
 
-    tmp_closest_nodes_planes = [numpy.array(list(nodes)) for nodes in
-                                closest_nodes_planes]
-
-    min_peaks_stem, distances = peak_stem_detection(tmp_closest_nodes_planes,
-                                                    verbose=False)
-    # ==========================================================================
 
     stem_voxel = set()
     radius = dict()
@@ -175,7 +181,6 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
         k = 1
 
     # print k, len(stem_centred_path_min_peak), stem_centred_path_min_peak
-
     tck, u = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=k)
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
 

@@ -478,7 +478,6 @@ def maize_analysis(voxel_maize_segmentation):
 
         lorder.append((vo_mature_leaf,
                        vo_mature_leaf.info["z_intersection"]))
-
     lorder.sort(key=lambda x: x[1])
 
     num_order = 1
@@ -490,14 +489,15 @@ def maize_analysis(voxel_maize_segmentation):
     for vo_cornet_leaf in voxel_maize_segmentation.get_cornet_leafs():
         vo_cornet_leaf = maize_cornet_leaf_analysis_real_length(vo_cornet_leaf)
         lorder.append((vo_cornet_leaf,
-                       -vo_cornet_leaf.info["not_visible_length"]))
+                       vo_cornet_leaf.info["not_visible_length"]))
 
     voxels = set(vo_stem.voxels_position())
-    lorder.sort(key=lambda x: x[1])
+    lorder.sort(key=lambda x: -x[1])
     for vo, _ in lorder:
         vo.info["order"] = num_order
         num_order += 1
 
+        # TODO : bug here in the order and analysis of the leaf
         vo = maize_cornet_leaf_analysis(vo,
                                         vo_stem.info['vector_mean'],
                                         voxels)

@@ -134,7 +134,7 @@ class VoxelSegmentation(object):
 
             for dvo in data['voxel_organs']:
 
-                vo = alinea.phenomenal.data_structure.voxelOrgan.VoxelOrgan(
+                vo = openalea.phenomenal.data_structure.voxelOrgan.VoxelOrgan(
                     dvo['label'])
 
                 vo.info = dvo['info']
@@ -163,7 +163,7 @@ class VoxelSegmentation(object):
 
             for dvo in data['voxel_organs']:
 
-                vo = alinea.phenomenal.data_structure.voxelOrgan.VoxelOrgan(
+                vo = openalea.phenomenal.data_structure.voxelOrgan.VoxelOrgan(
                     dvo['label'])
 
                 vo.info = dvo['info']
