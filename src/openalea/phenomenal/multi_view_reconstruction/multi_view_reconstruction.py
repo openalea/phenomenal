@@ -243,10 +243,7 @@ def voxels_is_visible_in_image(voxels_position,
     min_xy_max_xy = min_xy_max_xy[not_vv]
     bb = result[not_vv]
 
-    min_xy_max_xy[:, 0] = numpy.floor(min_xy_max_xy[:, 0])
-    min_xy_max_xy[:, 1] = numpy.floor(min_xy_max_xy[:, 1])
-    min_xy_max_xy[:, 2] = numpy.ceil(min_xy_max_xy[:, 2])
-    min_xy_max_xy[:, 3] = numpy.ceil(min_xy_max_xy[:, 3])
+    min_xy_max_xy = numpy.floor(min_xy_max_xy)
 
     min_xy_max_xy[min_xy_max_xy < 0] = 0
     (min_xy_max_xy[:, 0])[min_xy_max_xy[:, 0] >= length] = length - 1
@@ -336,24 +333,24 @@ def create_groups(image_views, kept, no_kept, voxels_size):
     group_id = 0
     for iv in image_views:
         if iv.ref is True:
-
             height, length = iv.image.shape
 
             res = get_bounding_box_voxel_projected(
                 no_kept, voxels_size, iv.projection)
 
-            res = res[(res[:, 2] >= 0) & (res[:, 0] < length) &
-                      (res[:, 3] >= 0) & (res[:, 1] < height)]
+            vv = ((res[:, 2] < 0) | (res[:, 0] >= length) |
+                  (res[:, 3] < 0) | (res[:, 1] >= height))
 
-            res[:, 0] = numpy.floor(res[:, 0])
-            res[:, 1] = numpy.floor(res[:, 1])
-            res[:, 2] = numpy.ceil(res[:, 2])
-            res[:, 3] = numpy.ceil(res[:, 3])
+            not_vv = numpy.logical_not(vv)
+            res = res[not_vv]
+            no_kept = no_kept[not_vv]
 
+            res = numpy.floor(res)
             res[res < 0] = 0
+
             (res[:, 0])[res[:, 0] >= length] = length - 1
-            (res[:, 2])[res[:, 2] >= length] = length - 1
             (res[:, 1])[res[:, 1] >= height] = height - 1
+            (res[:, 2])[res[:, 2] >= length] = length - 1
             (res[:, 3])[res[:, 3] >= height] = height - 1
             res = res.astype(int)
 
@@ -380,28 +377,42 @@ def create_groups(image_views, kept, no_kept, voxels_size):
 
         group_id += 1
 
-    return kept_groups
+    return kept_groups, no_kept
+
+
+def kept_groups(kept, no_kept, groups):
+
+    l_index = groups.values()
+    if l_index:
+        l_index = [numpy.array(index) for index in l_index]
+
+        for index in l_index:
+            pts = no_kept[index]
+            if len(kept) == 0:
+                kept = pts
+            else:
+                kept = numpy.insert(kept, 0, pts, axis=0)
+
+    kept = numpy.unique(kept, axis=0)
+    return kept
 
 
 def check_groups(kept, no_kept, groups):
 
     l_index = groups.values()
     if l_index:
-
         l_index = [numpy.array(index) for index in l_index]
 
         neigh = sklearn.neighbors.NearestNeighbors(
             n_neighbors=1, metric='euclidean')
 
-        if len(kept) == 0:
-            kept = numpy.array([[0, 0, 0]])
-
         neigh.fit(kept)
         distance, index_nodes = neigh.kneighbors(no_kept)
 
+        # Ordered by min distance from kept voxel
         min_dist = [numpy.min(distance[index]) for index in l_index]
         l_index = [y for (x, y) in sorted(zip(min_dist, l_index),
-                                          key=lambda x: x[0])]
+                                          key=lambda k: k[0])]
 
         kk = set()
         for index in l_index:
@@ -427,13 +438,20 @@ def check_groups(kept, no_kept, groups):
             xx = numpy.unique(numpy.where(distance == m))
             pts = no_kept[index[xx]]
             kk = kk.union(set(list(index[xx])))
-            kept = numpy.insert(kept, 0, pts, axis=0)
+
+            if len(kept) == 0:
+                kept = pts.copy()
+            else:
+                kept = numpy.insert(kept, 0, pts.copy(), axis=0)
+
+            # kept = numpy.insert(kept, 0, pts, axis=0)
 
     return kept
 
 
 # ==============================================================================
 
+from openalea.phenomenal.display import show_images
 
 def reconstruction_3d(image_views,
                       voxels_size=4,
@@ -459,7 +477,6 @@ def reconstruction_3d(image_views,
         Size of side geometry of voxel that each voxel will have
 
     error_tolerance : int, optional
-
 
     voxel_center_origin : (x, y, z), optional
         Center position of the first original voxel, who will be split.
@@ -498,6 +515,9 @@ def reconstruction_3d(image_views,
 
     for i in range(nb_iteration):
 
+        if len(voxels_position) == 0:
+            break
+
         voxels_position = split_voxel_centers_in_eight(
             voxels_position, voxels_size)
 
@@ -514,11 +534,15 @@ def reconstruction_3d(image_views,
             voxels_position, voxels_size, image_views,
             error_tolerance=error_tolerance)
 
-        groups = create_groups(
+        groups, no_kept = create_groups(
             image_views, voxels_position, no_kept, voxels_size)
 
-        voxels_position = check_groups(
-            voxels_position, no_kept,  groups)
+        if i + 1 < nb_iteration or len(voxels_position) == 0:
+            voxels_position = kept_groups(voxels_position, no_kept, groups)
+        else:
+            voxels_position = check_groups(voxels_position, no_kept, groups)
+
+    # voxels_position = numpy.unique(voxels_position, axis=0)
 
     return VoxelGrid(voxels_position, voxels_size)
 
@@ -561,18 +585,20 @@ def project_voxel_centers_on_image(voxels_position,
     res = get_bounding_box_voxel_projected(
         voxels_position, voxels_size, projection)
 
-    res = res[(res[:, 2] >= 0) & (res[:, 0] < length) &
-              (res[:, 3] >= 0) & (res[:, 1] < height)]
-    
-    res[:, 0] = numpy.floor(res[:, 0])
-    res[:, 1] = numpy.floor(res[:, 1])
-    res[:, 2] = numpy.ceil(res[:, 2])
-    res[:, 3] = numpy.ceil(res[:, 3])
+    vv = ((res[:, 2] < 0) | (res[:, 0] >= length) |
+          (res[:, 3] < 0) | (res[:, 1] >= height))
 
+    not_vv = numpy.logical_not(vv)
+    res = res[not_vv]
+
+    # res = res[(res[:, 2] >= 0) & (res[:, 0] < length) &
+    #           (res[:, 3] >= 0) & (res[:, 1] < height)]
+
+    res = numpy.floor(res)
     res[res < 0] = 0
     (res[:, 0])[res[:, 0] >= length] = length - 1
-    (res[:, 2])[res[:, 2] >= length] = length - 1
     (res[:, 1])[res[:, 1] >= height] = height - 1
+    (res[:, 2])[res[:, 2] >= length] = length - 1
     (res[:, 3])[res[:, 3] >= height] = height - 1
     res = res.astype(int)
 

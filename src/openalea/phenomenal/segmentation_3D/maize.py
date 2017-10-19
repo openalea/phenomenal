@@ -57,7 +57,7 @@ def get_highest_segment(voxel_segments):
     z_max = float("-inf")
     highest_voxel_segment = None
     for voxel_segment in voxel_segments:
-        z = numpy.max(numpy.array(voxel_segment.polyline)[:, 2])
+        z = numpy.max(numpy.array(voxel_segment.polyline)[-1, 2])
 
         if z > z_max:
             z_max = z
@@ -96,7 +96,6 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
         for voxel_group in networkx.connected_components(subgraph):
             if vs.polyline[-1] in voxel_group:
                 leaf_voxel = voxel_group
-
         vs.leaf_voxel = leaf_voxel
 
         # ======================================================================
@@ -136,9 +135,10 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     cornet_organs = list()
     for vs in voxel_skeleton.voxel_segments:
 
-        if len(vs.real_polyline) * voxels_size <= 30:
-            organ_unknown.voxel_segments.append(vs)
-            continue
+        # # TODO : Maybe change that (hard coded)
+        # if len(vs.real_polyline) * voxels_size <= 30:
+        #     organ_unknown.voxel_segments.append(vs)
+        #     continue
 
         if len(stem_top.intersection(vs.polyline)) > 0:
             vo = openalea.phenomenal.data_structure.VoxelOrgan("cornet_leaf")
@@ -241,7 +241,6 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
     vms = openalea.phenomenal.data_structure.VoxelSegmentation(
         voxels_size, voxel_skeleton.ball_radius)
-
     vms.voxel_organs.append(organ_unknown)
 
     organ_stem = openalea.phenomenal.data_structure.VoxelOrgan("stem")
@@ -253,11 +252,5 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
     for leaf_organ in mature_organs:
         vms.voxel_organs.append(leaf_organ)
-
-    # ==========================================================================
-    # import openalea.phenomenal.display as display
-    #
-    # display.show_voxel_maize_segmentation(vms)
-    # # display.show_voxels([voxels_1, voxels_2], [voxels_size] * 2)
 
     return vms

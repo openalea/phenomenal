@@ -11,16 +11,16 @@
 # ==============================================================================
 import time
 
-from alinea.phenomenal.display import (
+from openalea.phenomenal.display import (
     DisplayVoxelGrid)
 
-from alinea.phenomenal.data_structure import (
+from openalea.phenomenal.data_structure import (
     ImageView)
 
-from alinea.phenomenal.multi_view_reconstruction import (
+from openalea.phenomenal.multi_view_reconstruction import (
     reconstruction_3d)
 
-from alinea.phenomenal.data_access.plant_1 import (
+from openalea.phenomenal.data_access.plant_1 import (
     plant_1_images_binarize,
     plant_1_calibration_camera_side,
     plant_1_calibration_camera_top)

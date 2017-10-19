@@ -78,8 +78,9 @@ def get_node_close_to_planes(voxels, node_src, plane_equation,
             if node_src in cc:
                 return cc
 
+    # Work only with not distance voxels, not with graph who not connect all
+    # point
     nodes.append(numpy.array(node_src))
-
     while nodes:
         node = nodes.pop()
 

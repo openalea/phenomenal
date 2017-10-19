@@ -17,11 +17,11 @@ from .displayVoxel import DisplayVoxel
 
 class DisplayVoxelGrid(DisplayVoxel):
 
-    def __init__(self, voxel_point_cloud, color=(0, 0.8, 0)):
+    def __init__(self, voxel_grid, color=(0, 0.8, 0)):
         DisplayVoxel.__init__(self)
 
         self.add_actor_from_voxels(
-            voxel_point_cloud.voxels_position,
-            voxel_point_cloud.voxels_size,
+            voxel_grid.voxels_position,
+            voxel_grid.voxels_size,
             color=color)
 

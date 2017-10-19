@@ -58,7 +58,7 @@ def skeletonize_octree(voxel_octree,
     # ==========================================================================
 
     vpc = voxel_octree.get_voxel_point_cloud(voxels_size_to_skeletonize)
-    voxel_graph = voxel_graph_from_voxel_point_cloud(vpc)
+    voxel_graph = voxel_graph_from_voxel_grid(vpc)
     voxel_skeleton = skeletonize(voxel_graph.graph, voxel_graph.voxels_size,
                                  distance_plane=distance_planes)
 

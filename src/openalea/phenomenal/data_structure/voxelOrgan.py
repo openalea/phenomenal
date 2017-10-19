@@ -85,7 +85,7 @@ class VoxelOrgan(object):
         voxels_position = numpy.array(map(tuple, list(self.voxels_position())))
 
         closest_nodes, planes_equation = (
-            alinea.phenomenal.segmentation_3d.
+            openalea.phenomenal.segmentation_3D.
             plane_interception.compute_closest_nodes_with_planes(
                 voxels_position,
                 self.longest_polyline(),
