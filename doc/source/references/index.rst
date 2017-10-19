@@ -16,13 +16,14 @@ The exact API of all functions and classes, as given by the docstrings. The API
 documents expected types and allowed features for all functions, and all
 parameters available for the algorithms.
 
+
 .. toctree::
 
-    binarization
+    image
     calibration
-    data_plants
+    data_access
+    data_structure
     display
-    mesh
     multi_view_reconstruction
-    segmentation_2d
-    segmentation_3d
+    mesh
+    segmentation_3D

@@ -17,7 +17,7 @@ from __future__ import print_function, division
 
 import mayavi.mlab
 
-from alinea.phenomenal.data_structure import VoxelPointCloud
+from alinea.phenomenal.data_structure import VoxelGrid
 
 from alinea.phenomenal.display import (
     plot_voxels,
@@ -55,7 +55,7 @@ from alinea.phenomenal.data_access import (
 from alinea.phenomenal.multi_view_reconstruction.\
     multi_view_reconstruction_without_loss import (reconstruction_without_loss)
 
-from alinea.phenomenal.data_structure import VoxelPointCloud
+from alinea.phenomenal.data_structure import VoxelGrid
 
 from alinea.phenomenal.display.multi_view_reconstruction import (
     show_voxel_point_cloud)
@@ -105,10 +105,10 @@ for angle in range(0, 360, 30):
 #
 # filename = "4_without_loss.json"
 #
-# # vpc = VoxelPointCloud(voxel_centers, voxel_size)
+# # vpc = VoxelGrid(voxel_centers, voxel_size)
 # # vpc.write_to_json(filename)
 #
-# vpc = VoxelPointCloud.read_from_json(filename)
+# vpc = VoxelGrid.read_from_json(filename)
 #
 # voxels_center = vpc.voxels_center
 # voxels_size = vpc.voxels_size

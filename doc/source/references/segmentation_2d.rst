@@ -1,1 +1,0 @@
-.. automodule:: alinea.phenomenal.segmentation_2d

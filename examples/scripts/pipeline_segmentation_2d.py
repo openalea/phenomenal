@@ -157,7 +157,7 @@ def run_example(data_directory):
          img],
         name_windows='Image & Segmentation : %d degree' % angle_choose)
     #
-    # histogram = alinea.phenomenal.segmentation_2d.compute_inclination(
+    # histogram = alinea.phenomenal.image.compute_inclination(
     #     stem.segments)
     #
     #     pylab.hist(histogram, 180, histtype='bar', rwidth=0.8)

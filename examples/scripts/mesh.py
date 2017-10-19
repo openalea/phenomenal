@@ -18,14 +18,14 @@ from alinea.phenomenal.data_structure import voxel_centers_to_image_3d
 from alinea.phenomenal.mesh import meshing, centers, normals
 from alinea.phenomenal.display import show_mesh, show_points_3d
 
-from alinea.phenomenal.data_structure import VoxelPointCloud
+from alinea.phenomenal.data_structure import VoxelGrid
 # ==============================================================================
 
 # voxel_size = 4
 # voxel_centers = plant_1_voxel_centers(voxel_size=voxel_size)
 
 filename = "4_without_loss.json"
-vpc = VoxelPointCloud.read_from_json(filename)
+vpc = VoxelGrid.read_from_json(filename)
 voxels_center = vpc.voxels_center
 voxels_size = vpc.voxels_size
 

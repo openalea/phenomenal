@@ -11,7 +11,7 @@
 # ==============================================================================
 import os
 
-from alinea.phenomenal.data_structure import (
+from openalea.phenomenal.data_structure import (
     VoxelOctree)
 # ==============================================================================
 
