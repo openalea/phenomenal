@@ -28,7 +28,8 @@ build_conda:
    - conda install conda-build
    - conda create --name phenome python
    - source activate phenome
-   - cd phenomenal/build_tools/conda
+   - pwd
+   - cd ./build_tools/conda
    - conda build -c conda-forge -c openalea .
    - cd ../..
 
