@@ -39,7 +39,7 @@ Installation
 .. toctree::
     :maxdepth: 2
 
-   ./install/install.rst
+   ./install/index.rst
 
 Documentation
 -------------

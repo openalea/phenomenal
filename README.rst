@@ -1,3 +1,4 @@
+
 ==========
 Phenomenal
 ==========
@@ -5,45 +6,60 @@ Phenomenal
 A software framework for model-assisted analysis of high throughput
 plant phenotyping data
 
+**Phenomenal** is released under a `Cecill-C <http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html>`_ license.
+
+
 .. contents::
 
-What is Phenomenal ?
---------------------
+=============
+Documentation
+=============
 
-Plant high-throughput phenotyping aims at capturing the genetic variability
-of plant response to environmental factors for thousands of plants,
-hence identifying heritable traits for genomic selection and predicting
-the genetic values of allelic combinations in different environment.
+The documentation is available at `<https://phenomenal.readthedocs.io>`_
 
-This first implies the automation of the measurement of a large number of
-traits to characterize plant growth, plant development and plant functioning.
-It also requires a fluent and versatile interaction between data and
-continuously evolving plant response models, that are essential in the analysis
-of the marker x environment interaction and in the integration of processes
-for predicting crop performance.
+Tutorials is available in the example folder as a Jupyter Notebook.
 
-In the frame of the Phenome high throughput phenotyping infrastructure,
-we develop **Phenomenal**. A software framework dedicated to the analysis of
-high throughput phenotyping data and models.
+===========================
+Installation with Miniconda
+===========================
 
-Phenomenal currently consists of 2D image analysis workflows built with
-standard image libraries (VTK, OpenCV, Scikit.Image), algorithms for 3D
-reconstruction, segmentation and tracking of plant organs for maize
-(under development), and workflows for estimation of light interception by
-plants during their growth.
+Miniconda installation
+----------------------
+
+Follow official website instruction to install miniconda :
+
+http://conda.pydata.org/miniconda.html
+
+Create virtual environment and activate it
+..........................................
+
+.. code:: shell
+
+    conda create --name phenomenal python
+    source activate phenomenal
+
+Dependencies install
+....................
+
+.. code:: shell
+
+    cd phenomenal/build_tools/conda
+    conda build -c conda-forge -c openalea .
+    conda install -c conda-forge -c openalea --use-local openalea.phenomenal
+
+(Optional) Package managing tools :
+
+.. code:: shell
+
+    conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc
+
 
 
 Authors
 -------
 
-.. include:: ./AUTHORS.rst
-
-
-License
--------
-
-**Phenomenal** is released under a Cecill-C license.
-
-.. note:: `Cecill-C <http://www.cecill.info/licences/
-    Licence_CeCILL-C_V1-en.html>`_ license is a LGPL compatible license.
-
+* Artzet	    Simon		(simon.artzet@gmail.com)
+* Fournier	    Christian	(christian.fournier@supagro.inra.fr)
+* Brichet	    Nicolas		(brichet@supagro.inra.fr)
+* Chopard       Jerome      (revesansparole@gmail.com)
+* Mielewczik	Michael

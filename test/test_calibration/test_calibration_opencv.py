@@ -12,14 +12,14 @@
 import numpy
 import os
 
-from alinea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
+from openalea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
     import reconstruction_3d
 
-from alinea.phenomenal.data_access.plant_1 import (
+from openalea.phenomenal.data_access.plant_1 import (
     plant_1_chessboards,
     plant_1_images_binarize)
 
-from alinea.phenomenal.calibration.calibration_opencv import (
+from openalea.phenomenal.calibration.calibration_opencv import (
     CalibrationCameraOpenCv)
 # ==============================================================================
 

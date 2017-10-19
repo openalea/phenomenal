@@ -1,0 +1,19 @@
+*.pyc
+*.pyo
+*.pyd
+
+# C extensions
+*.so
+*.dll
+*.dylib
+
+# Packages
+*.egg
+*.egg-info
+
+# Directory
+.git
+.ipynb_checkpoints
+build
+cover
+dist
