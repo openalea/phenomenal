@@ -17,34 +17,27 @@ after_script:
   - echo "After script section"
   - echo "For example you might do some cleanup here"
 
-build_develop:
+build_conda:
  stage: build
  script:
    - apt-get update
    - apt-get -y install freeglut3-dev
 
-   - conda create --name phenome python --yes
+   - conda config --set always_yes yes --set changeps1 no
+   - conda update -q conda
+   - conda install conda-build
+   - conda create --name phenome python
    - source activate phenome
+   - cd phenomenal/build_tools/conda
+   - conda build -c conda-forge -c openalea .
+   - cd ../..
 
-   - echo "Dependency"
-   - conda install numpy --yes
-   - conda install opencv --yes
-   - conda install scipy --yes
-   - conda install scikit-learn --yes
-   - conda install networkx --yes
-   - conda install vtk --yes
-   - conda install scikit-image --yes
-
-   - echo "Optional dependency"
-   - conda install jupyter --yes
-   - conda install nose --yes
-   - conda install coverage --yes
-   - conda install matplotlib --yes
+   - conda install -c conda-forge -c openalea --use-local openalea.phenomenal
+   - conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc
 
    - conda info -e
    - conda list
 
-   - python setup.py develop --prefix=$CONDA_PREFIX
    - nosetests test
    - source deactivate
 
@@ -55,26 +48,22 @@ test_coverage:
    - apt-get update
    - apt-get -y install freeglut3-dev
 
-   - conda create --name phenome python --yes
+   - conda config --set always_yes yes --set changeps1 no
+   - conda update -q conda
+   - conda install conda-build
+   - conda create --name phenome python
    - source activate phenome
+   - cd phenomenal/build_tools/conda
+   - conda build -c conda-forge -c openalea .
+   - cd ../..
 
-   - echo "Dependency"
-   - conda install numpy --yes
-   - conda install opencv --yes
-   - conda install scipy --yes
-   - conda install scikit-learn --yes
-   - conda install networkx --yes
-   - conda install vtk --yes
-   - conda install scikit-image --yes
+   - conda install -c conda-forge -c openalea --use-local openalea.phenomenal
+   - conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc
 
-   - echo "Optional dependency"
-   - conda install jupyter --yes
-   - conda install nose --yes
-   - conda install coverage --yes
-   - conda install matplotlib --yes
+   - conda info -e
+   - conda list
 
-   - python setup.py develop --prefix=$CONDA_PREFIX
-   - nosetests test --with-coverage --cover-erase --cover-html --cover-package=alinea.phenomenal --cover-tests --cover-inclusive --cover-min-percentage=30
+   - nosetests test
    - source deactivate
 
  artifacts:
