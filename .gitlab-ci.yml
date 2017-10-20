@@ -35,7 +35,7 @@ install:
    - cd ../..
 
    - conda install -c conda-forge -c openalea --use-local openalea.phenomenal
-   - conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc
+   - conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc coverage
 
    - conda info -e
    - conda list
