@@ -46,16 +46,3 @@ install:
  artifacts:
   paths:
    - cover/
-
-pages:
-  stage: deploy
-  dependencies:
-    - install
-  script:
-    - mv cover/ public/
-  artifacts:
-    paths:
-      - public
-    expire_in: 30 days
-  only:
-    - master
