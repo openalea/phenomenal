@@ -2,10 +2,6 @@
     :target: https://gitlab.inria.fr/phenome/phenomenal/commits/master
     :alt: pipeline status
 
-.. image:: https://gitlab.inria.fr/phenome/phenomenal/badges/master/coverage.svg
-    :target: https://gitlab.inria.fr/phenome/phenomenal/commits/master
-    :alt: coverage report
-
 ==========
 Phenomenal
 ==========
