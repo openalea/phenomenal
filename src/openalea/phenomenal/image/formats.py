@@ -20,11 +20,27 @@ import cv2
 
 
 def read_image(filename, flags=cv2.IMREAD_UNCHANGED):
-    return cv2.imread(filename, flags=flags)
+    """
+    Read a image from a file name with opencv API.
+
+    :param filename: file name of the image
+    :param flags:
+    :return: RGB or grayscale image
+    """
+    img_bgr = cv2.imread(filename, flags=flags)
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+
+    return img_rgb
 
 
 def write_image(filename, image):
+    """
+    Write a image in a jpg file.
 
+    :param filename: output filename where write the image
+    :param image: numpy image to write
+    :return: None
+    """
     if (os.path.dirname(filename) and not os.path.exists(
             os.path.dirname(filename))):
         os.makedirs(os.path.dirname(filename))

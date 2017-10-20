@@ -42,19 +42,12 @@ class Chessboard(object):
         self.image_points = collections.defaultdict(dict)
 
     def __str__(self):
-        my_str = ''
-        my_str += 'Chessboard Attributes :\n'
-        my_str += 'Square size (mm): ' + str(self.square_size) + '\n'
-        my_str += 'Shape : ' + str(self.shape) + '\n'
 
-        my_str += 'Number of angle : ' + str(len(self.image_points)) + '\n'
-        for angle in self.image_points:
-            my_str += str(angle) + ', '
+        s = ("Chessboard Attributes :\n"
+             "Square size (mm): {}\n"
+             "Shape : {}\n".format(self.square_size, self.shape))
 
-        if len(self.image_points) > 0:
-            my_str += '\n'
-
-        return my_str
+        return s
 
     def get_corners_local_3d(self):
         square_size = self.square_size
@@ -75,8 +68,19 @@ class Chessboard(object):
 
         return corners_2d
 
-    def find_corners(self, image):
+    def detect_corners(self, id_camera, angle, image):
+        """
+        Detect chessboard corner in a image and save it in object with the
+        id_camera and angle like keys.
+
+        :param id_camera: id/label/name_key of the camera who take the picture
+        :param angle: Angle of chessboard on the turnable platform
+        :param image: numpy GRAYSCALE Image containing the chessboard target
+        :return: True if chessboard corner are found otherwise False.
+        """
+
         try:
+
             found, corners = cv2.findChessboardCorners(
                 image,
                 tuple(self.shape),
@@ -84,31 +88,18 @@ class Chessboard(object):
                 cv2.CALIB_CB_NORMALIZE_IMAGE)
 
             if found:
+
                 cv2.cornerSubPix(
                     image, corners, (11, 11), (-1, -1),
                     criteria=(cv2.TERM_CRITERIA_EPS +
                               cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
-            else:
-                return None
+
+                self.image_points[id_camera][angle] = corners
 
         except cv2.error:
-            return None
+            return False
 
-        return corners
-
-    def find_and_add_corners(self, id_camera, angle, image, verbose=False):
-
-        image_points = self.find_corners(image)
-        if image_points is not None:
-            self.image_points[id_camera][angle] = image_points
-
-        if verbose:
-            print str(id_camera) + " camera, ",
-            print str(angle).zfill(3) + " angle",
-            if image_points is not None:
-                print "\t- corners detected"
-            else:
-                print "\t- corners not found"
+        return found
 
     def dump(self, file_path):
         # Convert to json format
