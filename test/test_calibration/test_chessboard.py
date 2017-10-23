@@ -53,11 +53,16 @@ def test_chessboard_3():
 
     images = plant_1_images_chessboard()
 
-    corners = chess.find_corners(images[42])
-    res = numpy.array(corners).astype(float)
-    res = numpy.around(res, decimals=2)
+    found = chess.detect_corners("side", 42, images[42])
 
-    assert res.shape == (48, 1, 2)
+    if found:
+        corners = chess.get_corners_2d("side")[42]
+        res = numpy.array(corners).astype(float)
+        res = numpy.around(res, decimals=2)
+
+        assert res.shape == (48, 2)
+    else:
+        assert False
 
 # ==============================================================================
 

@@ -169,46 +169,46 @@ def get_image_views_cube_projected(with_ref=False):
     return image_views
 
 
-# def test_reconstruction_3d_1():
-#
-#     # Load images binarize
-#     images = plant_1_images_binarize()
-#     calibration = plant_1_calibration_camera_side()
-#
-#     image_views = list()
-#     for angle in range(0, 360, 30):
-#         projection = calibration.get_projection(angle)
-#         iv = ImageView(images[angle], projection, inclusive=False)
-#         image_views.append(iv)
-#
-#     voxels_size = 64
-#     # Multi-view reconstruction
-#     vg = reconstruction_3d(image_views,
-#                            voxels_size=voxels_size,
-#                            verbose=False)
-#
-#     assert len(vg.voxels_position) > 0
+def test_reconstruction_3d_1():
+
+    # Load images binarize
+    images = plant_1_images_binarize()
+    calibration = plant_1_calibration_camera_side()
+
+    image_views = list()
+    for angle in range(0, 360, 30):
+        projection = calibration.get_projection(angle)
+        iv = ImageView(images[angle], projection, inclusive=False)
+        image_views.append(iv)
+
+    voxels_size = 64
+    # Multi-view reconstruction
+    vg = reconstruction_3d(image_views,
+                           voxels_size=voxels_size,
+                           verbose=False)
+
+    assert len(vg.voxels_position) > 0
 
 
-# def test_reconstruction_3d_2():
-#
-#     image_views = get_image_views_cube_projected()
-#
-#     vg = reconstruction_3d(image_views,
-#                             voxels_size=20,
-#                             verbose=False)
-#
-#     assert len(vg.voxels_position) > 0
-#
-#     false_positive, true_negative = reconstruction_error(vg, image_views)
-#
+def test_reconstruction_3d_2():
+
+    image_views = get_image_views_cube_projected()
+
+    vg = reconstruction_3d(image_views,
+                            voxels_size=20,
+                            verbose=False)
+
+    assert len(vg.voxels_position) > 0
+
+    false_positive, true_negative = reconstruction_error(vg, image_views)
+
 
 def test_reconstruction_3d_3():
 
     image_views = get_image_views_cube_projected(with_ref=True)
 
     vg = reconstruction_3d(image_views,
-                           voxels_size=20,
+                           voxels_size=40,
                            verbose=True,
                            error_tolerance=0)
 
