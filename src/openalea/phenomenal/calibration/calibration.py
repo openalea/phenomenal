@@ -1873,9 +1873,8 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
         self._ref_number_image = (len(ref_target_1_points_2d) + len(
             ref_target_2_points_2d))
 
-        for angle in ref_target_1_points_2d:
-            ref_target_1_points_2d
-
+        # for angle in ref_target_1_points_2d:
+        #     ref_target_1_points_2d
 
         self._ref_number = (len(ref_target_1_points_2d) +
                             len(ref_target_2_points_2d))

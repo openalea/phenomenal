@@ -27,10 +27,13 @@ def read_image(filename, flags=cv2.IMREAD_UNCHANGED):
     :param flags:
     :return: RGB or grayscale image
     """
-    img_bgr = cv2.imread(filename, flags=flags)
-    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+    img = cv2.imread(filename, flags=flags)
 
-    return img_rgb
+    shape = img.shape
+    if len(shape) == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    return img
 
 
 def write_image(filename, image):

@@ -10,6 +10,7 @@
 #
 # ==============================================================================
 import os
+import cv2
 import numpy
 
 
@@ -33,7 +34,7 @@ def test_write_image():
     im1[10:-10, 10:-10] = 255
 
     write_image("tmp.png", im1)
-    im2 = read_image("tmp.png")
+    im2 = read_image("tmp.png", cv2.IMREAD_GRAYSCALE)
 
     assert numpy.array_equal(im1, im2)
 
