@@ -9,165 +9,127 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import time
-from pythreejs import *
-import numpy as np
-from IPython.display import display
-from ipywidgets import HTML, Text
-from traitlets import link, dlink
-from itertools import chain
+from ._order_color_map import order_color_map
 
-# ==============================================================================
-class AnimateObjects(object):
-    def __init__(self, objects):
-        self.objects = objects
-
-    def animate(self, time_visible_by_object=1.00):
-        for i in range(len(self.objects)):
-            self.set_index_objects_visible(i)
-            time.sleep(time_visible_by_object)
-
-    def set_index_objects_visible(self, index):
-        for obj in self.objects:
-            obj.visible = False
-        self.objects[index].visible = True
+import numpy
+import ipyvolume
 
 
-def animate_voxel_point_cloud(list_voxel_point_cloud, t=1.00, size=("800", "600")):
+def plot_voxel(voxels_position, size_ratio=1.0, marker="box", color="green"):
 
-    if not list_voxel_point_cloud:
-        return None
+    if len(voxels_position) > 0:
+        x, y, z = (voxels_position[:, 0],
+                   voxels_position[:, 1],
+                   voxels_position[:, 2])
 
-    list_points = list()
-    for voxel_point_cloud in list_voxel_point_cloud:
-
-        voxel_center = voxel_point_cloud.voxels_center
-        voxel_size = voxel_point_cloud.voxels_size
-
-        # Transform to vertices display format
-        vertices = list(chain.from_iterable(voxel_center))
-
-        # Define points
-        geometry = BufferGeometry(vertices=vertices)
-        # Define colors and size points
-        material = PointsMaterial(size=voxel_size, color='green')
-
-        points = Points(geometry=geometry, material=material)
-
-        list_points.append(points)
-
-    children = list_points + [AmbientLight(color='#788777')]
-
-    scene = Scene(children=children)
-
-    children = DirectionalLight(color='white',
-                                position=[0, 1000, 0],
-                                intensity=0.4)
-
-    camera = PerspectiveCamera(position=[-2000, 0, 0],
-                               up=[0, 0, 1],
-                               children=[children])
-
-    # Define how far camera can view geometry in the scene
-    camera.far = 8000
-
-    controls = OrbitControls(controlling=camera)
-    renderer = Renderer(camera=camera,
-                        scene=scene,
-                        controls=[controls])
-
-    # Define size of window renderer
-    renderer.width, renderer.height = size
-    # Define background color and opacity of window renderer
-    renderer.background_color = "black"
-    renderer.background_opacity = 0.5
-
-    ao = AnimateObjects(list_points)
-    ao.set_index_objects_visible(0)
-
-    # launch display
-    display(renderer)
-
-    ao.animate(time_visible_by_object=t)
-
-    return ao
+        ipyvolume.scatter(x, y, z, size=size_ratio, marker=marker, color=color)
 
 
 def show_voxel_grid(vg,
-                    color_points='green',
-                    windows_size=("800", "600"),
-                    renderer_background_color="black",
-                    renderer_background_opacity=0.0):
+                    size_ratio=1,
+                    color='green',
+                    width=800, height=800):
 
-    # Transform to vertices display format
-    vertices = list(chain.from_iterable(vg.voxels_position))
+    ipyvolume.figure(width=width, height=height)
+    plot_voxel(vg.voxels_position, size_ratio=size_ratio, color=color)
+    ipyvolume.style.use(['default', 'minimal'])
+    ipyvolume.view(0, 90)
+    ipyvolume.show()
 
-    # Define points
-    geometry = BufferGeometry(vertices=vertices)
-    # Define colors and size points
-    material = PointsMaterial(size=vg.voxels_size, color=color_points)
 
-    points = Points(geometry=geometry, material=material)
+def show_mesh(vertices, faces, color='green'):
 
-    scene = Scene(children=[points, AmbientLight(color='#788777')])
+    ipyvolume.figure(width=800, height=800)
+    ipyvolume.style.use(['default', 'minimal'])
+    ipyvolume.view(0, 90)
 
-    children = DirectionalLight(color='white',
-                                position=[0, 1000, 0],
-                                intensity=0.4)
+    x, y, z = (vertices[:, 0], vertices[:, 1], vertices[:, 2])
+    ipyvolume.plot_trisurf(x, y, z, triangles=faces, color=color)
+    ipyvolume.show()
 
-    camera = PerspectiveCamera(position=[-2000, 0, 0],
-                               up=[0, 0, 1],
-                               children=[children])
 
-    # Define how far camera can view geometry in the scene
-    camera.far = 8000
+def show_skeleton(voxel_skeleton,
+                  with_voxel=True,
+                  size_ratio=1.0,
+                  color='green',
+                  width=800, height=800):
 
-    controls = OrbitControls(controlling=camera)
-    renderer = Renderer(camera=camera,
-                        scene=scene,
-                        controls=[controls])
+    ipyvolume.figure(width=width, height=height)
+    ipyvolume.style.use(['default', 'minimal'])
+    ipyvolume.view(0, 90)
 
-    # Define size of window renderer
-    renderer.width, renderer.height = windows_size
-    # Define background color and opacity of window renderer
-    renderer.background_color = renderer_background_color
-    renderer.background_opacity = renderer_background_opacity
+    for vs in voxel_skeleton.voxel_segments:
 
-    # launch display
-    display(renderer)
+        if with_voxel:
 
-def show_mesh(vertices, faces, voxels_size):
+            plot_voxel(numpy.array(list(vs.voxels_position)),
+                       size_ratio=size_ratio * 0.25,
+                       color=color)
 
-    vert = list()
-    for index_1, index_2, index_3 in faces:
-        vert.append(vertices[index_1])
-        vert.append(vertices[index_2])
-        vert.append(vertices[index_3])
+        plot_voxel(numpy.array(list(vs.polyline)),
+                   size_ratio=size_ratio,
+                   color="red")
 
-    vert = list(chain.from_iterable(vert))
+        plot_voxel(numpy.array([vs.polyline[0]]),
+                   size_ratio=size_ratio * 2.0,
+                   marker="sphere",
+                   color="blue")
 
-    geometry = BufferGeometry(vertices=vert)
-    material = PointsMaterial(size=voxels_size, color='yellow')
-    material = NormalMaterial()
-    material.wireframe = True
-    material.fog = True
-    # material.color = 'green'
+        plot_voxel(numpy.array([vs.polyline[-1]]),
+                   size_ratio=size_ratio * 2.0,
+                   marker="sphere",
+                   color="red")
 
-    points = Mesh(geometry=geometry, material=material)
+    ipyvolume.show()
 
-    scene = Scene(children=[points, AmbientLight(color='#788777')])
-    children = DirectionalLight(color='white', position=[0, 1000, 0],
-                                intensity=0.4)
-    camera = PerspectiveCamera(position=[-2000, 0, 0],
-                               up=[0, 0, 1],
-                               children=[children])
-    camera.far = 8000
 
-    controls = OrbitControls(controlling=camera)
-    renderer = Renderer(camera=camera, scene=scene, controls=[controls])
-    renderer.width = "800"
-    renderer.height = "600"
-    renderer.background_color = "black"
-    renderer.background_opacity = 0.0
-    renderer.fog = True
-    display(renderer)
+def show_segmentation(voxel_segmentation,
+                      size_ratio=1.0,
+                      width=800, height=800):
+
+    ipyvolume.figure(width=width, height=height)
+    ipyvolume.style.use(['default', 'minimal'])
+    ipyvolume.view(0, 90)
+
+    def get_color(label, info):
+
+        if label == "stem":
+            color = (128, 128, 128)
+        elif label == "unknown":
+            color = (255, 255, 255)
+        elif 'order' in info:
+            color_map = order_color_map()
+            color = color_map[info['order']]
+            color = tuple([int(255 * x) for x in color])
+
+        else:
+            if label == "cornet_leaf":
+                color = (255, 0, 0)
+            else:
+                color = (0, 255, 0)
+
+        return "rgb" + str(color)
+
+    for vo in voxel_segmentation.voxel_organs:
+
+        voxels_position = numpy.array(
+            map(tuple, list(vo.voxels_position())))
+
+        plot_voxel(voxels_position,
+                   size_ratio * 1,
+                   color=get_color(vo.label, vo.info))
+
+        if ((vo.label == "mature_leaf" or vo.label == "cornet_leaf") and
+                len(vo.voxel_segments) > 0 and "position_tip" in vo.info):
+
+            plot_voxel(numpy.array([vo.info['position_tip']]),
+                       size_ratio * 2,
+                       color="red",
+                       marker="sphere")
+
+            plot_voxel(numpy.array([vo.info['position_base']]),
+                       size_ratio * 2,
+                       color="blue",
+                       marker="sphere")
+
+    ipyvolume.show()

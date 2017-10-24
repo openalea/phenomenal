@@ -30,6 +30,7 @@ requirements:
     - scikit-image
     - opencv
     - pywin32 [win]
+    - nose
 
 test:
   imports:

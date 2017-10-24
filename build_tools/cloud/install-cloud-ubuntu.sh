@@ -79,15 +79,15 @@ wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O mi
 # ==============================================================================
 # Git Branch version
 
-cd phenomenal
-git checkout develop
-git pull
-cd ..
-
-cd phenoarch
-git checkout feature/deploy_cloud
-git pull
-cd ..
+#cd phenomenal
+#git checkout develop
+#git pull
+#cd ..
+#
+#cd phenoarch
+#git checkout feature/deploy_cloud
+#git pull
+#cd ..
 
 # ==============================================================================
 #                           Local Installation
@@ -117,10 +117,8 @@ cd ~
 
 # Install phenoarch
 cd ~/phenoarch/
-python setup.py develop --prefix=$CONDA_PREFIX
-cd ~
+python setup.py develop
 
 # python-irodsclient
 cd ~/python-irodsclient/
-python setup.py develop --prefix=$CONDA_PREFIX
-cd ~
+python setup.py develop
