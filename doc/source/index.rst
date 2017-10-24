@@ -44,14 +44,11 @@ Installation
 Documentation
 -------------
 
-Notebooks
-'''''''''
+Tutorial Jupyter Notebooks
+''''''''''''''''''
 
-.. toctree::
-    :maxdepth: 3
-
-    ./notebooks/notebooks.rst
-
+Tutorial Jupyter Notebooks are available on the git repository in the folder
+examples.
 
 References
 ''''''''''
@@ -74,4 +71,14 @@ License
 
 .. note:: `Cecill-C <http://www.cecill.info/licences/
     Licence_CeCILL-C_V1-en.html>`_ license is a LGPL compatible license.
+
+TEST
+----
+
+.. ipywidgets-display::
+
+    import ipyvolume as ipv
+    import numpy as np
+    x, y, z = np.random.random((3, 10000))
+    ipv.quickscatter(x, y, z, size=1, marker="sphere")
 

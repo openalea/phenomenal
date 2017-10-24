@@ -38,7 +38,9 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.coverage',
     'sphinx.ext.todo',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'jupyter_sphinx.embed_widgets',
+    'nbsphinx'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
