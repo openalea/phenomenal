@@ -53,7 +53,7 @@ def test_chessboard_3():
 
     images = plant_1_images_chessboard()
 
-    found = chess.detect_corners("side", 42, images[42])
+    found = chess.detect_corners("side", 42, images['side'][42])
 
     if found:
         corners = chess.get_corners_2d("side")[42]
