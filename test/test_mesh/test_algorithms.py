@@ -9,8 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from openalea.phenomenal.data_structure import (
-    VoxelGrid)
+from openalea.phenomenal.object import VoxelGrid
 
 from openalea.phenomenal.mesh import (
     meshing,
@@ -18,7 +17,7 @@ from openalea.phenomenal.mesh import (
     from_vertices_faces_to_vtk_poly_data,
     from_vtk_image_data_to_voxels_center)
 
-from openalea.phenomenal.data_access import plant_1_voxel_grid
+from openalea.phenomenal.data import plant_1_voxel_grid
 # ==============================================================================
 
 

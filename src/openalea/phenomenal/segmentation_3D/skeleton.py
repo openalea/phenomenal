@@ -21,7 +21,7 @@ from openalea.phenomenal.segmentation_3D import (
 
 import openalea.phenomenal.multi_view_reconstruction
 
-from openalea.phenomenal.data_structure import (VoxelSkeleton,
+from openalea.phenomenal.object import (VoxelSkeleton,
                                                 VoxelSegment,
                                                 VoxelGrid)
 

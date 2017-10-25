@@ -79,6 +79,8 @@ class Chessboard(object):
         :return: True if chessboard corner are found otherwise False.
         """
 
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+
         try:
 
             found, corners = cv2.findChessboardCorners(

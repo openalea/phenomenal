@@ -12,7 +12,7 @@
 from openalea.phenomenal.segmentation_3D import (
     voxel_graph_from_voxel_grid)
 
-from openalea.phenomenal.data_access import (
+from openalea.phenomenal.data import (
     plant_1_voxel_grid)
 
 # ==============================================================================

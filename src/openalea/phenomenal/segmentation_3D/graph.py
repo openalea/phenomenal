@@ -14,7 +14,7 @@ import numpy
 import sklearn.feature_extraction.image
 from sklearn.neighbors import NearestNeighbors
 
-from openalea.phenomenal.data_structure import (
+from openalea.phenomenal.object import (
     VoxelGraph,
     VoxelGrid,
     Image3D)

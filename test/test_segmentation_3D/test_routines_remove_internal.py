@@ -11,7 +11,7 @@
 # ==============================================================================
 import numpy
 
-from openalea.phenomenal.data_structure.image3D import Image3D
+from openalea.phenomenal.object.image3D import Image3D
 from openalea.phenomenal.segmentation_3D.routines import remove_internal
 # ==============================================================================
 

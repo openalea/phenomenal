@@ -11,7 +11,7 @@
 # ==============================================================================
 import numpy
 
-from openalea.phenomenal.data_access.plant_1 import plant_1_images_chessboard
+from openalea.phenomenal.data.plant_1 import plant_1_images_chessboard
 from openalea.phenomenal.calibration.chessboard import Chessboard
 # ==============================================================================
 
@@ -53,7 +53,7 @@ def test_chessboard_3():
 
     images = plant_1_images_chessboard()
 
-    found = chess.detect_corners("side", 42, images[42])
+    found = chess.detect_corners("side", 42, images['side'][42])
 
     if found:
         corners = chess.get_corners_2d("side")[42]

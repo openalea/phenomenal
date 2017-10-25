@@ -9,7 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from openalea.phenomenal.data_structure import VoxelGrid
+from openalea.phenomenal.object import VoxelGrid
 
 # ==============================================================================
 
