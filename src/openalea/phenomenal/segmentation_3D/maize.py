@@ -15,8 +15,8 @@ import networkx
 from .algorithm import (merge,
                         stem_detection)
 
-import openalea.phenomenal.data_structure.voxelOrgan
-import openalea.phenomenal.data_structure.voxelSegmentation
+import openalea.phenomenal.object.voxelOrgan
+import openalea.phenomenal.object.voxelSegmentation
 
 # ==============================================================================
 
@@ -128,7 +128,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     # ==========================================================================
     # Define mature & cornet leaf
 
-    organ_unknown = openalea.phenomenal.data_structure.VoxelOrgan("unknown")
+    organ_unknown = openalea.phenomenal.object.VoxelOrgan("unknown")
     organ_unknown.add_voxel_segment(voxels_remain, list())
 
     mature_organs = list()
@@ -141,13 +141,13 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
         #     continue
 
         if len(stem_top.intersection(vs.polyline)) > 0:
-            vo = openalea.phenomenal.data_structure.VoxelOrgan("cornet_leaf")
+            vo = openalea.phenomenal.object.VoxelOrgan("cornet_leaf")
             vs.voxels_position = vs.leaf_voxel
 
             vo.voxel_segments.append(vs)
             cornet_organs.append(vo)
         else:
-            vo = openalea.phenomenal.data_structure.VoxelOrgan("mature_leaf")
+            vo = openalea.phenomenal.object.VoxelOrgan("mature_leaf")
             vs.voxels_position = vs.leaf_voxel
 
             vo.voxel_segments.append(vs)
@@ -239,11 +239,11 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
     # ==========================================================================
 
-    vms = openalea.phenomenal.data_structure.VoxelSegmentation(
+    vms = openalea.phenomenal.object.VoxelSegmentation(
         voxels_size, voxel_skeleton.ball_radius)
     vms.voxel_organs.append(organ_unknown)
 
-    organ_stem = openalea.phenomenal.data_structure.VoxelOrgan("stem")
+    organ_stem = openalea.phenomenal.object.VoxelOrgan("stem")
     organ_stem.add_voxel_segment(stem_voxel, stem_path)
     vms.voxel_organs.append(organ_stem)
 

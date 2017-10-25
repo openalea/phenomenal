@@ -15,7 +15,7 @@ import os
 from openalea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
     import reconstruction_3d
 
-from openalea.phenomenal.data_access.plant_1 import (
+from openalea.phenomenal.data.plant_1 import (
     plant_1_chessboards,
     plant_1_images_binarize)
 

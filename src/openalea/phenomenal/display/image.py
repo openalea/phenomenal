@@ -31,8 +31,7 @@ def show_image(image, name_windows=''):
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
         matplotlib.pyplot.imshow(img)
     else:
-        img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        matplotlib.pyplot.imshow(img)
+        matplotlib.pyplot.imshow(image)
 
     matplotlib.pyplot.show()
 
@@ -55,10 +54,7 @@ def show_images(images, name_windows='', names_axes=None):
             img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
             ax.imshow(img)
         else:
-            img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            ax.imshow(img)
-
-        del img
+            ax.imshow(image)
 
         i += 1
 

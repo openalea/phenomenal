@@ -16,7 +16,7 @@ import collections
 import numpy
 import sklearn.neighbors
 
-from openalea.phenomenal.data_structure import VoxelGrid
+from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
 
 
