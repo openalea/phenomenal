@@ -9,7 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from openalea.phenomenal.data_access import plant_1_images
+from openalea.phenomenal.data import plant_1_images
 
 
 # ==============================================================================

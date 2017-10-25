@@ -23,7 +23,6 @@ install:
  script:
    - apt-get update
    - apt-get -y install freeglut3-dev
-
    - conda config --set always_yes yes --set changeps1 no
    - conda update -q conda
    - conda install conda-build
@@ -35,13 +34,15 @@ install:
    - cd ../..
 
    - conda install -c conda-forge -c openalea --use-local openalea.phenomenal
-   - conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc coverage
+   - conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
 
    - conda info -e
    - conda list
 
    - nosetests test --with-coverage --cover-erase --cover-html --cover-package=openalea.phenomenal --cover-tests --cover-inclusive
    - source deactivate
+
+
 
  artifacts:
   paths:

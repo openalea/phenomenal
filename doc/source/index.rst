@@ -44,14 +44,11 @@ Installation
 Documentation
 -------------
 
-Notebooks
-'''''''''
+Tutorial Jupyter Notebooks
+''''''''''''''''''
 
-.. toctree::
-    :maxdepth: 3
-
-    ./notebooks/notebooks.rst
-
+Tutorial Jupyter Notebooks are available on the git repository in the folder
+examples.
 
 References
 ''''''''''
@@ -74,4 +71,3 @@ License
 
 .. note:: `Cecill-C <http://www.cecill.info/licences/
     Licence_CeCILL-C_V1-en.html>`_ license is a LGPL compatible license.
-

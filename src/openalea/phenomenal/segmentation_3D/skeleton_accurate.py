@@ -12,7 +12,7 @@
 import networkx
 import numpy
 
-from openalea.phenomenal.data_structure import (
+from openalea.phenomenal.object import (
     VoxelGrid)
 
 from openalea.phenomenal.multi_view_reconstruction import (

@@ -11,8 +11,7 @@
 # ==============================================================================
 import numpy
 
-from openalea.phenomenal.data_structure import (
-    VoxelSegment)
+from openalea.phenomenal.object import (VoxelSegment)
 
 import openalea.phenomenal.segmentation_3D.plane_interception
 # ==============================================================================

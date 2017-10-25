@@ -17,7 +17,7 @@ from openalea.phenomenal.segmentation_3D import (
     labelize_maize_skeleton,
     maize_analysis)
 
-from openalea.phenomenal.data_access import plant_1_voxel_grid
+from openalea.phenomenal.data import plant_1_voxel_grid
 # ==============================================================================
 
 

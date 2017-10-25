@@ -11,14 +11,14 @@
 # ==============================================================================
 import numpy
 
-from openalea.phenomenal.data_access.data_creation import (
+from openalea.phenomenal.data.data_creation import (
     build_cube)
 
-from openalea.phenomenal.data_access.plant_1 import (
+from openalea.phenomenal.data.plant_1 import (
     plant_1_calibration_camera_side,
     plant_1_images_binarize)
 
-from openalea.phenomenal.data_structure import (
+from openalea.phenomenal.object import (
     ImageView)
 
 from openalea.phenomenal.multi_view_reconstruction import (

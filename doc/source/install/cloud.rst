@@ -121,4 +121,4 @@ Launch Notebook Server
     sudo openvpn --config openvpn-udp-1193-vpn_users.ovpn &
     disown
 
-    jupyter notebook --no-browser --ip=
+    jupyter notebook --no-browser --ip=<local_ip>

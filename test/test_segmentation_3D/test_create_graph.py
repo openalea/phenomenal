@@ -16,7 +16,7 @@ import time
 from openalea.phenomenal.segmentation_3D import (
     create_graph)
 
-from openalea.phenomenal.data_access import (
+from openalea.phenomenal.data import (
     plant_1_voxel_grid)
 
 # ==============================================================================
