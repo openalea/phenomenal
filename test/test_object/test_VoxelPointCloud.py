@@ -11,8 +11,8 @@
 # ==============================================================================
 import os
 
-from openalea.phenomenal.data_access import plant_1_voxel_grid
-from openalea.phenomenal.data_structure import VoxelGrid, Image3D
+from openalea.phenomenal.data import plant_1_voxel_grid
+from openalea.phenomenal.object import VoxelGrid, Image3D
 # ==============================================================================
 
 

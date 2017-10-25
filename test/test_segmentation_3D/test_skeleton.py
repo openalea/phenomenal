@@ -9,7 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from openalea.phenomenal.data_access import (
+from openalea.phenomenal.data import (
     plant_1_voxel_grid)
 
 from openalea.phenomenal.segmentation_3D import (

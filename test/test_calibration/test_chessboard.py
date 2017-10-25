@@ -11,7 +11,7 @@
 # ==============================================================================
 import numpy
 
-from openalea.phenomenal.data_access.plant_1 import plant_1_images_chessboard
+from openalea.phenomenal.data.plant_1 import plant_1_images_chessboard
 from openalea.phenomenal.calibration.chessboard import Chessboard
 # ==============================================================================
 

@@ -11,7 +11,7 @@
 # ==============================================================================
 import numpy
 
-from openalea.phenomenal.data_structure import Image3D
+from openalea.phenomenal.object import Image3D
 # ==============================================================================
 
 

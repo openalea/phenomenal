@@ -19,8 +19,7 @@ import numpy
 from openalea.phenomenal.multi_view_reconstruction import (
     get_bounding_box_voxel_projected)
 
-from openalea.phenomenal.data_structure import (
-    VoxelOctree)
+from openalea.phenomenal.object import (VoxelOctree)
 
 # ==============================================================================
 # Function for no kep

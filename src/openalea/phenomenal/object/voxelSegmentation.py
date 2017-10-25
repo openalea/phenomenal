@@ -15,7 +15,7 @@ import gzip
 import json
 
 
-import openalea.phenomenal.data_structure.voxelOrgan
+import openalea.phenomenal.object.voxelOrgan
 
 # ==============================================================================
 
@@ -134,7 +134,7 @@ class VoxelSegmentation(object):
 
             for dvo in data['voxel_organs']:
 
-                vo = openalea.phenomenal.data_structure.voxelOrgan.VoxelOrgan(
+                vo = openalea.phenomenal.object.voxelOrgan.VoxelOrgan(
                     dvo['label'])
 
                 vo.info = dvo['info']
@@ -163,7 +163,7 @@ class VoxelSegmentation(object):
 
             for dvo in data['voxel_organs']:
 
-                vo = openalea.phenomenal.data_structure.voxelOrgan.VoxelOrgan(
+                vo = openalea.phenomenal.object.voxelOrgan.VoxelOrgan(
                     dvo['label'])
 
                 vo.info = dvo['info']

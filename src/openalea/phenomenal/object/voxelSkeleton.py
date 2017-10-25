@@ -13,7 +13,7 @@ import os
 import json
 import numpy
 
-from openalea.phenomenal.data_structure import (
+from openalea.phenomenal.object import (
     VoxelSegment,
     VoxelGrid)
 # ==============================================================================
