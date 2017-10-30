@@ -1,0 +1,28 @@
+name: phenome
+channels:
+  - conda-forge
+  - openalea
+  - defaults
+dependencies:
+  - python
+  - setuptools
+  - openalea.deploy
+  - openalea.core
+  - numpy
+  - scikit-learn
+  - scikit-image
+  - scipy
+  - matplotlib
+  - networkx
+  - vtk
+  - opencv
+  - nose
+  - notebook
+  - sphinx
+  - sphinx_rtd_theme
+  - pandoc
+  - ipyvolume
+  - pymongo
+  - pandas
+  - psycopg2
+  - openalea.phenomenal

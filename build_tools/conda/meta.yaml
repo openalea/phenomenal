@@ -1,0 +1,52 @@
+package:
+  name: alinea.phenomenal
+  version: "1.4.2"
+
+source:
+  path: ../../
+
+build:
+  number: 0
+  preserve_egg_dir: True
+  string: py27_0
+  script: python setup.py install
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - openalea.deploy
+    - pywin32 [win]
+  run:
+    - python
+    - openalea.deploy
+    - openalea.core
+    - numpy
+    - scikit-learn
+    - scipy
+    - matplotlib
+    - networkx <2.0
+    - vtk
+    - mayavi
+    - wxpython
+    - pyqt <5.0
+    - scikit-image
+    - opencv
+    - pywin32 [win]
+    - nose
+    - pyside
+
+test:
+  imports:
+    - alinea.phenomenal
+
+  script: nosetests test
+
+about:
+  home: https://gitlab.inria.fr/phenome/phenomenal
+  license: Cecill-C License
+  license_file: LICENSE.txt
+
+extra:
+  recipe-maintainers:
+    - artzet simon
