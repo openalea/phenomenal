@@ -106,8 +106,8 @@ def test_chessboard_3():
 
     res = numpy.array(corners).astype(float)
     ref = numpy.array(ref).astype(float)
-    res = numpy.around(res, decimals=5)
-    ref = numpy.around(ref, decimals=5)
+    res = numpy.around(res, decimals=1)
+    ref = numpy.around(ref, decimals=1)
     assert numpy.array_equiv(res, ref)
 
 # ==============================================================================
