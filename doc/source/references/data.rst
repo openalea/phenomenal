@@ -2,15 +2,15 @@
 Data Plants
 ===========
 
-.. currentmodule:: openalea.phenomenal.data_access
+.. currentmodule:: openalea.phenomenal.data
 
 Sub-package for objects used in data_plants.
 
 Data Creation
 ===============
 
-.. automodule:: openalea.phenomenal.data_access.data_creation
-.. currentmodule:: openalea.phenomenal.data_access.data_creation
+.. automodule:: openalea.phenomenal.data.data_creation
+.. currentmodule:: openalea.phenomenal.data.data_creation
 
 .. autosummary::
    :toctree: generated/
@@ -23,8 +23,8 @@ Data Creation
 Plant 1
 =======
 
-.. automodule:: openalea.phenomenal.data_access.plant_1
-.. currentmodule:: openalea.phenomenal.data_access.plant_1
+.. automodule:: openalea.phenomenal.data.plant_1
+.. currentmodule:: openalea.phenomenal.data.plant_1
 
 .. autosummary::
    :toctree: generated/

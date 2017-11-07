@@ -242,10 +242,10 @@ def test_threshold_meanshift_wrong_parameters_3():
 def test_threshold_meanshift_wrong_parameters_4():
 
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
-    mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    mean_im = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        threshold_meanshift(image, mean_image)
+        threshold_meanshift(image, mean_im)
     except Exception, e:
         assert e.message == 'image should be 3D array'
         assert type(e) == ValueError
@@ -256,10 +256,10 @@ def test_threshold_meanshift_wrong_parameters_4():
 def test_threshold_meanshift_wrong_parameters_5():
 
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
-    mean_image = numpy.zeros((25, 25), dtype=numpy.uint8)
+    mean_im = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        threshold_meanshift(image, mean_image)
+        threshold_meanshift(image, mean_im)
     except Exception, e:
         assert e.message == 'mean should be 3D array'
         assert type(e) == ValueError
@@ -269,10 +269,10 @@ def test_threshold_meanshift_wrong_parameters_5():
 
 def test_threshold_meanshift_wrong_parameters_6():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
-    mean_image = numpy.zeros((10, 10, 3), dtype=numpy.uint8)
+    mean_im = numpy.zeros((10, 10, 3), dtype=numpy.uint8)
 
     try:
-        threshold_meanshift(image, mean_image)
+        threshold_meanshift(image, mean_im)
     except Exception, e:
         assert e.message == 'image and mean must have equal sizes'
         assert type(e) == ValueError
@@ -282,10 +282,10 @@ def test_threshold_meanshift_wrong_parameters_6():
 
 def test_threshold_meanshift_wrong_parameters_7():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
-    mean_image = numpy.zeros((25, 25), dtype=numpy.uint8)
+    mean_im = numpy.zeros((25, 25), dtype=numpy.uint8)
 
     try:
-        threshold_meanshift(image, mean_image)
+        threshold_meanshift(image, mean_im)
     except Exception, e:
         assert e.message == 'mean should be 3D array'
         assert type(e) == ValueError
@@ -295,10 +295,10 @@ def test_threshold_meanshift_wrong_parameters_7():
 
 def test_threshold_meanshift_wrong_parameters_8():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
-    mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+    mean_im = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
 
     try:
-        threshold_meanshift(image, mean_image, threshold=2)
+        threshold_meanshift(image, mean_im, threshold=2)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -403,42 +403,24 @@ def test_threshold_meanshift_4():
 
 def test_threshold_meanshift_no_regression_1():
 
-    images = dict()
-    for angle in range(0, 360, 30):
-        file_name = os.path.dirname(__file__) + "/data/" + str(angle) + ".png"
-        im = cv2.imread(file_name, flags=cv2.IMREAD_COLOR)
-        images[angle] = im
+    from openalea.phenomenal.data.plant_1 import (
+        plant_1_images, plant_1_mask_meanshift)
 
-    file_name_mask = os.path.dirname(__file__) + "/data/mask_mean_shift.png"
-    mask = cv2.imread(file_name_mask, flags=cv2.IMREAD_GRAYSCALE)
-
+    images = plant_1_images()['side']
+    mask = plant_1_mask_meanshift()
     mean_im = mean_image(images.values())
 
-    refs = [(0, 4798),
-            (30, 4114),
-            (60, 5987),
-            (90, 5359),
-            (120, 4737),
-            (150, 4977),
-            (180, 4907),
-            (210, 3096),
-            (240, 5657),
-            (270, 4932),
-            (300, 4332),
-            (330, 4617)]
+    im_bin = threshold_meanshift(images[0], mean_im, mask=mask)
 
-    for angle, ref in refs:
-
-        im_bin = threshold_meanshift(images[angle], mean_im, mask=mask)
-        im_bin *= 255
-        # Acceptation error of 0.01 %
-        acceptation_error = ref * 0.001
-
-        print abs(numpy.count_nonzero(im_bin) - ref), acceptation_error
-        if abs(numpy.count_nonzero(im_bin) - ref) > acceptation_error:
-            assert False
+    ref = 121663
+    # Acceptation error of 0.01 %
+    acceptation_error = ref * 0.001
+    print abs(numpy.count_nonzero(im_bin) - ref), acceptation_error
+    if abs(numpy.count_nonzero(im_bin) - ref) > acceptation_error:
+        assert False
 
 # ==============================================================================
+
 
 if __name__ == "__main__":
     for func_name in dir():

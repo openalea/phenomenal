@@ -20,11 +20,21 @@ Documentation
 
 The documentation is available at `<https://phenomenal.readthedocs.io>`_
 
-Tutorials is available in the example folder as a Jupyter Notebook.
+Tutorials are available in the example folder as a Jupyter Notebook.
 
-===========================
-Installation with Miniconda
-===========================
+Note :
+
+- To install jupyter notebook (conda install -c conda-forge notebook ipyvolume)
+
+To replay notebook tutorial launch with the following command
+
+.. code:: shell
+
+    jupyter notebook
+
+=================================================
+Installation with Miniconda (Windows, linux, OSX)
+=================================================
 
 Miniconda installation
 ----------------------
@@ -33,16 +43,23 @@ Follow official website instruction to install miniconda :
 
 http://conda.pydata.org/miniconda.html
 
-Create virtual environment and activate it
-..........................................
+1. Install conda-build if not already installed
+...............................................
+
+.. code:: shell
+
+    conda install conda-build
+
+2. Create virtual environment and activate it
+.............................................
 
 .. code:: shell
 
     conda create --name phenomenal python
     source activate phenomenal
 
-Dependencies install
-....................
+3. Build and install openalea.phenomenal package
+................................................
 
 .. code:: shell
 
@@ -50,13 +67,11 @@ Dependencies install
     conda build -c conda-forge -c openalea .
     conda install -c conda-forge -c openalea --use-local openalea.phenomenal
 
-(Optional) Package managing tools :
+(Optional) Install several package managing tools :
 
 .. code:: shell
 
-    conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc
-
-
+    conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
 
 Authors
 -------

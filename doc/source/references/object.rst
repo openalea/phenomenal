@@ -2,7 +2,7 @@
 Data Structure
 ==============
 
-.. currentmodule:: openalea.phenomenal.data_structure
+.. currentmodule:: openalea.phenomenal.object
 
 Sub-package for objects used in data structure.
 

@@ -1,6 +1,6 @@
-=======
-Windows
-=======
+==============
+Ubuntu (linux)
+==============
 
 Warning :This installation procedure is not fully tested, We strongly
 recommand to install openalea.phenomenal with miniconda.
@@ -11,16 +11,21 @@ recommand to install openalea.phenomenal with miniconda.
 1. Install dependencies
 -----------------------
 
+Be sure opengl is installed on your machine
+
+.. code:: shell
+
+    sudo apt-get install freeglut3-dev
+
+
 .. code:: shell
 
     # Basic
-    pip install numpy matplotlib scipy scikit-image
-
-    # Download Scipy, OpenCv, VTK, ... wheels on http://www.lfd.uci.edu/~gohlke/pythonlibs/ and install it like this :
-    pip install *.whl
+    sudo apt-get install python-setuptools python-numpy python-matplotlib
+    python-scipy python-skimage python-opencv python-vtk
 
     # Optional
-    pip install ipython ipython[notebook] nose
+    sudo apt-get install python-nose ipython ipython-notebook
 
     # OpenAlea.Deploy
     git clone https://github.com/openalea/deploy
