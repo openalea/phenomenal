@@ -19,16 +19,7 @@ from openalea.phenomenal.image import (
 
 # ==============================================================================
 
-
-def test_simply_working_1():
-
-    file_name = os.path.dirname(__file__) + "/data/150.png"
-    im = read_image(file_name)
-
-    assert im.shape == (495, 415, 3)
-
-
-def test_write_image():
+def test_1():
 
     im1 = numpy.zeros((400, 400))
     im1[10:-10, 10:-10] = 255

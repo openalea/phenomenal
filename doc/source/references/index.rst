@@ -21,8 +21,8 @@ parameters available for the algorithms.
 
     image
     calibration
-    data_access
-    data_structure
+    data
+    object
     display
     multi_view_reconstruction
     mesh

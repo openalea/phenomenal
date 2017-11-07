@@ -2,11 +2,13 @@
 Installation
 ============
 
+Warning : Miniconda installation is strongly recommended
+
 .. toctree::
     :glob:
     :caption: Install
 
-    ./requirements.rst
-    ./ubuntu_debian.rst
+    ./miniconda.rst
+    ./linux.rst
     ./windows.rst
-    ./conda.rst
+    ./questions_answers.rst
