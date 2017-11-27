@@ -365,12 +365,20 @@ def voxelization(vtk_poly_data, voxels_size=1):
     outval = 0
 
     count = white_image.GetNumberOfPoints()
-
     for i in range(count):
         white_image.GetPointData().GetScalars().SetTuple1(i, inval)
 
     # ==========================================================================
     # polygonal data --> image stencil:
+
+    edges = vtk.vtkFeatureEdges()
+    edges.SetInputData(vtk_poly_data)
+    edges.FeatureEdgesOff()
+    edges.NonManifoldEdgesOn()
+    edges.BoundaryEdgesOn()
+    edges.Update()
+    print "HERE :", edges.GetOutput().GetNumberOfCells()
+
 
     pol2stenc = vtk.vtkPolyDataToImageStencil()
     pol2stenc.SetOutputOrigin(origin)
@@ -378,6 +386,9 @@ def voxelization(vtk_poly_data, voxels_size=1):
     pol2stenc.SetOutputSpacing(spacing)
     pol2stenc.SetOutputWholeExtent(white_image.GetExtent())
     pol2stenc.Update()
+
+    vtk.vtkCleanPolyData()
+
 
     # ==========================================================================
     # Cut the corresponding white image and set the background:
