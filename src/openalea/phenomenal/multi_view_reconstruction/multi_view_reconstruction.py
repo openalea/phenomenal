@@ -393,7 +393,9 @@ def kept_groups(kept, no_kept, groups):
             else:
                 kept = numpy.insert(kept, 0, pts, axis=0)
 
-    kept = numpy.unique(kept, axis=0)
+    # kept = numpy.unique(kept, axis=0)
+    kept = numpy.vstack(set(tuple(row) for row in kept))
+
     return kept
 
 
