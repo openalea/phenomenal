@@ -7,12 +7,13 @@ image: continuumio/miniconda:latest
 stages:
  - build
 
-install:
+install_conda:
  stage: build
 
  script:
    - apt-get update
    - apt-get -y install freeglut3-dev
+
    - conda config --set always_yes yes --set changeps1 no
    - conda update -q conda
    - conda install conda-build
@@ -31,7 +32,6 @@ install:
 
    - nosetests test --with-coverage --cover-erase --cover-html --cover-package=openalea.phenomenal --cover-tests --cover-inclusive
    - source deactivate
-
 
 
  artifacts:

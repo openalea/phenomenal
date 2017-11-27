@@ -35,7 +35,6 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
     """
 
     # Ordonner
-    #
     orderer_voxel_segments = sorted(voxel_skeleton.voxel_segments,
                                     key=lambda vs: len(vs.voxels_position))
 
@@ -65,10 +64,6 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
     new_voxel_segments = list()
     for i, vs in enumerate(orderer_voxel_segments):
 
-        # dv = DisplayVoxel()
-        # dv.add_actor_from_voxels(vs.voxels_position, voxel_skeleton.voxels_size)
-        # dv.show()
-
         weight = 0
         for j, iv in enumerate(image_views):
             im1 = d[(i, j)]
@@ -78,12 +73,33 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
                 if k != i and k not in index_removed:
                     im2 += d[(k, j)]
 
+            if i == 38:
+                im11 = im1.copy()
+                im11[im11 > 0] = 66
+                imm = (im11 - im2).copy()
+                imm[imm < 0] = 23 # R
+                imm = imm - list_negative_image[j]
+                imm[imm < 0] = 42 # B
+
+                w, h = imm.shape
+                img = numpy.zeros((w, h, 3), dtype=numpy.uint8)
+
+                x, y = numpy.where(imm == 66)
+                img[x, y, :] = [0, 0, 255]
+                x, y = numpy.where(imm == 23)
+                img[x, y, :] = [255, 0, 0]
+                x, y = numpy.where(imm == 42)
+                img[x, y, :] = [255, 255, 255]
+                x, y = numpy.where(imm == 0)
+                img[x, y, :] = [255, 255, 255]
+
+                show_image(img)
+
             im = im1 - im2
             im = im - list_negative_image[j]
             im[im < 0] = 0
 
             if numpy.count_nonzero(im) != 0:
-                # show_image(im)
                 weight += 1
 
             if weight >= tolerance:
