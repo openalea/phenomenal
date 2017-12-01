@@ -28,12 +28,15 @@ class VoxelSegmentation(object):
         self.voxels_size = voxels_size
         self.ball_radius = ball_radius
 
-    def get_voxels_position(self):
+    def get_voxels_position(self, except_organs=None):
+
+        if except_organs is None:
+            except_organs = list()
 
         voxels_position = set()
         for vo in self.voxel_organs:
-            voxels_position = voxels_position.union(
-                vo.voxels_position())
+            if vo not in except_organs:
+                voxels_position = voxels_position.union(vo.voxels_position())
 
         return voxels_position
 
