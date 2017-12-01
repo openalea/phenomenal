@@ -127,8 +127,6 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
     planes_equation = [None] * length_path
     radius_dist = 1000
 
-    llen = [None] * length_path
-
     for i in range(length_path - 1, -1, -1):
         node = tuple(path[i])
         # ======================================================================
@@ -170,8 +168,6 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
                                          without_connexity=without_connexity,
                                          voxels_size=voxels_size)
 
-        llen[i] = get_radius_length_point_cloud(path[i],
-                                                numpy.array(list(nodes)))
         closest_nodes[i] = nodes
         planes_equation[i] = plane_equation
 
