@@ -30,7 +30,7 @@ class DisplaySegmentation(DisplayVoxel):
 
         # self.add_actor_from_voxel_segmentation(self._voxel_segmentation)
 
-    def show(self, mode=3, windows_size=(600, 800)):
+    def show(self, mode=2, windows_size=(600, 800)):
 
         if mode == 1:
             self.add_actor_from_voxel_segmentation(self._voxel_segmentation)
@@ -38,14 +38,13 @@ class DisplaySegmentation(DisplayVoxel):
             self.add_actor_from_voxel_segmentation_mode_2(
                 self._voxel_segmentation)
         if mode == 3:
-            self.add_actor_from_voxel_segmentation_mode_3(
-                self._voxel_segmentation)
+            self.display_leaf_order(self._voxel_segmentation)
         if mode == 4:
             self.display_stem_only(self._voxel_segmentation)
         if mode == 5:
             self.display_skeleton(self._voxel_segmentation)
         if mode == 6:
-            self.add_actor_mode_6(self._voxel_segmentation)
+            self.display_classic_label(self._voxel_segmentation)
 
         DisplayVoxel.show(self, windows_size=windows_size)
 
@@ -106,20 +105,16 @@ class DisplaySegmentation(DisplayVoxel):
                 vmsi.voxels_size,
                 color=color)
 
-    def add_actor_mode_6(self, vmsi):
+    def display_classic_label(self, vmsi):
 
         for vo in vmsi.voxel_organs:
-
             color = self.get_color(vo.label, vo.info)
-            if vo.label == "cornet_leaf":
-                color = (1, 0, 0)
-
             self.add_actor_from_voxels(
                 vo.voxels_position(),
                 vmsi.voxels_size,
                 color=color)
 
-    def add_actor_from_voxel_segmentation_mode_3(self, vmsi, leaf_order=4):
+    def display_leaf_order(self, vmsi, leaf_order=4):
         pos_stem = vmsi.get_stem().longest_polyline()[-1]
 
         vo = vmsi.get_leaf_order(leaf_order)
@@ -202,7 +197,7 @@ class DisplaySegmentation(DisplayVoxel):
         #
         #     vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
 
-    def add_actor_from_voxel_segmentation_mode_2(self, vmsi):
+    def display_leaf_split(self, vmsi):
 
         pos_stem = vmsi.get_stem().longest_polyline()[-1]
 

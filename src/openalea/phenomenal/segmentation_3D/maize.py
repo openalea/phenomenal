@@ -183,17 +183,6 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
                     again = True
                     break
 
-                # nb = len(voxels_1.intersection(voxels_2))
-                #
-                # if ((nb * 100 / len(voxels_1) >= percentage) or
-                #     (nb * 100 / len(voxels_2) >= percentage)):
-                #
-                #     vo_1.voxel_segments += vo_2.voxel_segments
-                #
-                #     mature_organs.pop(i)
-                #     again = True
-                #     break
-
         ltmp.append(vo_1)
 
     mature_organs = ltmp

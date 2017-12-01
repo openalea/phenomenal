@@ -14,6 +14,7 @@ import numpy
 import networkx
 import scipy
 
+
 # ==============================================================================
 
 def get_length_point_cloud(nodes):
@@ -21,6 +22,18 @@ def get_length_point_cloud(nodes):
         return 0
 
     res = scipy.spatial.distance.pdist(nodes, 'euclidean')
+
+    if len(res) > 0:
+        return res.max()
+    else:
+        return 0
+
+
+def get_radius_length_point_cloud(node, nodes):
+    if len(nodes) == 0:
+        return 0
+
+    res = scipy.spatial.distance.cdist(numpy.array([node]), nodes, 'euclidean')
 
     if len(res) > 0:
         return res.max()
@@ -60,6 +73,7 @@ def get_node_close_to_planes(voxels, node_src, plane_equation,
         return map(tuple, closest_voxel)
 
     if radius_dist is not None:
+        # res = scipy.spatial.distance.cdist(node_src, closest_voxel, 'euclidean')
         res = numpy.linalg.norm(closest_voxel - node_src, axis=1)
         index = numpy.where(res < radius_dist)[0]
         closest_voxel = closest_voxel[index]
@@ -102,20 +116,21 @@ def get_node_close_to_planes(voxels, node_src, plane_equation,
 
 
 def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
-                                      radius_dist=None,
                                       graph=None,
                                       without_connexity=False,
-                                      voxels_size=4,
-                                      dv=None, ijk=None):
+                                      voxels_size=4):
 
-    closest_nodes, planes_equation = list(), list()
+    # closest_nodes, planes_equation = list(), list()
     length_path = len(path)
 
-    radius_dist = 200
-    b = False
-    for i in range(length_path):
-        node = tuple(path[i])
+    closest_nodes = [None] * length_path
+    planes_equation = [None] * length_path
+    radius_dist = 1000
 
+    llen = [None] * length_path
+
+    for i in range(length_path - 1, -1, -1):
+        node = tuple(path[i])
         # ======================================================================
 
         vectors = list()
@@ -127,7 +142,6 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
             vectors.append(v)
 
         vector_mean = numpy.array(vectors).mean(axis=0)
-
         k = vector_mean
 
         # ======================================================================
@@ -139,26 +153,15 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
         d = k[0] * node[0] + k[1] * node[1] + k[2] * node[2]
         plane_equation = (k[0], k[1], k[2], d)
 
-        if i > 0:
-            nodes = closest_nodes[i - 1]
-            distance = get_length_point_cloud(numpy.array(list(nodes)))
-            if distance == 0:
-                radius_dist = 100
+        if i < length_path - 1:
+            nodes = closest_nodes[i + 1]
+            prev_radius_dist = get_radius_length_point_cloud(
+                path[i + 1], numpy.array(list(nodes)))
+
+            if prev_radius_dist == 0:
+                radius_dist = 1000
             else:
-                radius_dist = min(distance * 1.5, 200)
-
-        if i % 20 == 0 and dv is not None:
-            leaf = set().union(*closest_nodes)
-            # remain = set(list(map(tuple, voxels))).difference(leaf)
-            # dv.clean_all_actors()
-            dv.add_actors_from_voxels_list(
-                [leaf, path],
-                [voxels_size * 0.50, voxels_size * 1.5],
-                colors=[(0, 0, 1), (1, 0, 0)])
-
-            dv.add_actor_from_plane(node, vector_mean)
-            # dv.show()
-            dv.screenshot("2_" + str(ijk) + "_" + str(i) + ".png")
+                radius_dist = min(prev_radius_dist + 1 * voxels_size, 1000.0)
 
         nodes = get_node_close_to_planes(voxels, node, plane_equation,
                                          dist=dist,
@@ -167,8 +170,10 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
                                          without_connexity=without_connexity,
                                          voxels_size=voxels_size)
 
-        closest_nodes.append(nodes)
-        planes_equation.append(plane_equation)
+        llen[i] = get_radius_length_point_cloud(path[i],
+                                                numpy.array(list(nodes)))
+        closest_nodes[i] = nodes
+        planes_equation[i] = plane_equation
 
     return closest_nodes, planes_equation
 

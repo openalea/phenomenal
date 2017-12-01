@@ -393,29 +393,23 @@ def maize_mature_leaf_analysis(mature_leaf_voxel_organ,
     return mature_leaf_voxel_organ
 
 
-def maize_cornet_leaf_analysis_real_length(organ):
+def maize_cornet_leaf_analysis_real_length(organ, voxels):
 
     voxels_position = set(organ.voxels_position())
-    polyline = organ.longest_polyline()
+    real_longest_polyline = organ.real_longest_polyline()
 
-    if len(polyline) <= 1:
+    if len(real_longest_polyline) <= 1:
         return organ
 
-    # ==========================================================================
-    # Compute extremity
-
-    index_position_base = len(polyline) - 1
-    for i in range(len(polyline) - 1, -1, -1):
-        if polyline[i] not in set(voxels_position):
-            index_position_base = i
-            break
-
-    real_polyline = polyline[index_position_base:]
-
     length = 0
-    for n1, n2 in zip(real_polyline, real_polyline[1:]):
+    for n1, n2 in zip(real_longest_polyline, real_longest_polyline[1:]):
         length += numpy.linalg.norm(numpy.array(n1) - numpy.array(n2))
     organ.info['not_visible_length'] = length
+
+    longest_polyline = organ.longest_polyline()
+    voxels = set(voxels).intersection(longest_polyline)
+    z = numpy.max(numpy.array(list(voxels))[:, 2])
+    organ.info["z_intersection"] = z
 
     return organ
 
@@ -460,6 +454,22 @@ def maize_cornet_leaf_analysis(organ,
     return organ
 
 
+def get_highest_organ(voxel_organs):
+
+    z_max = float("-inf")
+    highest_voxel_organ = None
+    for voxel_organ in voxel_organs:
+        for voxel_segment in voxel_organ.voxel_segments:
+            if len(voxel_segment.polyline) > 0:
+                z = numpy.max(numpy.array(voxel_segment.polyline)[-1, 2])
+
+                if z > z_max:
+                    z_max = z
+                    highest_voxel_organ = voxel_organ
+
+    return highest_voxel_organ
+
+
 def maize_analysis(voxel_maize_segmentation):
 
     for vo in voxel_maize_segmentation.voxel_organs:
@@ -473,11 +483,10 @@ def maize_analysis(voxel_maize_segmentation):
     lorder = list()
     for vo_mature_leaf in voxel_maize_segmentation.get_mature_leafs():
         vo_mature_leaf = maize_mature_leaf_analysis(
-            vo_mature_leaf,
-            vo_stem.info['vector_mean'])
+            vo_mature_leaf, vo_stem.info['vector_mean'])
 
-        lorder.append((vo_mature_leaf,
-                       vo_mature_leaf.info["z_intersection"]))
+        lorder.append((vo_mature_leaf, vo_mature_leaf.info["z_intersection"]))
+
     lorder.sort(key=lambda x: x[1])
 
     num_order = 1
@@ -487,20 +496,25 @@ def maize_analysis(voxel_maize_segmentation):
 
     lorder = list()
     for vo_cornet_leaf in voxel_maize_segmentation.get_cornet_leafs():
-        vo_cornet_leaf = maize_cornet_leaf_analysis_real_length(vo_cornet_leaf)
+
+        voxels = voxel_maize_segmentation.get_voxels_position(
+            except_organs=[vo_cornet_leaf])
+
+        vo_cornet_leaf = maize_cornet_leaf_analysis_real_length(
+            vo_cornet_leaf, voxels)
+
         lorder.append((vo_cornet_leaf,
-                       vo_cornet_leaf.info["not_visible_length"]))
+                       vo_cornet_leaf.info["z_intersection"]))
 
     voxels = set(vo_stem.voxels_position())
-    lorder.sort(key=lambda x: -x[1])
+    lorder.sort(key=lambda x: x[1])
+    print lorder
     for vo, _ in lorder:
         vo.info["order"] = num_order
         num_order += 1
 
-        # TODO : bug here in the order and analysis of the leaf
-        vo = maize_cornet_leaf_analysis(vo,
-                                        vo_stem.info['vector_mean'],
-                                        voxels)
+        vo = maize_cornet_leaf_analysis(
+            vo, vo_stem.info['vector_mean'], voxels)
 
         voxels = voxels.union(set(vo.voxels_position()))
 
