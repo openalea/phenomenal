@@ -73,27 +73,27 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
                 if k != i and k not in index_removed:
                     im2 += d[(k, j)]
 
-            if i == 38:
-                im11 = im1.copy()
-                im11[im11 > 0] = 66
-                imm = (im11 - im2).copy()
-                imm[imm < 0] = 23 # R
-                imm = imm - list_negative_image[j]
-                imm[imm < 0] = 42 # B
-
-                w, h = imm.shape
-                img = numpy.zeros((w, h, 3), dtype=numpy.uint8)
-
-                x, y = numpy.where(imm == 66)
-                img[x, y, :] = [0, 0, 255]
-                x, y = numpy.where(imm == 23)
-                img[x, y, :] = [255, 0, 0]
-                x, y = numpy.where(imm == 42)
-                img[x, y, :] = [255, 255, 255]
-                x, y = numpy.where(imm == 0)
-                img[x, y, :] = [255, 255, 255]
-
-                show_image(img)
+            # if i == 38:
+            #     im11 = im1.copy()
+            #     im11[im11 > 0] = 66
+            #     imm = (im11 - im2).copy()
+            #     imm[imm < 0] = 23 # R
+            #     imm = imm - list_negative_image[j]
+            #     imm[imm < 0] = 42 # B
+            #
+            #     w, h = imm.shape
+            #     img = numpy.zeros((w, h, 3), dtype=numpy.uint8)
+            #
+            #     x, y = numpy.where(imm == 66)
+            #     img[x, y, :] = [0, 0, 255]
+            #     x, y = numpy.where(imm == 23)
+            #     img[x, y, :] = [255, 0, 0]
+            #     x, y = numpy.where(imm == 42)
+            #     img[x, y, :] = [255, 255, 255]
+            #     x, y = numpy.where(imm == 0)
+            #     img[x, y, :] = [255, 255, 255]
+            #
+            #     show_image(img)
 
             im = im1 - im2
             im = im - list_negative_image[j]

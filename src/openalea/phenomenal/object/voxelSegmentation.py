@@ -22,11 +22,10 @@ import openalea.phenomenal.object.voxelOrgan
 
 class VoxelSegmentation(object):
 
-    def __init__(self, voxels_size, ball_radius):
+    def __init__(self, voxels_size):
 
         self.voxel_organs = list()
         self.voxels_size = voxels_size
-        self.ball_radius = ball_radius
 
     def get_voxels_position(self, except_organs=None):
 
@@ -39,6 +38,14 @@ class VoxelSegmentation(object):
                 voxels_position = voxels_position.union(vo.voxels_position())
 
         return voxels_position
+
+    def get_number_of_leaf(self):
+        number = 0
+        for vo in self.voxel_organs:
+            if vo.label == "mature_leaf" or vo.label == "cornet_leaf":
+                number += 1
+
+        return number
 
     def get_leaf_order(self, number):
         for vo in self.voxel_organs:
@@ -91,9 +98,8 @@ class VoxelSegmentation(object):
     # READ / WRITE
     # ==========================================================================
 
-    def write_to_json_gz(self, file_prefix):
+    def write_to_json_gz(self, filename):
 
-        filename = file_prefix + ".json.gz"
         if (os.path.dirname(filename) and not os.path.exists(
                 os.path.dirname(filename))):
             os.makedirs(os.path.dirname(filename))
@@ -101,7 +107,6 @@ class VoxelSegmentation(object):
         with gzip.open(filename, 'wb') as f:
 
             data = dict()
-            data['ball_radius'] = self.ball_radius
             data['voxels_size'] = self.voxels_size
 
             data['voxel_organs'] = list()
@@ -124,16 +129,13 @@ class VoxelSegmentation(object):
             f.write(str(data))
 
     @staticmethod
-    def read_from_json_gz(file_prefix):
-
-        filename = file_prefix + ".json.gz"
+    def read_from_json_gz(filename):
 
         with gzip.open(filename, 'rb') as f:
 
             data = ast.literal_eval(f.read())
 
-            vms = VoxelSegmentation(data['voxels_size'],
-                                    data['ball_radius'])
+            vms = VoxelSegmentation(data['voxels_size'])
 
             for dvo in data['voxel_organs']:
 
@@ -153,16 +155,13 @@ class VoxelSegmentation(object):
         return vms
 
     @staticmethod
-    def read_from_json_gz_info(file_prefix):
-
-        filename = file_prefix + ".json.gz"
+    def read_from_json_gz_info(filename):
 
         with gzip.open(filename, 'rb') as f:
 
             data = ast.literal_eval(f.read())
 
-            vms = VoxelSegmentation(int(data['voxels_size']),
-                                    int(data['ball_radius']))
+            vms = VoxelSegmentation(int(data['voxels_size']))
 
             for dvo in data['voxel_organs']:
 
@@ -173,35 +172,3 @@ class VoxelSegmentation(object):
                 vms.voxel_organs.append(vo)
 
         return vms
-
-
-
-            # def write_to_hdf5(self, file_prefix):
-    #
-    #     filename = file_prefix + '.hdf5'
-    #     if (os.path.dirname(filename) and not os.path.exists(
-    #             os.path.dirname(filename))):
-    #         os.makedirs(os.path.dirname(filename))
-    #
-    #     f = h5py.File(filename, "w")
-    #
-    #     f.attrs['ball_radius'] = self.ball_radius
-    #     f.attrs['voxels_size'] = self.voxels_size
-    #     grp_voxel_organs = f.create_group("voxel_organs")
-    #
-    #     for i, vo in enumerate(self.voxel_organs):
-    #         grp_vo = grp_voxel_organs.create_group("voxel_organ_{}".format(i))
-    #         grp_vo.attrs['label'] = vo.label
-    #
-    #         grp_vo_info = grp_vo.create_group('info')
-    #         grp_vo_info.attrs.update(vo.info)
-    #
-    #         grp_segments = grp_vo.create_group('voxel_segments')
-    #         for j, vs in enumerate(vo.voxel_segments):
-    #             grp_vs = grp_segments.create_group("voxel_segment_{}".format(j))
-    #
-    #             tmp = numpy.array(list(vs.polyline))
-    #             grp_vs.create_dataset('polyline', tmp.shape, tmp.dtype, tmp)
-    #             tmp = numpy.array(list(vs.voxels_position))
-    #             grp_vs.create_dataset('voxel_position', tmp.shape, tmp.dtype, tmp)
-    #
