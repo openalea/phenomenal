@@ -12,8 +12,6 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy
-import vtk
-import random
 
 from ._order_color_map import order_color_map
 from .displayVoxel import DisplayVoxel
