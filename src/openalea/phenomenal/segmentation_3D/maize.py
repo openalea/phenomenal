@@ -12,9 +12,7 @@
 import numpy
 import networkx
 
-from .algorithm import (merge,
-                        stem_detection)
-
+from .algorithm import (merge, stem_detection)
 import openalea.phenomenal.object.voxelOrgan
 import openalea.phenomenal.object.voxelSegmentation
 
