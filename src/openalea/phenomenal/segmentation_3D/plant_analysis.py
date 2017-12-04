@@ -508,7 +508,6 @@ def maize_analysis(voxel_maize_segmentation):
 
     voxels = set(vo_stem.voxels_position())
     lorder.sort(key=lambda x: x[1])
-    print lorder
     for vo, _ in lorder:
         vo.info["order"] = num_order
         num_order += 1

@@ -136,9 +136,9 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     for vs in voxel_skeleton.voxel_segments:
 
         # # TODO : Move that in the analysis part
-        if len(vs.real_polyline) * voxels_size <= 30:
-            organ_unknown.voxel_segments.append(vs)
-            continue
+        # if len(vs.real_polyline) * voxels_size <= 30:
+        #     organ_unknown.voxel_segments.append(vs)
+        #     continue
 
         if len(stem_top.intersection(vs.polyline)) > 0:
             vo = openalea.phenomenal.object.VoxelOrgan("cornet_leaf")
@@ -228,8 +228,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
     # ==========================================================================
 
-    vms = openalea.phenomenal.object.VoxelSegmentation(
-        voxels_size, voxel_skeleton.ball_radius)
+    vms = openalea.phenomenal.object.VoxelSegmentation(voxels_size)
     vms.voxel_organs.append(organ_unknown)
 
     organ_stem = openalea.phenomenal.object.VoxelOrgan("stem")

@@ -33,9 +33,9 @@ class DisplaySegmentation(DisplayVoxel):
     def show(self, mode=2, windows_size=(600, 800)):
 
         if mode == 1:
-            self.add_actor_from_voxel_segmentation(self._voxel_segmentation)
+            self.display_classic_analysis(self._voxel_segmentation)
         if mode == 2:
-            self.add_actor_from_voxel_segmentation_mode_2(
+            self.display_leaf_split(
                 self._voxel_segmentation)
         if mode == 3:
             self.display_leaf_order(self._voxel_segmentation)
@@ -44,7 +44,7 @@ class DisplaySegmentation(DisplayVoxel):
         if mode == 5:
             self.display_skeleton(self._voxel_segmentation)
         if mode == 6:
-            self.display_classic_label(self._voxel_segmentation)
+            self.display_classic_segmentation(self._voxel_segmentation)
 
         DisplayVoxel.show(self, windows_size=windows_size)
 
@@ -105,7 +105,7 @@ class DisplaySegmentation(DisplayVoxel):
                 vmsi.voxels_size,
                 color=color)
 
-    def display_classic_label(self, vmsi):
+    def display_classic_segmentation(self, vmsi):
 
         for vo in vmsi.voxel_organs:
             color = self.get_color(vo.label, vo.info)
@@ -281,9 +281,12 @@ class DisplaySegmentation(DisplayVoxel):
 
                     vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
 
-    def add_actor_from_voxel_segmentation(self, vmsi):
+    def display_classic_analysis(self, vmsi):
 
-        for vo in vmsi.voxel_organs:
+        def plot(vo):
+
+            if vo is None:
+                return
 
             voxels_position = numpy.array(
                 map(tuple, list(vo.voxels_position())))
@@ -319,3 +322,11 @@ class DisplaySegmentation(DisplayVoxel):
                         color=(r, g, b))
 
                     vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
+
+        plot(vmsi.get_unknown())
+        len_leafs = vmsi.get_number_of_leaf()
+        for i in range(len_leafs, -1, -1):
+            plot(vmsi.get_leaf_order(i))
+        plot(vmsi.get_stem())
+
+
