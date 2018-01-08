@@ -28,7 +28,7 @@ class DisplaySegmentation(DisplayVoxel):
 
         # self.add_actor_from_voxel_segmentation(self._voxel_segmentation)
 
-    def show(self, mode=2, windows_size=(600, 800)):
+    def show(self, mode=1, windows_size=(600, 800)):
 
         if mode == 1:
             self.display_classic_analysis(self._voxel_segmentation)

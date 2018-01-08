@@ -120,8 +120,8 @@ class VoxelSegmentation(object):
                 for vs in vo.voxel_segments:
                     dvs = dict()
                     dvs['polyline'] = map(tuple, list(vs.polyline))
-                    dvs['voxels_position'] = map(tuple,
-                                                 list(vs.voxels_position))
+                    dvs['voxels_position'] = map(
+                        tuple, list(vs.voxels_position))
                     dvo['voxel_segments'].append(dvs)
 
                 data['voxel_organs'].append(dvo)
@@ -150,25 +150,6 @@ class VoxelSegmentation(object):
 
                     vo.add_voxel_segment(voxels_position, polyline)
 
-                vms.voxel_organs.append(vo)
-
-        return vms
-
-    @staticmethod
-    def read_from_json_gz_info(filename):
-
-        with gzip.open(filename, 'rb') as f:
-
-            data = ast.literal_eval(f.read())
-
-            vms = VoxelSegmentation(int(data['voxels_size']))
-
-            for dvo in data['voxel_organs']:
-
-                vo = openalea.phenomenal.object.voxelOrgan.VoxelOrgan(
-                    dvo['label'])
-
-                vo.info = dvo['info']
                 vms.voxel_organs.append(vo)
 
         return vms
