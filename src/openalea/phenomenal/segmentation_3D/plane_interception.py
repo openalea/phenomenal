@@ -73,7 +73,6 @@ def get_node_close_to_planes(voxels, node_src, plane_equation,
         return map(tuple, closest_voxel)
 
     if radius_dist is not None:
-        # res = scipy.spatial.distance.cdist(node_src, closest_voxel, 'euclidean')
         res = numpy.linalg.norm(closest_voxel - node_src, axis=1)
         index = numpy.where(res < radius_dist)[0]
         closest_voxel = closest_voxel[index]
@@ -92,12 +91,10 @@ def get_node_close_to_planes(voxels, node_src, plane_equation,
             if node_src in cc:
                 return cc
 
-    # Work only with not distance voxels, not with graph who not connect all
-    # point
+    # Work only with connected voxels
     nodes.append(numpy.array(node_src))
     while nodes:
         node = nodes.pop()
-
         rr = abs(closest_voxel - node)
 
         index = numpy.where((rr[:, 0] <= voxels_size) &
@@ -118,14 +115,13 @@ def get_node_close_to_planes(voxels, node_src, plane_equation,
 def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
                                       graph=None,
                                       without_connexity=False,
-                                      voxels_size=4):
+                                      voxels_size=4,
+                                      radius_dist=1000):
 
     # closest_nodes, planes_equation = list(), list()
     length_path = len(path)
-
     closest_nodes = [None] * length_path
     planes_equation = [None] * length_path
-    radius_dist = 1000
 
     for i in range(length_path - 1, -1, -1):
         node = tuple(path[i])
@@ -151,7 +147,7 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
         d = k[0] * node[0] + k[1] * node[1] + k[2] * node[2]
         plane_equation = (k[0], k[1], k[2], d)
 
-        if i < length_path - 1:
+        if i < length_path - 1 and radius_dist is not None:
             nodes = closest_nodes[i + 1]
             prev_radius_dist = get_radius_length_point_cloud(
                 path[i + 1], numpy.array(list(nodes)))
