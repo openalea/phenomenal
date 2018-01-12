@@ -28,7 +28,7 @@ def plot_voxel(voxels_position, size_ratio=1.0, marker="box", color="green"):
 def show_voxel_grid(vg,
                     size_ratio=1,
                     color='green',
-                    width=800, height=800):
+                    width=800, height=1000):
 
     ipyvolume.figure(width=width, height=height)
     plot_voxel(vg.voxels_position, size_ratio=size_ratio, color=color)
@@ -39,7 +39,7 @@ def show_voxel_grid(vg,
 
 def show_mesh(vertices, faces, color='green'):
 
-    ipyvolume.figure(width=800, height=800)
+    ipyvolume.figure(width=800, height=1000)
     ipyvolume.style.use(['default', 'minimal'])
     ipyvolume.view(0, 90)
 
@@ -52,7 +52,7 @@ def show_skeleton(voxel_skeleton,
                   with_voxel=True,
                   size_ratio=1.0,
                   color='green',
-                  width=800, height=800):
+                  width=800, height=1000):
 
     ipyvolume.figure(width=width, height=height)
     ipyvolume.style.use(['default', 'minimal'])
@@ -85,7 +85,7 @@ def show_skeleton(voxel_skeleton,
 
 def show_segmentation(voxel_segmentation,
                       size_ratio=1.0,
-                      width=800, height=800):
+                      width=800, height=1000):
 
     ipyvolume.figure(width=width, height=height)
     ipyvolume.style.use(['default', 'minimal'])

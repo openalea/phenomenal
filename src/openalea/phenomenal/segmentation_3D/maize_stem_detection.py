@@ -28,78 +28,27 @@ from .plane_interception import (
 # ==============================================================================
 
 
-def merge(graph, voxels, remaining_voxels, percentage=50):
-
-    voxels_neighbors = list()
-    for node in voxels:
-        voxels_neighbors += graph[node].keys()
-    voxels_neighbors = set(voxels_neighbors) - voxels
-
-    subgraph = graph.subgraph(remaining_voxels)
-
-    connected_components = list()
-    for voxel_group in networkx.connected_components(subgraph):
-        nb = len(voxel_group.intersection(voxels_neighbors))
-
-        if nb * 100 / len(voxel_group) >= percentage:
-            voxels = voxels.union(voxel_group)
-        else:
-            connected_components.append(voxel_group)
-
-    return voxels, voxels_neighbors, connected_components
-
-
-def peak_stem_detection(closest_nodes_plane, stop_index, verbose=False):
+def maize_stem_peak_detection(closest_nodes_plane, stop_index):
     nodes_length = map(float, map(len, closest_nodes_plane))
-
-    distances = list()
-    for i in range(len(closest_nodes_plane)):
-        distance = get_length_point_cloud(closest_nodes_plane[i])
-        distances.append(float(distance))
 
     window_length = max(4, len(nodes_length) / 8)
     window_length = window_length + 1 if window_length % 2 == 0 else window_length
-
-    distances_smooth = savgol_filter(numpy.array(distances),
-                                     window_length=window_length,
-                                     polyorder=2)
 
     nodes_length_smooth = savgol_filter(numpy.array(nodes_length),
                                         window_length=window_length,
                                         polyorder=3)
 
     nodes_length_smooth = list(nodes_length_smooth)
-    # stop_index = nodes_length_smooth.index((max(nodes_length_smooth)))
-
-    # a = nodes_length
-    # stop_index = len(a) - a[::-1].index(max(a)) - 1
-    # stop_index = nodes_length.index((max(nodes_length)))
-    # print stop_index
 
     lookahead = 1
     max_peaks, min_peaks = peak_detection(nodes_length_smooth, lookahead)
 
     min_peaks = [(i, v) for i, v in min_peaks if i <= stop_index]
-
     min_peaks = [(0, nodes_length_smooth[0]),
                  (1, nodes_length_smooth[1])] + min_peaks
-
     min_peaks = list(set(min_peaks))
 
-    if verbose:
-        import matplotlib.pyplot
-        matplotlib.pyplot.figure()
-        for index, value in min_peaks:
-            matplotlib.pyplot.plot(index, value, 'bo')
-
-        # matplotlib.pyplot.plot(range(len(nodes_length)), nodes_length, 'r')
-        matplotlib.pyplot.plot(range(len(nodes_length_smooth)),
-                               nodes_length_smooth, 'b')
-
-        matplotlib.pyplot.plot(stop_index, max(nodes_length_smooth), 'ko')
-        matplotlib.pyplot.show()
-
-    return min_peaks, distances_smooth
+    return min_peaks
 
 
 def get_nodes_radius(center, points, radius):
@@ -122,42 +71,54 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     # ==========================================================================
 
     arr_stem_segment_voxel = numpy.array(list(stem_segment_voxel))
-    stem_segment_path = numpy.array(stem_segment_path)
+    arr_stem_segment_path = numpy.array(stem_segment_path)
 
-    closest_nodes_planes, planes_equations = compute_closest_nodes_with_planes(
+    closest_nodes_planes, _ = compute_closest_nodes_with_planes(
         arr_stem_segment_voxel,
-        stem_segment_path,
+        arr_stem_segment_path,
         radius=8,
         dist=distance_plane * voxels_size,
         voxels_size=voxels_size,
         graph=graph)
 
-    tmp_closest_nodes_planes = [numpy.array(list(nodes)) for nodes in
+    arr_closest_nodes_planes = [numpy.array(list(nodes)) for nodes in
                                 closest_nodes_planes]
 
     distances = list()
-    for i in range(len(tmp_closest_nodes_planes)):
-        distance = get_length_point_cloud(tmp_closest_nodes_planes[i])
+    for i in range(len(arr_closest_nodes_planes)):
+        distance = get_length_point_cloud(arr_closest_nodes_planes[i])
         distances.append(float(distance))
     ball_radius = max(distances) / 2.0
 
     closest_nodes_ball = compute_closest_nodes_with_ball(
         arr_stem_segment_voxel,
-        stem_segment_path,
+        arr_stem_segment_path,
         ball_radius=ball_radius,
         graph=graph)
 
     nodes_length = map(float, map(len, closest_nodes_ball))
+    len_nodes_length = len(nodes_length)
+    index_20_percent = int(float(len_nodes_length) * 0.20)
+    index_80_percent = int(float(len_nodes_length) * 0.70)
+
+    nodes_length[:index_20_percent] = [0] * index_20_percent
+    nodes_length[index_80_percent:] = [0] * (
+        len_nodes_length - index_80_percent)
+
     stop_index = nodes_length.index((max(nodes_length)))
 
-    min_peaks_stem, distances = peak_stem_detection(tmp_closest_nodes_planes,
-                                                    stop_index,
-                                                    verbose=False)
+    min_peaks_stem = maize_stem_peak_detection(arr_closest_nodes_planes,
+                                               stop_index)
+
+    window_length = max(4, len(nodes_length) / 8)
+    window_length = window_length + 1 if window_length % 2 == 0 else window_length
+    distances = savgol_filter(numpy.array(distances),
+                              window_length=window_length,
+                              polyorder=2)
     # ==========================================================================
 
     stem_segment_centred_path = [
-        numpy.array(list(nodes)).mean(axis=0) for nodes in closest_nodes_planes]
-
+        nodes.mean(axis=0) for nodes in arr_closest_nodes_planes]
 
     stem_voxel = set()
     radius = dict()
@@ -180,7 +141,6 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     if len(stem_centred_path_min_peak) <= k:
         k = 1
 
-    # print k, len(stem_centred_path_min_peak), stem_centred_path_min_peak
     tck, u = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=k)
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
 
@@ -206,7 +166,7 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
         stem_voxel = stem_voxel.union(result)
 
     not_stem_voxel = stem_segment_voxel - stem_voxel
-    stem_path = stem_segment_path[:max_index_min_peak + 1]
+    stem_path = arr_stem_segment_path[:max_index_min_peak + 1]
     stem_top = set(closest_nodes_planes[max_index_min_peak])
 
     return stem_voxel, not_stem_voxel, stem_path, stem_top
