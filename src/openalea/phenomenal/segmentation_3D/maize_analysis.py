@@ -236,7 +236,6 @@ def maize_mature_leaf_analysis(mature_leaf_voxel_organ,
 
 def maize_cornet_leaf_analysis_real_length(organ, voxels):
 
-    voxels_position = set(organ.voxels_position())
     real_longest_polyline = organ.real_longest_polyline()
 
     if len(real_longest_polyline) <= 1:

@@ -88,7 +88,7 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
 # ==============================================================================
 
 
-def find_base_stem_position(voxels_position, voxels_size, neighbor_size=50):
+def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
 
     image_3d = VoxelGrid(voxels_position, voxels_size).to_image_3d()
 
