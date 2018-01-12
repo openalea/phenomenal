@@ -14,10 +14,11 @@ import numpy
 import networkx
 import scipy
 
-
 # ==============================================================================
 
+
 def get_length_point_cloud(nodes):
+
     if len(nodes) == 0:
         return 0
 
@@ -91,7 +92,7 @@ def get_node_close_to_planes(voxels, node_src, plane_equation,
             if node_src in cc:
                 return cc
 
-    # Work only with connected voxels
+    # WARNING ! Work only with connected voxels
     nodes.append(numpy.array(node_src))
     while nodes:
         node = nodes.pop()
@@ -118,11 +119,9 @@ def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
                                       voxels_size=4,
                                       radius_dist=1000):
 
-    # closest_nodes, planes_equation = list(), list()
     length_path = len(path)
     closest_nodes = [None] * length_path
     planes_equation = [None] * length_path
-
     for i in range(length_path - 1, -1, -1):
         node = tuple(path[i])
         # ======================================================================

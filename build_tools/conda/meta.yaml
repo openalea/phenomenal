@@ -18,6 +18,7 @@ requirements:
     - openalea.deploy
     - pywin32 [win]
   run:
+    - numba
     - python
     - openalea.deploy
     - openalea.core
