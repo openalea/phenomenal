@@ -21,9 +21,9 @@ from openalea.phenomenal.segmentation_3D.peak_detection import (
     peak_detection)
 
 from .plane_interception import (
-    compute_closest_nodes_with_planes,
-    compute_closest_nodes_with_ball,
-    get_length_point_cloud)
+    intercept_points_along_path_with_planes,
+    intercept_points_along_polyline_with_ball,
+    max_distance_in_points)
 
 # ==============================================================================
 
@@ -73,40 +73,32 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     arr_stem_segment_voxel = numpy.array(list(stem_segment_voxel))
     arr_stem_segment_path = numpy.array(stem_segment_path)
 
-    closest_nodes_planes, _ = compute_closest_nodes_with_planes(
+    closest_nodes_planes, _ = intercept_points_along_path_with_planes(
         arr_stem_segment_voxel,
         arr_stem_segment_path,
-        radius=8,
-        dist=distance_plane * voxels_size,
+        distance_from_plane=distance_plane * voxels_size,
         voxels_size=voxels_size,
-        graph=graph)
+        points_graph=graph)
 
     arr_closest_nodes_planes = [numpy.array(list(nodes)) for nodes in
                                 closest_nodes_planes]
 
     distances = list()
     for i in range(len(arr_closest_nodes_planes)):
-        distance = get_length_point_cloud(arr_closest_nodes_planes[i])
+        distance = max_distance_in_points(arr_closest_nodes_planes[i])
         distances.append(float(distance))
     ball_radius = max(distances) / 2.0
 
-    closest_nodes_ball = compute_closest_nodes_with_ball(
+    closest_nodes_ball = intercept_points_along_polyline_with_ball(
         arr_stem_segment_voxel,
+        graph,
         arr_stem_segment_path,
-        ball_radius=ball_radius,
-        graph=graph)
+        ball_radius=ball_radius)
 
     nodes_length = map(float, map(len, closest_nodes_ball))
-    len_nodes_length = len(nodes_length)
-    index_20_percent = int(float(len_nodes_length) * 0.20)
-    index_80_percent = int(float(len_nodes_length) * 0.70)
-
+    index_20_percent = int(float(len(nodes_length)) * 0.20)
     nodes_length[:index_20_percent] = [0] * index_20_percent
-    nodes_length[index_80_percent:] = [0] * (
-        len_nodes_length - index_80_percent)
-
     stop_index = nodes_length.index((max(nodes_length)))
-
     min_peaks_stem = maize_stem_peak_detection(arr_closest_nodes_planes,
                                                stop_index)
 

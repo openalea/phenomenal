@@ -6,7 +6,6 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
 import math
@@ -14,181 +13,300 @@ import numpy
 import networkx
 import scipy
 
+
 # ==============================================================================
 
 
-def get_length_point_cloud(nodes):
+def max_distance_in_points(points):
+    """
+    Compute and return the maximal euclidean distance between the two point the
+    most separate in points.
 
-    if len(nodes) == 0:
+    :param points: A ndarray of 3d points position.
+    :return: int : The maximal distance
+    """
+    if len(points) == 0:
         return 0
 
-    res = scipy.spatial.distance.pdist(nodes, 'euclidean')
+    result = scipy.spatial.distance.pdist(points,
+                                          'euclidean')
 
-    if len(res) > 0:
-        return res.max()
+    if len(result) > 0:
+        return result.max()
     else:
         return 0
 
 
-def get_radius_length_point_cloud(node, nodes):
-    if len(nodes) == 0:
+def max_distance_from_point_to_points(points, src_point):
+    """
+    Compute and return the maximal euclidean distance between src_point and
+    the most separate point from him in points.
+
+    :param src_point: 3-tuple position of src_points: (x, y, z)
+    :param points: A ndarray of 3d points position.
+    :return: int : The maximal distance
+    """
+    if len(points) == 0:
         return 0
 
-    res = scipy.spatial.distance.cdist(numpy.array([node]), nodes, 'euclidean')
+    result = scipy.spatial.distance.cdist(numpy.array([src_point]),
+                                          points,
+                                          'euclidean')
 
-    if len(res) > 0:
-        return res.max()
+    if len(result) > 0:
+        return result.max()
     else:
         return 0
 
 
-def get_node_close_to_planes(voxels, node_src, plane_equation,
-                             dist=0.75,
-                             radius_dist=None,
-                             voxels_size=8,
-                             graph=None,
-                             without_connexity=False):
+def connected_points_with_point(points, points_graph, src_point):
     """
-    - voxels is a numpy array
-    - node_src tuple
-    - plane is a tuple of 4 elements containing (a, b, c, d) value of a plane
-    equation
+    Return the connected points with src_point, based on points graph
+    connection.
 
-    - dist : is the maximal distance between plane and node
+    src_point should be in the points_graph.
 
+    :param points: ndarray points positions x, y, z
+    :param src_point: ndarray point position x, y, z
+    :param points_graph: networkx graph
+    :return: Return the connected points with src_point, based on points graph
+    connection.
     """
+    # Compute connected component in points in the ball
+    subgraph = points_graph.subgraph(points)
+    connected_component = networkx.connected_component_subgraphs(
+        subgraph, copy=False)
 
-    # TODO : Maybe change that by graph connected definition
+    # Set points in ball by the connected points group with the current
+    # point of the path
+    for connected_points in connected_component:
+        if src_point in connected_points:
+            points = connected_points
 
-    res = abs(voxels[:, 0] * plane_equation[0] +
-              voxels[:, 1] * plane_equation[1] +
-              voxels[:, 2] * plane_equation[2] -
-              plane_equation[3]) / (math.sqrt(plane_equation[0] ** 2 +
-                                              plane_equation[1] ** 2 +
-                                              plane_equation[2] ** 2))
+    return points
 
-    index = numpy.where(res < dist)[0]
-    closest_voxel = voxels[index]
 
-    if without_connexity:
-        return map(tuple, closest_voxel)
+def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
+    """
+    Return connected voxels point with src_voxel_point based on 26 neighboring
+    voxel grid, with a size of voxels_size.
 
-    if radius_dist is not None:
-        res = numpy.linalg.norm(closest_voxel - node_src, axis=1)
-        index = numpy.where(res < radius_dist)[0]
-        closest_voxel = closest_voxel[index]
+    WARNING ! Work only with connected voxel, and voxel grid
 
-    nodes = list()
-    closest_node = list()
-
-    if graph is not None:
-        closest_voxel = map(tuple, closest_voxel)
-
-        subgraph = graph.subgraph(closest_voxel)
-        connected_component = networkx.connected_components(
-            subgraph)
-
-        for cc in connected_component:
-            if node_src in cc:
-                return cc
-
-    # WARNING ! Work only with connected voxels
-    nodes.append(numpy.array(node_src))
+    :param voxels_point: ndarray of voxel grid point
+    :param voxels_size: float voxel size
+    :param src_voxel_point: position x, y, z of voxel point
+    """
+    closest_node, nodes = list(), list()
+    nodes.append(numpy.array(src_voxel_point))
     while nodes:
         node = nodes.pop()
-        rr = abs(closest_voxel - node)
+        rr = abs(voxels_point - node)
 
         index = numpy.where((rr[:, 0] <= voxels_size) &
                             (rr[:, 1] <= voxels_size) &
                             (rr[:, 2] <= voxels_size))[0]
 
-        nodes += list(closest_voxel[index])
-        closest_node += list(closest_voxel[index])
+        nodes += list(voxels_point[index])
+        closest_node += list(voxels_point[index])
 
-        closest_voxel = numpy.delete(closest_voxel, index, 0)
+        voxels_point = numpy.delete(voxels_point, index, 0)
 
-        if closest_voxel.size == 0:
+        if voxels_point.size == 0:
             break
 
     return map(tuple, closest_node)
 
 
-def compute_closest_nodes_with_planes(voxels, path, radius=8, dist=1.00,
-                                      graph=None,
-                                      without_connexity=False,
-                                      voxels_size=4,
-                                      radius_dist=1000):
+def intercept_points_from_src_point_with_plane_equation(
+        points,
+        src_point,
+        plane_equation,
+        distance_from_plane,
+        distance_from_src_point=None):
+    """
+    Intercept the points whose the distance from the plane (generate by
+    plane_equation) are equal or inferior to the distance_from_plane. If
+    distance_from_src_point is not None, the intercept points are also the
+    points whose the distance from the src_point are equal or inferior to the
+    distance_from_src_point.
 
-    length_path = len(path)
-    closest_nodes = [None] * length_path
-    planes_equation = [None] * length_path
-    for i in range(length_path - 1, -1, -1):
-        node = tuple(path[i])
+    If points_graph is not None, points return are the points in the same
+    connected component that src_point.
+
+    :param points: ndarray containing x,y, z position of each point
+    :param src_point: point source
+    :param plane_equation:
+    :param distance_from_plane:
+    :param distance_from_src_point:
+    :return: return the intercepted points
+    """
+    res = abs(points[:, 0] * plane_equation[0] +
+              points[:, 1] * plane_equation[1] +
+              points[:, 2] * plane_equation[2] -
+              plane_equation[3]) / (math.sqrt(plane_equation[0] ** 2 +
+                                              plane_equation[1] ** 2 +
+                                              plane_equation[2] ** 2))
+
+    index = numpy.where(res < distance_from_plane)[0]
+    closest_voxel = points[index]
+
+    if distance_from_src_point is not None:
+        res = numpy.linalg.norm(closest_voxel - src_point, axis=1)
+        index = numpy.where(res < distance_from_src_point)[0]
+        closest_voxel = closest_voxel[index]
+
+    return closest_voxel
+
+
+def compute_plane_equation(orientation_vector, src_point):
+    """
+    Computation of plane equation
+    x, y, z = src_point
+    a, b, c, _ = k
+    Plane equation : - d = a * x + b * y + c * z
+
+    :param orientation_vector:
+    :param src_point:
+    :return:
+    """
+
+    d = (orientation_vector[0] * src_point[0] +
+         orientation_vector[1] * src_point[1] +
+         orientation_vector[2] * src_point[2])
+
+    plane_equation = (orientation_vector[0],
+                      orientation_vector[1],
+                      orientation_vector[2],
+                      d)
+
+    return plane_equation
+
+
+def orientation_vector_of_point_in_polyline(polyline,
+                                            index_point,
+                                            windows_size):
+    """
+    Compute and return orientation vector of point in polyline.
+
+    :param polyline:
+    :param index_point:
+    :param windows_size:
+    :return:
+    """
+    length_polyline = len(polyline)
+    vectors = list()
+    for j in range(1, windows_size):
+        x1, y1, z1 = polyline[max(0, index_point - j)]
+        x2, y2, z2 = polyline[min(length_polyline - 1, index_point + j)]
+        vectors.append((x1 - x1, y2 - y1, z2 - z1))
+
+    orientation_vector = numpy.array(vectors).astype(float).mean(axis=0)
+
+    return orientation_vector
+
+
+def intercept_points_along_path_with_planes(points,
+                                            polyline,
+                                            windows_size=8,
+                                            distance_from_plane=4,
+                                            points_graph=None,
+                                            without_connection=False,
+                                            voxels_size=4,
+                                            distance_from_src_point=1000):
+
+    length_polyline = len(polyline)
+    intercepted_points = [None] * length_polyline
+    planes_equation = [None] * length_polyline
+    for i in range(length_polyline - 1, -1, -1):
+        point = tuple(polyline[i])
+
         # ======================================================================
 
-        vectors = list()
-        for j in range(1, radius):
-            x, y, z = path[max(0, i - j)]
-            xx, yy, zz = path[min(length_path - 1, i + j)]
+        orientation_vector = orientation_vector_of_point_in_polyline(
+            polyline, i, windows_size)
 
-            v = map(float, (xx - x, yy - y, zz - z))
-            vectors.append(v)
+        plane_equation = compute_plane_equation(orientation_vector, point)
 
-        vector_mean = numpy.array(vectors).mean(axis=0)
-        k = vector_mean
-
-        # ======================================================================
-
-        # Computation of plane equation
-        # x, y, z = node
-        # a, b, c, _ = k
-        # Plane equation : - d = a * x + b * y + c * z
-        d = k[0] * node[0] + k[1] * node[1] + k[2] * node[2]
-        plane_equation = (k[0], k[1], k[2], d)
-
-        if i < length_path - 1 and radius_dist is not None:
-            nodes = closest_nodes[i + 1]
-            prev_radius_dist = get_radius_length_point_cloud(
-                path[i + 1], numpy.array(list(nodes)))
+        if i < length_polyline - 1 and distance_from_src_point is not None:
+            nodes = intercepted_points[i + 1]
+            prev_radius_dist = max_distance_from_point_to_points(
+                numpy.array(list(nodes)), polyline[i + 1])
 
             if prev_radius_dist == 0:
-                radius_dist = 1000
+                distance_from_src_point = 1000
             else:
-                radius_dist = min(prev_radius_dist + 1 * voxels_size, 1000.0)
+                distance_from_src_point = min(prev_radius_dist + 1 * voxels_size, 1000.0)
 
-        nodes = get_node_close_to_planes(voxels, node, plane_equation,
-                                         dist=dist,
-                                         graph=graph,
-                                         radius_dist=radius_dist,
-                                         without_connexity=without_connexity,
-                                         voxels_size=voxels_size)
+        # ======================================================================
 
-        closest_nodes[i] = nodes
+        pts = intercept_points_from_src_point_with_plane_equation(
+            points,
+            point,
+            plane_equation,
+            distance_from_plane,
+            distance_from_src_point)
+
+        if without_connection:
+            pts = map(tuple, pts)
+
+        elif points_graph is not None:
+
+            pts = map(tuple, pts)
+            pts = connected_points_with_point(pts, points_graph, point)
+
+        else:
+            pts = connected_voxel_with_point(pts, voxels_size, point)
+
+        intercepted_points[i] = pts
         planes_equation[i] = plane_equation
 
-    return closest_nodes, planes_equation
+    return intercepted_points, planes_equation
 
 
-def compute_closest_nodes_with_ball(voxels, path, ball_radius=50, graph=None):
+def intercept_points_with_ball(points, ball_center, ball_radius):
+    """
+    Return a list of the intercept points by a ball of radius ball_radius and
+    with center position ball_center.
 
-    closest_nodes = list()
-    path = numpy.array(path)
-    for i, node in enumerate(path):
+    :param points: ndarray of the x,y,z position of points.
+    :param ball_center: cndarray - position x, y, z of center position of the
+    ball. Ball center position should be in the points graph.
+    :param ball_radius: float value of the ball radius
+    :return: list of intercepted points
+    """
+    # Compute points in the ball
+    points_distance_from_point = numpy.linalg.norm(points - ball_center, axis=1)
+    index = numpy.where(points_distance_from_point < ball_radius)
 
-        res = numpy.linalg.norm(voxels - node, axis=1)
-        index = numpy.where(res < ball_radius)
-        nodes = voxels[index]
+    return points[index]
 
-        if graph is not None:
-            closest_voxel = map(tuple, nodes)
-            subgraph = graph.subgraph(closest_voxel)
-            connected_component = networkx.connected_component_subgraphs(
-                subgraph, copy=False)
 
-            for cc in connected_component:
-                if node in cc:
-                    nodes = cc
+def intercept_points_along_polyline_with_ball(points,
+                                              points_graph,
+                                              polyline,
+                                              ball_radius=50):
+    """
+    Return a list of intercept point along a polyline by a ball at each
+    points.
 
-        closest_nodes.append(map(tuple, nodes))
+    :param points: ndarray of points
+    :param polyline: ndarray ot points
+    :param points_graph: graph of the points
+    :param ball_radius: size of the ball radius in mm
+    :return: [[(x, y, z), ...], ...] : list of points intercepted by the ball
+    """
+    intercepted_points = list()
+    for point in polyline:
+        points_in_ball = intercept_points_with_ball(points,
+                                                    point,
+                                                    ball_radius)
 
-    return closest_nodes
+        points_in_ball = map(tuple, points_in_ball)
+        points_in_ball = connected_points_with_point(points_in_ball,
+                                                     points_graph,
+                                                     point)
+
+        intercepted_points.append(points_in_ball)
+
+    return intercepted_points

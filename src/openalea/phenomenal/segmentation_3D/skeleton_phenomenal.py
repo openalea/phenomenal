@@ -14,7 +14,7 @@ import networkx
 
 
 from openalea.phenomenal.segmentation_3D import (
-    compute_closest_nodes_with_planes)
+    intercept_points_along_path_with_planes)
 
 import openalea.phenomenal.multi_view_reconstruction
 
@@ -153,12 +153,11 @@ def segment_path(voxels,
 
     if leaf_skeleton_path:
 
-        closest_nodes, planes_equation = compute_closest_nodes_with_planes(
+        closest_nodes, _ = intercept_points_along_path_with_planes(
             array_voxels,
             leaf_skeleton_path,
-            radius=8,
-            dist=distance_plane * voxels_size,
-            graph=graph,
+            distance_from_plane=distance_plane * voxels_size,
+            points_graph=graph,
             voxels_size=voxels_size)
 
         # closest_nodes = compute_closest_nodes_with_ball(

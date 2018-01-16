@@ -154,6 +154,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     cornet_organs = list()
     for vs in voxel_skeleton.voxel_segments:
 
+        # remove leaf under 30cm
         if len(vs.real_polyline) * voxels_size <= 30:
             organ_unknown.voxel_segments.append(vs)
             continue
@@ -245,7 +246,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     cornet_organs = ltmp
 
     # ==========================================================================
-    ## build the object to return
+    ## Build the object to return
 
     vms = openalea.phenomenal.object.VoxelSegmentation(voxels_size)
     vms.voxel_organs.append(organ_unknown)
