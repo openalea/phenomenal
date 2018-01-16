@@ -80,9 +80,9 @@ def connected_points_with_point(points, points_graph, src_point):
     # point of the path
     for connected_points in connected_component:
         if src_point in connected_points:
-            points = connected_points
+            return connected_points
 
-    return points
+    return None
 
 
 def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
@@ -247,15 +247,17 @@ def intercept_points_along_path_with_planes(points,
             distance_from_plane,
             distance_from_src_point)
 
-        if without_connection:
-            pts = map(tuple, pts)
-        elif points_graph is not None:
+        # if without_connection:
+        #     pts = map(tuple, pts)
+        # elif points_graph is not None:
 
-            pts = map(tuple, pts)
-            pts = connected_points_with_point(pts, points_graph, point)
-
-        else:
+        pts = map(tuple, pts)
+        r = connected_points_with_point(pts, points_graph, point)
+        if r is None:
+            print "OH !"
             pts = connected_voxel_with_point(pts, voxels_size, point)
+        else:
+            pts = r
 
         intercepted_points[i] = pts
         planes_equation[i] = plane_equation
