@@ -156,8 +156,10 @@ def segment_path(voxels,
         closest_nodes, _ = intercept_points_along_path_with_planes(
             array_voxels,
             leaf_skeleton_path,
+            windows_size=8,
             distance_from_plane=distance_plane * voxels_size,
-            points_graph=graph)
+            points_graph=graph,
+            voxels_size=voxels_size)
 
         # closest_nodes = compute_closest_nodes_with_ball(
         #     array_voxels,
