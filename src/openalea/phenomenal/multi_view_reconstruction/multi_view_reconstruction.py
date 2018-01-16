@@ -508,16 +508,13 @@ def create_groups(image_views, kept, no_kept, voxels_size):
 
 def kept_groups(kept, no_kept, groups):
 
+    l = [kept]
     l_index = groups.values()
     if l_index:
         l_index = [numpy.array(index) for index in l_index]
-
         for index in l_index:
-            pts = no_kept[index]
-            if len(kept) == 0:
-                kept = pts
-            else:
-                kept = numpy.insert(kept, 0, pts, axis=0)
+            l.append(no_kept[index])
+        kept = numpy.concatenate(l, axis=0)
 
     # kept = numpy.unique(kept, axis=0) # with numpy > 1.10
     kept = numpy.vstack(set(tuple(row) for row in kept))
