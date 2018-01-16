@@ -10,6 +10,7 @@
 #
 # ==============================================================================
 import numpy
+import time
 
 from openalea.phenomenal.data.data_creation import (
     build_cube)
@@ -195,8 +196,8 @@ def test_reconstruction_3d_2():
     image_views = get_image_views_cube_projected()
 
     vg = reconstruction_3d(image_views,
-                            voxels_size=20,
-                            verbose=False)
+                           voxels_size=20,
+                           verbose=False)
 
     assert len(vg.voxels_position) > 0
 
@@ -218,6 +219,7 @@ def test_reconstruction_3d_3():
 # ==============================================================================
 
 if __name__ == "__main__":
+
     for func_name in dir():
         if func_name.startswith('test_'):
             print("{func_name}".format(func_name=func_name))
