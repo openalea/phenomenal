@@ -28,8 +28,7 @@ def max_distance_in_points(points):
     if len(points) == 0:
         return 0
 
-    result = scipy.spatial.distance.pdist(points,
-                                          'euclidean')
+    result = scipy.spatial.distance.pdist(points, 'euclidean')
 
     if len(result) > 0:
         return result.max()
@@ -236,7 +235,8 @@ def intercept_points_along_path_with_planes(points,
             if prev_radius_dist == 0:
                 distance_from_src_point = 1000
             else:
-                distance_from_src_point = min(prev_radius_dist + 1 * voxels_size, 1000.0)
+                distance_from_src_point = min(
+                    prev_radius_dist + 1 * voxels_size, 1000.0)
 
         # ======================================================================
 
@@ -249,7 +249,6 @@ def intercept_points_along_path_with_planes(points,
 
         if without_connection:
             pts = map(tuple, pts)
-
         elif points_graph is not None:
 
             pts = map(tuple, pts)
