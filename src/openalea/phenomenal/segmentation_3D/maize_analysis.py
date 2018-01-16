@@ -13,8 +13,8 @@ import numpy
 import math
 
 from openalea.phenomenal.segmentation_3D import (
-    compute_closest_nodes_with_planes,
-    get_length_point_cloud)
+    intercept_points_along_path_with_planes,
+    max_distance_in_points)
 
 # ==============================================================================
 
@@ -56,7 +56,7 @@ def compute_width_organ(organ, closest_nodes):
 
     width = list()
     for nodes in closest_nodes:
-        width.append(get_length_point_cloud(nodes))
+        width.append(max_distance_in_points(nodes))
 
     organ.info['width_max'] = max(width)
     organ.info['width_mean'] = sum(width) / float(len(width))
@@ -162,12 +162,11 @@ def maize_stem_analysis(stem_voxel_organ, distance_plane=0.75):
     # ==========================================================================
     # Compute height of the leaf
 
-    closest_nodes, planes_equation = compute_closest_nodes_with_planes(
+    closest_nodes, _ = intercept_points_along_path_with_planes(
         numpy.array(list(voxels_position)),
         polyline,
-        radius=8,
-        dist=distance_plane * voxels_size,
-        without_connexity=True,
+        distance_from_plane=distance_plane * voxels_size,
+        without_connection=True,
         voxels_size=voxels_size)
 
     # ==========================================================================
@@ -187,7 +186,7 @@ def maize_stem_analysis(stem_voxel_organ, distance_plane=0.75):
 
 def maize_mature_leaf_analysis(mature_leaf_voxel_organ,
                                stem_vector_mean,
-                               distance_plane=0.5):
+                               distance_plane=0.75):
 
     voxels_position = mature_leaf_voxel_organ.voxels_position()
     voxels_size = mature_leaf_voxel_organ.info['voxels_size']
@@ -201,11 +200,10 @@ def maize_mature_leaf_analysis(mature_leaf_voxel_organ,
     # ==========================================================================
     # Compute height of the leaf
 
-    closest_nodes, planes_equation = compute_closest_nodes_with_planes(
+    closest_nodes, _ = intercept_points_along_path_with_planes(
         numpy.array(list(voxels_position)),
         polyline,
-        radius=8,
-        dist=distance_plane * voxels_size,
+        distance_from_plane=distance_plane * voxels_size,
         voxels_size=voxels_size)
 
     # ==========================================================================
@@ -257,7 +255,7 @@ def maize_cornet_leaf_analysis_real_length(organ, voxels):
 def maize_cornet_leaf_analysis(organ,
                                stem_vector_mean,
                                voxels,
-                               distance_plane=0.5):
+                               distance_plane=0.75):
 
     voxels_position = organ.voxels_position()
     voxels_size = organ.info['voxels_size']
@@ -268,11 +266,10 @@ def maize_cornet_leaf_analysis(organ,
 
     # ==========================================================================
     # Compute height of the leaf
-    closest_nodes, _ = compute_closest_nodes_with_planes(
+    closest_nodes, _ = intercept_points_along_path_with_planes(
         numpy.array(list(voxels_position)),
         polyline,
-        radius=8,
-        dist=distance_plane * voxels_size,
+        distance_from_plane=distance_plane * voxels_size,
         voxels_size=voxels_size)
 
     # ==========================================================================

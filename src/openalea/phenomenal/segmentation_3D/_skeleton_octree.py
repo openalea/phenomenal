@@ -16,7 +16,9 @@ from openalea.phenomenal.segmentation_3D import (
     voxel_graph_from_voxel_grid)
 
 # ==============================================================================
-
+"""
+This module is actually deprecated
+"""
 
 def find_base_stem_position_octree(octree, voxel_size, neighbor_size=50):
     k = neighbor_size * voxel_size
