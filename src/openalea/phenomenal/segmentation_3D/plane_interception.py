@@ -299,9 +299,10 @@ def intercept_points_along_polyline_with_ball(points,
                                                     ball_radius)
 
         points_in_ball = map(tuple, points_in_ball)
+
         points_in_ball = connected_points_with_point(points_in_ball,
                                                      points_graph,
-                                                     point)
+                                                     tuple(point))
 
         intercepted_points.append(points_in_ball)
 
