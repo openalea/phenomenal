@@ -11,7 +11,6 @@
 # ==============================================================================
 from __future__ import absolute_import
 
-import networkx
 import numpy
 import scipy.interpolate
 import scipy.spatial
@@ -65,8 +64,7 @@ def get_nodes_radius(center, points, radius):
 
 
 def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
-                   graph=None,
-                   distance_plane=1.00):
+                   graph, voxel_skeleton, distance_plane=1.00):
 
     # ==========================================================================
 
@@ -97,16 +95,20 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
 
     nodes_length = map(float, map(len, closest_nodes_ball))
     index_20_percent = int(float(len(nodes_length)) * 0.20)
-    nodes_length[:index_20_percent] = [0] * index_20_percent
     stop_index = nodes_length.index((max(nodes_length)))
-    min_peaks_stem = maize_stem_peak_detection(arr_closest_nodes_planes,
-                                               stop_index)
+
+    if stop_index <= index_20_percent:
+        stop_index = len(nodes_length)
+
+    min_peaks_stem = maize_stem_peak_detection(
+        arr_closest_nodes_planes, stop_index)
 
     window_length = max(4, len(nodes_length) / 8)
     window_length = window_length + 1 if window_length % 2 == 0 else window_length
     distances = savgol_filter(numpy.array(distances),
                               window_length=window_length,
                               polyorder=2)
+
     # ==========================================================================
 
     stem_segment_centred_path = [

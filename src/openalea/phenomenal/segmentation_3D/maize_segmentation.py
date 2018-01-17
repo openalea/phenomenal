@@ -102,8 +102,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     # Compute Stem detection
 
     stem_voxel, not_stem_voxel, stem_path, stem_top = stem_detection(
-        stem_segment_voxel, stem_segment_path, voxels_size,
-        graph=graph)
+        stem_segment_voxel, stem_segment_path, voxels_size, graph, voxel_skeleton)
 
     # ==========================================================================
     # Remove stem voxels from segment voxels
