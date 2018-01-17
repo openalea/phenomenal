@@ -11,21 +11,14 @@
 # ==============================================================================
 import numpy
 import networkx
-import collections
 
 
 from openalea.phenomenal.segmentation_3D import (
-    merge,
-    compute_closest_nodes_with_planes,
-    compute_closest_nodes_with_ball)
+    intercept_points_along_path_with_planes)
 
 import openalea.phenomenal.multi_view_reconstruction
 
-from openalea.phenomenal.object import (VoxelSkeleton,
-                                                VoxelSegment,
-                                                VoxelGrid)
-
-from openalea.phenomenal.display import DisplayVoxel, show_image
+from openalea.phenomenal.object import (VoxelSkeleton, VoxelGrid)
 # ==============================================================================
 
 
@@ -35,7 +28,6 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
     """
 
     # Ordonner
-    #
     orderer_voxel_segments = sorted(voxel_skeleton.voxel_segments,
                                     key=lambda vs: len(vs.voxels_position))
 
@@ -65,10 +57,6 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
     new_voxel_segments = list()
     for i, vs in enumerate(orderer_voxel_segments):
 
-        # dv = DisplayVoxel()
-        # dv.add_actor_from_voxels(vs.voxels_position, voxel_skeleton.voxels_size)
-        # dv.show()
-
         weight = 0
         for j, iv in enumerate(image_views):
             im1 = d[(i, j)]
@@ -83,7 +71,6 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
             im[im < 0] = 0
 
             if numpy.count_nonzero(im) != 0:
-                # show_image(im)
                 weight += 1
 
             if weight >= tolerance:
@@ -101,7 +88,7 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
 # ==============================================================================
 
 
-def find_base_stem_position(voxels_position, voxels_size, neighbor_size=50):
+def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
 
     image_3d = VoxelGrid(voxels_position, voxels_size).to_image_3d()
 
@@ -166,12 +153,12 @@ def segment_path(voxels,
 
     if leaf_skeleton_path:
 
-        closest_nodes, planes_equation = compute_closest_nodes_with_planes(
+        closest_nodes, _ = intercept_points_along_path_with_planes(
             array_voxels,
             leaf_skeleton_path,
-            radius=8,
-            dist=distance_plane * voxels_size,
-            graph=graph,
+            windows_size=8,
+            distance_from_plane=distance_plane * voxels_size,
+            points_graph=graph,
             voxels_size=voxels_size)
 
         # closest_nodes = compute_closest_nodes_with_ball(

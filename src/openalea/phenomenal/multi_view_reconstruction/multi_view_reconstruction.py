@@ -11,6 +11,9 @@
 # ==============================================================================
 from __future__ import division, print_function
 
+import math
+from numba import jit
+import cv2
 import scipy.spatial
 import collections
 import numpy
@@ -73,10 +76,10 @@ def get_bounding_box_voxel_projected(voxels_position,
 
     Parameters
     ----------
-    voxel_center : (x, y, z)
+    voxels_position : (x, y, z)
         Center position of voxel
 
-    voxel_size : float
+    voxels_size : float
         Size of side geometry of voxel
 
     projection : function ((x, y, z)) -> (x, y)
@@ -161,11 +164,43 @@ def split_voxel_centers_in_eight(voxels_position, voxel_size):
 
 # ==============================================================================
 
+@jit()
+def numba_optimize_voxels_is_visible_in_image(min_xy_max_xy, image_int, bb,
+                                              length, height, inclusive):
+
+    for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
+
+        if x_max < 0 or x_min >= length or y_max < 0 or y_min >= height:
+            if inclusive:
+                bb[i] = 1
+            else:
+                bb[i] = 0
+        else:
+            x_min = int(min(max(math.floor(x_min), 0), length - 1)) - 1
+            y_min = int(min(max(math.floor(y_min), 0), height - 1)) - 1
+            x_max = int(min(max(math.floor(x_max), 0), length - 1))
+            y_max = int(min(max(math.floor(y_max), 0), height - 1))
+
+            r1 = image_int[y_max, x_max]
+            if y_min > 0:
+                r1 -= image_int[y_min, x_max]
+            if x_min > 0:
+                r1 -= image_int[y_max, x_min]
+            if y_min > 0 and x_min > 0:
+                r1 += image_int[y_min, x_min]
+
+            if r1 > 0:
+                bb[i] = 1
+
+    return bb
+
+
 def voxels_is_visible_in_image(voxels_position,
                                voxels_size,
                                image,
                                projection,
-                               inclusive):
+                               inclusive,
+                               image_int=None):
     """
     Return True or False if the voxel projected on image with the function
     projection (projection) have positive value on image.
@@ -218,21 +253,83 @@ def voxels_is_visible_in_image(voxels_position,
             (r[:, 0] < length) &
             (r[:,  1] < height))
 
-    rr = r[cond]
-    rr = rr.astype(int)
+    rr = r[cond].astype(int)
 
     (ori_result[cond])[image[rr[:, 1], rr[:, 0]] > 0] = 1
-
-    cond = ori_result > 0
-    not_cond = numpy.logical_not(cond)
+    not_cond = numpy.logical_not(ori_result > 0)
 
     result = ori_result[not_cond]
     voxels_position = voxels_position[not_cond]
 
     # ==========================================================================
 
+    # voxels_corners = get_voxels_corners(voxels_position, voxels_size)
+    # pt = projection(voxels_corners)
+    # pt = numpy.reshape(pt, (pt.shape[0] // 8, 8, 2))
+    # tim = image.astype(int)
+    # im = numpy.zeros_like(tim, dtype=int)
+    # conds = list()
+    #
+    # for points in pt:
+    #
+    #     if (numpy.all(points[:, 0] < 0) == True or
+    #         numpy.all(points[:, 0] >= length) == True or
+    #         numpy.all(points[:, 1] < 0) == True or
+    #         numpy.all(points[:, 1] >= height) == True):
+    #         conds.append(False)
+    #         continue
+    #
+    #     points[points < 0] = 0
+    #     (points[:, 0])[points[:, 0] >= length] = length - 1
+    #     (points[:, 1])[points[:, 1] >= height] = height - 1
+    #     points = numpy.floor(points).astype(int)
+    #
+    #     if numpy.all(points[:, 0] == points[0, 0]) == True:
+    #         x = points[0, 0]
+    #         y_min = numpy.min(points[:, 1])
+    #         y_max = numpy.max(points[:, 1])
+    #
+    #         if numpy.count_nonzero(image[y_min:y_max, x]) > 0:
+    #             conds.append(True)
+    #         else:
+    #             conds.append(False)
+    #         continue
+    #
+    #     if numpy.all(points[:, 1] == points[0, 1]) == True:
+    #         y = points[0, 1]
+    #         x_min = numpy.min(points[:, 0])
+    #         x_max = numpy.max(points[:, 0])
+    #
+    #         if numpy.count_nonzero(image[y, x_min:x_max]) > 0:
+    #             conds.append(True)
+    #         else:
+    #             conds.append(False)
+    #         continue
+    #
+    #     hull = scipy.spatial.ConvexHull(points)
+    #     im[:] = 0
+    #     cv2.fillConvexPoly(im, points[hull.vertices], 1)
+    #     if numpy.any(tim[im == 1] > 0) == True:
+    #         conds.append(True)
+    #     else:
+    #         conds.append(False)
+    #
+    # result[conds] = 1
+    # ori_result[not_cond] = result
+    #
+    # return ori_result
+
+    # ==========================================================================
+
     min_xy_max_xy = get_bounding_box_voxel_projected(
         voxels_position, voxels_size, projection)
+
+    # result = numba_optimize_voxels_is_visible_in_image(
+    #     min_xy_max_xy, image_int, result, length, height, inclusive)
+    #
+    # ori_result[not_cond] = result
+    #
+    # return ori_result
 
     vv = ((min_xy_max_xy[:, 2] < 0) | (min_xy_max_xy[:, 0] >= length) |
           (min_xy_max_xy[:, 3] < 0) | (min_xy_max_xy[:, 1] >= height))
@@ -244,7 +341,6 @@ def voxels_is_visible_in_image(voxels_position,
     bb = result[not_vv]
 
     min_xy_max_xy = numpy.floor(min_xy_max_xy)
-
     min_xy_max_xy[min_xy_max_xy < 0] = 0
     (min_xy_max_xy[:, 0])[min_xy_max_xy[:, 0] >= length] = length - 1
     (min_xy_max_xy[:, 1])[min_xy_max_xy[:, 1] >= height] = height - 1
@@ -252,9 +348,25 @@ def voxels_is_visible_in_image(voxels_position,
     (min_xy_max_xy[:, 3])[min_xy_max_xy[:, 3] >= height] = height - 1
     min_xy_max_xy = min_xy_max_xy.astype(int)
 
+    # ==========================================================================
+
+    min_xy_max_xy[:, 0:2] -= 1
     for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
-        if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
+
+        r1 = image_int[y_max, x_max]
+        if y_min > 0:
+            r1 -= image_int[y_min, x_max]
+        if x_min > 0:
+            r1 -= image_int[y_max, x_min]
+        if y_min > 0 and x_min > 0:
+            r1 += image_int[y_min, x_min]
+
+        if r1 > 0:
             bb[i] = 1
+
+    # for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
+    #     if numpy.count_nonzero(image[y_min:y_max + 1, x_min:x_max + 1]) > 0:
+    #         bb[i] = 1
 
     result[not_vv] = bb
     ori_result[not_cond] = result
@@ -268,7 +380,8 @@ def voxels_is_visible_in_image(voxels_position,
 def kept_visible_voxel(voxels_position,
                        voxels_size,
                        image_views,
-                       error_tolerance=0):
+                       error_tolerance=0,
+                       int_images=None):
     """
     Kept in a new collections.deque the voxel who is visible on each image of
     images_projections according the error_tolerance
@@ -307,7 +420,8 @@ def kept_visible_voxel(voxels_position,
             voxels_size,
             image_view.image,
             image_view.projection,
-            image_view.inclusive)
+            image_view.inclusive,
+            image_int=int_images[i])
 
         cond = photo_consistent >= i + 1 - error_tolerance
 
@@ -338,23 +452,31 @@ def create_groups(image_views, kept, no_kept, voxels_size):
             res = get_bounding_box_voxel_projected(
                 no_kept, voxels_size, iv.projection)
 
-            vv = ((res[:, 2] < 0) | (res[:, 0] >= length) |
-                  (res[:, 3] < 0) | (res[:, 1] >= height))
+            # vv = ((res[:, 2] < 0) | (res[:, 0] >= length) |
+            #       (res[:, 3] < 0) | (res[:, 1] >= height))
+            #
+            # not_vv = numpy.logical_not(vv)
+            # res = res[not_vv]
+            # no_kept = no_kept[not_vv]
 
-            not_vv = numpy.logical_not(vv)
-            res = res[not_vv]
-            no_kept = no_kept[not_vv]
-
-            res = numpy.floor(res)
-            res[res < 0] = 0
-
-            (res[:, 0])[res[:, 0] >= length] = length - 1
-            (res[:, 1])[res[:, 1] >= height] = height - 1
-            (res[:, 2])[res[:, 2] >= length] = length - 1
-            (res[:, 3])[res[:, 3] >= height] = height - 1
-            res = res.astype(int)
+            # res = numpy.floor(res)
+            # res[res < 0] = 0
+            # (res[:, 0])[res[:, 0] >= length] = length - 1
+            # (res[:, 1])[res[:, 1] >= height] = height - 1
+            # (res[:, 2])[res[:, 2] >= length] = length - 1
+            # (res[:, 3])[res[:, 3] >= height] = height - 1
+            # res = res.astype(int)
 
             for i, (x_min, y_min, x_max, y_max) in enumerate(res):
+
+                if x_max < 0 or x_min >= length or y_max < 0 or y_min >= height:
+                    continue
+
+                x_min = int(min(max(math.floor(x_min), 0), length - 1))
+                y_min = int(min(max(math.floor(y_min), 0), height - 1))
+                x_max = int(min(max(math.floor(x_max), 0), length - 1))
+                y_max = int(min(max(math.floor(y_max), 0), height - 1))
+
                 img = iv.image[y_min:y_max + 1, x_min:x_max + 1]
                 xx, yy = numpy.where(img > 0)
 
@@ -367,6 +489,10 @@ def create_groups(image_views, kept, no_kept, voxels_size):
             im = project_voxel_centers_on_image(kept, voxels_size,
                                                 iv.image.shape,
                                                 iv.projection)
+
+            # im = project_voxels_position_on_image(kept, voxels_size,
+            #                                       iv.image.shape,
+            #                                       iv.projection)
 
             il = iv.image - im
             xx, yy = numpy.where(il > 0)
@@ -382,18 +508,17 @@ def create_groups(image_views, kept, no_kept, voxels_size):
 
 def kept_groups(kept, no_kept, groups):
 
+    l = [kept]
     l_index = groups.values()
     if l_index:
         l_index = [numpy.array(index) for index in l_index]
-
         for index in l_index:
-            pts = no_kept[index]
-            if len(kept) == 0:
-                kept = pts
-            else:
-                kept = numpy.insert(kept, 0, pts, axis=0)
+            l.append(no_kept[index])
+        kept = numpy.concatenate(l, axis=0)
 
-    kept = numpy.unique(kept, axis=0)
+    # kept = numpy.unique(kept, axis=0) # with numpy > 1.10
+    kept = numpy.vstack(set(tuple(row) for row in kept))
+
     return kept
 
 
@@ -423,10 +548,8 @@ def check_groups(kept, no_kept, groups):
             distance, index_nodes = neigh.kneighbors(no_kept[index])
 
             if len(list(kk)) > 0:
-
-                dist = scipy.spatial.distance.cdist(no_kept[index],
-                                                    no_kept[numpy.array(list(kk))],
-                                                    'euclidean')
+                dist = scipy.spatial.distance.cdist(
+                    no_kept[index], no_kept[numpy.array(list(kk))], 'euclidean')
 
                 a = numpy.insert(dist, [0], distance, axis=1)
                 distance = a.min(axis=1)
@@ -444,14 +567,27 @@ def check_groups(kept, no_kept, groups):
             else:
                 kept = numpy.insert(kept, 0, pts.copy(), axis=0)
 
-            # kept = numpy.insert(kept, 0, pts, axis=0)
-
     return kept
 
 
-# ==============================================================================
+@jit()
+def get_int_image(img):
+    a = numpy.zeros_like(img, dtype=int)
+    for y, x in numpy.ndindex(a.shape):
+            r = 0
+            if img[y, x] > 0:
+                r += 1
+            if x - 1 >= 0:
+                r += a[y, x - 1]
+            if y - 1 >= 0:
+                r += a[y - 1, x]
+            if x - 1 >= 0 and y - 1 >= 0:
+                r -= a[y - 1, x - 1]
+            a[y, x] = r
+    return a
 
-from openalea.phenomenal.display import show_images
+
+# ==============================================================================
 
 def reconstruction_3d(image_views,
                       voxels_size=4,
@@ -467,7 +603,7 @@ def reconstruction_3d(image_views,
     Parameters
     ----------
     
-    images_projections : [(image, projection), ...]
+    image_views : [(image, projection), ...]
         List of tuple (image, projection) where image is a binary image
         (numpy.ndarray) and function projection (function (x, y, z) -> (x, y))
         who take (x, y, z) position on return (x, y) position according space
@@ -513,6 +649,11 @@ def reconstruction_3d(image_views,
 
     voxels_position = numpy.array(voxels_position)
 
+    int_images = list()
+    for i, image_view in enumerate(image_views):
+        a = get_int_image(image_view.image)
+        int_images.append(a)
+
     for i in range(nb_iteration):
 
         if len(voxels_position) == 0:
@@ -532,7 +673,7 @@ def reconstruction_3d(image_views,
 
         voxels_position, no_kept = kept_visible_voxel(
             voxels_position, voxels_size, image_views,
-            error_tolerance=error_tolerance)
+            error_tolerance=error_tolerance, int_images=int_images)
 
         groups, no_kept = create_groups(
             image_views, voxels_position, no_kept, voxels_size)
@@ -540,9 +681,19 @@ def reconstruction_3d(image_views,
         if i + 1 < nb_iteration or len(voxels_position) == 0:
             voxels_position = kept_groups(voxels_position, no_kept, groups)
         else:
+
+            # from openalea.phenomenal.display import DisplayVoxel
+
+            # dv = DisplayVoxel()
+            # dv.add_actor_from_voxels(voxels_position, voxels_size)
+            # dv.add_actor_from_voxels(no_kept, voxels_size * 0.25)
+            # dv.show()
+
             voxels_position = check_groups(voxels_position, no_kept, groups)
 
-    # voxels_position = numpy.unique(voxels_position, axis=0)
+            # dv = DisplayVoxel()
+            # dv.add_actor_from_voxels(voxels_position, voxels_size)
+            # dv.show()
 
     return VoxelGrid(voxels_position, voxels_size)
 
@@ -591,9 +742,6 @@ def project_voxel_centers_on_image(voxels_position,
     not_vv = numpy.logical_not(vv)
     res = res[not_vv]
 
-    # res = res[(res[:, 2] >= 0) & (res[:, 0] < length) &
-    #           (res[:, 3] >= 0) & (res[:, 1] < height)]
-
     res = numpy.floor(res)
     res[res < 0] = 0
     (res[:, 0])[res[:, 0] >= length] = length - 1
@@ -604,6 +752,54 @@ def project_voxel_centers_on_image(voxels_position,
 
     for x_min, y_min, x_max, y_max in res:
         img[y_min:y_max + 1, x_min:x_max + 1] = 255
+
+    return img
+
+
+def project_voxels_position_on_image(voxels_position,
+                                     voxels_size,
+                                     shape_image,
+                                     projection):
+    """
+    Create a image with same shape that shape_image and project each voxel on
+    image and write positive value (255) on it.
+
+    Parameters
+    ----------
+    voxels_position : [(x, y, z)]
+        cList (collections.deque) of center position of voxel
+
+    voxels_size : float
+        Size of side geometry of voxel
+
+    shape_image: Tuple
+        size height and length of the image target projected
+
+    projection : function ((x, y, z)) -> (x, y)
+        Function of projection who take 1 argument (tuple of position (x, y, z))
+         and return this position 2D (x, y)
+
+    Returns
+    -------
+    out : numpy.ndarray
+        Binary image
+    """
+
+    voxels_position = numpy.array(voxels_position)
+    height, length = shape_image
+    img = numpy.zeros((height, length), dtype=numpy.uint8)
+
+    voxels_corners = get_voxels_corners(voxels_position, voxels_size)
+    pt = projection(voxels_corners)
+    pt = numpy.reshape(pt, (pt.shape[0] // 8, 8, 2))
+
+    pt[pt < 0] = 0
+    (pt[:, :, 0])[pt[:, :, 0] >= length] = length - 1
+    (pt[:, :, 1])[pt[:, :, 1] >= height] = height - 1
+    pt = numpy.floor(pt).astype(int)
+    for points in pt:
+        hull = scipy.spatial.ConvexHull(points)
+        cv2.fillConvexPoly(img, points[hull.vertices], 255)
 
     return img
 

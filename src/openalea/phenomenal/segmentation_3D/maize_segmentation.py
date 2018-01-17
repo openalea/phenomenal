@@ -12,9 +12,7 @@
 import numpy
 import networkx
 
-from .algorithm import (merge,
-                        stem_detection)
-
+from .maize_stem_detection import stem_detection
 import openalea.phenomenal.object.voxelOrgan
 import openalea.phenomenal.object.voxelSegmentation
 
@@ -66,6 +64,27 @@ def get_highest_segment(voxel_segments):
     return highest_voxel_segment
 
 
+def merge(graph, voxels, remaining_voxels, percentage=50):
+
+    voxels_neighbors = list()
+    for node in voxels:
+        voxels_neighbors += graph[node].keys()
+    voxels_neighbors = set(voxels_neighbors) - voxels
+
+    subgraph = graph.subgraph(remaining_voxels)
+
+    connected_components = list()
+    for voxel_group in networkx.connected_components(subgraph):
+        nb = len(voxel_group.intersection(voxels_neighbors))
+
+        if nb * 100 / len(voxel_group) >= percentage:
+            voxels = voxels.union(voxel_group)
+        else:
+            connected_components.append(voxel_group)
+
+    return voxels, voxels_neighbors, connected_components
+
+
 def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
     # ==========================================================================
@@ -87,7 +106,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
         graph=graph)
 
     # ==========================================================================
-    # Remove stem voxel from voxel segments
+    # Remove stem voxels from segment voxels
 
     for vs in voxel_skeleton.voxel_segments:
 
@@ -135,7 +154,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     cornet_organs = list()
     for vs in voxel_skeleton.voxel_segments:
 
-        # # TODO : Move that in the analysis part
+        # remove leaf under 30cm
         if len(vs.real_polyline) * voxels_size <= 30:
             organ_unknown.voxel_segments.append(vs)
             continue
@@ -183,17 +202,6 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
                     again = True
                     break
 
-                # nb = len(voxels_1.intersection(voxels_2))
-                #
-                # if ((nb * 100 / len(voxels_1) >= percentage) or
-                #     (nb * 100 / len(voxels_2) >= percentage)):
-                #
-                #     vo_1.voxel_segments += vo_2.voxel_segments
-                #
-                #     mature_organs.pop(i)
-                #     again = True
-                #     break
-
         ltmp.append(vo_1)
 
     mature_organs = ltmp
@@ -238,9 +246,9 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     cornet_organs = ltmp
 
     # ==========================================================================
+    ## Build the object to return
 
-    vms = openalea.phenomenal.object.VoxelSegmentation(
-        voxels_size, voxel_skeleton.ball_radius)
+    vms = openalea.phenomenal.object.VoxelSegmentation(voxels_size)
     vms.voxel_organs.append(organ_unknown)
 
     organ_stem = openalea.phenomenal.object.VoxelOrgan("stem")

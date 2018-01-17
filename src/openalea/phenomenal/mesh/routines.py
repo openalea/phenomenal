@@ -10,6 +10,7 @@
 #
 # ==============================================================================
 import numpy
+import cv2
 # ==============================================================================
 
 __all__ = ["normals", "centers"]
@@ -72,3 +73,30 @@ def centers(vertices, faces):
     v = vertices[faces]
 
     return (v[:, 0, :] + v[:, 1, :] + v[:, 2, :]) / 3.0
+
+
+def project_mesh_on_image(vertices, faces, shape_image, projection,
+                          with_morphology_close=True):
+
+    vertices = numpy.array(vertices)
+    height, length = shape_image
+    img = numpy.zeros((height, length), dtype=numpy.uint8)
+
+    # triangles = list()
+    for i, j, k in faces:
+        pt1, pt2, pt3 = vertices[i], vertices[j], vertices[k]
+        arr = numpy.array([pt1, pt2, pt3])
+        pts = projection(arr).astype(int)
+        if pts[0][1] == pts[1][1] == pts[2][1]:
+            continue
+        else:
+            cv2.fillConvexPoly(img, pts, 255)
+        # triangles.append()
+
+    # cv2.fillPoly(img, triangles, 255)
+
+    # if with_morphology_close:
+    #     kernel = numpy.ones((3, 3), numpy.uint8)
+    #     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+
+    return img
