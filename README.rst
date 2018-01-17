@@ -76,8 +76,9 @@ http://conda.pydata.org/miniconda.html
 Authors
 -------
 
-* Artzet	    Simon		(simon.artzet@gmail.com)
-* Fournier	    Christian	(christian.fournier@supagro.inra.fr)
-* Brichet	    Nicolas		(brichet@supagro.inra.fr)
-* Chopard       Jerome      (revesansparole@gmail.com)
+* Artzet	    Simon
+* Fournier	    Christian
+* Brichet	    Nicolas
+* Chopard       Jerome
+* Christophe    Pradal
 * Mielewczik	Michael

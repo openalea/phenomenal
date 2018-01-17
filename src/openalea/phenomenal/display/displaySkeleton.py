@@ -24,16 +24,37 @@ class DisplaySkeleton(DisplayVoxel):
     def __init__(self, voxel_skeleton,
                  with_voxel=True,
                  voxel_color=(0, 1, 0),
-                 skeleton_color=(1, 0, 0)):
+                 skeleton_color=(1, 0, 0),
+                 color_segment=None):
 
         DisplayVoxel.__init__(self)
 
-        for vs in voxel_skeleton.voxel_segments:
+        self.add_actor_voxel_skeleton(voxel_skeleton,
+                                      with_voxel=with_voxel,
+                                      voxel_color=voxel_color,
+                                      skeleton_color=skeleton_color,
+                                      color_segment=color_segment)
 
-            if with_voxel:
+    def add_actor_voxel_skeleton(self, voxel_skeleton,
+                                 with_voxel=False,
+                                 voxel_color=(0, 1, 0),
+                                 skeleton_color=(1, 0, 0),
+                                 color_segment=None):
+
+        orderer_voxel_segments = sorted(voxel_skeleton.voxel_segments,
+                                        key=lambda vs: len(vs.voxels_position))
+
+        for i, vs in enumerate(orderer_voxel_segments):
+
+            if color_segment is not None and color_segment == i:
                 self.add_actor_from_voxels(
                     vs.voxels_position,
                     voxel_skeleton.voxels_size * 0.50,
+                    color=(0, 0, 1))
+            elif with_voxel:
+                self.add_actor_from_voxels(
+                    vs.voxels_position,
+                    voxel_skeleton.voxels_size * 0.25,
                     color=voxel_color)
 
             self.add_actor_from_voxels(

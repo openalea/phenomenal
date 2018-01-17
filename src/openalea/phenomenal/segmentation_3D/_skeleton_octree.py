@@ -12,21 +12,13 @@
 import networkx
 import numpy
 
-from openalea.phenomenal.object import (
-    VoxelGrid)
-
-from openalea.phenomenal.multi_view_reconstruction import (
-    reconstruction_3d)
-
 from openalea.phenomenal.segmentation_3D import (
-    voxel_graph_from_voxel_grid,
-    compute_all_shorted_path,
-    skeletonize,
-    create_graph,
-    connect_all_node_with_nearest_neighbors)
+    voxel_graph_from_voxel_grid)
 
 # ==============================================================================
-
+"""
+This module is actually deprecated
+"""
 
 def find_base_stem_position_octree(octree, voxel_size, neighbor_size=50):
     k = neighbor_size * voxel_size

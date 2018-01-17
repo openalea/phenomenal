@@ -38,7 +38,7 @@ def read_image(filename, flags=cv2.IMREAD_UNCHANGED):
 
 def write_image(filename, image):
     """
-    Write a image in a jpg file.
+    Write a image in a file.
 
     :param filename: output filename where write the image
     :param image: numpy image to write

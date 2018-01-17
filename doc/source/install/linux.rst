@@ -21,8 +21,7 @@ Be sure opengl is installed on your machine
 .. code:: shell
 
     # Basic
-    sudo apt-get install python-setuptools python-numpy python-matplotlib
-    python-scipy python-skimage python-opencv python-vtk
+    sudo apt-get install python-setuptools python-numpy python-matplotlib python-scipy python-skimage python-opencv python-vtk
 
     # Optional
     sudo apt-get install python-nose ipython ipython-notebook

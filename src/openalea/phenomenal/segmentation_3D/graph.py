@@ -16,8 +16,7 @@ from sklearn.neighbors import NearestNeighbors
 
 from openalea.phenomenal.object import (
     VoxelGraph,
-    VoxelGrid,
-    Image3D)
+    VoxelGrid)
 
 # ==============================================================================
 
