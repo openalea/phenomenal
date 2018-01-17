@@ -1,6 +1,6 @@
-==============
-Ubuntu (linux)
-==============
+===========================
+Developper - Ubuntu (linux)
+===========================
 
 Warning :This installation procedure is not fully tested, We strongly
 recommand to install openalea.phenomenal with miniconda.
@@ -15,6 +15,7 @@ Be sure opengl is installed on your machine
 
 .. code:: shell
 
+    sudo apt-get update
     sudo apt-get install freeglut3-dev
 
 
