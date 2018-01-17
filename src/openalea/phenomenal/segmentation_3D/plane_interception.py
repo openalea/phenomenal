@@ -198,7 +198,7 @@ def orientation_vector_of_point_in_polyline(polyline,
     for j in range(1, windows_size):
         x1, y1, z1 = polyline[max(0, index_point - j)]
         x2, y2, z2 = polyline[min(length_polyline - 1, index_point + j)]
-        vectors.append((x1 - x1, y2 - y1, z2 - z1))
+        vectors.append((x2 - x1, y2 - y1, z2 - z1))
 
     orientation_vector = numpy.array(vectors).astype(float).mean(axis=0)
 
