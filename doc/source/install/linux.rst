@@ -1,15 +1,15 @@
-===========================
-Developper - Ubuntu (linux)
-===========================
+==================================
+Developer Install - Ubuntu (linux)
+==================================
 
-Warning :This installation procedure is not fully tested, We strongly
+Warning : This installation procedure is not fully tested, We strongly
 recommand to install openalea.phenomenal with miniconda.
 
 .. contents::
 
------------------------
-1. Install dependencies
------------------------
+-----------------------------
+1. Install linux dependencies
+-----------------------------
 
 Be sure opengl is installed on your machine
 
@@ -18,22 +18,36 @@ Be sure opengl is installed on your machine
     sudo apt-get update
     sudo apt-get install freeglut3-dev
 
+2. Miniconda installation
+-------------------------
+
+Follow official website instruction to install miniconda :
+
+http://conda.pydata.org/miniconda.html
+
+3. Create virtual environment and activate it
+.............................................
 
 .. code:: shell
 
-    # Basic
-    sudo apt-get install python-setuptools python-numpy python-matplotlib python-scipy python-skimage python-opencv python-vtk
+    conda create --name phenomenal python
+    source activate phenomenal
 
-    # Optional
-    sudo apt-get install python-nose ipython ipython-notebook
 
-    # OpenAlea.Deploy
-    git clone https://github.com/openalea/deploy
-    cd deploys; python setup.py install; cd ..
+4. Install dependencies with conda
+----------------------------------
 
-    # OpenAlea.Core
-    git clone https://github.com/openalea/core
-    cd core; python setup.py install; cd ..
+.. code:: shell
+
+    conda install -c openalea/label/unstable openalea.deploy openalea.core
+    conda install numba numpy scikit-learn scikit-image scipy matplotlib
+    networkx vtk opencv
+
+    # Usefull tools for running example and documentation
+    conda install nose notebook sphinx sphinx_rtd_theme pandoc ipyvolume
+
+    # On windows
+    conda install pywin32 [win]
 
 ------------------------------
 2. Install openalea.phenomenal
@@ -42,7 +56,7 @@ Be sure opengl is installed on your machine
 .. code:: shell
 
     git clone https://gitlab.inria.fr/phenome/phenomenal.git
-    cd phenomenal; python setup.py install; cd ..
+    cd phenomenal; python setup.py develop --preifx=$CONDA_PREFIX; cd ..
 
 ------------------------------------------------------------------
 3. Test if installation is well installed (with nosetests package)
