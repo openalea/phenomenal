@@ -73,16 +73,14 @@ def connected_points_with_point(points, points_graph, src_point):
     """
     # Compute connected component in points in the ball
     subgraph = points_graph.subgraph(points)
-    connected_component = networkx.connected_component_subgraphs(
-        subgraph, copy=False)
-
+    connected_components = networkx.connected_components(subgraph)
     # Set points in ball by the connected points group with the current
     # point of the path
-    for connected_points in connected_component:
+    for connected_points in connected_components:
         if src_point in connected_points:
             return connected_points
 
-    return None
+    return [src_point]
 
 
 def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
@@ -247,17 +245,14 @@ def intercept_points_along_path_with_planes(points,
             distance_from_plane,
             distance_from_src_point)
 
-        # if without_connection:
-        #     pts = map(tuple, pts)
-        # elif points_graph is not None:
+        if without_connection:
+            pts = map(tuple, pts)
+        elif points_graph is not None:
 
-        pts = map(tuple, pts)
-        r = connected_points_with_point(pts, points_graph, point)
-        if r is None:
-            print "OH !"
-            pts = connected_voxel_with_point(pts, voxels_size, point)
+            pts = map(tuple, pts)
+            pts = connected_points_with_point(pts, points_graph, point)
         else:
-            pts = r
+            pts = connected_voxel_with_point(pts, voxels_size, point)
 
         intercepted_points[i] = pts
         planes_equation[i] = plane_equation
