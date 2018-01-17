@@ -46,6 +46,10 @@ setup(
     package_dir={'': 'src'},
     zip_safe=False,
 
+    entry_points={
+        "wralea": ["openalea.phenomenal = openalea.phenomenal_wralea", ],
+    },
+
     # See MANIFEST.in
     include_package_data=True,
     )
