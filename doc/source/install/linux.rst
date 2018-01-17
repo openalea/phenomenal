@@ -39,9 +39,8 @@ http://conda.pydata.org/miniconda.html
 
 .. code:: shell
 
-    conda install -c openalea/label/unstable openalea.deploy openalea.core
-    conda install numba numpy scikit-learn scikit-image scipy matplotlib
-    networkx vtk opencv
+    conda install -c openalea/label/unstable -c openalea openalea.deploy openalea.core
+    conda install numba numpy scikit-learn scikit-image scipy matplotlib networkx vtk opencv
 
     # Usefull tools for running example and documentation
     conda install nose notebook sphinx sphinx_rtd_theme pandoc ipyvolume
@@ -56,7 +55,7 @@ http://conda.pydata.org/miniconda.html
 .. code:: shell
 
     git clone https://gitlab.inria.fr/phenome/phenomenal.git
-    cd phenomenal; python setup.py develop --preifx=$CONDA_PREFIX; cd ..
+    cd phenomenal; python setup.py develop --prefix=$CONDA_PREFIX; cd ..
 
 ------------------------------------------------------------------
 3. Test if installation is well installed (with nosetests package)
