@@ -12,7 +12,7 @@ __license__ = 'CeCILL-C'
 __authors__ = 'Me'
 
 
-__all__ = ['openalea.phenomenal.object_VoxelSegment', 'openalea.phenomenal.object_VoxelGrid', 'openalea.phenomenal.object_ImageView', 'openalea.phenomenal.object_VoxelSkeleton', 'openalea.phenomenal.object_Image3D', 'openalea.phenomenal.object_VoxelOctree', 'openalea.phenomenal.object_VoxelOrgan', 'openalea.phenomenal.object_VoxelGraph', 'openalea.phenomenal.object_VoxelSegmentation']
+__all__ = ['openalea_phenomenal_object_VoxelSegment', 'openalea_phenomenal_object_VoxelGrid', 'openalea_phenomenal_object_ImageView', 'openalea_phenomenal_object_VoxelSkeleton', 'openalea_phenomenal_object_Image3D', 'openalea_phenomenal_object_VoxelOctree', 'openalea_phenomenal_object_VoxelOrgan', 'openalea_phenomenal_object_VoxelGraph', 'openalea_phenomenal_object_VoxelSegmentation']
 
 
 

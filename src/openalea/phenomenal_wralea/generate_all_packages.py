@@ -13,7 +13,7 @@ for el in list_name:
 
 
 
-
+#path mod is the relative path of the folder from this program
 def functions(module, path_mod):
     """ Get all the factories of the module module.
     """
@@ -40,8 +40,8 @@ def functions(module, path_mod):
     return pkg
 
 #TODO
-#fix wralea ne fonctionne pas
-#l'appliquer dans chaque dossier
+#fix wralea is not working
+#it should be applyed in all subfolders
 
 def fix_wralea(path_mod):
     import __wralea__
@@ -65,7 +65,7 @@ def fix_wralea(path_mod):
 if __name__ =='__main__':
     for module in list_mod:
         functions(module, module.__name__.rsplit('.', 1)[-1])
-        fix_wralea(module.__name__.rsplit('.', 1)[-1])
+        #fix_wralea(module.__name__.rsplit('.', 1)[-1])
 
 
 
