@@ -12,7 +12,7 @@ __license__ = 'CeCILL-C'
 __authors__ = 'Me'
 
 
-__all__ = ['openalea.phenomenal.mesh_read_json_file_to_vertices_faces', 'openalea.phenomenal.mesh_decimation', 'openalea.phenomenal.mesh_marching_cubes', 'openalea.phenomenal.mesh_smoothing', 'openalea.phenomenal.mesh_write_vertices_faces_to_ply_file', 'openalea.phenomenal.mesh_voxelization', 'openalea.phenomenal.mesh_from_voxel_centers_to_vtk_image_data', 'openalea.phenomenal.mesh_centers', 'openalea.phenomenal.mesh_meshing', 'openalea.phenomenal.mesh_normals', 'openalea.phenomenal.mesh_write_vertices_faces_to_json_file', 'openalea.phenomenal.mesh_from_vtk_image_data_to_voxels_center', 'openalea.phenomenal.mesh_write_vtk_poly_data_to_ply_file', 'openalea.phenomenal.mesh_from_numpy_matrix_to_vtk_image_data', 'openalea.phenomenal.mesh_from_vertices_faces_to_vtk_poly_data', 'openalea.phenomenal.mesh_from_vtk_poly_data_to_vertices_faces']
+__all__ = ['openalea_phenomenal_mesh_read_json_file_to_vertices_faces', 'openalea_phenomenal_mesh_decimation', 'openalea_phenomenal_mesh_marching_cubes', 'openalea_phenomenal_mesh_smoothing', 'openalea_phenomenal_mesh_write_vertices_faces_to_ply_file', 'openalea_phenomenal_mesh_voxelization', 'openalea_phenomenal_mesh_from_voxel_centers_to_vtk_image_data', 'openalea_phenomenal_mesh_centers', 'openalea_phenomenal_mesh_meshing', 'openalea_phenomenal_mesh_normals', 'openalea_phenomenal_mesh_write_vertices_faces_to_json_file', 'openalea_phenomenal_mesh_from_vtk_image_data_to_voxels_center', 'openalea_phenomenal_mesh_write_vtk_poly_data_to_ply_file', 'openalea_phenomenal_mesh_from_numpy_matrix_to_vtk_image_data', 'openalea_phenomenal_mesh_from_vertices_faces_to_vtk_poly_data', 'openalea_phenomenal_mesh_from_vtk_poly_data_to_vertices_faces']
 
 
 

@@ -12,7 +12,7 @@ __license__ = 'CeCILL-C'
 __authors__ = 'Me'
 
 
-__all__ = ['openalea.phenomenal.image_read_image', 'openalea.phenomenal.image_dilate_erode', 'openalea.phenomenal.image_threshold_hsv', 'openalea.phenomenal.image_side_binarization', 'openalea.phenomenal.image_write_image', 'openalea.phenomenal.image_erode_dilate', 'openalea.phenomenal.image_meanshift_hsv', 'openalea.phenomenal.image_close', 'openalea.phenomenal.image_skeletonize_thinning', 'openalea.phenomenal.image_skeletonize_erode_dilate', 'openalea.phenomenal.image_threshold_meanshift', 'openalea.phenomenal.image_threshold_meanshift_enhance', 'openalea.phenomenal.image_mean_image']
+__all__ = ['openalea_phenomenal_image_read_image', 'openalea_phenomenal_image_dilate_erode', 'openalea_phenomenal_image_threshold_hsv', 'openalea_phenomenal_image_side_binarization', 'openalea_phenomenal_image_write_image', 'openalea_phenomenal_image_erode_dilate', 'openalea_phenomenal_image_meanshift_hsv', 'openalea_phenomenal_image_close', 'openalea_phenomenal_image_skeletonize_thinning', 'openalea_phenomenal_image_skeletonize_erode_dilate', 'openalea_phenomenal_image_threshold_meanshift', 'openalea_phenomenal_image_threshold_meanshift_enhance', 'openalea_phenomenal_image_mean_image']
 
 
 
