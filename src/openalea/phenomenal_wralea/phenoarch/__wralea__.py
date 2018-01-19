@@ -85,3 +85,4 @@ openalea_phenomenal_phenoarch_show_voxel_grid = Factory(
                 widgetmodule=None,
                 widgetclass=None,
                )
+
