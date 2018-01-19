@@ -65,7 +65,7 @@ def routine_top_binarization(image):
     return bin_img
 
 
-def binarize(images):
+def binarize(raw_images):
 
     # Compute the mean image of the side view image
     mean_img = mean_image(raw_images['side'].values())

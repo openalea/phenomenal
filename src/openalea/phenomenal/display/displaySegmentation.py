@@ -21,10 +21,14 @@ from .displayVoxel import DisplayVoxel
 
 class DisplaySegmentation(DisplayVoxel):
 
-    def __init__(self, voxel_segmentation):
-
+    def __init__(self):
         DisplayVoxel.__init__(self)
+
+    def __call__(self, voxel_segmentation, mode=1, windows_size=(600, 800)):
+
         self._voxel_segmentation = voxel_segmentation
+
+        self.show(mode=mode, windows_size=windows_size)
 
         # self.add_actor_from_voxel_segmentation(self._voxel_segmentation)
 
