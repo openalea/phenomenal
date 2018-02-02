@@ -15,16 +15,11 @@ from .displayVoxel import DisplayVoxel
 # ==============================================================================
 
 
-class DisplayVoxelGrid(DisplayVoxel):
+class DisplayMesh(DisplayVoxel):
 
     def __init__(self):
         DisplayVoxel.__init__(self)
 
-    def __call__(self, voxel_grid, color=(0, 0.8, 0)):
-
-        self.add_actor_from_voxels(
-            voxel_grid.voxels_position,
-            voxel_grid.voxels_size,
-            color=color)
-
+    def __call__(self, vertices, faces, color=(0, 0.8, 0)):
+        self.add_actor_from_vertices_faces(vertices, faces, color=color)
         self.show()
