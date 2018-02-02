@@ -42,9 +42,14 @@ setup(
     keywords='',
 
     # package installation
+    namespace_packages = ['openalea'],
     packages=find_packages('src'),
     package_dir={'': 'src'},
     zip_safe=False,
+
+    entry_points={
+        "wralea": ["openalea.phenomenal = openalea.phenomenal_wralea", ],
+    },
 
     # See MANIFEST.in
     include_package_data=True,
