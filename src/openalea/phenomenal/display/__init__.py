@@ -22,6 +22,7 @@ from .displayVoxel import *
 from .displaySkeleton import *
 from .displayVoxelGrid import *
 from .displaySegmentation import *
+from .displayMesh import *
 
 # ==============================================================================
 
