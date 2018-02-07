@@ -1,0 +1,34 @@
+
+from openalea.core import Factory
+
+
+
+__name__ = 'openalea.phenomenal.image'
+
+__editable__ = True
+__description__ = 'functions on images'
+__license__ = 'CECILL-C'
+__url__ = 'http://phenomenal.readthedocs.io/en/latest'
+__alias__ = []
+__version__ = "1.6.0"
+__authors__ = ""
+
+__institutes__ = 'INRA/INRIA/CIRAD'
+__icon__ = ''
+
+
+__all__ = [
+    "phenomenal_image_thresholdMeanshift",
+
+]
+
+
+
+phenomenal_image_thresholdMeanshift = Factory(name='thresholdMeanshift',
+                category='visualization, data processing',
+                nodemodule='openalea.phenomenal.image',
+                nodeclass='threshold_meanshift',
+                lazy=False
+		)
+
+
