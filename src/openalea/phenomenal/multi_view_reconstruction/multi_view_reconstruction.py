@@ -20,8 +20,16 @@ import numpy
 import sklearn.neighbors
 
 from openalea.phenomenal.object import VoxelGrid
-# ==============================================================================
 
+# ==============================================================================
+# Class
+
+Voxels = collections.namedtuple("Voxels", ['position', 'size'])
+VoxelsStage = collections.namedtuple(
+    "VoxelsStage", ['consistent', 'inconsistent'])
+
+
+# ==============================================================================
 
 def get_voxels_corners(voxels_position, voxels_size):
     """
@@ -105,7 +113,7 @@ def get_bounding_box_voxel_projected(voxels_position,
 # ==============================================================================
 
 
-def split_voxel_centers_in_eight(voxels_position, voxel_size):
+def split_voxels_in_eight(voxels):
     """
     Split each voxel in the collections.deque in 8 en return a collections.deque
     of this new center position of voxel splited::
@@ -125,7 +133,7 @@ def split_voxel_centers_in_eight(voxels_position, voxel_size):
 
     Parameters
     ----------
-    voxel_centers : [(x, y, z)]
+    voxels : [(x, y, z)]
         collections.deque of center position of voxel
 
     voxel_size : float
@@ -138,17 +146,17 @@ def split_voxel_centers_in_eight(voxels_position, voxel_size):
          voxel_center in voxel_centers
 
     """
-    if len(voxels_position) == 0:
-        return voxels_position
+    if len(voxels.position) == 0:
+        return Voxels(voxels.position, voxels.size / 2.0)
 
-    r = voxel_size / 4.0
+    r = voxels.size / 4.0
 
-    x_minus = voxels_position[:, 0] - r
-    x_plus = voxels_position[:, 0] + r
-    y_minus = voxels_position[:, 1] - r
-    y_plus = voxels_position[:, 1] + r
-    z_minus = voxels_position[:, 2] - r
-    z_plus = voxels_position[:, 2] + r
+    x_minus = voxels.position[:, 0] - r
+    x_plus = voxels.position[:, 0] + r
+    y_minus = voxels.position[:, 1] - r
+    y_plus = voxels.position[:, 1] + r
+    z_minus = voxels.position[:, 2] - r
+    z_plus = voxels.position[:, 2] + r
 
     a1 = numpy.column_stack((x_minus, y_minus, z_minus))
     a2 = numpy.column_stack((x_plus, y_minus, z_minus))
@@ -159,7 +167,8 @@ def split_voxel_centers_in_eight(voxels_position, voxel_size):
     a7 = numpy.column_stack((x_minus, y_plus, z_plus))
     a8 = numpy.column_stack((x_plus, y_plus, z_plus))
 
-    return numpy.concatenate((a1, a2, a3, a4, a5, a6, a7, a8), axis=0)
+    return Voxels(numpy.concatenate((a1, a2, a3, a4, a5, a6, a7, a8), axis=0),
+                  voxels.size / 2.0)
 
 
 # ==============================================================================
@@ -376,7 +385,6 @@ def voxels_is_visible_in_image(voxels_position,
 
 # ==============================================================================
 
-
 def kept_visible_voxel(voxels_position,
                        voxels_size,
                        image_views,
@@ -436,10 +444,13 @@ def kept_visible_voxel(voxels_position,
         voxels_position = voxels_position[cond]
         photo_consistent = photo_consistent[cond]
 
-    return voxels_position, no_kept
+    consistent = Voxels(voxels_position, voxels_size)
+    inconsistent = Voxels(no_kept, voxels_size)
+
+    return VoxelsStage(consistent, inconsistent)
 
 
-def create_groups(image_views, kept, no_kept, voxels_size):
+def create_groups(image_views, inconsistent):
 
     groups = collections.defaultdict(list)
     kept_groups = collections.defaultdict(list)
@@ -449,25 +460,11 @@ def create_groups(image_views, kept, no_kept, voxels_size):
         if iv.ref is True:
             height, length = iv.image.shape
 
-            res = get_bounding_box_voxel_projected(
-                no_kept, voxels_size, iv.projection)
+            min_xy_max_xy = get_bounding_box_voxel_projected(
+                inconsistent.position, inconsistent.size, iv.projection)
 
-            # vv = ((res[:, 2] < 0) | (res[:, 0] >= length) |
-            #       (res[:, 3] < 0) | (res[:, 1] >= height))
-            #
-            # not_vv = numpy.logical_not(vv)
-            # res = res[not_vv]
-            # no_kept = no_kept[not_vv]
-
-            # res = numpy.floor(res)
-            # res[res < 0] = 0
-            # (res[:, 0])[res[:, 0] >= length] = length - 1
-            # (res[:, 1])[res[:, 1] >= height] = height - 1
-            # (res[:, 2])[res[:, 2] >= length] = length - 1
-            # (res[:, 3])[res[:, 3] >= height] = height - 1
-            # res = res.astype(int)
-
-            for i, (x_min, y_min, x_max, y_max) in enumerate(res):
+            # add each voxels to a visual cones
+            for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
 
                 if x_max < 0 or x_min >= length or y_max < 0 or y_min >= height:
                     continue
@@ -478,96 +475,36 @@ def create_groups(image_views, kept, no_kept, voxels_size):
                 y_max = int(min(max(math.floor(y_max), 0), height - 1))
 
                 img = iv.image[y_min:y_max + 1, x_min:x_max + 1]
-                xx, yy = numpy.where(img > 0)
+                yy, xx = numpy.where(img > 0)
+                yy += y_min
+                xx += x_min
+                for y, x in zip(yy, xx):
+                    groups[(group_id, y, x)].append(i)
 
-                xx += y_min
-                yy += x_min
-
-                for x, y in zip(xx, yy):
-                    groups[(group_id, x, y)].append(i)
-
-            im = project_voxel_centers_on_image(kept, voxels_size,
-                                                iv.image.shape,
-                                                iv.projection)
-
-            # im = project_voxels_position_on_image(kept, voxels_size,
-            #                                       iv.image.shape,
-            #                                       iv.projection)
-
-            il = iv.image - im
-            xx, yy = numpy.where(il > 0)
-
-            for x, y in zip(xx, yy):
-                if len(groups[(group_id, x, y)]) > 0:
-                    kept_groups[(group_id, x, y)] = groups[(group_id, x, y)]
+            for y, x in zip(iv.yy, iv.xx):
+                if len(groups[(group_id, y, x)]) > 0:
+                    kept_groups[(group_id, y, x)] = groups[(group_id, y, x)]
 
         group_id += 1
 
-    return kept_groups, no_kept
+    return kept_groups
 
 
-def kept_groups(kept, no_kept, groups):
+def check_groups(neigh, inconsistent, groups, nb_distance):
 
-    l = [kept]
-    l_index = groups.values()
-    if l_index:
-        l_index = [numpy.array(index) for index in l_index]
-        for index in l_index:
-            l.append(no_kept[index])
-        kept = numpy.concatenate(l, axis=0)
+    positions = list()
+    for index in groups.values():
+        index = numpy.array(index)
 
-    # kept = numpy.unique(kept, axis=0) # with numpy > 1.10
-    kept = numpy.vstack(set(tuple(row) for row in kept))
+        distance, _ = neigh.kneighbors(inconsistent.position[index])
+        distance = distance.min(axis=1)
+        xx = distance.argsort()[:nb_distance]
+        positions.append(inconsistent.position[index[xx]])
 
-    return kept
+    position = numpy.concatenate(positions, axis=0)
+    position = numpy.vstack(set(tuple(row) for row in position))
 
-
-def check_groups(kept, no_kept, groups):
-
-    l_index = groups.values()
-    if l_index:
-        l_index = [numpy.array(index) for index in l_index]
-
-        neigh = sklearn.neighbors.NearestNeighbors(
-            n_neighbors=1, metric='euclidean')
-
-        neigh.fit(kept)
-        distance, index_nodes = neigh.kneighbors(no_kept)
-
-        # Ordered by min distance from kept voxel
-        min_dist = [numpy.min(distance[index]) for index in l_index]
-        l_index = [y for (x, y) in sorted(zip(min_dist, l_index),
-                                          key=lambda k: k[0])]
-
-        kk = set()
-        for index in l_index:
-
-            if len(kk.intersection(set(index))) > 0:
-                continue
-
-            distance, index_nodes = neigh.kneighbors(no_kept[index])
-
-            if len(list(kk)) > 0:
-                dist = scipy.spatial.distance.cdist(
-                    no_kept[index], no_kept[numpy.array(list(kk))], 'euclidean')
-
-                a = numpy.insert(dist, [0], distance, axis=1)
-                distance = a.min(axis=1)
-
-            else:
-                distance = distance[:, 0]
-
-            m = numpy.min(distance)
-            xx = numpy.unique(numpy.where(distance == m))
-            pts = no_kept[index[xx]]
-            kk = kk.union(set(list(index[xx])))
-
-            if len(kept) == 0:
-                kept = pts.copy()
-            else:
-                kept = numpy.insert(kept, 0, pts.copy(), axis=0)
-
-    return kept
+    return Voxels(position, inconsistent.size)
 
 
 @jit()
@@ -587,15 +524,75 @@ def get_int_image(img):
     return a
 
 
+def have_image_ref(image_views):
+    for iv in image_views:
+        if iv.ref is True:
+            return True
+    return False
+
 # ==============================================================================
+
+
+def reconstruction_insconsistent(image_views, stages):
+
+    for iv in image_views:
+        if iv.ref is True:
+            im = project_voxel_centers_on_image(stages[-1].consistent.position,
+                                                stages[-1].consistent.size,
+                                                iv.image.shape,
+                                                iv.projection)
+            iv.il = iv.image - im
+            iv.yy, iv.xx = numpy.where(iv.il > 0)
+
+    consistent_neighbors = sklearn.neighbors.NearestNeighbors(
+        n_neighbors=1, metric='euclidean')
+
+    if numpy.size(stages[-1].consistent.position) == 0:
+        consistent_neighbors.fit(numpy.array([[0, 0, 0]]))
+    else:
+        consistent_neighbors.fit(stages[-1].consistent.position)
+
+    consistents = [None] * len(stages)
+    for i, stage in enumerate(stages):
+
+        if stage.inconsistent is None:
+            continue
+
+        inconsistent = stage.inconsistent
+        if consistents[i - 1] is not None:
+            voxels = split_voxels_in_eight(consistents[i - 1])
+            position = numpy.concatenate(
+                (inconsistent.position, voxels.position), axis=0)
+            position = numpy.vstack(set(tuple(row) for row in position))
+            inconsistent = Voxels(position, inconsistent.size)
+
+        groups = create_groups(image_views, inconsistent)
+        nb_distance = max(20 - int((20 / len(stages)) * i), 2)
+        consistents[i] = check_groups(
+            consistent_neighbors, inconsistent, groups, nb_distance)
+
+    consistent_stages = [None] * len(stages)
+    for i, (stage, consistent) in enumerate(zip(stages, consistents)):
+
+        consistent_stages[i] = stage.consistent
+        if consistent is not None:
+            voxels_position = numpy.concatenate(
+                (consistent_stages[i].position, consistent.position), axis=0)
+
+            voxels_position = numpy.vstack(
+                set(tuple(row) for row in voxels_position))
+
+            consistent_stages[i] = Voxels(voxels_position, consistent.size)
+
+    return consistent_stages
+
 
 def reconstruction_3d(image_views,
                       voxels_size=4,
                       error_tolerance=0,
                       voxel_center_origin=(0.0, 0.0, 0.0),
-                      world_size=4096,
-                      voxels_position=None,
-                      verbose=False):
+                      start_voxel_size=4096,
+                      voxels_position=None):
     """
     Construct a list of voxel represented object with positive value on binary
     image in images of images_projections.
@@ -639,63 +636,42 @@ def reconstruction_3d(image_views,
         raise ValueError("Len images view have not length")
 
     if voxels_position is None:
-        voxels_position = collections.deque()
-        voxels_position.append(voxel_center_origin)
+        voxels_position = numpy.array([voxel_center_origin])
 
-    nb_iteration = 0
-    while voxels_size < world_size:
-        voxels_size *= 2.0
-        nb_iteration += 1
+    list_voxels_size = [voxels_size * 2 ** i for i in range(20, -1, -1) if
+                        voxels_size * 2 ** (i - 1) < start_voxel_size]
 
-    voxels_position = numpy.array(voxels_position)
-
+    # Pre-processing : Compute integral image for speed computation
     int_images = list()
     for i, image_view in enumerate(image_views):
         a = get_int_image(image_view.image)
         int_images.append(a)
 
-    for i in range(nb_iteration):
+    stage = VoxelsStage(Voxels(voxels_position, list_voxels_size[0]), None)
+    stages = [stage]
 
-        if len(voxels_position) == 0:
+    while stage.consistent.size != voxels_size:
+        if len(stage.consistent.position) == 0:
             break
 
-        voxels_position = split_voxel_centers_in_eight(
-            voxels_position, voxels_size)
+        voxels = split_voxels_in_eight(stage.consistent)
 
-        voxels_size /= 2.0
-
-        if verbose is True:
-            print("Iteration {} / {} : {}".format(
-                i + 1, nb_iteration, len(voxels_position)))
-
-        if voxels_size >= 512:
-            continue
-
-        voxels_position, no_kept = kept_visible_voxel(
-            voxels_position, voxels_size, image_views,
-            error_tolerance=error_tolerance, int_images=int_images)
-
-        groups, no_kept = create_groups(
-            image_views, voxels_position, no_kept, voxels_size)
-
-        if i + 1 < nb_iteration or len(voxels_position) == 0:
-            voxels_position = kept_groups(voxels_position, no_kept, groups)
+        if voxels.size < 512:
+            stage = kept_visible_voxel(
+                voxels.position, voxels.size, image_views,
+                error_tolerance=error_tolerance,
+                int_images=int_images)
         else:
+            stage = VoxelsStage(voxels, None)
 
-            # from openalea.phenomenal.display import DisplayVoxel
+        stages.append(stage)
 
-            # dv = DisplayVoxel()
-            # dv.add_actor_from_voxels(voxels_position, voxels_size)
-            # dv.add_actor_from_voxels(no_kept, voxels_size * 0.25)
-            # dv.show()
+    consistent_stages = [stage.consistent for stage in stages]
+    if have_image_ref(image_views):
+        consistent_stages = reconstruction_insconsistent(image_views, stages)
 
-            voxels_position = check_groups(voxels_position, no_kept, groups)
-
-            # dv = DisplayVoxel()
-            # dv.add_actor_from_voxels(voxels_position, voxels_size)
-            # dv.show()
-
-    return VoxelGrid(voxels_position, voxels_size)
+    return VoxelGrid(consistent_stages[-1].position,
+                     consistent_stages[-1].size)
 
 # ==============================================================================
 
@@ -733,24 +709,26 @@ def project_voxel_centers_on_image(voxels_position,
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=numpy.uint8)
 
-    res = get_bounding_box_voxel_projected(
+    min_xy_max_xy = get_bounding_box_voxel_projected(
         voxels_position, voxels_size, projection)
 
-    vv = ((res[:, 2] < 0) | (res[:, 0] >= length) |
-          (res[:, 3] < 0) | (res[:, 1] >= height))
+    vv = ((min_xy_max_xy[:, 2] < 0) |
+          (min_xy_max_xy[:, 0] >= length) |
+          (min_xy_max_xy[:, 3] < 0) |
+          (min_xy_max_xy[:, 1] >= height))
 
     not_vv = numpy.logical_not(vv)
-    res = res[not_vv]
+    min_xy_max_xy = min_xy_max_xy[not_vv]
 
-    res = numpy.floor(res)
-    res[res < 0] = 0
-    (res[:, 0])[res[:, 0] >= length] = length - 1
-    (res[:, 1])[res[:, 1] >= height] = height - 1
-    (res[:, 2])[res[:, 2] >= length] = length - 1
-    (res[:, 3])[res[:, 3] >= height] = height - 1
-    res = res.astype(int)
+    min_xy_max_xy = numpy.floor(min_xy_max_xy)
+    min_xy_max_xy[min_xy_max_xy < 0] = 0
+    (min_xy_max_xy[:, 0])[min_xy_max_xy[:, 0] >= length] = length - 1
+    (min_xy_max_xy[:, 1])[min_xy_max_xy[:, 1] >= height] = height - 1
+    (min_xy_max_xy[:, 2])[min_xy_max_xy[:, 2] >= length] = length - 1
+    (min_xy_max_xy[:, 3])[min_xy_max_xy[:, 3] >= height] = height - 1
+    min_xy_max_xy = min_xy_max_xy.astype(int)
 
-    for x_min, y_min, x_max, y_max in res:
+    for x_min, y_min, x_max, y_max in min_xy_max_xy:
         img[y_min:y_max + 1, x_min:x_max + 1] = 255
 
     return img
@@ -820,7 +798,7 @@ def image_error(img_ref, img_src, precision=2):
     return false_positive, true_negative
 
 
-def reconstruction_error(vpc, image_views):
+def reconstruction_error(voxels_grid, image_views):
     """
     Compute the reconstruction error (false positive and true negative) of 
     the 3d reconstruction from the image view.
@@ -851,8 +829,8 @@ def reconstruction_error(vpc, image_views):
     for image_view in image_views:
 
         img_src = project_voxel_centers_on_image(
-            vpc.voxels_position,
-            vpc.voxels_size,
+            voxels_grid.voxels_position,
+            voxels_grid.voxels_size,
             image_view.image.shape,
             image_view.projection)
 

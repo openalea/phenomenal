@@ -52,27 +52,44 @@ def get_max_distance(node, nodes):
     return max_node, max_distance
 
 
-def compute_width_organ(organ, closest_nodes):
+def compute_width_organ(closest_nodes):
 
     width = list()
     for nodes in closest_nodes:
         width.append(max_distance_in_points(nodes))
 
-    organ.info['width_max'] = max(width)
-    organ.info['width_mean'] = sum(width) / float(len(width))
-
-    return organ
+    return width
 
 
-def compute_length_organ(organ, polyline):
+def compute_curvilinear_abscissa(polyline, length):
+
+    curvilinear_abscissa = list()
+    l = 0
+    for n1, n2 in zip(polyline, polyline[1:]):
+        l += numpy.linalg.norm(numpy.array(n1) - numpy.array(n2))
+        curvilinear_abscissa.append(l / float(length))
+    curvilinear_abscissa.append(1)
+
+    return curvilinear_abscissa
+
+
+def compute_length_organ(polyline):
 
     length = 0
     for n1, n2 in zip(polyline, polyline[1:]):
         length += numpy.linalg.norm(numpy.array(n1) - numpy.array(n2))
 
-    organ.info['length'] = length
+    return length
 
-    return organ
+
+def compute_fitted_width(width, curvilinear_abscissa):
+
+    x = numpy.array(curvilinear_abscissa)
+    XX = numpy.vstack((x ** 2, x)).T
+    p_all = numpy.linalg.lstsq(XX, width[::-1])[0]
+    fitted_width = numpy.dot(p_all, XX.T)
+
+    return fitted_width
 
 
 def compute_azimuth_vector_mean_organ(organ, polyline):
@@ -130,10 +147,20 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
     organ.info['z_base'] = polyline[0][2]
 
     # Compute width
-    organ = compute_width_organ(organ, closest_nodes)
+    width = compute_width_organ(closest_nodes)
 
-    # Compute length
-    organ = compute_length_organ(organ, polyline)
+    organ.info['width_max'] = max(width)
+    organ.info['width_mean'] = sum(width) / float(len(width))
+
+    length = compute_length_organ(polyline)
+    curvilinear_abscissa = compute_curvilinear_abscissa(polyline, length)
+    fitted_width = compute_fitted_width(width, curvilinear_abscissa)
+
+    organ.info['length'] = length
+
+    organ.info['fitted_width_max'] = max(fitted_width)
+    organ.info['fitted_width_mean'] = (sum(fitted_width) /
+                                       float(len(fitted_width)))
 
     # Compute azimuth
     organ = compute_azimuth_vector_mean_organ(organ, polyline)
@@ -348,7 +375,7 @@ def maize_analysis(voxel_maize_segmentation):
         vo.info["order"] = num_order
         num_order += 1
 
-        # TODO : bug here when two leaf are connected by the tips, the length  is directly 0
+        # TODO : bug here when two leaf are connected by the tips, the length is directly 0
 
         vo = maize_cornet_leaf_analysis(
             vo, vo_stem.info['vector_mean'], voxels)
