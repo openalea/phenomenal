@@ -33,20 +33,20 @@ VoxelsStage = collections.namedtuple(
 
 def get_voxels_corners(voxels_position, voxels_size):
     """
-    According center voxel position and this size, return a list of 8 corners
-    of this voxel.
+    According the voxels position and their size, return a numpy array
+    containing tfor each input voxels the position of the 8 corners.
 
     Parameters
     ----------
-    voxel_center : (x, y, z)
-        Center position of voxel
+    voxels_position : numpy.array([[x, y, z], ...]
+        Center position of the voxels
 
-    voxel_size : float
-        Size of side geometry of voxel
+    voxels_size : float
+        diameter size of the voxels
 
     Returns
     -------
-    [(x, y, z), ...] : numpy.ndarray
+    numpy.array([[x, y, z], ...] :
          List of 8 tuple position
 
     """
@@ -115,8 +115,7 @@ def get_bounding_box_voxel_projected(voxels_position,
 
 def split_voxels_in_eight(voxels):
     """
-    Split each voxel in the collections.deque in 8 en return a collections.deque
-    of this new center position of voxel splited::
+    Split each voxel in 8 en return the numpy.array position
 
           _ _ _ _ _ _ _ _ _                              _ _ _ _ _ _ _ _ _
         /                  /|                          /        /         /|
@@ -133,18 +132,14 @@ def split_voxels_in_eight(voxels):
 
     Parameters
     ----------
-    voxels : [(x, y, z)]
-        collections.deque of center position of voxel
-
-    voxel_size : float
-        Size of side geometry of the voxels
+    voxels : collections.namedtuple("Voxels", ['position', 'size'])
+    where position is numpy.array([[x, y, z], ...] containing the center
+    position of each voxel and size the diameter size value (float) of each
+    voxel.
 
     Returns
     -------
-    [(x, y, z), ...] : collections.deque
-         New collections.deque of new tuple position splited of each
-         voxel_center in voxel_centers
-
+    voxels : collections.namedtuple("Voxels", ['position', 'size'])
     """
     if len(voxels.position) == 0:
         return Voxels(voxels.position, voxels.size / 2.0)
@@ -173,37 +168,6 @@ def split_voxels_in_eight(voxels):
 
 # ==============================================================================
 
-@jit()
-def numba_optimize_voxels_is_visible_in_image(min_xy_max_xy, image_int, bb,
-                                              length, height, inclusive):
-
-    for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
-
-        if x_max < 0 or x_min >= length or y_max < 0 or y_min >= height:
-            if inclusive:
-                bb[i] = 1
-            else:
-                bb[i] = 0
-        else:
-            x_min = int(min(max(math.floor(x_min), 0), length - 1)) - 1
-            y_min = int(min(max(math.floor(y_min), 0), height - 1)) - 1
-            x_max = int(min(max(math.floor(x_max), 0), length - 1))
-            y_max = int(min(max(math.floor(y_max), 0), height - 1))
-
-            r1 = image_int[y_max, x_max]
-            if y_min > 0:
-                r1 -= image_int[y_min, x_max]
-            if x_min > 0:
-                r1 -= image_int[y_max, x_min]
-            if y_min > 0 and x_min > 0:
-                r1 += image_int[y_min, x_min]
-
-            if r1 > 0:
-                bb[i] = 1
-
-    return bb
-
-
 def voxels_is_visible_in_image(voxels_position,
                                voxels_size,
                                image,
@@ -211,19 +175,18 @@ def voxels_is_visible_in_image(voxels_position,
                                inclusive,
                                image_int=None):
     """
-    Return True or False if the voxel projected on image with the function
-    projection (projection) have positive value on image.
+    Return a numpy array containing True if the voxel are
+        projected is photo-consistent on image else False
 
     **Algorithm**
 
-    1. Project the center voxel position on image if the position projected
-       (x, y) is positive on image return True
+    1. Project each voxel center position on the image, if the position
+    projected (x, y) is positive on image return True
 
     |
 
-    2. Project the bounding box of voxel in image, if one of the 4 corners
-       position of the bounding box projected have positive value on image
-       return True
+    2. If the bouding box of the voxel projected have positive value on
+    the image the voxel are True
 
     |
 
@@ -232,24 +195,31 @@ def voxels_is_visible_in_image(voxels_position,
 
     Parameters
     ----------
-    voxel_center : (x, y, z)
-        Center position of voxel
+    voxels_position : numpy.array([[x, y, z], ...]
+        Center position of the voxels
 
-    voxel_size : float
-        Size of side geometry of voxel
+    voxels_size : float
+        diameter size of the voxels
 
-    image: numpy.ndarray
-        binary image
+    image: numpy.array
+        Binary image where the voxels are projected.
 
-    projection : function ((x, y, z)) -> (x, y)
-        Function of projection who take 1 argument (tuple of position (x, y, z))
-         and return this position 2D (x, y)
+    projection : function (numpy.array([[x, y, z], ...]) -> numpy.array([[x, y], ...])
+        Function of projection who take 1 argument (numpy.array([[x, y, z],
+        ...] of voxels positions) and return the projected 2D position
+        numpy.array([[x, y], ...])
+
+    inclusive: Describe if the voxels projection are out of the image,
+    their are considering like still visible
+
+    image_int: Integrale image of the binary image (optimization)
+
 
     Returns
     -------
-    out : bool
-        True if voxel have a positive correspondence on image otherwise return
-        False
+    out : numpy.array([True, False, ...])
+        Numpy array containing True if the voxel are
+        projected is photo-consistent on image else False
     """
 
     height, length = image.shape
@@ -396,13 +366,13 @@ def kept_visible_voxel(voxels_position,
 
     Parameters
     ----------
-    voxel_centers : [(x, y, z)]
-        cList (collections.deque) of center position of voxel
+    voxels_position : numpy.array([[x, y, z], ...]
+        Center position of the voxels
 
-    voxel_size : float
-        Size of side geometry of voxel
+    voxels_size : float
+        diameter size of the voxels
 
-    images_projections : [(image, projection), ...]
+    image_views : [(image, projection), ...]
         List of tuple (image, projection) where image is a binary image
         (numpy.ndarray) and function projection (function (x, y, z) -> (x, y))
         who take (x, y, z) position on return (x, y) position according space
@@ -410,6 +380,8 @@ def kept_visible_voxel(voxels_position,
 
     error_tolerance : int, optional
         Number of image will be ignored if the projected voxel is not visible.
+
+    image_int: Integrale image of the binary image (optimization)
 
     Returns
     -------
@@ -448,6 +420,15 @@ def kept_visible_voxel(voxels_position,
     inconsistent = Voxels(no_kept, voxels_size)
 
     return VoxelsStage(consistent, inconsistent)
+
+# ==============================================================================
+
+
+def have_image_ref(image_views):
+    for iv in image_views:
+        if iv.ref is True:
+            return True
+    return False
 
 
 def create_groups(image_views, inconsistent):
@@ -507,33 +488,7 @@ def check_groups(neigh, inconsistent, groups, nb_distance):
     return Voxels(position, inconsistent.size)
 
 
-@jit()
-def get_int_image(img):
-    a = numpy.zeros_like(img, dtype=int)
-    for y, x in numpy.ndindex(a.shape):
-            r = 0
-            if img[y, x] > 0:
-                r += 1
-            if x - 1 >= 0:
-                r += a[y, x - 1]
-            if y - 1 >= 0:
-                r += a[y - 1, x]
-            if x - 1 >= 0 and y - 1 >= 0:
-                r -= a[y - 1, x - 1]
-            a[y, x] = r
-    return a
-
-
-def have_image_ref(image_views):
-    for iv in image_views:
-        if iv.ref is True:
-            return True
-    return False
-
-# ==============================================================================
-
-
-def reconstruction_insconsistent(image_views, stages):
+def reconstruction_inconsistent(image_views, stages):
 
     for iv in image_views:
         if iv.ref is True:
@@ -585,6 +540,27 @@ def reconstruction_insconsistent(image_views, stages):
             consistent_stages[i] = Voxels(voxels_position, consistent.size)
 
     return consistent_stages
+
+
+# ==============================================================================
+
+@jit()
+def get_integrale_image(img):
+    a = numpy.zeros_like(img, dtype=int)
+    for y, x in numpy.ndindex(a.shape):
+            r = 0
+            if img[y, x] > 0:
+                r += 1
+            if x - 1 >= 0:
+                r += a[y, x - 1]
+            if y - 1 >= 0:
+                r += a[y - 1, x]
+            if x - 1 >= 0 and y - 1 >= 0:
+                r -= a[y - 1, x - 1]
+            a[y, x] = r
+    return a
+
+# ==============================================================================
 
 
 def reconstruction_3d(image_views,
@@ -641,10 +617,11 @@ def reconstruction_3d(image_views,
     list_voxels_size = [voxels_size * 2 ** i for i in range(20, -1, -1) if
                         voxels_size * 2 ** (i - 1) < start_voxel_size]
 
-    # Pre-processing : Compute integral image for speed computation
+    # Pre-processing (optimization): Compute integral image for speed
+    # computation
     int_images = list()
     for i, image_view in enumerate(image_views):
-        a = get_int_image(image_view.image)
+        a = get_integrale_image(image_view.image)
         int_images.append(a)
 
     stage = VoxelsStage(Voxels(voxels_position, list_voxels_size[0]), None)
@@ -668,10 +645,9 @@ def reconstruction_3d(image_views,
 
     consistent_stages = [stage.consistent for stage in stages]
     if have_image_ref(image_views):
-        consistent_stages = reconstruction_insconsistent(image_views, stages)
+        consistent_stages = reconstruction_inconsistent(image_views, stages)
 
-    return VoxelGrid(consistent_stages[-1].position,
-                     consistent_stages[-1].size)
+    return VoxelGrid(consistent_stages[-1].position, consistent_stages[-1].size)
 
 # ==============================================================================
 
