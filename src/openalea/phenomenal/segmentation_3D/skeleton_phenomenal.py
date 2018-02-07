@@ -23,9 +23,7 @@ from openalea.phenomenal.object import (VoxelSkeleton, VoxelGrid)
 
 
 def segment_reduction(voxel_skeleton, image_views, tolerance=4):
-    """
 
-    """
 
     # Ordonner
     orderer_voxel_segments = sorted(voxel_skeleton.voxel_segments,

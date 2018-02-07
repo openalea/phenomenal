@@ -27,39 +27,34 @@ from openalea.phenomenal.multi_view_reconstruction import (
     get_bounding_box_voxel_projected,
     project_voxel_centers_on_image,
     reconstruction_error,
-    split_voxel_centers_in_eight,
-    reconstruction_3d)
+    split_voxels_in_eight,
+    reconstruction_3d,
+    Voxels)
 
 # ==============================================================================
 
 
 def test_split_voxel_centers_in_eight_1():
 
-    voxels_size = 16
-    voxels_position = numpy.array([[0.0, 0.0, 0.0]])
+    voxels = Voxels(numpy.array([[0.0, 0.0, 0.0]]), 16)
+    result_voxels = split_voxels_in_eight(voxels)
 
-    res = split_voxel_centers_in_eight(voxels_position, voxels_size)
+    ref_position = numpy.array([[-4., -4., -4.],
+                                [4., -4., -4.],
+                                [-4., 4., -4.],
+                                [-4., -4., 4.],
+                                [4., 4., -4.],
+                                [4., -4., 4.],
+                                [-4., 4., 4.],
+                                [4., 4., 4.]])
 
-    ref = numpy.array([[-4., -4., -4.],
-                       [4., -4., -4.],
-                       [-4., 4., -4.],
-                       [-4., -4., 4.],
-                       [4., 4., -4.],
-                       [4., -4., 4.],
-                       [-4., 4., 4.],
-                       [4., 4., 4.]])
-
-    assert numpy.array_equal(ref, res)
+    assert numpy.array_equal(ref_position, result_voxels.position)
 
 
 def test_split_voxel_centers_in_eight_2():
-
-    voxels_size = 16
-    voxels_position = numpy.array([])
-
-    res = split_voxel_centers_in_eight(voxels_position, voxels_size)
-
-    assert numpy.array_equal(res, numpy.array([]))
+    voxels = Voxels(numpy.array([]), 16)
+    res = split_voxels_in_eight(voxels)
+    assert numpy.array_equal(res.position, numpy.array([]))
 
 
 # ==============================================================================
@@ -128,6 +123,65 @@ def test_get_bounding_box_voxel_projected_2():
 
     assert numpy.allclose(ref, res)
 
+
+def test_split_and_projection():
+
+    angle = 0
+    calibration = plant_1_calibration_camera_side()
+    projection = calibration.get_projection(angle)
+
+    voxels_position = numpy.array([[0, 0, 0]])
+    voxels_size = 64
+
+    for i in range(5):
+        res = get_bounding_box_voxel_projected(voxels_position,
+                                               voxels_size,
+                                               projection)
+        res = numpy.floor(res).astype(int)
+
+        img = numpy.zeros((3000, 3000))
+        for x_min, y_min, x_max, y_max in res:
+            img[y_min:y_max + 1, x_min:x_max + 1] = 255
+
+        assert 3864 == numpy.count_nonzero(img)
+
+        img = project_voxel_centers_on_image(voxels_position, voxels_size,
+                                             (3000, 3000), projection)
+        assert 3864 == numpy.count_nonzero(img)
+
+        voxels = split_voxels_in_eight(Voxels(voxels_position, voxels_size))
+        voxels_position = voxels.position
+        voxels_size = voxels.size
+
+
+def test_split_and_projection():
+    angle = 0
+    calibration = plant_1_calibration_camera_side()
+    projection = calibration.get_projection(angle)
+
+    voxels_position = numpy.array([[0, 0, 0]])
+    voxels_size = 64
+
+    for i in range(5):
+        res = get_bounding_box_voxel_projected(voxels_position,
+                                               voxels_size,
+                                               projection)
+        res = numpy.floor(res).astype(int)
+
+        img = numpy.zeros((3000, 3000))
+        for x_min, y_min, x_max, y_max in res:
+            img[y_min:y_max + 1, x_min:x_max + 1] = 255
+
+        assert 3864 == numpy.count_nonzero(img)
+
+        img = project_voxel_centers_on_image(voxels_position, voxels_size,
+                                             (3000, 3000), projection)
+        assert 3864 == numpy.count_nonzero(img)
+
+        voxels = split_voxels_in_eight(Voxels(voxels_position, voxels_size))
+        voxels_position = voxels.position
+        voxels_size = voxels.size
+
 # ==============================================================================
 
 
@@ -185,8 +239,7 @@ def test_reconstruction_3d_1():
     voxels_size = 64
     # Multi-view reconstruction
     vg = reconstruction_3d(image_views,
-                           voxels_size=voxels_size,
-                           verbose=False)
+                           voxels_size=voxels_size)
 
     assert len(vg.voxels_position) > 0
 
@@ -196,8 +249,7 @@ def test_reconstruction_3d_2():
     image_views = get_image_views_cube_projected()
 
     vg = reconstruction_3d(image_views,
-                           voxels_size=20,
-                           verbose=False)
+                           voxels_size=20)
 
     assert len(vg.voxels_position) > 0
 
@@ -210,7 +262,6 @@ def test_reconstruction_3d_3():
 
     vg = reconstruction_3d(image_views,
                            voxels_size=40,
-                           verbose=True,
                            error_tolerance=0)
 
     assert len(vg.voxels_position) > 0
