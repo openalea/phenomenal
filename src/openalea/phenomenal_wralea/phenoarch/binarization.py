@@ -1,10 +1,8 @@
 import collections
 import cv2
 
-from openalea.phenomenal.data import plant_1_images
-from openalea.phenomenal.display import show_images
 from openalea.phenomenal.image import mean_image
-from openalea.phenomenal.data.plant_1 import(
+from openalea.phenomenal.data.plant_1 import (
     plant_1_mask_meanshift, 
     plant_1_mask_hsv, 
     plant_1_mask_clean_noise)
@@ -12,7 +10,6 @@ from openalea.phenomenal.data.plant_1 import(
 from openalea.phenomenal.image import (
     erode_dilate, 
     dilate_erode,
-    close,
     threshold_meanshift,
     threshold_hsv)
 
@@ -49,8 +46,8 @@ def routine_side_binarization(image, mean_img, threshold=0.3):
 def routine_top_binarization(image):
     hsv_min = (42, 75, 28)
     hsv_max = (80, 250, 134)
-    median_blur_size=9
-    iterations=5
+    median_blur_size = 9
+    iterations = 5
     
     # Convert image on HSV representation
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -60,7 +57,7 @@ def routine_top_binarization(image):
     # Threshold the image with HSV min and max value
     bin_img = threshold_hsv(hsv_image, hsv_min, hsv_max)
     # dilate and erode the image to remove possible noise
-    bin_img = dilate_erode(bin_img, kernel_shape=(3, 3),iterations=iterations)
+    bin_img = dilate_erode(bin_img, kernel_shape=(3, 3), iterations=iterations)
 
     return bin_img
 
@@ -71,25 +68,26 @@ def binarize(raw_images):
     mean_img = mean_image(raw_images['side'].values())
 
     routine_binarization = {
-        'side': lambda im : routine_side_binarization(im, mean_img),
-        'top': lambda im : routine_top_binarization(im)}
+        'side': lambda im: routine_side_binarization(im, mean_img),
+        'top': lambda im: routine_top_binarization(im)}
 
     bin_images = collections.defaultdict(dict)
     for id_camera in raw_images:
         for angle in raw_images[id_camera]:
-            bin_images[id_camera][angle] = routine_binarization[id_camera](raw_images[id_camera][angle])
+            bin_images[id_camera][angle] = routine_binarization[id_camera](
+                raw_images[id_camera][angle])
                  
     # Compute the mean image of the side view image
     mean_img = mean_image(raw_images['side'].values())
 
     routine_binarization = {
-        'side': lambda im : routine_side_binarization(im, mean_img),
-        'top': lambda im : routine_top_binarization(im)}
+        'side': lambda im: routine_side_binarization(im, mean_img),
+        'top': lambda im: routine_top_binarization(im)}
 
     bin_images = collections.defaultdict(dict)
     for id_camera in raw_images:
         for angle in raw_images[id_camera]:
-            bin_images[id_camera][angle] = routine_binarization[id_camera](raw_images[id_camera][angle])
+            bin_images[id_camera][angle] = routine_binarization[id_camera](
+                raw_images[id_camera][angle])
                  
     return bin_images
-

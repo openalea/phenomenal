@@ -22,14 +22,15 @@ from openalea.phenomenal.object import (VoxelSkeleton, VoxelGrid)
 # ==============================================================================
 
 
-def segment_reduction(voxel_skeleton, image_views, tolerance=4):
-
+def segment_reduction(voxel_skeleton, image_views, tolerance=4,
+                      nb_min_pixel=10):
 
     # Ordonner
     orderer_voxel_segments = sorted(voxel_skeleton.voxel_segments,
-                                    key=lambda vs: len(vs.voxels_position))
+                                    key=lambda vs: -len(vs.polyline))
 
     d = dict()
+    tips = dict()
     for i, vs in enumerate(orderer_voxel_segments):
         for j, iv in enumerate(image_views):
 
@@ -41,6 +42,14 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
                 voxel_skeleton.voxels_size,
                 iv.image.shape,
                 iv.projection)
+
+            # vp = numpy.array([vs.polyline[-1]])
+            # tips[(i, j)] = openalea.phenomenal.multi_view_reconstruction. \
+            #     project_voxels_position_on_image(
+            #     vp,
+            #     voxel_skeleton.voxels_size,
+            #     iv.image.shape,
+            #     iv.projection)
 
     list_negative_image = list()
     for iv in image_views:
@@ -58,6 +67,7 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
         weight = 0
         for j, iv in enumerate(image_views):
             im1 = d[(i, j)]
+            # im1 = tips[(i, j)]
 
             im2 = numpy.zeros(iv.image.shape)
             for k, _ in enumerate(voxel_skeleton.voxel_segments):
@@ -68,7 +78,7 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4):
             im = im - list_negative_image[j]
             im[im < 0] = 0
 
-            if numpy.count_nonzero(im) != 0:
+            if numpy.count_nonzero(im) > nb_min_pixel:
                 weight += 1
 
             if weight >= tolerance:

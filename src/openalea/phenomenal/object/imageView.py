@@ -15,9 +15,8 @@
 
 class ImageView(object):
 
-    def __init__(self, image, projection, inclusive=False, ref=False):
+    def __init__(self, image, projection, inclusive=False, image_ref=None):
         self.image = image
         self.projection = projection
         self.inclusive = inclusive
-        self.ref = ref
-
+        self.image_ref = image_ref

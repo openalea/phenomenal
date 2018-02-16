@@ -15,11 +15,16 @@ import scipy.signal
 # ==============================================================================
 
 
-def peak_detection(values, lookahead):
-    lookahead = max(1, int(lookahead))
+def peak_detection(values, order=3):
 
-    max_peaks = scipy.signal.argrelmax(numpy.array(values), order=lookahead)[0]
-    min_peaks = scipy.signal.argrelmin(numpy.array(values), order=lookahead)[0]
+    order = max(1, int(order))
+    max_peaks = scipy.signal.argrelextrema(numpy.array(values),
+                                           numpy.greater_equal,
+                                           order=order)[0]
+
+    min_peaks = scipy.signal.argrelextrema(numpy.array(values),
+                                           numpy.less_equal,
+                                           order=order)[0]
 
     max_peaks = [(i, values[i]) for i in max_peaks]
     min_peaks = [(i, values[i]) for i in min_peaks]

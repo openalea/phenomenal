@@ -13,7 +13,6 @@ where a target is rotating instead of a plant in a picture cabin.
 # ==============================================================================
 import json
 import math
-
 import numpy
 import scipy.optimize
 

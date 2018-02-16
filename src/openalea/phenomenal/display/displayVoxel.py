@@ -11,6 +11,7 @@
 # ==============================================================================
 import vtk
 import random
+import numpy.random
 from openalea.phenomenal.display import Display
 # ==============================================================================
 
@@ -161,12 +162,16 @@ class DisplayVoxel(Display):
     def add_actor_from_vertices_faces(self,
                                       vertices,
                                       faces,
-                                      color=None):
+                                      colors=None,
+                                      unique_color=None,):
 
-        if color is None:
-            color = (random.uniform(0, 1),
-                     random.uniform(0, 1),
-                     random.uniform(0, 1))
+        if unique_color is None:
+            unique_color = numpy.random.uniform(0, 1, 3)
+
+        # Setup the colors array
+        vtk_colors = vtk.vtkUnsignedCharArray()
+        vtk_colors.SetNumberOfComponents(3)
+        vtk_colors.SetName("Colors")
 
         # ======================================================================
 
@@ -183,14 +188,18 @@ class DisplayVoxel(Display):
         # Load the point, cell, and data attributes.
         for i in range(len(vertices)):
             points.InsertPoint(i, vertices[i])
-        for i in range(len(faces)):
-            polys.InsertNextCell(make_vtk_id_list(faces[i]))
-
-        # We now assign the pieces to the vtkPolyData.
         poly_data.SetPoints(points)
         del points
+
+        for i in range(len(faces)):
+            polys.InsertNextCell(make_vtk_id_list(faces[i]))
         poly_data.SetPolys(polys)
         del polys
+
+        if colors is not None:
+            for color in colors:
+                vtk_colors.InsertNextTypedTuple(color)
+            poly_data.GetCellData().SetScalars(vtk_colors)
 
         # ======================================================================
 
@@ -199,7 +208,9 @@ class DisplayVoxel(Display):
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().SetColor(color[0], color[1], color[2])
+        actor.GetProperty().SetColor(unique_color[0],
+                                     unique_color[1],
+                                     unique_color[2])
 
         self._actors.append(actor)
         self._renderer.AddActor(actor)

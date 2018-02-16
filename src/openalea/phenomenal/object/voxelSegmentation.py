@@ -42,7 +42,7 @@ class VoxelSegmentation(object):
     def get_number_of_leaf(self):
         number = 0
         for vo in self.voxel_organs:
-            if vo.label == "mature_leaf" or vo.label == "cornet_leaf":
+            if vo.label == "mature_leaf" or vo.label == "growing_leaf":
                 number += 1
 
         return number
@@ -79,18 +79,18 @@ class VoxelSegmentation(object):
                 mature_leafs.append(vo)
         return mature_leafs
 
-    def get_cornet_leafs(self):
-        cornet_leafs = list()
+    def get_growing_leafs(self):
+        growing_leafs = list()
         for vo in self.voxel_organs:
-            if vo.label == "cornet_leaf":
-                cornet_leafs.append(vo)
-        return cornet_leafs
+            if vo.label == "growing_leaf":
+                growing_leafs.append(vo)
+        return growing_leafs
 
     def get_leafs(self):
 
         leafs = list()
         for vo in self.voxel_organs:
-            if vo.label == "cornet_leaf" or vo.label == "mature_leaf":
+            if vo.label == "growing_leaf" or vo.label == "mature_leaf":
                 leafs.append(vo)
         return leafs
 

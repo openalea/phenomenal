@@ -27,24 +27,14 @@ from .plane_interception import (
 # ==============================================================================
 
 
-def maize_stem_peak_detection(closest_nodes_plane, stop_index):
-    nodes_length = map(float, map(len, closest_nodes_plane))
+def maize_stem_peak_detection(values, stop_index):
 
-    window_length = max(4, len(nodes_length) / 8)
-    window_length = window_length + 1 if window_length % 2 == 0 else window_length
-
-    nodes_length_smooth = savgol_filter(numpy.array(nodes_length),
-                                        window_length=window_length,
-                                        polyorder=3)
-
-    nodes_length_smooth = list(nodes_length_smooth)
-
-    lookahead = 1
-    max_peaks, min_peaks = peak_detection(nodes_length_smooth, lookahead)
+    max_peaks, min_peaks = peak_detection(values)
 
     min_peaks = [(i, v) for i, v in min_peaks if i <= stop_index]
-    min_peaks = [(0, nodes_length_smooth[0]),
-                 (1, nodes_length_smooth[1])] + min_peaks
+    if len(min_peaks) <= 1:
+        min_peaks = [(0, values[0]),
+                     (1, values[1])] + min_peaks
     min_peaks = list(set(min_peaks))
 
     return min_peaks
@@ -85,13 +75,25 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     for i in range(len(arr_closest_nodes_planes)):
         distance = max_distance_in_points(arr_closest_nodes_planes[i])
         distances.append(float(distance))
-    ball_radius = max(distances) / 2.0
+    ball_radius = max(max(distances) / 2, 25)
 
+    # distance_from_plane = 2 * voxels_size
+    # distance_from_plane = max(min(voxels_size, distance_from_plane), ball_radius)
+
+    print "ball", ball_radius
     closest_nodes_ball = intercept_points_along_polyline_with_ball(
         arr_stem_segment_voxel,
         graph,
         arr_stem_segment_path,
         ball_radius=ball_radius)
+
+    # closest_nodes_ball, _ = intercept_points_along_path_with_planes(
+    #     arr_stem_segment_voxel,
+    #     arr_stem_segment_path,
+    #     distance_from_plane=distance_from_plane,
+    #     voxels_size=voxels_size,
+    #     points_graph=graph,
+    #     fix_distance_from_src_point=ball_radius)
 
     nodes_length = map(float, map(len, closest_nodes_ball))
     index_20_percent = int(float(len(nodes_length)) * 0.20)
@@ -100,14 +102,24 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     if stop_index <= index_20_percent:
         stop_index = len(nodes_length)
 
-    min_peaks_stem = maize_stem_peak_detection(
-        arr_closest_nodes_planes, stop_index)
+    nodes_length = map(float, map(len, arr_closest_nodes_planes))
+    min_peaks_stem = maize_stem_peak_detection(nodes_length, stop_index)
+
+    # import matplotlib.pyplot as plt
+    # plt.figure()
+    # plt.plot(range(len(nodes_length)), nodes_length, 'g-')
+    # plt.plot([i for i, v in min_peaks_stem],
+    #          [v for i, v in min_peaks_stem],
+    #          '.k')
+    # nodes_length_ball = map(float, map(len, closest_nodes_ball))
+    # plt.plot(range(len(nodes_length_ball)), nodes_length_ball, 'k-')
+    # plt.plot(stop_index, nodes_length[stop_index], '.r')
+    # plt.show()
 
     window_length = max(4, len(nodes_length) / 8)
     window_length = window_length + 1 if window_length % 2 == 0 else window_length
-    distances = savgol_filter(numpy.array(distances),
-                              window_length=window_length,
-                              polyorder=2)
+    smooth_distances = savgol_filter(
+        numpy.array(distances), window_length=window_length, polyorder=2)
 
     # ==========================================================================
 
@@ -118,24 +130,69 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     radius = dict()
     stem_centred_path_min_peak = list()
     max_index_min_peak = 0
+    xx_yy_raw = list()
+    xx_yy_smooth = list()
+    for i, _ in min_peaks_stem:
+        max_index_min_peak = max(max_index_min_peak, i)
+        radius[i] = smooth_distances[i] / 2.0
 
-    for index, _ in min_peaks_stem:
-        max_index_min_peak = max(max_index_min_peak, index)
-        radius[index] = distances[index] / 2.0
-        stem_centred_path_min_peak.append(stem_segment_centred_path[index])
-        stem_voxel = stem_voxel.union(closest_nodes_planes[index])
+        # xx_yy_smooth.append((i, smooth_distances[i] / 2.0))
+        xx_yy_raw.append((i, numpy.array(distances)[i] / 2.0))
+
+        stem_centred_path_min_peak.append((i, stem_segment_centred_path[i]))
+        stem_voxel = stem_voxel.union(closest_nodes_planes[i])
+
+    # ==========================================================================
+
+    if (0, stem_segment_centred_path[0]) not in stem_centred_path_min_peak:
+        stem_centred_path_min_peak.append((0, stem_segment_centred_path[0]))
+    stem_centred_path_min_peak.sort(key=lambda x: x[0])
+    stem_centred_path_min_peak = [v for i, v in stem_centred_path_min_peak]
+
+    # xx_yy_smooth.sort(key=lambda x: x[0])
+    xx_yy_raw.sort(key=lambda x: x[0])
+
+    # xx = numpy.array([x for x, y in xx_yy_raw])
+    # yy_smooth = numpy.array([y for x, y in xx_yy_smooth])
+    # radius_smooth = numpy.poly1d(numpy.polyfit(
+    #     xx, numpy.array(yy_smooth), deg=5))
+
+    xx = numpy.array([x for x, y in xx_yy_raw])
+    yy_raw = numpy.array([y for x, y in xx_yy_raw])
+    radius_raw = numpy.poly1d(numpy.polyfit(
+        xx, numpy.array(yy_raw), deg=5))
+    rad = numpy.array(distances)[:max_index_min_peak + 1] / 2.0
+
+    # radius_distance = numpy.poly1d(numpy.polyfit(
+    #     numpy.array(range(len(rad))),
+    #     rad, deg=5))
+    #
+    # actual = list()
+    # for i in range(len(rad)):
+    #
+    #     index = int(i * max_index_min_peak / float(len(rad)))
+    #     ii = min([ind for ind in radius.keys() if index < ind])
+    #     actual.append(radius[ii])
+
+    # ==========================================================================
+
+    # import matplotlib.pyplot as plt
+    # plt.figure()
+    # plt.plot(range(len(rad)), actual, 'g-')
+    # plt.plot(xx, yy_smooth, 'r.',
+    #          range(len(rad)), radius_smooth(range(len(rad))), 'r-')
+    # plt.plot(range(len(rad)), rad, 'b.',
+    #          range(len(rad)), radius_distance(range(len(rad))), 'b-')
+    # plt.plot(xx, yy_raw, 'k.',
+    #          range(len(rad)), radius_raw(range(len(rad))), 'k-')
+    # plt.show()
 
     # ==========================================================================
     # Interpolate
 
     arr_stem_centred_path_min_peak = numpy.array(
         stem_centred_path_min_peak).transpose()
-
-    k = 2
-    if len(stem_centred_path_min_peak) <= k:
-        k = 1
-
-    tck, u = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=k)
+    tck, u = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=1)
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
 
     # ==========================================================================
@@ -150,16 +207,35 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     real_path = list()
     for i in range(len(xxx)):
 
-        index = int(i * max_index_min_peak / 500.0)
-        ii = min([ind for ind in radius.keys() if index < ind])
-        r = radius[ii]
+        # index = int(i * max_index_min_peak / 500.0)
+        # ii = min([ind for ind in radius.keys() if index < ind])
+        # r = radius[ii]
+        r = radius_raw(i * len(rad) / 500.0)
 
         x, y, z = xxx[i], yyy[i], zzz[i]
         real_path.append((x, y, z))
         result = get_nodes_radius((x, y, z), arr_stem_voxels, r)
         stem_voxel = stem_voxel.union(result)
 
+    # from openalea.phenomenal.display import DisplayVoxel
+    # dv = DisplayVoxel()
+    # dv.add_actor_from_voxels(stem_segment_voxel, voxels_size * 0.5,
+    #                          color=(0, 0.5, 0))
+    # dv.add_actor_from_voxels(real_path, voxels_size,
+    #                          color=(0.9, 0.9, 0.9))
+    # dv.show()
+    #
     not_stem_voxel = stem_segment_voxel - stem_voxel
+
+    # from openalea.phenomenal.display import DisplayVoxel
+    # dv = DisplayVoxel()
+    # dv.add_actor_from_voxels(not_stem_voxel, voxels_size * 0.5, color=(0.5,
+    #                                                                    0.5, 0.5))
+    # dv.add_actor_from_voxels(stem_voxel, voxels_size * 0.5, color=(0, 0.5, 0))
+    # dv.add_actor_from_voxels(real_path, voxels_size,
+    #                          color=(0.9, 0.9, 0.9))
+    # dv.show()
+
     stem_path = arr_stem_segment_path[:max_index_min_peak + 1]
     stem_top = set(closest_nodes_planes[max_index_min_peak])
 

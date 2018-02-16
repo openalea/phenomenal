@@ -59,12 +59,12 @@ class VoxelSkeleton(object):
                 mature_leafs.append(vs)
         return mature_leafs
 
-    def get_cornet_leafs(self):
-        cornet_leafs = list()
+    def get_growing_leafs(self):
+        growing_leafs = list()
         for vs in self.voxel_segments:
-            if vs.label == "cornet_leaf":
-                cornet_leafs.append(vs)
-        return cornet_leafs
+            if vs.label == "growing_leaf":
+                growing_leafs.append(vs)
+        return growing_leafs
 
     # ==========================================================================
     # READ / WRITE

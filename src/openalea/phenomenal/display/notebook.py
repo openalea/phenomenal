@@ -103,7 +103,7 @@ def show_segmentation(voxel_segmentation,
             color = tuple([int(255 * x) for x in color])
 
         else:
-            if label == "cornet_leaf":
+            if label == "growing_leaf":
                 color = (255, 0, 0)
             else:
                 color = (0, 255, 0)
@@ -119,7 +119,7 @@ def show_segmentation(voxel_segmentation,
                    size_ratio * 1,
                    color=get_color(vo.label, vo.info))
 
-        if ((vo.label == "mature_leaf" or vo.label == "cornet_leaf") and
+        if ((vo.label == "mature_leaf" or vo.label == "growing_leaf") and
                 len(vo.voxel_segments) > 0 and "position_tip" in vo.info):
 
             plot_voxel(numpy.array([vo.info['position_tip']]),
