@@ -60,7 +60,7 @@ class DisplaySegmentation(DisplayVoxel):
             color_map = order_color_map()
             return color_map[info['order']]
         else:
-            if label == "cornet_leaf":
+            if label == "growing_leaf":
                 return 1, 0, 0
             else:
                 return None
@@ -125,7 +125,7 @@ class DisplaySegmentation(DisplayVoxel):
             map(tuple, list(vo.voxels_position())))
 
         pos = vo.info['position_base']
-        if vo.label == "cornet_leaf":
+        if vo.label == "growing_leaf":
             pos = pos_stem
 
             closest_nodes = vo.get_closest_nodes()
@@ -183,8 +183,6 @@ class DisplaySegmentation(DisplayVoxel):
             vmsi.voxels_size * 1,
             color=(1, 0, 0))
 
-
-
         # r, g, b = (0, 0, 1)
         # pos = vo.info['position_tip']
         # pos = (pos[0] - 10, pos[1] - 10, pos[2])
@@ -222,7 +220,7 @@ class DisplaySegmentation(DisplayVoxel):
                 vm = numpy.array(vo.info['vector_mean'])
 
                 pos = vo.info['position_base']
-                if vo.label == "cornet_leaf":
+                if vo.label == "growing_leaf":
                     pos = pos_stem
                     vm = vm * 2
 
@@ -286,7 +284,6 @@ class DisplaySegmentation(DisplayVoxel):
     def display_classic_analysis(self, vmsi):
 
         def plot(vo):
-
             if vo is None:
                 return
 
@@ -298,7 +295,7 @@ class DisplaySegmentation(DisplayVoxel):
                 vmsi.voxels_size * 0.50,
                 color=self.get_color(vo.label, vo.info))
 
-            if ((vo.label == "mature_leaf" or vo.label == "cornet_leaf") and
+            if ((vo.label == "mature_leaf" or vo.label == "growing_leaf") and
                     len(vo.voxel_segments) > 0 and "position_tip" in vo.info):
 
                 pos = vo.info['position_base']
@@ -325,10 +322,9 @@ class DisplaySegmentation(DisplayVoxel):
 
                     vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
 
-        plot(vmsi.get_unknown())
-        len_leafs = vmsi.get_number_of_leaf()
-        for i in range(len_leafs, -1, -1):
-            plot(vmsi.get_leaf_order(i))
+        # plot(vmsi.get_unknown())
+        for vo in vmsi.get_leafs():
+            plot(vo)
         plot(vmsi.get_stem())
 
 

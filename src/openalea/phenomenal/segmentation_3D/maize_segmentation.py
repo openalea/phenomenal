@@ -100,9 +100,14 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
     # ==========================================================================
     # Compute Stem detection
-
     stem_voxel, not_stem_voxel, stem_path, stem_top = stem_detection(
         stem_segment_voxel, stem_segment_path, voxels_size, graph, voxel_skeleton)
+
+    # from openalea.phenomenal.display import DisplayVoxel
+    # dv = DisplayVoxel()
+    # dv.add_actor_from_voxels(stem_voxel, voxels_size, color=(0.5, 0.5, 0.5))
+    # dv.add_actor_from_voxels(not_stem_voxel, voxels_size, color=(0, 0.8, 0))
+    # dv.show()
 
     # ==========================================================================
     # Remove stem voxels from segment voxels
@@ -129,19 +134,21 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
 
     # ==========================================================================
     # Merge remains voxels of the not stem
-
     for vs in voxel_skeleton.voxel_segments:
         not_stem_voxel -= vs.leaf_voxel
 
-    stem_voxel, stem_neighbors, connected_components = merge(
-        graph, stem_voxel, not_stem_voxel, percentage=50)
+    voxels_remain = not_stem_voxel
 
-    for vs in voxel_skeleton.voxel_segments:
-        vs.leaf_voxel, _, connected_components = merge(
-            graph, vs.leaf_voxel, set().union(*connected_components),
-            percentage=50)
-
-    voxels_remain = set().union(*connected_components)
+    # TODO : REMOVE MERGING PART - USELES
+    # stem_voxel, stem_neighbors, connected_components = merge(
+    #     graph, stem_voxel, not_stem_voxel, percentage=50)
+    #
+    # for vs in voxel_skeleton.voxel_segments:
+    #     vs.leaf_voxel, _, connected_components = merge(
+    #         graph, vs.leaf_voxel, set().union(*connected_components),
+    #         percentage=50)
+    #
+    # voxels_remain = set().union(*connected_components)
 
     # ==========================================================================
     # Define mature & cornet leaf
@@ -150,24 +157,21 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     organ_unknown.add_voxel_segment(voxels_remain, list())
 
     mature_organs = list()
-    cornet_organs = list()
+    growing_organs = list()
     for vs in voxel_skeleton.voxel_segments:
 
-        # remove leaf under 30cm
-        if len(vs.real_polyline) * voxels_size <= 30:
+        if len(vs.real_polyline) == 0:
             organ_unknown.voxel_segments.append(vs)
             continue
 
         if len(stem_top.intersection(vs.polyline)) > 0:
-            vo = openalea.phenomenal.object.VoxelOrgan("cornet_leaf")
+            vo = openalea.phenomenal.object.VoxelOrgan("growing_leaf")
             vs.voxels_position = vs.leaf_voxel
-
             vo.voxel_segments.append(vs)
-            cornet_organs.append(vo)
+            growing_organs.append(vo)
         else:
             vo = openalea.phenomenal.object.VoxelOrgan("mature_leaf")
             vs.voxels_position = vs.leaf_voxel
-
             vo.voxel_segments.append(vs)
             mature_organs.append(vo)
 
@@ -209,8 +213,8 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     # ==========================================================================
     percentage = 85
     ltmp = list()
-    while cornet_organs:
-        vo_1 = cornet_organs.pop()
+    while growing_organs:
+        vo_1 = growing_organs.pop()
         again = True
         while again:
 
@@ -218,7 +222,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
             real_polyline_1 = set(vo_1.real_longest_polyline())
 
             again = False
-            for i, vo_2 in enumerate(cornet_organs):
+            for i, vo_2 in enumerate(growing_organs):
                 voxels_2 = vo_2.voxels_position()
                 real_polyline_2 = set(vo_2.real_longest_polyline())
 
@@ -236,13 +240,13 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
                         (val_3 >= percentage or val_4 >= percentage)):
 
                     vo_1.voxel_segments += vo_2.voxel_segments
-                    cornet_organs.pop(i)
+                    growing_organs.pop(i)
                     again = True
                     break
 
         ltmp.append(vo_1)
 
-    cornet_organs = ltmp
+    growing_organs = ltmp
 
     # ==========================================================================
     ## Build the object to return
@@ -254,10 +258,7 @@ def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
     organ_stem.add_voxel_segment(stem_voxel, stem_path)
     vms.voxel_organs.append(organ_stem)
 
-    for leaf_organ in cornet_organs:
-        vms.voxel_organs.append(leaf_organ)
-
-    for leaf_organ in mature_organs:
+    for leaf_organ in growing_organs + mature_organs:
         vms.voxel_organs.append(leaf_organ)
 
     return vms

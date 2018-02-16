@@ -211,14 +211,14 @@ def get_image_views_cube_projected(with_ref=False):
                                              shape_image,
                                              projection)
 
-        ref = False
+        image_ref = None
         if with_ref:
             if angle == 0:
                 img[:] = 0
             if angle == 90:
-                ref = True
+                image_ref = img
 
-        iv = ImageView(img, projection, inclusive=False, ref=ref)
+        iv = ImageView(img, projection, inclusive=False, image_ref=image_ref)
         image_views.append(iv)
 
     return image_views

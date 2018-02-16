@@ -426,7 +426,7 @@ def kept_visible_voxel(voxels_position,
 
 def have_image_ref(image_views):
     for iv in image_views:
-        if iv.ref is True:
+        if iv.image_ref is not None:
             return True
     return False
 
@@ -438,7 +438,7 @@ def create_groups(image_views, inconsistent):
 
     group_id = 0
     for iv in image_views:
-        if iv.ref is True:
+        if iv.image_ref is not None:
             height, length = iv.image.shape
 
             min_xy_max_xy = get_bounding_box_voxel_projected(
@@ -455,7 +455,7 @@ def create_groups(image_views, inconsistent):
                 x_max = int(min(max(math.floor(x_max), 0), length - 1))
                 y_max = int(min(max(math.floor(y_max), 0), height - 1))
 
-                img = iv.image[y_min:y_max + 1, x_min:x_max + 1]
+                img = iv.image_ref[y_min:y_max + 1, x_min:x_max + 1]
                 yy, xx = numpy.where(img > 0)
                 yy += y_min
                 xx += x_min
@@ -491,12 +491,12 @@ def check_groups(neigh, inconsistent, groups, nb_distance):
 def reconstruction_inconsistent(image_views, stages):
 
     for iv in image_views:
-        if iv.ref is True:
+        if iv.image_ref is not None:
             im = project_voxel_centers_on_image(stages[-1].consistent.position,
                                                 stages[-1].consistent.size,
                                                 iv.image.shape,
                                                 iv.projection)
-            iv.il = iv.image - im
+            iv.il = iv.image_ref - im
             iv.yy, iv.xx = numpy.where(iv.il > 0)
 
     consistent_neighbors = sklearn.neighbors.NearestNeighbors(
@@ -752,6 +752,8 @@ def project_voxels_position_on_image(voxels_position,
     (pt[:, :, 1])[pt[:, :, 1] >= height] = height - 1
     pt = numpy.floor(pt).astype(int)
     for points in pt:
+
+        print(points)
         hull = scipy.spatial.ConvexHull(points)
         cv2.fillConvexPoly(img, points[hull.vertices], 255)
 

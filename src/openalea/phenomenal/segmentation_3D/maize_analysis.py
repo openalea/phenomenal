@@ -165,7 +165,7 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
     # Compute azimuth
     organ = compute_azimuth_vector_mean_organ(organ, polyline)
 
-    if organ.label == "mature_leaf" or organ.label == "cornet_leaf":
+    if organ.label == "mature_leaf" or organ.label == "growing_leaf":
         # ======================================================================
         # Compute intersection
         organ.info["position_intersection"] = polyline[0]
@@ -259,7 +259,7 @@ def maize_mature_leaf_analysis(mature_leaf_voxel_organ,
     return mature_leaf_voxel_organ
 
 
-def maize_cornet_leaf_analysis_real_length(organ, voxels):
+def maize_growing_leaf_analysis_real_length(organ, voxels):
 
     real_longest_polyline = organ.real_longest_polyline()
 
@@ -279,7 +279,7 @@ def maize_cornet_leaf_analysis_real_length(organ, voxels):
     return organ
 
 
-def maize_cornet_leaf_analysis(organ,
+def maize_growing_leaf_analysis(organ,
                                stem_vector_mean,
                                voxels,
                                distance_plane=0.75):
@@ -358,16 +358,16 @@ def maize_analysis(voxel_maize_segmentation):
         num_order += 1
 
     lorder = list()
-    for vo_cornet_leaf in voxel_maize_segmentation.get_cornet_leafs():
+    for vo_growing_leaf in voxel_maize_segmentation.get_growing_leafs():
 
         voxels = voxel_maize_segmentation.get_voxels_position(
-            except_organs=[vo_cornet_leaf])
+            except_organs=[vo_growing_leaf])
 
-        vo_cornet_leaf = maize_cornet_leaf_analysis_real_length(
-            vo_cornet_leaf, voxels)
+        vo_growing_leaf = maize_growing_leaf_analysis_real_length(
+            vo_growing_leaf, voxels)
 
-        lorder.append((vo_cornet_leaf,
-                       vo_cornet_leaf.info["z_intersection"]))
+        lorder.append((vo_growing_leaf,
+                       vo_growing_leaf.info["z_intersection"]))
 
     voxels = set(vo_stem.voxels_position())
     lorder.sort(key=lambda x: x[1])
@@ -377,7 +377,7 @@ def maize_analysis(voxel_maize_segmentation):
 
         # TODO : bug here when two leaf are connected by the tips, the length is directly 0
 
-        vo = maize_cornet_leaf_analysis(
+        vo = maize_growing_leaf_analysis(
             vo, vo_stem.info['vector_mean'], voxels)
 
         voxels = voxels.union(set(vo.voxels_position()))

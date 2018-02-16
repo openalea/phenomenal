@@ -210,11 +210,13 @@ def intercept_points_along_path_with_planes(points,
                                             points_graph=None,
                                             without_connection=False,
                                             voxels_size=4,
-                                            distance_from_src_point=1000):
+                                            with_relative_distance=True,
+                                            fix_distance_from_src_point=None):
 
     length_polyline = len(polyline)
     intercepted_points = [None] * length_polyline
     planes_equation = [None] * length_polyline
+    distance_from_src_point = 1000,
     for i in range(length_polyline - 1, -1, -1):
         point = tuple(polyline[i])
 
@@ -225,7 +227,7 @@ def intercept_points_along_path_with_planes(points,
 
         plane_equation = compute_plane_equation(orientation_vector, point)
 
-        if i < length_polyline - 1 and distance_from_src_point is not None:
+        if i < length_polyline - 1 and with_relative_distance:
             nodes = intercepted_points[i + 1]
             prev_radius_dist = max_distance_from_point_to_points(
                 numpy.array(list(nodes)), polyline[i + 1])
@@ -235,6 +237,9 @@ def intercept_points_along_path_with_planes(points,
             else:
                 distance_from_src_point = min(
                     prev_radius_dist + 1 * voxels_size, 1000.0)
+
+        if fix_distance_from_src_point is not None:
+            distance_from_src_point = fix_distance_from_src_point
 
         # ======================================================================
 

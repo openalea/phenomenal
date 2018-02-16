@@ -18,6 +18,39 @@ __all__ = ["normals", "centers"]
 # ==============================================================================
 
 
+def compute_color_for_mesh(vertices, faces, calibration, images):
+
+    height, length, _ = images["side"][0].shape
+    img = numpy.zeros((height, length), dtype=numpy.uint8)
+
+    angles = numpy.array(range(0, 360, 30)).astype(float)
+
+    colors = list()
+    for ind, (i, j, k) in enumerate(faces):
+        pt1, pt2, pt3 = vertices[i], vertices[j], vertices[k]
+        arr = numpy.array([pt1, pt2, pt3])
+
+        cc = list()
+        for angle in angles:
+            pts = calibration.get_projection(angle)(arr).astype(int)
+            if pts[0][1] == pts[1][1] == pts[2][1]:
+                color = images["side"][angle][(pts[:, 0], pts[:, 1])]
+            else:
+                cv2.fillConvexPoly(img, pts, 255)
+                index = numpy.where(img == 255)
+                img[index] = 0
+                color = images["side"][angle][index]
+            cc.append(color)
+
+        cc = numpy.concatenate(cc, axis=0)
+        color = numpy.median(cc, axis=0).astype(int)
+        colors.append(color)
+
+    colors = map(tuple, colors)
+
+    return colors
+
+
 def normals(vertices, faces):
     """
     Compute normal of each faces
@@ -91,12 +124,5 @@ def project_mesh_on_image(vertices, faces, shape_image, projection,
             continue
         else:
             cv2.fillConvexPoly(img, pts, 255)
-        # triangles.append()
-
-    # cv2.fillPoly(img, triangles, 255)
-
-    # if with_morphology_close:
-    #     kernel = numpy.ones((3, 3), numpy.uint8)
-    #     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
 
     return img
