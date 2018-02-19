@@ -17,7 +17,8 @@ import scipy.spatial
 from scipy.signal import savgol_filter
 
 from openalea.phenomenal.segmentation_3D.peak_detection import (
-    peak_detection)
+    peak_detection,
+    smooth)
 
 from .plane_interception import (
     intercept_points_along_path_with_planes,
@@ -29,13 +30,51 @@ from .plane_interception import (
 
 def maize_stem_peak_detection(values, stop_index):
 
-    max_peaks, min_peaks = peak_detection(values)
+    # window_length = max(4, len(values) / 4)
+    # window_length = window_length + 1 if window_length % 2 == 0 else window_length
+    # print window_length
+    # nodes_length_smooth = list(savgol_filter(numpy.array(values),
+    #                                          window_length=window_length,
+    #                                          polyorder=9))
 
-    min_peaks = [(i, v) for i, v in min_peaks if i <= stop_index]
+    nodes_length_smooth2 = list(smooth(numpy.array(values),
+                                       window_len=15))
+
+    max_peaks, min_peaks = peak_detection(values, order=3)
+    # max_peaks_smooth, min_peaks_smooth = peak_detection(nodes_length_smooth,
+    #                                                     order=3)
+    max_peaks_smooth2, min_peaks_smooth2 = peak_detection(nodes_length_smooth2,
+                                                          order=3)
+
+    index_max = max([i for i, v in min_peaks_smooth2 if i <= stop_index])
+
+    min_peaks = [(i, v) for i, v in min_peaks if i <= stop_index and i <=
+                 index_max]
     if len(min_peaks) <= 1:
         min_peaks = [(0, values[0]),
                      (1, values[1])] + min_peaks
     min_peaks = list(set(min_peaks))
+
+    # import matplotlib.pyplot as plt
+    # plt.figure()
+    # plt.plot(range(len(values)), values, 'g-')
+    # plt.plot(range(len(nodes_length_smooth)), nodes_length_smooth, 'k-')
+    # plt.plot(range(len(nodes_length_smooth2)), nodes_length_smooth2, 'r-')
+    # plt.plot([i for i, v in max_peaks_smooth],
+    #          [v for i, v in max_peaks_smooth], 'k.')
+    # plt.plot([i for i, v in min_peaks_smooth],
+    #          [v for i, v in min_peaks_smooth], 'ko')
+    #
+    # plt.plot([i for i, v in max_peaks_smooth2],
+    #          [v for i, v in max_peaks_smooth2], 'r.')
+    # plt.plot([i for i, v in min_peaks_smooth2],
+    #          [v for i, v in min_peaks_smooth2], 'ro')
+    #
+    # plt.plot([i for i, v in max_peaks],
+    #          [v for i, v in max_peaks], 'g.')
+    # plt.plot([i for i, v in min_peaks],
+    #          [v for i, v in min_peaks], 'go')
+    # plt.show()
 
     return min_peaks
 
@@ -75,12 +114,11 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     for i in range(len(arr_closest_nodes_planes)):
         distance = max_distance_in_points(arr_closest_nodes_planes[i])
         distances.append(float(distance))
-    ball_radius = max(max(distances) / 2, 25)
+    ball_radius = min(max(max(distances) / 2, 25), 75)
 
     # distance_from_plane = 2 * voxels_size
     # distance_from_plane = max(min(voxels_size, distance_from_plane), ball_radius)
 
-    print "ball", ball_radius
     closest_nodes_ball = intercept_points_along_polyline_with_ball(
         arr_stem_segment_voxel,
         graph,
@@ -159,6 +197,7 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
 
     xx = numpy.array([x for x, y in xx_yy_raw])
     yy_raw = numpy.array([y for x, y in xx_yy_raw])
+
     radius_raw = numpy.poly1d(numpy.polyfit(
         xx, numpy.array(yy_raw), deg=5))
     rad = numpy.array(distances)[:max_index_min_peak + 1] / 2.0
