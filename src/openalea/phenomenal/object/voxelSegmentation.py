@@ -27,6 +27,19 @@ class VoxelSegmentation(object):
         self.voxel_organs = list()
         self.voxels_size = voxels_size
 
+    def get_plant_info(self):
+        info = dict()
+
+        s = set()
+        for vo in self.voxel_organs:
+            s = s.union(vo.voxels_position())
+
+        info["pm_label"] = 'plant'
+        info["pm_voxels_volume"] = len(s) * self.voxels_size ** 3
+        info["pm_number_visible_leaf"] = self.get_number_of_leaf()
+
+        return info
+
     def get_voxels_position(self, except_organs=None):
 
         if except_organs is None:
@@ -132,7 +145,6 @@ class VoxelSegmentation(object):
     def read_from_json_gz(filename):
 
         with gzip.open(filename, 'rb') as f:
-
             data = ast.literal_eval(f.read())
 
             vms = VoxelSegmentation(data['voxels_size'])
