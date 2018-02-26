@@ -139,17 +139,6 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
 
     voxels_remain = not_stem_voxel
 
-    # TODO : REMOVE MERGING PART - USELES
-    # stem_voxel, stem_neighbors, connected_components = merge(
-    #     graph, stem_voxel, not_stem_voxel, percentage=50)
-    #
-    # for vs in voxel_skeleton.voxel_segments:
-    #     vs.leaf_voxel, _, connected_components = merge(
-    #         graph, vs.leaf_voxel, set().union(*connected_components),
-    #         percentage=50)
-    #
-    # voxels_remain = set().union(*connected_components)
-
     # ==========================================================================
     # Define mature & cornet leaf
 
@@ -176,7 +165,7 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
             mature_organs.append(vo)
 
     # ==========================================================================
-    # MERGE LEAF MATURE
+    # MERGE MATURE LEAFS
     # ==========================================================================
     percentage = 50
     ltmp = list()
@@ -206,10 +195,24 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
                     break
 
         ltmp.append(vo_1)
-
     mature_organs = ltmp
+
     # ==========================================================================
-    # MERGE LEAF CORNET
+    # DETECT CONNECTED LEAFS
+    # ==========================================================================
+    for i, vo_1 in enumerate(mature_organs):
+        for j, vo_2 in enumerate(mature_organs):
+            if i == j:
+                continue
+
+            pos = set([vo_1.real_longest_polyline()[-1]])
+            res = len(pos.intersection(vo_2.voxels_position()))
+            if res > 0:
+                vo_1.sub_label = "connected"
+
+
+    # ==========================================================================
+    # MERGE GROWING LEAFS
     # ==========================================================================
     percentage = 85
     ltmp = list()

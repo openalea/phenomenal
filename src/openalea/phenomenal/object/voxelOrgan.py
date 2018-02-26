@@ -19,9 +19,10 @@ import openalea.phenomenal.segmentation_3D.plane_interception
 
 class VoxelOrgan(object):
 
-    def __init__(self, label):
+    def __init__(self, label, sub_label=None):
         self.voxel_segments = list()
         self.label = label
+        self.sub_label = sub_label
         self.info = dict()
 
     def add_voxel_segment(self, voxels_position, polyline):

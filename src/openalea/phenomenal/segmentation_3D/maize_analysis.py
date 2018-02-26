@@ -137,7 +137,7 @@ def compute_insertion_angle(polyline, stem_vector_mean):
 def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
 
     if len(polyline) <= 3:
-        return organ
+        return None
 
     organ.info['pm_position_tip'] = tuple(polyline[-1])
     organ.info['pm_position_base'] = tuple(polyline[0])
@@ -283,9 +283,9 @@ def maize_growing_leaf_analysis(vo, voxels_size,
     real_closest_nodes = closest_nodes[index_position_base:]
 
     vo = organ_analysis(vo, real_polyline, real_closest_nodes,
-                           stem_vector_mean)
+                        stem_vector_mean)
 
-    if "pm_length" in vo.info:
+    if vo is not None:
         vo.info['pm_length_speudo_stem'] = (
             vo.info['pm_length_with_speudo_stem'] - vo.info['pm_length'])
 
@@ -298,6 +298,7 @@ def maize_analysis(maize_segmented):
     for vo in maize_segmented.voxel_organs:
         vo.info = dict()
         vo.info['pm_label'] = vo.label
+        vo.info['pm_sub_label'] = vo.sub_label
         vo.info['pm_voxels_volume'] = (
             len(vo.voxels_position()) * maize_segmented.voxels_size ** 3)
 
@@ -317,8 +318,7 @@ def maize_analysis(maize_segmented):
         if vo_mature_leaf is None:
             continue
 
-        mature_leafs.append((vo_mature_leaf,
-                             vo_mature_leaf.info["pm_z_base"]))
+        mature_leafs.append((vo_mature_leaf, vo_mature_leaf.info["pm_z_base"]))
     mature_leafs.sort(key=lambda x: x[1])
 
     # ==========================================================================
@@ -336,6 +336,9 @@ def maize_analysis(maize_segmented):
         # TODO : bug here when two leaf are connected by the tips, the length is directly 0
         vo = maize_growing_leaf_analysis(
             vo, voxels_size, vo_stem.info['pm_vector_mean'], voxels)
+
+        if vo is None:
+            continue
 
         voxels = voxels.union(vo.voxels_position())
 
