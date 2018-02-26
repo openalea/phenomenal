@@ -14,7 +14,7 @@ from __future__ import division, print_function
 from openalea.phenomenal.segmentation_3D import (
     voxel_graph_from_voxel_grid,
     skeletonize,
-    labelize_maize_skeleton,
+    maize_segmentation,
     maize_analysis)
 
 from openalea.phenomenal.data import plant_1_voxel_grid, plant_2_voxel_grid
@@ -30,7 +30,7 @@ def test_maize():
     voxel_skeleton = skeletonize(voxel_graph.graph,
                                  voxel_graph.voxels_size)
 
-    vms = labelize_maize_skeleton(voxel_skeleton, voxel_graph)
+    vms = maize_segmentation(voxel_skeleton, voxel_graph)
     vmsi = maize_analysis(vms)
 
 

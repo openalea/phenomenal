@@ -85,7 +85,7 @@ def merge(graph, voxels, remaining_voxels, percentage=50):
     return voxels, voxels_neighbors, connected_components
 
 
-def labelize_maize_skeleton(voxel_skeleton, voxel_graph):
+def maize_segmentation(voxel_skeleton, voxel_graph):
 
     # ==========================================================================
     # Select the more highest segment on the skeleton

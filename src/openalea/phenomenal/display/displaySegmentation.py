@@ -56,9 +56,9 @@ class DisplaySegmentation(DisplayVoxel):
             return 0.5, 0.5, 0.5
         elif label == "unknown":
             return 1, 1, 1
-        elif 'order' in info:
+        elif 'pm_leaf_number' in info:
             color_map = order_color_map()
-            return color_map[info['order']]
+            return color_map[info['pm_leaf_number']]
         else:
             if label == "growing_leaf":
                 return 1, 0, 0
@@ -296,12 +296,13 @@ class DisplaySegmentation(DisplayVoxel):
                 color=self.get_color(vo.label, vo.info))
 
             if ((vo.label == "mature_leaf" or vo.label == "growing_leaf") and
-                    len(vo.voxel_segments) > 0 and "position_tip" in vo.info):
+                    len(vo.voxel_segments) > 0 and "pm_position_tip" in
+                vo.info):
 
-                pos = vo.info['position_base']
+                pos = vo.info['pm_position_base']
 
                 self.add_actor_from_ball_position(
-                    vo.info['position_tip'],
+                    vo.info['pm_position_tip'],
                     radius=vmsi.voxels_size * 2,
                     color=(1, 0, 0))
 
@@ -309,11 +310,11 @@ class DisplaySegmentation(DisplayVoxel):
                     pos, radius=vmsi.voxels_size * 2, color=(0, 0, 1))
 
                 r, g, b = (0, 0, 1)
-                pos = vo.info['position_tip']
+                pos = vo.info['pm_position_tip']
                 pos = (pos[0] - 10, pos[1] - 10, pos[2])
 
-                if 'order' in vo.info:
-                    order = str(vo.info['order'])
+                if 'pm_leaf_number' in vo.info:
+                    order = str(vo.info['pm_leaf_number'])
                     vo.text_actor = self.add_actor_from_text(
                         order,
                         position=pos,
