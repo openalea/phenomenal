@@ -121,12 +121,12 @@ class VoxelSegmentation(object):
 
             data = dict()
             data['voxels_size'] = self.voxels_size
-
             data['voxel_organs'] = list()
             for vo in self.voxel_organs:
 
                 dvo = dict()
                 dvo['label'] = vo.label
+                dvo['sub_label'] = vo.sub_label
                 dvo['info'] = vo.info
                 dvo['voxel_segments'] = list()
 
@@ -153,6 +153,9 @@ class VoxelSegmentation(object):
 
                 vo = openalea.phenomenal.object.voxelOrgan.VoxelOrgan(
                     dvo['label'])
+
+                if 'sub_label' in dvo:
+                    vo.sub_label = dvo['sub_label']
 
                 vo.info = dvo['info']
 
