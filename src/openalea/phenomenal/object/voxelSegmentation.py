@@ -12,7 +12,6 @@
 import ast
 import os
 import gzip
-import json
 
 
 import openalea.phenomenal.object.voxelOrgan

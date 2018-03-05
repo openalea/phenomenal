@@ -93,7 +93,7 @@ def get_nodes_radius(center, points, radius):
 
 
 def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
-                   graph, voxel_skeleton, distance_plane=1.00):
+                   graph, distance_plane=1.00):
 
     # ==========================================================================
 

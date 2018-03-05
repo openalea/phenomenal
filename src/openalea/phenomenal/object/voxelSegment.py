@@ -15,10 +15,13 @@
 
 class VoxelSegment(object):
 
-    def __init__(self, voxels_position, polyline):
+    def __init__(self, polyline, closest_nodes):
 
-        self.voxels_position = voxels_position
         self.polyline = polyline
+        self.closest_nodes = closest_nodes
+        self.voxels_position = set().union(*self.closest_nodes)
 
     def __len__(self):
         return len(self.voxels_position)
+
+
