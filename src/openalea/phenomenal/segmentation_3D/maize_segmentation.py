@@ -101,7 +101,7 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
     # ==========================================================================
     # Compute Stem detection
     stem_voxel, not_stem_voxel, stem_path, stem_top = stem_detection(
-        stem_segment_voxel, stem_segment_path, voxels_size, graph, voxel_skeleton)
+        stem_segment_voxel, stem_segment_path, voxels_size, graph)
 
     # from openalea.phenomenal.display import DisplayVoxel
     # dv = DisplayVoxel()
@@ -205,7 +205,8 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
             if i == j:
                 continue
 
-            pos = set([vo_1.real_longest_polyline()[-1]])
+            vs = vo_1.get_longest_segment()
+            pos = set(vs.closest_nodes[-1])
             res = len(pos.intersection(vo_2.voxels_position()))
             if res > 0:
                 vo_1.sub_label = "connected"

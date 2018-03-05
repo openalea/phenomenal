@@ -37,6 +37,17 @@ class VoxelOrgan(object):
 
         return voxels_position
 
+    def get_longest_segment(self):
+        longest_polyline = list()
+        longest_segment = None
+
+        for vs in self.voxel_segments:
+            if len(vs.polyline) > len(longest_polyline):
+                longest_polyline = vs.polyline
+                longest_segment = vs
+
+        return longest_segment
+
     def longest_polyline(self):
         long_polyline = list()
 

@@ -18,7 +18,7 @@ from openalea.phenomenal.segmentation_3D import (
 
 import openalea.phenomenal.multi_view_reconstruction
 
-from openalea.phenomenal.object import (VoxelSkeleton, VoxelGrid)
+from openalea.phenomenal.object import (VoxelSkeleton, VoxelGrid, VoxelSegment)
 # ==============================================================================
 
 
@@ -30,7 +30,7 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
                                     key=lambda vs: -len(vs.polyline))
 
     d = dict()
-    tips = dict()
+    # tips = dict()
     for i, vs in enumerate(orderer_voxel_segments):
         for j, iv in enumerate(image_views):
 
@@ -141,9 +141,9 @@ def segment_path(voxels,
                  array_voxels,
                  skeleton_path,
                  graph,
-                 ball_radius=50,
                  voxels_size=4,
-                 distance_plane=1.0):
+                 distance_plane=1.0,
+                 windows_size=8):
 
     # ==========================================================================
     # Get the longest shorted path of voxels
@@ -164,10 +164,12 @@ def segment_path(voxels,
         closest_nodes, _ = intercept_points_along_path_with_planes(
             array_voxels,
             leaf_skeleton_path,
-            windows_size=8,
+            windows_size=windows_size,
             distance_from_plane=distance_plane * voxels_size,
             points_graph=graph,
             voxels_size=voxels_size)
+
+
 
         # closest_nodes = compute_closest_nodes_with_ball(
         #     array_voxels,
@@ -175,14 +177,14 @@ def segment_path(voxels,
         #     ball_radius=ball_radius,
         #     graph=graph)
 
-        leaf = set().union(*closest_nodes)
-        remain = set(voxels).difference(leaf)
+        vs = VoxelSegment(closest_nodes, leaf_skeleton_path)
+        remain = set(voxels).difference(vs.voxels_position)
 
         # leaf, leaf_neighbors, connected_components_remain = merge(
         #     graph, leaf, remain, percentage=50)
         # remain = set().union(*connected_components_remain)
 
-        return leaf, remain, leaf_skeleton_path
+        return vs, remain
 
 
 def compute_all_shorted_path(graph, voxels_size):
@@ -200,7 +202,7 @@ def compute_all_shorted_path(graph, voxels_size):
     return all_shorted_path_to_stem_base
 
 
-def skeletonize(graph, voxels_size, ball_radius=50, subgraph=None):
+def skeletonize(graph, voxels_size, subgraph=None):
 
     if subgraph is None:
         subgraph = graph
@@ -213,21 +215,17 @@ def skeletonize(graph, voxels_size, ball_radius=50, subgraph=None):
     np_arr_all_graph_voxels_plant = numpy.array(graph.nodes())
     # ==========================================================================
 
-    voxel_skeleton = VoxelSkeleton(voxels_size, ball_radius)
+    voxel_skeleton = VoxelSkeleton(voxels_size)
     while len(voxels_position_remain) != 0:
 
-        (voxels_position_segment,
-         voxels_position_remain,
-         voxels_segments_polyline) = segment_path(
+        (voxel_segment, voxels_position_remain) = segment_path(
             voxels_position_remain,
             np_arr_all_graph_voxels_plant,
             all_shorted_path_to_stem_base,
             graph,
-            ball_radius=ball_radius,
             voxels_size=voxels_size)
 
-        voxel_skeleton.add_voxel_segment(voxels_position_segment,
-                                         voxels_segments_polyline)
+        voxel_skeleton.add_voxel_segment(voxel_segment)
 
     return voxel_skeleton
 
