@@ -25,13 +25,14 @@ class VoxelOrgan(object):
         self.sub_label = sub_label
         self.info = dict()
 
-    def add_voxel_segment(self, voxels_position, polyline):
-        self.voxel_segments.append(VoxelSegment(voxels_position, polyline))
+    def add_voxel_segment(self, voxels_position, polyline, closest_nodes=None):
+        self.voxel_segments.append(VoxelSegment(polyline, voxels_position, closest_nodes))
 
     def voxels_position(self):
 
         voxels_position = set()
         for voxel_segment in self.voxel_segments:
+            # print voxel_segment.voxels_position
             voxels_position = voxels_position.union(
                 voxel_segment.voxels_position)
 

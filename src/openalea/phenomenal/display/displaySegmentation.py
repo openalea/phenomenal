@@ -11,7 +11,9 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
+import time
 import numpy
+import vtk
 
 from ._order_color_map import order_color_map
 from .displayVoxel import DisplayVoxel
@@ -47,6 +49,10 @@ class DisplaySegmentation(DisplayVoxel):
             self.display_skeleton(self._voxel_segmentation)
         if mode == 6:
             self.display_classic_segmentation(self._voxel_segmentation)
+
+        DisplayVoxel.show(self, windows_size=windows_size)
+
+    def record(self, windows_size=(600, 800)):
 
         DisplayVoxel.show(self, windows_size=windows_size)
 
@@ -313,19 +319,25 @@ class DisplaySegmentation(DisplayVoxel):
                 pos = vo.info['pm_position_tip']
                 pos = (pos[0] - 10, pos[1] - 10, pos[2])
 
-                if 'pm_leaf_number' in vo.info:
-                    order = str(vo.info['pm_leaf_number'])
-                    vo.text_actor = self.add_actor_from_text(
-                        order,
-                        position=pos,
-                        scale=40,
-                        color=(r, g, b))
-
-                    vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
+                # if 'pm_leaf_number' in vo.info:
+                #     order = str(vo.info['pm_leaf_number'])
+                #     vo.text_actor = self.add_actor_from_text(
+                #         order,
+                #         position=pos,
+                #         scale=40,
+                #         color=(r, g, b))
+                #
+                #     vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
 
         # plot(vmsi.get_unknown())
         for vo in vmsi.get_leafs():
             plot(vo)
         plot(vmsi.get_stem())
 
+    def record(self, list_vmsi, filename):
+
+        func = lambda vmsi: self.display_classic_analysis(vmsi)
+        self.record_video(filename, list_vmsi, func)
+
+    
 

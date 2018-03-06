@@ -177,7 +177,8 @@ def segment_path(voxels,
         #     ball_radius=ball_radius,
         #     graph=graph)
 
-        vs = VoxelSegment(closest_nodes, leaf_skeleton_path)
+        voxels_position = set().union(*closest_nodes)
+        vs = VoxelSegment(leaf_skeleton_path, voxels_position, closest_nodes)
         remain = set(voxels).difference(vs.voxels_position)
 
         # leaf, leaf_neighbors, connected_components_remain = merge(

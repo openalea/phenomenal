@@ -73,7 +73,7 @@ class DisplayVoxel(Display):
         actor.AddPosition(position[0], position[1], position[2])
         actor.GetProperty().SetColor(color[0], color[1], color[2])
 
-        self._actors.append(actor)
+        self._text_actors.append(actor)
         self._renderer.AddActor(actor)
 
         return actor
