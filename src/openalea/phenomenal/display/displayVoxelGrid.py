@@ -28,3 +28,11 @@ class DisplayVoxelGrid(DisplayVoxel):
             color=color)
 
         self.show()
+
+    def record(self, list_vg, filename, color=(0, 0.8, 0)):
+
+        func = lambda vg: self.add_actor_from_voxels(vg.voxels_position,
+                                                     vg.voxels_size,
+                                                     color=color)
+
+        self.record_video(filename, list_vg, func)
