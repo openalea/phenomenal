@@ -38,6 +38,8 @@ class VoxelOrgan(object):
 
         return voxels_position
 
+    # ==========================================================================
+
     def get_longest_segment(self):
         longest_polyline = list()
         longest_segment = None
@@ -49,14 +51,7 @@ class VoxelOrgan(object):
 
         return longest_segment
 
-    def longest_polyline(self):
-        long_polyline = list()
-
-        for vs in self.voxel_segments:
-            if len(vs.polyline) > len(long_polyline):
-                long_polyline = vs.polyline
-
-        return long_polyline
+    # ==========================================================================
 
     def get_highest_polyline(self):
 
@@ -74,7 +69,7 @@ class VoxelOrgan(object):
     def get_real_index_position_base(self):
 
         voxels_position = self.voxels_position()
-        long_polyline = self.longest_polyline()
+        long_polyline = self.get_longest_segment().polyline
         index_position_base = len(long_polyline) - 1
         for i in range(len(long_polyline) - 1, -1, -1):
             if long_polyline[i] not in set(voxels_position):
@@ -85,7 +80,7 @@ class VoxelOrgan(object):
     def real_longest_polyline(self):
 
         voxels_position = self.voxels_position()
-        long_polyline = self.longest_polyline()
+        long_polyline = self.get_longest_segment().polyline
         index_position_base = len(long_polyline) - 1
         for i in range(len(long_polyline) - 1, -1, -1):
             if long_polyline[i] not in set(voxels_position):
@@ -94,19 +89,3 @@ class VoxelOrgan(object):
         real_polyline = long_polyline[index_position_base:]
 
         return real_polyline
-
-    def get_closest_nodes(self):
-
-        voxels_position = numpy.array(map(tuple, list(self.voxels_position())))
-
-        closest_nodes, planes_equation = (
-            openalea.phenomenal.segmentation_3D.
-            plane_interception.compute_closest_nodes_with_planes(
-                voxels_position,
-                self.longest_polyline(),
-                dist=4,
-                without_connexity=True))
-
-        return closest_nodes
-
-

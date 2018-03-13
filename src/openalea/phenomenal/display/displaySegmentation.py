@@ -73,32 +73,28 @@ class DisplaySegmentation(DisplayVoxel):
 
     def display_skeleton(self, vmsi, order=5):
 
-        for vo in vmsi.voxel_organs:
-            self.add_actor_from_voxels(vo.voxels_position(),
-                                       vmsi.voxels_size * 0.25,
-                                       color=(0, 1, 0))
-
         for vo in vmsi.get_leafs():
-            for vs in vo.voxel_segments:
-                self.add_actor_from_voxels(vs.polyline,
-                                           vmsi.voxels_size * 1,
-                                           color=(1, 0, 0))
+            self.add_actor_from_voxels(
+                vo.voxels_position(), vmsi.voxels_size * 0.25, color=(0, 1, 0))
 
-                self.add_actor_from_ball_position(vs.polyline[0],
-                                                  radius=5,
-                                                  color=(0, 0, 1))
+            polyline = vo.get_longest_segment().polyline
+            # for vs in vo.voxel_segments:
+            self.add_actor_from_voxels(
+                polyline, vmsi.voxels_size * 1, color=(1, 0, 0))
 
-                self.add_actor_from_ball_position(vs.polyline[-1],
-                                                  radius=5,
-                                                  color=(1, 0, 0))
+            self.add_actor_from_ball_position(
+                polyline[0], radius=5, color=(0, 0, 1))
 
-        for vo in vmsi.get_leafs():
-            if 'order' in vo.info and vo.info['order'] == order:
-                vs = vo.get_highest_polyline()
-                self.add_actor_from_voxels(
-                    vs.polyline,
-                    vmsi.voxels_size * 1.5,
-                    color=(0, 0, 1))
+            self.add_actor_from_ball_position(
+                polyline[-1], radius=5, color=(1, 0, 0))
+
+        # for vo in vmsi.get_leafs():
+        #     if 'order' in vo.info and vo.info['order'] == order:
+        #         vs = vo.get_highest_polyline()
+        #         self.add_actor_from_voxels(
+        #             vs.polyline,
+        #             vmsi.voxels_size * 1.5,
+        #             color=(0, 0, 1))
 
     def display_stem_only(self, vmsi):
 
@@ -123,7 +119,7 @@ class DisplaySegmentation(DisplayVoxel):
                 color=color)
 
     def display_leaf_order(self, vmsi, leaf_order=4):
-        pos_stem = vmsi.get_stem().longest_polyline()[-1]
+        pos_stem = vmsi.get_stem().get_longest_polyline()[-1]
 
         vo = vmsi.get_leaf_order(leaf_order)
 
@@ -136,7 +132,7 @@ class DisplaySegmentation(DisplayVoxel):
 
             closest_nodes = vo.get_closest_nodes()
 
-            i = vo.longest_polyline().index(vo.info['position_base'])
+            i = vo.get_longest_polyline().index(vo.info['position_base'])
 
             nodes = list(set.union(*[set(nodes) for nodes in
                                      closest_nodes[0:i]]))
@@ -205,7 +201,7 @@ class DisplaySegmentation(DisplayVoxel):
 
     def display_leaf_split(self, vmsi):
 
-        pos_stem = vmsi.get_stem().longest_polyline()[-1]
+        pos_stem = vmsi.get_stem().get_longest_polyline()[-1]
 
         for vo in vmsi.voxel_organs:
 
@@ -232,7 +228,7 @@ class DisplaySegmentation(DisplayVoxel):
 
                     closest_nodes = vo.get_closest_nodes()
 
-                    i = vo.longest_polyline().index(vo.info['position_base'])
+                    i = vo.get_longest_polyline().index(vo.info['position_base'])
 
                     v_base = set.union(*[set(nodes) for nodes in
                                          closest_nodes[:i]])
@@ -339,5 +335,5 @@ class DisplaySegmentation(DisplayVoxel):
         func = lambda vmsi: self.display_classic_analysis(vmsi)
         self.record_video(filename, list_vmsi, func)
 
-    
+
 

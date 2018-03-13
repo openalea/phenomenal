@@ -37,8 +37,8 @@ def maize_stem_peak_detection(values, stop_index):
     #                                          window_length=window_length,
     #                                          polyorder=9))
 
-    nodes_length_smooth2 = list(smooth(numpy.array(values),
-                                       window_len=15))
+    nodes_length_smooth2 = list(smooth(
+        numpy.array(values), window_len=15))
 
     max_peaks, min_peaks = peak_detection(values, order=3)
     # max_peaks_smooth, min_peaks_smooth = peak_detection(nodes_length_smooth,

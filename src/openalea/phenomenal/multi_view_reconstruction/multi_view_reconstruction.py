@@ -752,8 +752,6 @@ def project_voxels_position_on_image(voxels_position,
     (pt[:, :, 1])[pt[:, :, 1] >= height] = height - 1
     pt = numpy.floor(pt).astype(int)
     for points in pt:
-
-        print(points)
         hull = scipy.spatial.ConvexHull(points)
         cv2.fillConvexPoly(img, points[hull.vertices], 255)
 
