@@ -17,8 +17,7 @@ from openalea.phenomenal.segmentation_3D import (
     maize_segmentation,
     maize_analysis)
 
-from openalea.phenomenal.data import plant_1_voxel_grid, plant_2_voxel_grid
-# ==============================================================================
+from openalea.phenomenal.data import plant_1_voxel_grid
 
 
 def test_maize():
@@ -32,7 +31,6 @@ def test_maize():
 
     vms = maize_segmentation(voxel_skeleton, voxel_graph)
     vmsi = maize_analysis(vms)
-
 
 if __name__ == "__main__":
     for func_name in dir():

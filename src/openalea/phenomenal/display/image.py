@@ -15,6 +15,7 @@ Module to display image and binarization result
 # ==============================================================================
 import matplotlib.pyplot
 import cv2
+import math
 import numpy
 # ==============================================================================
 
@@ -36,27 +37,18 @@ def show_image(image, name_windows=''):
     matplotlib.pyplot.show()
 
 
-def show_images(images, name_windows='', names_axes=None):
+def show_images(images, name_windows=''):
 
     matplotlib.pyplot.title(name_windows)
-    number_of_images = len(images)
+    nb_col = 3
+    nb_row = int(math.ceil(len(images) / float(nb_col)))
 
-    i = 1
-    for image in images:
-        ax = matplotlib.pyplot.subplot(1, number_of_images, i)
-
-        if names_axes is None:
-            ax.set_title('Image %d/%d' % (i, number_of_images))
-        else:
-            ax.set_title(names_axes[i])
-
+    for i, image in enumerate(images, 1):
+        ax = matplotlib.pyplot.subplot(nb_row, nb_col, i)
         if image.ndim == 2:
             img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
             ax.imshow(img)
         else:
             ax.imshow(image)
-
-        i += 1
-
     matplotlib.pyplot.show()
 

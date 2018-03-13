@@ -177,7 +177,7 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
 def maize_stem_analysis(vo, voxels_size, distance_plane=0.75):
 
     voxels_position = vo.voxels_position()
-    polyline = vo.longest_polyline()
+    polyline = vo.get_longest_segment().polyline
 
     if len(polyline) <= 1:
         return vo
@@ -204,7 +204,7 @@ def maize_mature_leaf_analysis(vo, voxels_size,
                                distance_plane=0.75):
 
     voxels_position = vo.voxels_position()
-    polyline = vo.longest_polyline()
+    polyline = vo.get_longest_segment().polyline
 
     if len(polyline) <= 3:
         return None
@@ -240,7 +240,7 @@ def maize_mature_leaf_analysis(vo, voxels_size,
 def maize_growing_leaf_analysis_real_length(maize_segmented, vo):
 
     voxels = maize_segmented.get_voxels_position(except_organs=[vo])
-    longest_polyline = vo.longest_polyline()
+    longest_polyline = vo.get_longest_segment().polyline
     voxels = set(voxels).intersection(longest_polyline)
     z = numpy.max(numpy.array(list(voxels))[:, 2])
     return z
@@ -252,7 +252,7 @@ def maize_growing_leaf_analysis(vo, voxels_size,
                                 distance_plane=0.75):
 
     voxels_position = vo.voxels_position()
-    polyline = vo.longest_polyline()
+    polyline = vo.get_longest_segment().polyline
     vo.info['pm_full_length'] = compute_length_organ(polyline)
 
     if len(polyline) <= 1:

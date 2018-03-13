@@ -24,7 +24,8 @@ class DisplaySkeleton(DisplayVoxel):
     def __init__(self):
         DisplayVoxel.__init__(self)
 
-    def __call__(self, voxel_skeleton,
+    def __call__(self,
+                 voxel_skeleton,
                  with_voxel=True,
                  voxel_color=(0, 1, 0),
                  skeleton_color=(1, 0, 0),
@@ -38,7 +39,8 @@ class DisplaySkeleton(DisplayVoxel):
 
         self.show()
 
-    def add_actor_voxel_skeleton(self, voxel_skeleton,
+    def add_actor_voxel_skeleton(self,
+                                 voxel_skeleton,
                                  with_voxel=False,
                                  voxel_color=(0, 1, 0),
                                  skeleton_color=(1, 0, 0),

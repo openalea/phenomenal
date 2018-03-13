@@ -108,8 +108,7 @@ def centers(vertices, faces):
     return (v[:, 0, :] + v[:, 1, :] + v[:, 2, :]) / 3.0
 
 
-def project_mesh_on_image(vertices, faces, shape_image, projection,
-                          with_morphology_close=True):
+def project_mesh_on_image(vertices, faces, shape_image, projection):
 
     vertices = numpy.array(vertices)
     height, length = shape_image
