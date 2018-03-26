@@ -136,7 +136,7 @@ def compute_insertion_angle(polyline, stem_vector_mean):
 
 def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
 
-    if len(polyline) <= 3:
+    if len(polyline) <= 1:
         return None
 
     organ.info['pm_position_tip'] = tuple(polyline[-1])
@@ -164,7 +164,7 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
     organ.info['pm_vector_mean'] = vector_mean
     organ.info['pm_azimuth'] = angle
 
-    if stem_vector_mean is not None:
+    if stem_vector_mean is not None and len(polyline) >= 4:
         insertion_angle, vector = compute_insertion_angle(
             polyline, stem_vector_mean)
 
@@ -194,9 +194,7 @@ def maize_stem_analysis(vo, voxels_size, distance_plane=0.75):
 
     # ==========================================================================
 
-    vo = organ_analysis(vo, polyline, closest_nodes)
-
-    return vo
+    return organ_analysis(vo, polyline, closest_nodes)
 
 
 def maize_mature_leaf_analysis(vo, voxels_size,

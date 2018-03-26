@@ -13,6 +13,7 @@ import vtk
 import vtk.util.numpy_support
 import numpy
 import math
+import skimage.measure
 
 from openalea.phenomenal.mesh.vtk_transformation import (
     from_vtk_poly_data_to_vertices_faces,
@@ -23,7 +24,8 @@ __all__ = ["meshing",
            "marching_cubes",
            "smoothing",
            "decimation",
-           "voxelization"]
+           "voxelization",
+           "mesh_surface_area"]
 
 # ==============================================================================
 
@@ -377,8 +379,6 @@ def voxelization(vtk_poly_data, voxels_size=1):
     edges.NonManifoldEdgesOn()
     edges.BoundaryEdgesOn()
     edges.Update()
-    print "HERE :", edges.GetOutput().GetNumberOfCells()
-
 
     pol2stenc = vtk.vtkPolyDataToImageStencil()
     pol2stenc.SetOutputOrigin(origin)
@@ -404,3 +404,6 @@ def voxelization(vtk_poly_data, voxels_size=1):
 
     return imgstenc.GetOutput()
 
+
+def mesh_surface_area(vertices, faces):
+    return skimage.measure.mesh_surface_area(vertices, faces)
