@@ -35,7 +35,7 @@ class VoxelSegmentation(object):
 
         info["pm_label"] = 'plant'
         info["pm_voxels_volume"] = len(s) * self.voxels_size ** 3
-        info["pm_number_visible_leaf"] = self.get_number_of_leaf()
+        info["pm_number_of_leaf"] = self.get_number_of_leaf()
 
         return info
 
