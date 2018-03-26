@@ -21,6 +21,14 @@ class DisplayVoxel(Display):
     def __init__(self):
         Display.__init__(self)
 
+    def add_actor(self, actor):
+        self._actors.append(actor)
+        self._renderer.AddActor(actor)
+
+    def add_actors(self, actors):
+        for actor in actors:
+            self.add_actor(actor)
+
     def add_actor_from_plane(self, center, normal, color=(0, 0, 1), radius=100):
 
         source = vtk.vtkPlaneSource()

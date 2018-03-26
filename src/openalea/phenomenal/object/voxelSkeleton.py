@@ -9,7 +9,10 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
 
+import numpy
+from .voxelGrid import VoxelGrid
 
 class VoxelSkeleton(object):
 
@@ -19,3 +22,17 @@ class VoxelSkeleton(object):
 
     def add_voxel_segment(self, voxel_segment):
         self.voxel_segments.append(voxel_segment)
+
+    def voxels_position(self):
+        voxels_position = set()
+        for voxel_segment in self.voxel_segments:
+            voxels_position = voxels_position.union(
+                voxel_segment.voxels_position)
+        return numpy.array(list(voxels_position))
+
+    def volume(self):
+        return len(self.voxels_position()) * self.voxels_size ** 3
+
+    def to_voxel_grid(self):
+        return VoxelGrid(self.voxels_position(), self.voxels_size)
+

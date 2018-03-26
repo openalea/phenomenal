@@ -30,26 +30,14 @@ from .plane_interception import (
 
 def maize_stem_peak_detection(values, stop_index):
 
-    # window_length = max(4, len(values) / 4)
-    # window_length = window_length + 1 if window_length % 2 == 0 else window_length
-    # print window_length
-    # nodes_length_smooth = list(savgol_filter(numpy.array(values),
-    #                                          window_length=window_length,
-    #                                          polyorder=9))
-
-    nodes_length_smooth2 = list(smooth(
-        numpy.array(values), window_len=15))
+    if len(values) > 15:
+        nodes_length_smooth2 = list(smooth(numpy.array(values), window_len=15))
+        max_peaks_smooth2, min_peaks_smooth2 = peak_detection(
+            nodes_length_smooth2, order=3)
+        stop_index = max([i for i, v in min_peaks_smooth2 if i <= stop_index])
 
     max_peaks, min_peaks = peak_detection(values, order=3)
-    # max_peaks_smooth, min_peaks_smooth = peak_detection(nodes_length_smooth,
-    #                                                     order=3)
-    max_peaks_smooth2, min_peaks_smooth2 = peak_detection(nodes_length_smooth2,
-                                                          order=3)
-
-    index_max = max([i for i, v in min_peaks_smooth2 if i <= stop_index])
-
-    min_peaks = [(i, v) for i, v in min_peaks if i <= stop_index and i <=
-                 index_max]
+    min_peaks = [(i, v) for i, v in min_peaks if i <= stop_index]
     if len(min_peaks) <= 1:
         min_peaks = [(0, values[0]),
                      (1, values[1])] + min_peaks
@@ -58,18 +46,6 @@ def maize_stem_peak_detection(values, stop_index):
     # import matplotlib.pyplot as plt
     # plt.figure()
     # plt.plot(range(len(values)), values, 'g-')
-    # plt.plot(range(len(nodes_length_smooth)), nodes_length_smooth, 'k-')
-    # plt.plot(range(len(nodes_length_smooth2)), nodes_length_smooth2, 'r-')
-    # plt.plot([i for i, v in max_peaks_smooth],
-    #          [v for i, v in max_peaks_smooth], 'k.')
-    # plt.plot([i for i, v in min_peaks_smooth],
-    #          [v for i, v in min_peaks_smooth], 'ko')
-    #
-    # plt.plot([i for i, v in max_peaks_smooth2],
-    #          [v for i, v in max_peaks_smooth2], 'r.')
-    # plt.plot([i for i, v in min_peaks_smooth2],
-    #          [v for i, v in min_peaks_smooth2], 'ro')
-    #
     # plt.plot([i for i, v in max_peaks],
     #          [v for i, v in max_peaks], 'g.')
     # plt.plot([i for i, v in min_peaks],
