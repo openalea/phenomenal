@@ -27,7 +27,7 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
 
     # Ordonner
     orderer_voxel_segments = sorted(voxel_skeleton.voxel_segments,
-                                    key=lambda vs: -len(vs.polyline))
+                                    key=lambda vs: len(vs.polyline))
 
     d = dict()
     tips = dict()
@@ -55,7 +55,7 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
     for iv in image_views:
 
         negative_image = iv.image.copy()
-        negative_image[negative_image == 255] = 125
+        negative_image[negative_image > 0] = 125
         negative_image[negative_image == 0] = 255
         negative_image[negative_image == 125] = 0
         list_negative_image.append(negative_image)
@@ -70,16 +70,17 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
             im1 = d[(i, j)]
             # im1 = tips[(i, j)]
 
-            im2 = numpy.zeros(iv.image.shape)
+            im2 = numpy.zeros(iv.image.shape, dtype=numpy.int16)
             for k, _ in enumerate(orderer_voxel_segments):
                 if k != i and k not in index_removed:
-                    # print "AVEC", k
                     im2 += d[(k, j)]
+
+            im1 = im1.astype(numpy.int16)
+            im2[im2 > 0] = 255
 
             im = im1 - im2
             im = im - list_negative_image[j]
             im[im < 0] = 0
-
             if numpy.count_nonzero(im) >= nb_min_pixel:
                 weight += 1
 
@@ -91,9 +92,10 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
         else:
             index_removed.append(i)
 
-    voxel_skeleton.voxel_segments = new_voxel_segments
+    vs = VoxelSkeleton(voxel_skeleton.voxels_size)
+    vs.voxel_segments = new_voxel_segments
 
-    return voxel_skeleton
+    return vs
 
 # ==============================================================================
 

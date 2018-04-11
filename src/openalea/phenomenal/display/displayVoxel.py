@@ -171,10 +171,10 @@ class DisplayVoxel(Display):
                                       vertices,
                                       faces,
                                       colors=None,
-                                      unique_color=None,):
+                                      color=None,):
 
-        if unique_color is None:
-            unique_color = numpy.random.uniform(0, 1, 3)
+        if color is None:
+            color = numpy.random.uniform(0, 1, 3)
 
         # Setup the colors array
         vtk_colors = vtk.vtkUnsignedCharArray()
@@ -216,9 +216,7 @@ class DisplayVoxel(Display):
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().SetColor(unique_color[0],
-                                     unique_color[1],
-                                     unique_color[2])
+        actor.GetProperty().SetColor(color[0], color[1], color[2])
 
         self._actors.append(actor)
         self._renderer.AddActor(actor)

@@ -32,6 +32,7 @@ def test_maize():
     vms = maize_segmentation(voxel_skeleton, voxel_graph)
     vmsi = maize_analysis(vms)
 
+
 if __name__ == "__main__":
     for func_name in dir():
         if func_name.startswith('test_'):

@@ -59,7 +59,7 @@ class DisplaySkeleton(DisplayVoxel):
             elif with_voxel:
                 self.add_actor_from_voxels(
                     vs.voxels_position,
-                    voxel_skeleton.voxels_size * 0.25,
+                    voxel_skeleton.voxels_size * 0.15,
                     color=voxel_color)
 
             self.add_actor_from_voxels(
