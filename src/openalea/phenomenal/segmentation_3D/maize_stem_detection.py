@@ -173,9 +173,8 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
 
     xx = numpy.array([x for x, y in xx_yy_raw])
     yy_raw = numpy.array([y for x, y in xx_yy_raw])
-
     radius_raw = numpy.poly1d(numpy.polyfit(
-        xx, numpy.array(yy_raw), deg=5))
+        xx, numpy.array(yy_raw), deg=min(len(min_peaks_stem) - 1, 5)))
     rad = numpy.array(distances)[:max_index_min_peak + 1] / 2.0
 
     # radius_distance = numpy.poly1d(numpy.polyfit(

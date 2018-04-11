@@ -26,8 +26,6 @@ def test_running():
     vpc = plant_1_voxel_grid(voxels_size=voxels_size)
     voxel_graph = voxel_graph_from_voxel_grid(vpc)
     voxel_skeleton = skeletonize(voxel_graph.graph, voxel_graph.voxels_size)
-    print len(voxel_skeleton.voxel_segments)
-    print time.time() - t0
 
 if __name__ == "__main__":
     for func_name in dir():

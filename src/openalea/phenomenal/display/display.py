@@ -108,6 +108,14 @@ class Display(object):
 
         del render_window
 
+    def render(self, windows_size=(600, 800)):
+
+        self.reset_camera()
+        render_window = vtk.vtkRenderWindow()
+        render_window.AddRenderer(self._renderer)
+        render_window.SetSize(windows_size[0], windows_size[1])
+        render_window.Render()
+
     def show(self, windows_size=(600, 800)):
 
         self.reset_camera()

@@ -154,34 +154,6 @@ def test_split_and_projection():
         voxels_size = voxels.size
 
 
-def test_split_and_projection():
-    angle = 0
-    calibration = plant_1_calibration_camera_side()
-    projection = calibration.get_projection(angle)
-
-    voxels_position = numpy.array([[0, 0, 0]])
-    voxels_size = 64
-
-    for i in range(5):
-        res = get_bounding_box_voxel_projected(voxels_position,
-                                               voxels_size,
-                                               projection)
-        res = numpy.floor(res).astype(int)
-
-        img = numpy.zeros((3000, 3000))
-        for x_min, y_min, x_max, y_max in res:
-            img[y_min:y_max + 1, x_min:x_max + 1] = 255
-
-        assert 3864 == numpy.count_nonzero(img)
-
-        img = project_voxel_centers_on_image(voxels_position, voxels_size,
-                                             (3000, 3000), projection)
-        assert 3864 == numpy.count_nonzero(img)
-
-        voxels = split_voxels_in_eight(Voxels(voxels_position, voxels_size))
-        voxels_position = voxels.position
-        voxels_size = voxels.size
-
 # ==============================================================================
 
 

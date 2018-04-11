@@ -473,6 +473,9 @@ def create_groups(image_views, inconsistent):
 
 def check_groups(neigh, inconsistent, groups, nb_distance):
 
+    if len(groups.values()) == 0:
+        return None
+
     positions = list()
     for index in groups.values():
         index = numpy.array(index)

@@ -294,7 +294,7 @@ class DisplaySegmentation(DisplayVoxel):
 
             self.add_actor_from_voxels(
                 voxels_position,
-                vmsi.voxels_size * 0.50,
+                vmsi.voxels_size,
                 color=self.get_color(vo.label, vo.info))
 
             if ((vo.label == "mature_leaf" or vo.label == "growing_leaf") and
