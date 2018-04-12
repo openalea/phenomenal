@@ -9,12 +9,15 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import print_function, absolute_import
+
 import numpy
 import networkx
 
 from .maize_stem_detection import stem_detection
 import openalea.phenomenal.object.voxelOrgan
 import openalea.phenomenal.object.voxelSegmentation
+import openalea.phenomenal.object.voxelSegment
 
 # ==============================================================================
 
@@ -103,12 +106,6 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
     stem_voxel, not_stem_voxel, stem_path, stem_top = stem_detection(
         stem_segment_voxel, stem_segment_path, voxels_size, graph)
 
-    # from openalea.phenomenal.display import DisplayVoxel
-    # dv = DisplayVoxel()
-    # dv.add_actor_from_voxels(stem_voxel, voxels_size, color=(0.5, 0.5, 0.5))
-    # dv.add_actor_from_voxels(not_stem_voxel, voxels_size, color=(0, 0.8, 0))
-    # dv.show()
-
     # ==========================================================================
     # Remove stem voxels from segment voxels
 
@@ -145,22 +142,22 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
     organ_unknown = openalea.phenomenal.object.VoxelOrgan("unknown")
     organ_unknown.add_voxel_segment(voxels_remain, list())
 
-    mature_organs = list()
-    growing_organs = list()
+    mature_organs, growing_organs = list(), list()
     for vs in voxel_skeleton.voxel_segments:
 
         if len(vs.real_polyline) == 0:
-            organ_unknown.voxel_segments.append(vs)
+            organ_unknown.voxel_segments.append(vs.copy())
             continue
+
+        vs = openalea.phenomenal.object.voxelSegment.VoxelSegment(
+            vs.polyline, vs.leaf_voxel, vs.closest_nodes)
 
         if len(stem_top.intersection(vs.polyline)) > 0:
             vo = openalea.phenomenal.object.VoxelOrgan("growing_leaf")
-            vs.voxels_position = vs.leaf_voxel
             vo.voxel_segments.append(vs)
             growing_organs.append(vo)
         else:
             vo = openalea.phenomenal.object.VoxelOrgan("mature_leaf")
-            vs.voxels_position = vs.leaf_voxel
             vo.voxel_segments.append(vs)
             mature_organs.append(vo)
 

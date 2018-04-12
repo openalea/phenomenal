@@ -29,7 +29,7 @@ def show_image(image, name_windows=''):
 
     if image.ndim == 2:
         img = image.astype(numpy.uint8)
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         matplotlib.pyplot.imshow(img)
     else:
         matplotlib.pyplot.imshow(image)
@@ -40,15 +40,18 @@ def show_image(image, name_windows=''):
 def show_images(images, name_windows=''):
 
     matplotlib.pyplot.title(name_windows)
-    nb_col = 3
+    nb_col = 4
     nb_row = int(math.ceil(len(images) / float(nb_col)))
 
     for i, image in enumerate(images, 1):
         ax = matplotlib.pyplot.subplot(nb_row, nb_col, i)
+        ax.axis('off')
         if image.ndim == 2:
             img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
             ax.imshow(img)
         else:
             ax.imshow(image)
+
     matplotlib.pyplot.show()
+    matplotlib.pyplot.tight_layout(h_pad=0.050, w_pad=0.001)
 

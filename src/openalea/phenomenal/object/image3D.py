@@ -14,8 +14,6 @@ from __future__ import division, print_function, absolute_import
 import os
 import numpy
 import cv2
-
-# from .voxelPointCloud import  VoxelGrid
 # ==============================================================================
 
 

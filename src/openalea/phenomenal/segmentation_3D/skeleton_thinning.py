@@ -14,11 +14,13 @@ A 3D 6-subiteration thinning algorithm for extracting medial lines
 of Kalman Palagyi and Attila Kuba implementation
 """
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import numpy
 # ==============================================================================
 
 
-def build_mask():
+def _build_mask():
     M1 = numpy.array([[['x', 'x', '0'],
                        ['x', 'x', '0'],
                        ['x', 'x', '0']],
@@ -116,7 +118,7 @@ def build_mask():
     return U, D, N, S, E, W
 
 
-def check_mask(T, M):
+def _check_mask(T, M):
     x_present = False
     x_ok = False
     for i in range(3):
@@ -142,7 +144,7 @@ def check_mask(T, M):
         return True
 
 
-def applied_masks(mat, masks):
+def _applied_masks(mat, masks):
     tmp = numpy.zeros_like(mat)
     xx, yy, zz = numpy.where(mat == 1)
     for i in range(len(xx)):
@@ -150,48 +152,45 @@ def applied_masks(mat, masks):
         block = mat[x - 1:x + 2, y - 1:y + 2, z - 1:z + 2]
 
         for mask in masks:
-            if check_mask(block, mask):
+            if _check_mask(block, mask):
                 tmp[x, y, z] = 1
 
     return mat - tmp
 
 
-def thinning_3d(matrix, verbose=False):
+def skeletonize_thinning(image_3d):
+    """
+    A 3D 6-subiteration thinning algorithm for extracting medial lines
+    of Kalman Palagyi and Attila Kuba implementation
 
-    mat_len_x, mat_len_y, mat_len_z = matrix.shape
+    :param image_3d: numpy array
+    :return: matrix thinned (numpy array)
+    """
+
+    mat_len_x, mat_len_y, mat_len_z = image_3d.shape
     mat_tmp = numpy.zeros((mat_len_x + 2, mat_len_y + 2, mat_len_z + 2),
                           dtype=int)
-    mat_tmp[1:-1, 1:-1, 1:-1] = matrix.astype(int)
+    mat_tmp[1:-1, 1:-1, 1:-1] = image_3d.astype(int)
 
-    if verbose:
-        print 'Shape of matrix extended is :', mat_tmp.shape
-
-    U, D, N, S, E, W = build_mask()
+    U, D, N, S, E, W = _build_mask()
 
     # ==========================================================================
-    if verbose:
-        print 'number of : ', numpy.count_nonzero(mat_tmp)
 
     j = 0
     while True:
-        if verbose:
-            print 'iteration : ', j
 
         j += 1
         nb1 = numpy.count_nonzero(mat_tmp)
-        mat_tmp = applied_masks(mat_tmp, U)
-        mat_tmp = applied_masks(mat_tmp, D)
-        mat_tmp = applied_masks(mat_tmp, N)
-        mat_tmp = applied_masks(mat_tmp, S)
-        mat_tmp = applied_masks(mat_tmp, E)
-        mat_tmp = applied_masks(mat_tmp, W)
+        mat_tmp = _applied_masks(mat_tmp, U)
+        mat_tmp = _applied_masks(mat_tmp, D)
+        mat_tmp = _applied_masks(mat_tmp, N)
+        mat_tmp = _applied_masks(mat_tmp, S)
+        mat_tmp = _applied_masks(mat_tmp, E)
+        mat_tmp = _applied_masks(mat_tmp, W)
 
         nb2 = numpy.count_nonzero(mat_tmp)
         if nb1 == nb2:
             break
-
-    if verbose:
-        print 'number of : ', numpy.count_nonzero(mat_tmp)
 
     # ==========================================================================
 

@@ -13,7 +13,8 @@ import networkx
 import numpy
 
 from openalea.phenomenal.segmentation_3D import (
-    voxel_graph_from_voxel_grid)
+    voxel_graph_from_voxel_grid,
+    skeletonize)
 
 # ==============================================================================
 """

@@ -15,7 +15,7 @@ import numpy
 import ipyvolume
 
 
-def plot_voxel(voxels_position, size_ratio=1.0, marker="box", color="green"):
+def plot_voxel(voxels_position, size_ratio=2.0, marker="box", color="green"):
 
     if len(voxels_position) > 0:
         x, y, z = (voxels_position[:, 0],
@@ -26,7 +26,7 @@ def plot_voxel(voxels_position, size_ratio=1.0, marker="box", color="green"):
 
 
 def show_voxel_grid(vg,
-                    size_ratio=1,
+                    size_ratio=2,
                     color='green',
                     width=800, height=1000):
 
@@ -50,7 +50,7 @@ def show_mesh(vertices, faces, color='green'):
 
 def show_skeleton(voxel_skeleton,
                   with_voxel=True,
-                  size_ratio=1.0,
+                  size_ratio=2.0,
                   color='green',
                   width=800, height=1000):
 
@@ -61,9 +61,8 @@ def show_skeleton(voxel_skeleton,
     for vs in voxel_skeleton.voxel_segments:
 
         if with_voxel:
-
             plot_voxel(numpy.array(list(vs.voxels_position)),
-                       size_ratio=size_ratio * 0.25,
+                       size_ratio=size_ratio * 0.50,
                        color=color)
 
         plot_voxel(numpy.array(list(vs.polyline)),
@@ -84,7 +83,7 @@ def show_skeleton(voxel_skeleton,
 
 
 def show_segmentation(voxel_segmentation,
-                      size_ratio=1.0,
+                      size_ratio=2.0,
                       width=800, height=1000):
 
     ipyvolume.figure(width=width, height=height)
@@ -97,11 +96,10 @@ def show_segmentation(voxel_segmentation,
             color = (128, 128, 128)
         elif label == "unknown":
             color = (255, 255, 255)
-        elif 'order' in info:
+        elif 'pm_leaf_number' in info:
             color_map = order_color_map()
-            color = color_map[info['order']]
+            color = color_map[info['pm_leaf_number']]
             color = tuple([int(255 * x) for x in color])
-
         else:
             if label == "growing_leaf":
                 color = (255, 0, 0)
@@ -120,14 +118,14 @@ def show_segmentation(voxel_segmentation,
                    color=get_color(vo.label, vo.info))
 
         if ((vo.label == "mature_leaf" or vo.label == "growing_leaf") and
-                len(vo.voxel_segments) > 0 and "position_tip" in vo.info):
+                len(vo.voxel_segments) > 0 and "pm_position_tip" in vo.info):
 
-            plot_voxel(numpy.array([vo.info['position_tip']]),
+            plot_voxel(numpy.array([vo.info['pm_position_tip']]),
                        size_ratio * 2,
                        color="red",
                        marker="sphere")
 
-            plot_voxel(numpy.array([vo.info['position_base']]),
+            plot_voxel(numpy.array([vo.info['pm_position_base']]),
                        size_ratio * 2,
                        color="blue",
                        marker="sphere")

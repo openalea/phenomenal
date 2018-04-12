@@ -221,8 +221,8 @@ class CalibrationCamera(object):
         return projection
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCamera()
@@ -244,7 +244,7 @@ class CalibrationCamera(object):
 
         return c
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -261,7 +261,7 @@ class CalibrationCamera(object):
         save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
             (16, )).tolist()
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
@@ -367,8 +367,8 @@ class RegistrationCamera(CalibrationCamera):
         return pts
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraTop()
@@ -526,8 +526,8 @@ class RegistrationCameraPosition(CalibrationCamera):
         return pts
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraTop()
@@ -686,8 +686,8 @@ class RegistrationCameraFocal(CalibrationCamera):
         return pts
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraTop()
@@ -837,8 +837,8 @@ class CalibrationCameraTop(CalibrationCamera):
         return pts
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraTop()
@@ -1079,8 +1079,8 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
         return err / self._ref_number
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraSideWith1Target()
@@ -1109,7 +1109,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
 
         return c
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -1133,7 +1133,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
         save_class['target_rot_y'] = self._target_rot_y
         save_class['target_rot_z'] = self._target_rot_z
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
@@ -1513,7 +1513,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         return map(lambda pt: fr_target.global_point(pt),
                    ref_target_2_points_local_3d)
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -1544,15 +1544,15 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         save_class['target_2_rot_y'] = self._target_2_rot_y
         save_class['target_2_rot_z'] = self._target_2_rot_z
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
                       separators=(',', ': '))
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraSideWith2Target()
@@ -1924,7 +1924,7 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
 
         return err / self._ref_number
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -1955,15 +1955,15 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
         save_class['target_2_rot_y'] = self._target_2_rot_y
         save_class['target_2_rot_z'] = self._target_2_rot_z
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
                       separators=(',', ': '))
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraSideWith2TargetYXZ()
@@ -2333,7 +2333,7 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
 
         return err / self._ref_number
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -2364,15 +2364,15 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
         save_class['target_2_rot_y'] = self._target_2_rot_y
         save_class['target_2_rot_z'] = self._target_2_rot_z
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
                       separators=(',', ': '))
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraSideWith2TargetYXZ()

@@ -9,6 +9,8 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import numpy
 import networkx
 
@@ -101,6 +103,18 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
 
 
 def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
+    """
+    Function to find the base stem position of the plant from the voxels
+    center positions list.
+
+    Voxels position are converted in 3d image to find arround the x and y
+    axis the points with the minimum value in a range of neighbor_side.
+
+    :param voxels_position: 3d voxels center positions [(x, y, z), ...]
+    :param voxels_size: diameter size of each voxels (mm)
+    :param neighbor_size:
+    :return:
+    """
 
     image_3d = VoxelGrid(voxels_position, voxels_size).to_image_3d()
 
@@ -108,10 +122,11 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
     y = int(round(0 - image_3d.world_coordinate[1] / image_3d.voxels_size))
 
     k = neighbor_size / voxels_size
+
     x_len, y_len, z_len = image_3d.shape
 
-    roi = image_3d[max(x - k, 0): min(x + k, x_len),
-                   max(y - k, 0): min(y + k, y_len),
+    roi = image_3d[int(max(x - k, 0)):int(min(x + k, x_len)),
+                   int(max(y - k, 0)):int(min(y + k, y_len)),
                    :]
 
     xx, yy, zz = numpy.where(roi == 1)
@@ -131,8 +146,8 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
             min_dist = dist
             mean_point = pt
 
-    stem_base_position = (max(x - k, 0) + mean_point[0],
-                          max(y - k, 0) + mean_point[1],
+    stem_base_position = (int(max(x - k, 0)) + mean_point[0],
+                          int(max(y - k, 0)) + mean_point[1],
                           mean_point[2])
 
     pos = numpy.array(stem_base_position)
@@ -191,7 +206,13 @@ def segment_path(voxels,
 
 
 def compute_all_shorted_path(graph, voxels_size):
-
+    """
+    Compute all the shorted path from the base position of the graph
+    position.
+    :param graph: networkx voxel graph of 3d center point position
+    :param voxels_size: voxels size of the graph voxels positions
+    :return: list of all the shorted path of the graph from the base
+    """
     # ==========================================================================
     # Get the high points in the matrix and the supposed base plant points
     x_stem, y_stem, z_stem = find_base_stem_position(graph.nodes(), voxels_size)

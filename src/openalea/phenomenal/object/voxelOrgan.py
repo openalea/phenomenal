@@ -9,11 +9,10 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import numpy
-
 from openalea.phenomenal.object import (VoxelSegment)
-
-import openalea.phenomenal.segmentation_3D.plane_interception
 # ==============================================================================
 
 
