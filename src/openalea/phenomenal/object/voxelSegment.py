@@ -9,6 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
 
 # ==============================================================================
 
@@ -21,7 +22,11 @@ class VoxelSegment(object):
         self.voxels_position = voxels_position
         self.closest_nodes = closest_nodes
 
-        # print self.voxels_position
+    def __copy__(self):
+        return type(self)(self.polyline,
+                          self.voxels_position,
+                          self.closest_nodes)
+
     def __len__(self):
         return len(self.voxels_position)
 

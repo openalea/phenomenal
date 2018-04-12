@@ -9,6 +9,7 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
 
 # ==============================================================================
 
