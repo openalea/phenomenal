@@ -9,8 +9,9 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from openalea.phenomenal.object import VoxelGrid
+from __future__ import division, print_function
 
+import openalea.phenomenal.object as phm_obj
 # ==============================================================================
 
 
@@ -20,11 +21,12 @@ def test_simply_working_1():
     voxels_position.append((0, 0, 0))
     voxels_position.append((10, 10, 10))
     voxels_size = 1
-    vpc = VoxelGrid(voxels_position, voxels_size)
+    vpc = phm_obj.VoxelGrid(voxels_position, voxels_size)
     pt_min, pt_max = vpc.bounding_box()
 
     assert pt_min == (0, 0, 0)
     assert pt_max == (10, 10, 10)
+
 
 if __name__ == "__main__":
     for func_name in dir():

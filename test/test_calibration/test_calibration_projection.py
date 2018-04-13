@@ -9,24 +9,25 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import numpy
 
-from openalea.phenomenal.data.plant_1 import (
-    plant_1_calibration_camera_side)
-
+import openalea.phenomenal.data as phm_data
 # ==============================================================================
 
 
 def test_array_pixel_coordinates():
-
-    calibration = plant_1_calibration_camera_side()
+    plant_number = 1
+    side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
 
     pt3d = (-322.20389648, 162.67521638, -4866.89129462)
-    pt_2d = calibration.pixel_coordinates(pt3d,
-                                          calibration._cam_width_image,
-                                          calibration._cam_height_image,
-                                          calibration._cam_focal_length_x,
-                                          calibration._cam_focal_length_y)
+    pt_2d = side_calibration.pixel_coordinates(
+        pt3d,
+        side_calibration._cam_width_image,
+        side_calibration._cam_height_image,
+        side_calibration._cam_focal_length_x,
+        side_calibration._cam_focal_length_y)
 
     assert pt_2d == (1337.425449561858, 1070.86217103428)
 
@@ -35,31 +36,33 @@ def test_array_pixel_coordinates():
                           [-322.20389648, 162.67521638, -4866.89129462],
                           [-322.20389648, 162.67521638, -4866.89129462]])
 
-    pts_2d = calibration.arr_pixel_coordinates(pts_3d,
-                                              calibration._cam_width_image,
-                                              calibration._cam_height_image,
-                                              calibration._cam_focal_length_x,
-                                              calibration._cam_focal_length_y)
+    pts_2d = side_calibration.arr_pixel_coordinates(
+        pts_3d,
+        side_calibration._cam_width_image,
+        side_calibration._cam_height_image,
+        side_calibration._cam_focal_length_x,
+        side_calibration._cam_focal_length_y)
 
     for pt_2d in pts_2d:
         assert tuple(pt_2d) == (1337.425449561858, 1070.86217103428)
 
     pts_3d = numpy.array([[-322.20389648, 162.67521638, -4866.89129462]])
 
-    pts_2d = calibration.arr_pixel_coordinates(pts_3d,
-                                              calibration._cam_width_image,
-                                              calibration._cam_height_image,
-                                              calibration._cam_focal_length_x,
-                                              calibration._cam_focal_length_y)
+    pts_2d = side_calibration.arr_pixel_coordinates(
+        pts_3d,
+        side_calibration._cam_width_image,
+        side_calibration._cam_height_image,
+        side_calibration._cam_focal_length_x,
+        side_calibration._cam_focal_length_y)
 
     for pt_2d in pts_2d:
         assert tuple(pt_2d) == (1337.425449561858, 1070.86217103428)
 
 
 def test_array_camera_frame_local_point():
-
-    calibration = plant_1_calibration_camera_side()
-    camera_frame = calibration.get_camera_frame()
+    plant_number = 1
+    side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
+    camera_frame = side_calibration.get_camera_frame()
 
     pt_3d = (-322.20389648, 162.67521638, -4866.89129462)
     result = camera_frame.local_point(pt_3d)
@@ -88,10 +91,10 @@ def test_array_camera_frame_local_point():
 
 
 def test_projection():
-
     angle = 0
-    calibration = plant_1_calibration_camera_side()
-    projection = calibration.get_projection(angle)
+    plant_number = 1
+    side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
+    projection = side_calibration.get_projection(angle)
 
     pts_3d = numpy.array([[-472, -472, 200],
                           [-472, -472, 200],
@@ -103,7 +106,6 @@ def test_projection():
     for pt_2d in result:
         assert tuple(pt_2d) == (1337.425449561377, 1070.8621710384346)
 
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():

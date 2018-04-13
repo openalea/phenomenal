@@ -5,7 +5,8 @@
 #
 #       Copyright or © or Copr. 2006 INRIA - CIRAD - INRA  
 #
-#       File author(s): Jerome Chopard <jerome.chopard@sophia.inria.fr>
+#       File author(s): Jerome Chopard
+#                       Simon Artzet
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -17,23 +18,38 @@
 This module defines a frame or coordinate system in space
 """
 # ==============================================================================
-from numpy import (array, zeros,
-                   dot, add, subtract, divide, tensordot,
-                   cross, transpose, sign)
+from __future__ import division, print_function
 
-from numpy.linalg import norm
+import numpy.linalg
+
+from numpy import (zeros,
+                   dot,
+                   add,
+                   subtract,
+                   divide,
+                   tensordot,
+                   cross,
+                   transpose,
+                   sign)
+
 
 # ==============================================================================
 
-__all__ = ["x_axis", "y_axis", "z_axis", "Frame",
-           "triangle_frame", "tetrahedron_frame", "mean_frame",
-           "change_frame_tensor2", "local_to_global3d"]
+__all__ = ["x_axis",
+           "y_axis",
+           "z_axis",
+           "Frame",
+           "triangle_frame",
+           "tetrahedron_frame",
+           "mean_frame",
+           "change_frame_tensor2",
+           "local_to_global3d"]
 
 # ==============================================================================
 
-x_axis = array([1., 0., 0.])
-y_axis = array([0., 1., 0.])
-z_axis = array([0., 0., 1.])
+x_axis = numpy.array([1., 0., 0.])
+y_axis = numpy.array([0., 1., 0.])
+z_axis = numpy.array([0., 0., 1.])
 
 
 class Frame(object):
@@ -53,14 +69,15 @@ class Frame(object):
                        in the global frame
         """
         if axes is None:
-            self._axes = array([(1., 0., 0.), (0., 1., 0.), (0., 0., 1.)])
+            self._axes = numpy.array([(1., 0., 0.), (0., 1., 0.), (0., 0., 1.)])
         else:
-            self._axes = array(tuple(divide(vec, norm(vec)) for vec in axes))
+            self._axes = numpy.array(tuple(divide(vec, numpy.linalg.norm(vec)) for
+                                     vec in axes))
 
         if origin is None:
             self._origin = zeros(3)
         else:
-            self._origin = array(origin)
+            self._origin = numpy.array(origin)
 
     ###############################################
     #
@@ -352,14 +369,14 @@ def mean_frame(frames):
     ori = reduce(add, (fr.origin() for fr in frames)) / len(frames)
 
     et = reduce(add, (fr.axis(2) for fr in frames)) / len(frames)
-    et = divide(et, norm(et))
+    et = divide(et, numpy.linalg.norm(et))
 
     vref = frames[0].axis(1)
     tmp = reduce(add, (fr.axis(1) * sign(vref, fr.axis(1)) for fr in frames))
     tmp /= len(frames)
 
     er = cross(tmp, et)
-    er = divide(er, norm(er))
+    er = divide(er, numpy.linalg.norm(er))
 
     es = cross(et, er)
 
@@ -383,16 +400,16 @@ def change_frame_tensor2(tensor, frame1, frame2):
     ori1, (er1, es1, et1) = tuple(frame1)
 
     er = frame2.local_vec(er1)
-    er = array((er[0], er[1], 0))
-    er = divide(er, norm(er))
+    er = numpy.array((er[0], er[1], 0))
+    er = divide(er, numpy.linalg.norm(er))
 
     es = frame2.local_vec(es1)
-    es = array((es[0], es[1], 0))
-    es = divide(es, norm(es))
+    es = numpy.array((es[0], es[1], 0))
+    es = divide(es, numpy.linalg.norm(es))
 
     et = cross(er, es)
 
-    fr = Frame((er, es, et), array((0, 0, 0)))
+    fr = Frame((er, es, et), numpy.array((0, 0, 0)))
 
     return fr.global_tensor2(tensor)
 

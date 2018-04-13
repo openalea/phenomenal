@@ -9,18 +9,12 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import numpy
 import os
 
-from openalea.phenomenal.multi_view_reconstruction.multi_view_reconstruction \
-    import reconstruction_3d
-
-from openalea.phenomenal.data.plant_1 import (
-    plant_1_chessboards,
-    plant_1_images_binarize)
-
-from openalea.phenomenal.calibration.calibration_opencv import (
-    CalibrationCameraOpenCv)
+import openalea.phenomenal.calibration as phm_calib
 # ==============================================================================
 
 
@@ -56,7 +50,7 @@ def test_calibration_opencv():
 
 
 def test_camera_opencv_parameters():
-    cp = CalibrationCameraOpenCv()
+    cp = phm_calib.CalibrationCameraOpenCv()
 
     assert (cp.focal_matrix == 0).all()
     assert (cp.distortion_coefficient == 0).all()
@@ -80,7 +74,8 @@ def test_camera_opencv_parameters():
     cp.translation_vectors[80] = numpy.zeros((3, 1))
 
     cp.dump('test_camera_opencv_parameters')
-    new_cp = CalibrationCameraOpenCv.load('test_camera_opencv_parameters')
+    new_cp = phm_calib.CalibrationCameraOpenCv.load(
+        'test_camera_opencv_parameters')
 
     assert new_cp.focal_matrix[0][0] == 42
     assert new_cp.focal_matrix[1][1] == 1
@@ -100,7 +95,6 @@ def test_camera_opencv_parameters():
 
     os.remove('test_camera_opencv_parameters.json')
 
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():

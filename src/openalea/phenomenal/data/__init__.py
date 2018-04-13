@@ -12,7 +12,6 @@
 from __future__ import division, print_function, absolute_import
 
 from .synthetic_data import *
-from .plant_1 import *
 from .data import *
 
 # ==============================================================================

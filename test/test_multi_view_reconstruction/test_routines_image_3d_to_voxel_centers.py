@@ -9,39 +9,37 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import numpy
 
-from openalea.phenomenal.object import(
-    Image3D,
-    VoxelGrid)
-
+import openalea.phenomenal.object as phm_obj
 # ==============================================================================
 
 
 def test_simply_working_1():
-    image_3d = Image3D.ones((10, 10, 10),
-                            voxels_size=16,
-                            dtype=numpy.uint8,
-                            world_coordinate=(1, 2, 3))
+    image_3d = phm_obj.Image3D.ones((10, 10, 10),
+                                    voxels_size=16,
+                                    dtype=numpy.uint8,
+                                    world_coordinate=(1, 2, 3))
 
-    vpc = VoxelGrid.from_image_3d(image_3d)
+    vpc = phm_obj.VoxelGrid.from_image_3d(image_3d)
 
-    assert vpc.voxels_position[0] == (1., 2., 3.)
-    assert vpc.voxels_position[1] == (1., 2., 19.)
+    assert tuple(vpc.voxels_position[0]) == (1., 2., 3.)
+    assert tuple(vpc.voxels_position[1]) == (1., 2., 19.)
     assert len(vpc.voxels_position) == image_3d.size
 
 
 def test_simply_working_2():
+    image_3d = phm_obj.Image3D.ones((10, 10, 10),
+                                    voxels_size=16,
+                                    dtype=numpy.uint8,
+                                    world_coordinate=(1, 2, 3))
 
-    image_3d = Image3D.ones((10, 10, 10),
-                            voxels_size=16,
-                            dtype=numpy.uint8,
-                            world_coordinate=(1, 2, 3))
+    vpc = phm_obj.VoxelGrid.from_image_3d(image_3d)
 
-    vpc = VoxelGrid.from_image_3d(image_3d)
-
-    assert vpc.voxels_position[0] == (1., 2., 3.)
-    assert vpc.voxels_position[1] == (1., 2., 19.)
+    assert tuple(vpc.voxels_position[0]) == (1., 2., 3.)
+    assert tuple(vpc.voxels_position[1]) == (1., 2., 19.)
     assert len(vpc.voxels_position) == image_3d.size
 
     im = vpc.to_image_3d()
