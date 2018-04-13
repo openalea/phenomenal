@@ -11,26 +11,18 @@
 # ==============================================================================
 from __future__ import division, print_function
 
-from openalea.phenomenal.segmentation_3D import (
-    voxel_graph_from_voxel_grid,
-    skeletonize,
-    maize_segmentation,
-    maize_analysis)
-
-from openalea.phenomenal.data import plant_1_voxel_grid
+import openalea.phenomenal.data as phm_data
+import openalea.phenomenal.segmentation as phm_seg
+# ==============================================================================
 
 
-def test_maize():
+def test_graph():
 
-    voxels_size = 10
-    vpc = plant_1_voxel_grid(voxels_size=voxels_size)
-
-    voxel_graph = voxel_graph_from_voxel_grid(vpc)
-    voxel_skeleton = skeletonize(voxel_graph.graph,
-                                 voxel_graph.voxels_size)
-
-    vms = maize_segmentation(voxel_skeleton, voxel_graph)
-    vmsi = maize_analysis(vms)
+    plant_number = 1
+    voxels_size = 16
+    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
+                                     voxels_size=voxels_size)
+    graph = phm_seg.voxel_graph_from_voxel_grid(voxel_grid)
 
 
 if __name__ == "__main__":

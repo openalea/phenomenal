@@ -29,8 +29,6 @@ def voxel_graph_from_voxel_grid(voxel_grid,
     voxels_size = int(voxel_grid.voxels_size)
     voxels_position = map(tuple, list(voxel_grid.voxels_position))
 
-    # voxels_position = voxel_grid.voxels_position
-
     # ==========================================================================
     # Graph creation
     graph = create_graph(voxels_position, voxels_size=voxels_size)

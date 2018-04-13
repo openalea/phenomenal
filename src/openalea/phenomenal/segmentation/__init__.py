@@ -19,6 +19,7 @@ from .graph import *
 from .maize_analysis import *
 from .maize_stem_detection import *
 from .maize_segmentation import *
+from .image_3d_routines import *
 # ==============================================================================
 
 __all__ = [s for s in dir() if not s.startswith('_')]

@@ -14,7 +14,7 @@ from __future__ import print_function, absolute_import
 import numpy
 import math
 
-from openalea.phenomenal.segmentation_3D import (
+from openalea.phenomenal.segmentation import (
     intercept_points_along_path_with_planes,
     max_distance_in_points)
 

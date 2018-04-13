@@ -16,7 +16,7 @@ import scipy.interpolate
 import scipy.spatial
 from scipy.signal import savgol_filter
 
-from openalea.phenomenal.segmentation_3D.peak_detection import (
+from openalea.phenomenal.segmentation.peak_detection import (
     peak_detection,
     smooth)
 

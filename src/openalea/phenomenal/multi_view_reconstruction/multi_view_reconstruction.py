@@ -78,13 +78,14 @@ def get_voxels_corners(voxels_position, voxels_size):
 def get_bounding_box_voxel_projected(voxels_position,
                                      voxels_size,
                                      projection):
+
     """
     Compute the bounding box value according the radius, angle and calibration
     parameters of point_3d projection
 
     Parameters
     ----------
-    voxels_position : (x, y, z)
+    voxels_position : numpy.ndarray([[x, y, z], ...])
         Center position of voxel
 
     voxels_size : float

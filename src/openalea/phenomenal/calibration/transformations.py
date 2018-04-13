@@ -201,7 +201,7 @@ import numpy
 
 __version__ = '2015.07.18'
 __docformat__ = 'restructuredtext en'
-__all__ = ()
+__all__ = ["rotation_matrix", "concatenate_matrices"]
 
 
 def identity_matrix():

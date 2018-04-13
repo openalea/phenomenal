@@ -9,15 +9,17 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import numpy
 
-from openalea.phenomenal.image import mean_image
+import openalea.phenomenal.image as phm_img
 # ==============================================================================
 
 
 def test_mean_image_wrong_parameters_1():
     try:
-        mean_image(None)
+        phm_img.mean_image(None)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -26,7 +28,7 @@ def test_mean_image_wrong_parameters_1():
 
 def test_mean_image_wrong_parameters_2():
     try:
-        mean_image(list())
+        phm_img.mean_image(list())
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -35,7 +37,7 @@ def test_mean_image_wrong_parameters_2():
 
 def test_mean_image_wrong_parameters_3():
     try:
-        mean_image([[]])
+        phm_img.mean_image([[]])
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -44,7 +46,7 @@ def test_mean_image_wrong_parameters_3():
 
 def test_mean_image_wrong_parameters_4():
     try:
-        mean_image([[]])
+        phm_img.mean_image([[]])
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -54,7 +56,7 @@ def test_mean_image_wrong_parameters_4():
 def test_mean_image_wrong_parameters_5():
     try:
         image = numpy.zeros((25, 25, 3))
-        mean_image(image)
+        phm_img.mean_image(image)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -64,7 +66,7 @@ def test_mean_image_wrong_parameters_5():
 def test_mean_image_wrong_parameters_6():
     try:
         image = numpy.zeros((25, 25, 3))
-        mean_image(image)
+        phm_img.mean_image(image)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -77,7 +79,7 @@ def test_mean_image_wrong_parameters_7():
     images.append(numpy.zeros((15, 15, 3)))
 
     try:
-        mean_image(images)
+        phm_img.mean_image(images)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -89,7 +91,7 @@ def test_mean_image_1():
     for i in range(10):
         images.append(numpy.zeros((25, 25, 3)))
 
-    image = mean_image(images)
+    image = phm_img.mean_image(images)
     assert numpy.count_nonzero(image) == 0
     assert image.ndim == 3
     assert image.shape == (25, 25, 3)
@@ -100,7 +102,7 @@ def test_mean_image_2():
     for i in range(10):
         images.append(numpy.ones((25, 25, 3)))
 
-    image = mean_image(images)
+    image = phm_img.mean_image(images)
 
     assert image.ndim == 3
     assert image.shape == (25, 25, 3)
@@ -114,17 +116,14 @@ def test_mean_image_3():
     for i in range(1, 10):
         images.append(numpy.zeros((25, 25, 3)))
 
-    image = mean_image(images)
+    image = phm_img.mean_image(images)
     assert (image == 0.1).all()
     assert image.ndim == 3
     assert image.shape == (25, 25, 3)
 
-
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():
         if func_name.startswith('test_'):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()
-

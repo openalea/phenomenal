@@ -9,15 +9,17 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import numpy
 
-from openalea.phenomenal.data.plant_1 import plant_1_images_chessboard
-from openalea.phenomenal.calibration.chessboard import Chessboard
+import openalea.phenomenal.data as phm_data
+import openalea.phenomenal.calibration as phm_calib
 # ==============================================================================
 
 
 def test_chessboard_1():
-    chess = Chessboard(50, (8, 6))
+    chess = phm_calib.Chessboard(50, (8, 6))
 
     assert chess.square_size == 50
     assert chess.shape == (8, 6)
@@ -25,7 +27,7 @@ def test_chessboard_1():
 
 
 def test_chessboard_2():
-    chess = Chessboard(50, (8, 6))
+    chess = phm_calib.Chessboard(50, (8, 6))
 
     result = chess.get_corners_local_3d()
 
@@ -49,9 +51,11 @@ def test_chessboard_2():
 
 
 def test_chessboard_3():
-    chess = Chessboard(50, (8, 6))
+    plant_number = 1
 
-    images = plant_1_images_chessboard()
+    chess = phm_calib.Chessboard(50, (8, 6))
+
+    images = phm_data.chessboard_images(plant_number=plant_number)
 
     found = chess.detect_corners("side", 42, images['side'][42])
 
@@ -64,11 +68,9 @@ def test_chessboard_3():
     else:
         assert False
 
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():
         if func_name.startswith('test_'):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()
-

@@ -9,11 +9,11 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import os.path
-import sys
 import glob
 import subprocess
-
 # ==============================================================================
 
 
@@ -67,8 +67,6 @@ def test_notebook():
 
     t_directory(dirname_example)
 
-
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():

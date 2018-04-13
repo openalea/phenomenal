@@ -9,22 +9,23 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import numpy
 
-from openalea.phenomenal.image import (skeletonize_thinning,
-                                       skeletonize_erode_dilate)
-
+import openalea.phenomenal.image as phm_img
+# ==============================================================================
 
 
 def test_skeletonize_thinning():
     image = numpy.zeros((99, 101))
     image[20:40, 20:40] = 255
 
-    ske = skeletonize_thinning(image)
+    ske = phm_img.skeletonize_thinning(image)
     assert ske.shape == image.shape
     assert numpy.count_nonzero(ske) > 0
 
-    ske = skeletonize_erode_dilate(image)
+    ske = phm_img.skeletonize_erode_dilate(image)
     assert ske.shape == image.shape
     assert numpy.count_nonzero(ske) > 0
 

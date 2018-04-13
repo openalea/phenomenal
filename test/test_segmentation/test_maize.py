@@ -9,25 +9,27 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import os
+from __future__ import division, print_function
 
-from openalea.phenomenal.data import plant_1_voxel_grid
-from openalea.phenomenal.object import VoxelGrid, Image3D
+import openalea.phenomenal.data as phm_data
+import openalea.phenomenal.segmentation as phm_seg
 # ==============================================================================
 
 
-def test_read_write():
+def test_maize():
 
-    voxels_size = 8
-    vpc = plant_1_voxel_grid(voxels_size)
+    plant_number = 1
+    voxels_size = 16
+    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
+                                     voxels_size=voxels_size)
 
-    filename = 'test.npz'
-    vpc.write_to_npz(filename)
-    vg = VoxelGrid.read_from_npz(filename)
-    os.remove(filename)
+    voxel_graph = phm_seg.voxel_graph_from_voxel_grid(voxel_grid)
+    voxel_skeleton = phm_seg.skeletonize(voxel_graph.graph,
+                                         voxel_graph.voxels_size)
 
+    vms = phm_seg.maize_segmentation(voxel_skeleton, voxel_graph)
+    vmsi = phm_seg.maize_analysis(vms)
 
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():

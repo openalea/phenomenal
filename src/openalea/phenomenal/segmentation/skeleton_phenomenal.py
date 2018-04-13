@@ -15,7 +15,7 @@ import numpy
 import networkx
 
 
-from openalea.phenomenal.segmentation_3D import (
+from openalea.phenomenal.segmentation import (
     intercept_points_along_path_with_planes)
 
 import openalea.phenomenal.multi_view_reconstruction

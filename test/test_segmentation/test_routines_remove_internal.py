@@ -9,23 +9,28 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from openalea.phenomenal.data import (
-    plant_1_voxel_grid)
+from __future__ import division, print_function
 
-from openalea.phenomenal.segmentation_3D import (
-    skeletonize,
-    voxel_graph_from_voxel_grid)
+import numpy
+
+import openalea.phenomenal.object as phm_obj
+import openalea.phenomenal.segmentation as phm_seg
 # ==============================================================================
 
 
-def test_running():
-    import time
+def test_simply_working_1():
 
-    t0 = time.time()
-    voxels_size = 16
-    vpc = plant_1_voxel_grid(voxels_size=voxels_size)
-    voxel_graph = voxel_graph_from_voxel_grid(vpc)
-    voxel_skeleton = skeletonize(voxel_graph.graph, voxel_graph.voxels_size)
+    image_3d = phm_obj.Image3D.ones((10, 10, 10))
+    im = phm_seg.remove_internal(image_3d)
+
+    xx, yy, zz = numpy.where(im)
+
+    # 6 Faces :
+    #   -> 10 * 10 * 2  = 200   =>
+    #   -> 10 * 8 * 2   = 160   => 200 + 160 + 128 = 488
+    #   -> 8 * 8 * 2    = 128   =>
+    assert len(xx) == 488
+
 
 if __name__ == "__main__":
     for func_name in dir():

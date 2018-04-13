@@ -9,28 +9,33 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import networkx
 import numpy
 import time
 
-from openalea.phenomenal.segmentation_3D import (
-    create_graph)
-
-from openalea.phenomenal.data import (
-    plant_1_voxel_grid)
-
+import openalea.phenomenal.data as phm_data
+import openalea.phenomenal.segmentation as phm_seg
 # ==============================================================================
 
 
 def test_time_graph():
 
+    plant_number = 1
     voxels_size = 16
-    vpc = plant_1_voxel_grid(voxels_size=voxels_size)
+    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
+                                     voxels_size=voxels_size)
+    # print(voxel_grid.voxels_position)
+    voxels_size = int(voxel_grid.voxels_size)
+    voxels_position = map(tuple, list(voxel_grid.voxels_position))
+
     number_of_loop = 2
     best_time = float('inf')
     for i in range(number_of_loop):
         t0 = time.time()
-        graph = create_graph(vpc.voxels_position, vpc.voxels_size)
+        graph = phm_seg.create_graph(voxels_position,
+                                     voxels_size)
         best_time = min(best_time, float(time.time() - t0))
 
     print("{number_of_loop} loop, best of {number_of_loop}: "
@@ -51,7 +56,7 @@ def test_graph_1():
                        (5, 5, 5)]
 
     voxels_size = 1
-    graph = create_graph(voxels_position, voxels_size=voxels_size)
+    graph = phm_seg.create_graph(voxels_position, voxels_size=voxels_size)
 
     print("Number of nodes : {nb_nodes}".format(nb_nodes=len(graph.nodes())))
 
@@ -68,6 +73,7 @@ def test_graph_1():
     ll = numpy.linalg.norm(numpy.array((0, 0, 0)) - numpy.array((2, 2, 2)))
 
     assert l == ll
+
 
 if __name__ == "__main__":
     for func_name in dir():

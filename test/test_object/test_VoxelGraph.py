@@ -9,9 +9,11 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import networkx
 
-from openalea.phenomenal.object import VoxelGraph
+import openalea.phenomenal.object as phm_obj
 # ==============================================================================
 
 
@@ -41,15 +43,12 @@ def get_test_graph():
 
     graph.add_nodes_from(nodes)
 
-    return VoxelGraph(graph, voxels_size)
+    return phm_obj.VoxelGraph(graph, voxels_size)
 
 
 def test_read_write():
-
     vg = get_test_graph()
 
-
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():

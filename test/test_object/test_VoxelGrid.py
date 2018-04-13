@@ -9,27 +9,26 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import numpy
+from __future__ import division, print_function
 
-from openalea.phenomenal.object.image3D import Image3D
-from openalea.phenomenal.segmentation_3D.routines import remove_internal
+import os
+
+import openalea.phenomenal.data as phm_data
+import openalea.phenomenal.object as phm_obj
 # ==============================================================================
 
 
-def test_simply_working_1():
+def test_read_write():
 
-    image_3d = Image3D.ones((10, 10, 10))
+    plant_number = 1
+    voxels_size = 8
+    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
+                                     voxels_size=voxels_size)
 
-    im = remove_internal(image_3d)
-
-    xx, yy, zz = numpy.where(im)
-
-    # 6 Faces :
-    #   -> 10 * 10 * 2  = 200   =>
-    #   -> 10 * 8 * 2   = 160   => 200 + 160 + 128 = 488
-    #   -> 8 * 8 * 2    = 128   =>
-    #
-    assert len(xx) == 488
+    filename = 'test.npz'
+    voxel_grid.write_to_npz(filename)
+    vg = phm_obj.VoxelGrid.read_from_npz(filename)
+    os.remove(filename)
 
 
 if __name__ == "__main__":
