@@ -1,17 +1,20 @@
 ============
 Calibration
 ============
-
+.. automodule:: openalea.phenomenal.calibration
 .. currentmodule:: openalea.phenomenal.calibration
 
-Sub-package for objects used in calibration.
+Target & Chessboard
+===================
+.. autosummary::
+   :toctree: generated/
+
+   Target
+   Chessboard
+
 
 Calibration
 ===========
-
-.. automodule:: openalea.phenomenal.calibration.calibration
-.. currentmodule:: openalea.phenomenal.calibration.calibration
-
 .. autosummary::
    :toctree: generated/
 
@@ -21,10 +24,6 @@ Calibration
 
 Calibration Manual
 ==================
-
-.. automodule:: openalea.phenomenal.calibration.calibration_manual
-.. currentmodule:: openalea.phenomenal.calibration.calibration_manual
-
 .. autosummary::
    :toctree: generated/
 
@@ -33,10 +32,6 @@ Calibration Manual
 
 Calibration OpenCV
 ==================
-
-.. automodule:: openalea.phenomenal.calibration.calibration_opencv
-.. currentmodule:: openalea.phenomenal.calibration.calibration_opencv
-
 .. autosummary::
    :toctree: generated/
 
@@ -44,10 +39,6 @@ Calibration OpenCV
 
 Frame
 =====
-
-.. automodule:: openalea.phenomenal.calibration.frame
-.. currentmodule:: openalea.phenomenal.calibration
-
 .. autosummary::
    :toctree: generated/
 

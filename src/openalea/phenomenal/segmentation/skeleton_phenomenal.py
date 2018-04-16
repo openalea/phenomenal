@@ -6,21 +6,15 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
 import numpy
 import networkx
 
-
-from openalea.phenomenal.segmentation import (
-    intercept_points_along_path_with_planes)
-
-import openalea.phenomenal.multi_view_reconstruction
-
-from openalea.phenomenal.object import (VoxelSkeleton, VoxelGrid, VoxelSegment)
+from ..multi_view_reconstruction import project_voxel_centers_on_image
+from .plane_interception import intercept_points_along_path_with_planes
+from ..object import (VoxelSkeleton, VoxelGrid, VoxelSegment)
 # ==============================================================================
 
 
@@ -38,8 +32,7 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
 
             vp = numpy.array(list(vs.voxels_position))
 
-            d[(i, j)] = openalea.phenomenal.multi_view_reconstruction.\
-                project_voxel_centers_on_image(
+            d[(i, j)] = project_voxel_centers_on_image(
                 vp,
                 voxel_skeleton.voxels_size,
                 iv.image.shape,

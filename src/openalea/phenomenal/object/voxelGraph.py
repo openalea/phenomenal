@@ -6,8 +6,6 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -15,10 +13,8 @@ import os
 import json
 import networkx
 import numpy
-import scipy.sparse
-
-from networkx.readwrite.graphml import (read_graphml, write_graphml)
-from networkx.readwrite.json_graph import (node_link_data, node_link_graph)
+import networkx.readwrite.graphml
+import networkx.readwrite.json_graph
 # ==============================================================================
 
 
@@ -69,11 +65,12 @@ class VoxelGraph(object):
                 os.path.dirname(filename))):
             os.makedirs(os.path.dirname(filename))
 
-        write_graphml(self.graph, filename)
+        networkx.readwrite.graphml.write_graphml(self.graph, filename)
 
     @staticmethod
     def read_from_graphml(filename, voxels_size):
-        graph = read_graphml(filename, node_type=tuple)
+        graph = networkx.readwrite.graphml.read_graphml(filename,
+                                                        node_type=tuple)
 
         return VoxelGraph(graph, voxels_size)
 
@@ -85,7 +82,8 @@ class VoxelGraph(object):
         with open(filename, 'w') as f:
 
             data = dict()
-            data['graph'] = node_link_data(self.graph)
+            data['graph'] = networkx.readwrite.json_graph.node_link_data(
+                self.graph)
             data['voxels_size'] = self.voxels_size
             json.dump(data, f)
 
@@ -100,7 +98,7 @@ class VoxelGraph(object):
             for node in data_graph['nodes']:
                 node['id'] = tuple(node['id'])
 
-            graph = node_link_graph(data_graph)
+            graph = networkx.readwrite.json_graph.node_link_graph(data_graph)
             voxels_size = data['voxels_size']
 
             return VoxelGraph(graph, voxels_size)

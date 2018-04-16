@@ -1,16 +1,14 @@
 ==============
 Data Structure
 ==============
-
 .. currentmodule:: openalea.phenomenal.object
-
-Sub-package for objects used in data structure.
-
+.. automodule:: openalea.phenomenal.object
 
 .. autosummary::
    :toctree: generated/
 
    Image3D
+   ImageView
    VoxelGrid
    VoxelGraph
    VoxelOrgan

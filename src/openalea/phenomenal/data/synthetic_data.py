@@ -6,15 +6,13 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import numpy
 import cv2
-from openalea.phenomenal.object import (
-    Image3D,
-    VoxelGrid)
 
+from ..object import Image3D, VoxelGrid
 # ==============================================================================
 
 __all__ = ["bin_images_with_circle", "build_cube"]

@@ -6,22 +6,17 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import cv2
 import glob
 import os
 import collections
 import pkg_resources
 
-from openalea.phenomenal.calibration import (
-    CalibrationCamera,
-    Chessboard)
-
-from openalea.phenomenal.object import (
-    VoxelGrid)
-
+from ..calibration import (Chessboard, CalibrationCamera)
+from ..object import VoxelGrid
 # ==============================================================================
 
 
@@ -153,6 +148,7 @@ def calibrations(plant_number=0):
     """
     According to the plant number return a dict[id_camera] of camera
     calibration object
+
     :param plant_number: number of the plant desired (int)
     :return: dict[id_camera] of camera calibration object
     """
@@ -194,9 +190,7 @@ def tutorial_data_binarization_mask():
     """
     Return the list of required images to process the notebook tutorial on
     binarization. The images are already load with opencv in unchanged format.
-    images =    ["mask_hsv.png",
-                 "mask_clean_noise.png",
-                 "mask_mean_shift.png"]
+    images = ["mask_hsv.png", "mask_clean_noise.png", "mask_mean_shift.png"]
 
     :return: list of image
     """

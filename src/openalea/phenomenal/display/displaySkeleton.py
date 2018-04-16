@@ -6,15 +6,9 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import vtk
-import random
-
-from ._order_color_map import order_color_map
 from .displayVoxel import DisplayVoxel
 # ==============================================================================
 

@@ -6,18 +6,17 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import vtk
 import vtk.util.numpy_support
 import numpy
 import math
 import skimage.measure
 
-from openalea.phenomenal.mesh.vtk_transformation import (
-    from_vtk_poly_data_to_vertices_faces,
-    from_numpy_matrix_to_vtk_image_data)
+from .vtk_transformation import (from_vtk_poly_data_to_vertices_faces,
+                                 from_numpy_matrix_to_vtk_image_data)
 # ==============================================================================
 
 __all__ = ["meshing",
