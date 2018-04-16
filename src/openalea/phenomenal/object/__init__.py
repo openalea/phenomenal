@@ -1,11 +1,30 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
+# ==============================================================================
+"""
+==============
+Data Structure
+==============
+.. currentmodule:: openalea.phenomenal.object
+
+.. autosummary::
+   :toctree: generated/
+
+   Image3D
+   ImageView
+   VoxelGrid
+   VoxelGraph
+   VoxelOrgan
+   VoxelSegment
+   VoxelSkeleton
+   ImageView
+"""
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 

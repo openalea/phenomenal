@@ -16,13 +16,14 @@ The exact API of all functions and classes, as given by the docstrings. The API
 documents expected types and allowed features for all functions, and all
 parameters available for the algorithms.
 
-.. toctree::
+.. autosummary::
+   :toctree: generated/
 
-    image
-    data
-    calibration
-    object
-    display
-    multi_view_reconstruction
-    mesh
-    segmentation
+   openalea.phenomenal.image
+   openalea.phenomenal.data
+   openalea.phenomenal.calibration
+   openalea.phenomenal.object
+   openalea.phenomenal.display
+   openalea.phenomenal.multi_view_reconstruction
+   openalea.phenomenal.mesh
+   openalea.phenomenal.segmentation
