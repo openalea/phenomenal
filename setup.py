@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       File author(s):
 #

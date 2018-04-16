@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -29,6 +29,12 @@ class VoxelSkeleton(object):
         for voxel_segment in self.voxel_segments:
             voxels_position = voxels_position.union(
                 voxel_segment.voxels_position)
+        return numpy.array(list(voxels_position))
+
+    def voxels_position_polyline(self):
+        voxels_position = set()
+        for voxel_segment in self.voxel_segments:
+            voxels_position = voxels_position.union(voxel_segment.polyline)
         return numpy.array(list(voxels_position))
 
     def volume(self):
