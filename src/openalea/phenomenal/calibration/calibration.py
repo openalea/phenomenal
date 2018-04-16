@@ -11,16 +11,15 @@
 where a target is rotating instead of a plant in a picture cabin.
 """
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import json
 import math
 import numpy
 import scipy.optimize
 
-from openalea.phenomenal.calibration.frame import (
-    Frame, x_axis, y_axis, z_axis)
-
-from openalea.phenomenal.calibration.transformations import (
-    concatenate_matrices, rotation_matrix)
+from .frame import (Frame, x_axis, y_axis, z_axis)
+from .transformations import (concatenate_matrices, rotation_matrix)
 # ==============================================================================
 
 __all__ = ["CalibrationCamera",
@@ -345,8 +344,8 @@ class RegistrationCamera(CalibrationCamera):
                 best_parameters = parameters
 
             if self._verbose:
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -424,8 +423,8 @@ class RegistrationCamera(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -474,7 +473,7 @@ class RegistrationCameraPosition(CalibrationCamera):
                 numpy.array(pt) - self._ref_target_points_2d[i]).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -504,8 +503,8 @@ class RegistrationCameraPosition(CalibrationCamera):
                 best_parameters = parameters
 
             if self._verbose:
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -581,8 +580,8 @@ class RegistrationCameraPosition(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -664,8 +663,8 @@ class RegistrationCameraFocal(CalibrationCamera):
                 best_parameters = parameters
 
             if self._verbose:
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -734,8 +733,8 @@ class RegistrationCameraFocal(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -782,7 +781,7 @@ class CalibrationCameraTop(CalibrationCamera):
                 numpy.array(pts) - self._ref_target_points_2d[i], axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -815,8 +814,8 @@ class CalibrationCameraTop(CalibrationCamera):
                 best_parameters = parameters
 
             if self._verbose:
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -894,8 +893,8 @@ class CalibrationCameraTop(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -971,7 +970,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -1015,8 +1014,8 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
 
             if self._verbose:
                 err = self.fit_function(parameters)
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -1072,8 +1071,8 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
         return err / self._ref_number
@@ -1299,7 +1298,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -1351,8 +1350,8 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
 
             if self._verbose:
                 err = self.fit_function(parameters)
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -1422,8 +1421,8 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -1703,7 +1702,7 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -1756,8 +1755,8 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
 
             if self._verbose:
                 err = self.fit_function(parameters)
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -1917,8 +1916,8 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -2116,7 +2115,7 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -2172,8 +2171,8 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
 
             if self._verbose:
                 err = self.fit_function(parameters)
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -2326,8 +2325,8 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 

@@ -6,18 +6,14 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import print_function, absolute_import
 
 import numpy
 import math
 
-from openalea.phenomenal.segmentation import (
-    intercept_points_along_path_with_planes,
-    max_distance_in_points)
-
+from .plane_interception import (intercept_points_along_path_with_planes,
+                                 max_distance_in_points)
 # ==============================================================================
 
 

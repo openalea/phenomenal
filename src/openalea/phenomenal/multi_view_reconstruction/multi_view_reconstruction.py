@@ -6,21 +6,18 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import division, print_function
 
 import math
-from numba import jit
+import numba
 import cv2
 import scipy.spatial
 import collections
 import numpy
 import sklearn.neighbors
 
-from openalea.phenomenal.object import VoxelGrid
-
+from ..object import VoxelGrid
 # ==============================================================================
 # Class
 
@@ -548,7 +545,7 @@ def reconstruction_inconsistent(image_views, stages):
 
 # ==============================================================================
 
-@jit()
+@numba.jit()
 def get_integrale_image(img):
     a = numpy.zeros_like(img, dtype=int)
     for y, x in numpy.ndindex(a.shape):

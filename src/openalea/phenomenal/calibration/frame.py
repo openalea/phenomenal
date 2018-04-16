@@ -3,7 +3,7 @@
 #
 #       frame : mechanics package
 #
-#       Copyright or © or Copr. 2006 INRIA - CIRAD - INRA  
+#       Copyright INRIA - CIRAD - INRA
 #
 #       File author(s): Jerome Chopard
 #                       Simon Artzet
@@ -11,14 +11,12 @@
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
-# 
-#       VPlants WebSite : https://gforge.inria.fr/projects/vplants/
 # ==============================================================================
 """
 This module defines a frame or coordinate system in space
 """
 # ==============================================================================
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 
 import numpy.linalg
 

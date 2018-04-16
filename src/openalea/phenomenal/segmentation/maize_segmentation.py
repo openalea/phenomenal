@@ -6,19 +6,14 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
-from __future__ import print_function, absolute_import
+from __future__ import print_function, division, absolute_import
 
 import numpy
 import networkx
 
 from .maize_stem_detection import stem_detection
-import openalea.phenomenal.object.voxelOrgan
-import openalea.phenomenal.object.voxelSegmentation
-import openalea.phenomenal.object.voxelSegment
-
+from ..object import VoxelOrgan, VoxelSegment, VoxelSegmentation
 # ==============================================================================
 
 
@@ -139,7 +134,7 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
     # ==========================================================================
     # Define mature & cornet leaf
 
-    organ_unknown = openalea.phenomenal.object.VoxelOrgan("unknown")
+    organ_unknown = VoxelOrgan("unknown")
     organ_unknown.add_voxel_segment(voxels_remain, list())
 
     mature_organs, growing_organs = list(), list()
@@ -149,15 +144,14 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
             organ_unknown.voxel_segments.append(vs.copy())
             continue
 
-        vs = openalea.phenomenal.object.voxelSegment.VoxelSegment(
-            vs.polyline, vs.leaf_voxel, vs.closest_nodes)
+        vs = VoxelSegment(vs.polyline, vs.leaf_voxel, vs.closest_nodes)
 
         if len(stem_top.intersection(vs.polyline)) > 0:
-            vo = openalea.phenomenal.object.VoxelOrgan("growing_leaf")
+            vo = VoxelOrgan("growing_leaf")
             vo.voxel_segments.append(vs)
             growing_organs.append(vo)
         else:
-            vo = openalea.phenomenal.object.VoxelOrgan("mature_leaf")
+            vo = VoxelOrgan("mature_leaf")
             vo.voxel_segments.append(vs)
             mature_organs.append(vo)
 
@@ -252,10 +246,10 @@ def maize_segmentation(voxel_skeleton, voxel_graph):
     # ==========================================================================
     ## Build the object to return
 
-    vms = openalea.phenomenal.object.VoxelSegmentation(voxels_size)
+    vms = VoxelSegmentation(voxels_size)
     vms.voxel_organs.append(organ_unknown)
 
-    organ_stem = openalea.phenomenal.object.VoxelOrgan("stem")
+    organ_stem = VoxelOrgan("stem")
     organ_stem.add_voxel_segment(stem_voxel, stem_path)
     vms.voxel_organs.append(organ_stem)
 

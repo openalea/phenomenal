@@ -6,8 +6,6 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -20,8 +18,6 @@ from .voxelGraph import VoxelGraph
 from .voxelSkeleton import VoxelSkeleton
 from .voxelOrgan import VoxelOrgan
 from .voxelSegmentation import VoxelSegmentation
-
-
 # ==============================================================================
 
 __all__ = [s for s in dir() if not s.startswith('_')]

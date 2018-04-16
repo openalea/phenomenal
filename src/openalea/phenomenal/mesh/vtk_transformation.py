@@ -6,13 +6,12 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
-import vtk
+from __future__ import division, print_function, absolute_import
 
-from vtk.util.numpy_support import get_vtk_array_type
-from operator import itemgetter
+import vtk
+import vtk.util.numpy_support
+import operator
 # ==============================================================================
 
 __all__ = ["from_vertices_faces_to_vtk_poly_data",
@@ -58,7 +57,7 @@ def from_vtk_poly_data_to_vertices_faces(vtk_poly_data):
     faces = vtk.util.numpy_support.vtk_to_numpy(
         vtk_poly_data.GetPolys().GetData())
 
-    faces = faces.reshape((len(faces) / 4, 4))
+    faces = faces.reshape((len(faces) // 4, 4))
 
     return vertices, faces[:, 1:]
 
@@ -71,11 +70,13 @@ def from_numpy_matrix_to_vtk_image_data(data_matrix):
     image_data.SetSpacing(1.0, 1.0, 1.0)
 
     if vtk.VTK_MAJOR_VERSION < 6:
-        image_data.SetScalarType(get_vtk_array_type(data_matrix.dtype))
+        image_data.SetScalarType(vtk.util.numpy_support.get_vtk_array_type(
+            data_matrix.dtype))
         image_data.SetNumberOfScalarComponents(1)
         image_data.AllocateScalars()
     else:
-        image_data.AllocateScalars(get_vtk_array_type(data_matrix.dtype), 1)
+        image_data.AllocateScalars(vtk.util.numpy_support.get_vtk_array_type(
+            data_matrix.dtype), 1)
 
     lx, ly, lz = image_data.GetDimensions()
 
@@ -112,14 +113,14 @@ def from_vtk_image_data_to_voxels_center(image_data,
 
 def from_voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
 
-    x_min = min(voxel_centers, key=itemgetter(0))[0]
-    x_max = max(voxel_centers, key=itemgetter(0))[0]
+    x_min = min(voxel_centers, key=operator.itemgetter(0))[0]
+    x_max = max(voxel_centers, key=operator.itemgetter(0))[0]
 
-    y_min = min(voxel_centers, key=itemgetter(1))[1]
-    y_max = max(voxel_centers, key=itemgetter(1))[1]
+    y_min = min(voxel_centers, key=operator.itemgetter(1))[1]
+    y_max = max(voxel_centers, key=operator.itemgetter(1))[1]
 
-    z_min = min(voxel_centers, key=itemgetter(2))[2]
-    z_max = max(voxel_centers, key=itemgetter(2))[2]
+    z_min = min(voxel_centers, key=operator.itemgetter(2))[2]
+    z_max = max(voxel_centers, key=operator.itemgetter(2))[2]
 
     nx, ny, nz = (int((x_max - x_min) / voxel_size + 1),
                   int((y_max - y_min) / voxel_size + 1),
@@ -146,4 +147,3 @@ def from_voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
             nx, ny, nz, 0, 1)
 
     return image_data, (x_min, y_min, z_min)
-

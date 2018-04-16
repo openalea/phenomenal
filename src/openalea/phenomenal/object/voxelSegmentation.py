@@ -6,8 +6,6 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -15,7 +13,7 @@ import ast
 import os
 import gzip
 
-import openalea.phenomenal.object.voxelOrgan
+from .voxelOrgan import VoxelOrgan
 # ==============================================================================
 
 
@@ -150,8 +148,7 @@ class VoxelSegmentation(object):
 
             for dvo in data['voxel_organs']:
 
-                vo = openalea.phenomenal.object.voxelOrgan.VoxelOrgan(
-                    dvo['label'])
+                vo = VoxelOrgan(dvo['label'])
 
                 if 'sub_label' in dvo:
                     vo.sub_label = dvo['sub_label']

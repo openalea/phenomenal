@@ -13,9 +13,10 @@
 Algorithms to threshold image
 """
 # ==============================================================================
+from __future__ import division, print_function
+
 import cv2
 import numpy
-
 # ==============================================================================
 
 

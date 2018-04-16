@@ -3,15 +3,10 @@ Mesh
 ====
 
 .. currentmodule:: openalea.phenomenal.mesh
-
-Sub-package for objects used in mesh.
+.. automodule:: openalea.phenomenal.mesh
 
 Algorithms
 ==========
-
-.. automodule:: openalea.phenomenal.mesh.algorithms
-.. currentmodule:: openalea.phenomenal.mesh
-
 .. autosummary::
    :toctree: generated/
 
@@ -22,10 +17,6 @@ Algorithms
 
 Formats
 =======
-
-.. automodule:: openalea.phenomenal.mesh.formats
-.. currentmodule:: openalea.phenomenal.mesh
-
 .. autosummary::
    :toctree: generated/
 
@@ -36,10 +27,6 @@ Formats
 
 Routines
 ========
-
-.. automodule:: openalea.phenomenal.mesh.routines
-.. currentmodule:: openalea.phenomenal.mesh
-
 .. autosummary::
    :toctree: generated/
 
@@ -49,10 +36,6 @@ Routines
 
 VTK Transformation
 ==================
-
-.. automodule:: openalea.phenomenal.mesh.vtk_transformation
-.. currentmodule:: openalea.phenomenal.mesh
-
 .. autosummary::
    :toctree: generated/
 

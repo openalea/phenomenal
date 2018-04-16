@@ -6,13 +6,14 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
-from ._order_color_map import order_color_map
+from __future__ import division, print_function
 
 import numpy
 import ipyvolume
+
+from ._order_color_map import order_color_map
+# ==============================================================================
 
 
 def plot_voxel(voxels_position, size_ratio=2.0, marker="box", color="green"):
@@ -28,9 +29,9 @@ def plot_voxel(voxels_position, size_ratio=2.0, marker="box", color="green"):
 def show_voxel_grid(vg,
                     size_ratio=2,
                     color='green',
-                    width=800, height=1000):
+                    width=500, height=500):
 
-    ipyvolume.figure(width=width, height=height)
+    ipyvolume.figure(width=width, height=height, controls=True, lighting=True)
     plot_voxel(vg.voxels_position, size_ratio=size_ratio, color=color)
     ipyvolume.style.use(['default', 'minimal'])
     ipyvolume.view(0, 90)
@@ -39,7 +40,7 @@ def show_voxel_grid(vg,
 
 def show_mesh(vertices, faces, color='green'):
 
-    ipyvolume.figure(width=800, height=1000)
+    ipyvolume.figure(width=800, height=1200)
     ipyvolume.style.use(['default', 'minimal'])
     ipyvolume.view(0, 90)
 
@@ -52,7 +53,7 @@ def show_skeleton(voxel_skeleton,
                   with_voxel=True,
                   size_ratio=2.0,
                   color='green',
-                  width=800, height=1000):
+                  width=500, height=500):
 
     ipyvolume.figure(width=width, height=height)
     ipyvolume.style.use(['default', 'minimal'])
@@ -84,7 +85,7 @@ def show_skeleton(voxel_skeleton,
 
 def show_segmentation(voxel_segmentation,
                       size_ratio=2.0,
-                      width=800, height=1000):
+                      width=500, height=500):
 
     ipyvolume.figure(width=width, height=height)
     ipyvolume.style.use(['default', 'minimal'])

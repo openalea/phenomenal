@@ -6,9 +6,9 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import math
 import numpy
 # ==============================================================================
@@ -139,10 +139,10 @@ class Organ(object):
         return False
 
     def print_value(self):
-        print "Number of segment : ", len(self.segments)
-        print "Height : ", self.get_height()
-        print "Width : ", self.get_width()
-        print "Global position : ", self.global_position()
+        print("Number of segment : ", len(self.segments))
+        print("Height : ", self.get_height())
+        print("Width : ", self.get_width())
+        print("Global position : ", self.global_position())
 
 
 class Stem(Organ):
@@ -306,7 +306,7 @@ def compute_orientation(vector1, vector2):
 
 def build_stem_2(segments):
 
-    print "Number of segments : ", len(segments)
+    print("Number of segments : ", len(segments))
 
     list_list = list()
     for segment_1 in segments[:]:
@@ -384,7 +384,7 @@ def get_possible_stem_segment(segments):
             possible_stem_segment.append(segment)
             continue
 
-    print "Candidates stem : ", len(possible_stem_segment)
+    print("Candidates stem : ", len(possible_stem_segment))
 
     return possible_stem_segment
 
@@ -467,7 +467,7 @@ def segment_leaves(segments, stem):
 
             leaves.append(my_leaf)
 
-    print "Number of leaf : ", len(leaves)
+    print("Number of leaf : ", len(leaves))
 
     return leaves, segments
 

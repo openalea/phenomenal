@@ -6,20 +6,15 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
 import networkx
 import numpy
 import sklearn.feature_extraction.image
-from sklearn.neighbors import NearestNeighbors
+import sklearn.neighbors
 
-from openalea.phenomenal.object import (
-    VoxelGraph,
-    VoxelGrid)
-
+from ..object import (VoxelGraph, VoxelGrid)
 # ==============================================================================
 
 
@@ -55,7 +50,7 @@ def connect_all_node_with_nearest_neighbors(graph):
 
     while len(nodes_connected_component) > 0:
 
-        neigh = NearestNeighbors(n_neighbors=1)
+        neigh = sklearn.neighbors.NearestNeighbors(n_neighbors=1)
         neigh.fit(nodes_src)
 
         min_dist = float('inf')

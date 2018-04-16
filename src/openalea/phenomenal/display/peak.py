@@ -6,28 +6,21 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function
+
 import matplotlib.pyplot
-import numpy
-
 # ==============================================================================
 
 
-def show_values(list_values, list_color,
-                plot_peak=True):
+def show_values(list_values, list_color):
 
     matplotlib.pyplot.figure()
     for values, color in zip(list_values, list_color):
-        plot_values(values, color,
-                    plot_peak=plot_peak)
+        plot_values(values, color)
     matplotlib.pyplot.show()
 
 
-def plot_values(values, color,
-                plot_peak=False):
+def plot_values(values, color):
 
     matplotlib.pyplot.plot(range(len(values)), values, color)
-
-

@@ -6,20 +6,20 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+"""
+    This module is actually deprecated
+"""
+# ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import networkx
 import numpy
 
-from openalea.phenomenal.segmentation import (
-    voxel_graph_from_voxel_grid,
-    skeletonize)
-
+from .graph import voxel_graph_from_voxel_grid
+from .skeleton_phenomenal import skeletonize
 # ==============================================================================
-"""
-This module is actually deprecated
-"""
+
 
 def find_base_stem_position_octree(octree, voxel_size, neighbor_size=50):
     k = neighbor_size * voxel_size

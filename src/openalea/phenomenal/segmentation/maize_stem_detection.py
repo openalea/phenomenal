@@ -6,25 +6,19 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import print_function, absolute_import
 
 import numpy
 import scipy.interpolate
 import scipy.spatial
-from scipy.signal import savgol_filter
+import scipy.signal
 
-from openalea.phenomenal.segmentation.peak_detection import (
-    peak_detection,
-    smooth)
-
+from .peak_detection import (peak_detection, smooth)
 from .plane_interception import (
     intercept_points_along_path_with_planes,
     intercept_points_along_polyline_with_ball,
     max_distance_in_points)
-
 # ==============================================================================
 
 
@@ -101,7 +95,7 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
 
     window_length = max(4, len(nodes_length) / 8)
     window_length = window_length + 1 if window_length % 2 == 0 else window_length
-    smooth_distances = savgol_filter(
+    smooth_distances = scipy.signal.savgol_filter(
         numpy.array(distances), window_length=window_length, polyorder=2)
 
     # ==========================================================================

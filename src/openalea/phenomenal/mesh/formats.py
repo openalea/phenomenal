@@ -6,17 +6,16 @@
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import vtk
 import os
 import json
 import numpy
 
-from openalea.phenomenal.mesh.vtk_transformation import (
-    from_vertices_faces_to_vtk_poly_data,
-    from_vtk_poly_data_to_vertices_faces)
+from .vtk_transformation import (from_vertices_faces_to_vtk_poly_data,
+                                 from_vtk_poly_data_to_vertices_faces)
 # ==============================================================================
 
 __all__ = ["write_vertices_faces_to_ply_file",
