@@ -14,12 +14,11 @@ import numpy
 import sklearn.feature_extraction.image
 import sklearn.neighbors
 
-from ..object import (VoxelGraph, VoxelGrid)
+from ..object import VoxelGrid
 # ==============================================================================
 
 
-def voxel_graph_from_voxel_grid(voxel_grid,
-                                connect_all_point=True):
+def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
 
     voxels_size = int(voxel_grid.voxels_size)
     voxels_position = map(tuple, list(voxel_grid.voxels_position))
@@ -35,7 +34,7 @@ def voxel_graph_from_voxel_grid(voxel_grid,
         graph = max(networkx.connected_component_subgraphs(graph, copy=False),
                     key=len)
 
-    return VoxelGraph(graph, voxels_size)
+    return graph
 
 
 def connect_all_node_with_nearest_neighbors(graph):

@@ -23,11 +23,9 @@ def test_maize():
     voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
                                      voxels_size=voxels_size)
 
-    voxel_graph = phm_seg.voxel_graph_from_voxel_grid(voxel_grid)
-    voxel_skeleton = phm_seg.skeletonize(voxel_graph.graph,
-                                         voxel_graph.voxels_size)
-
-    vms = phm_seg.maize_segmentation(voxel_skeleton, voxel_graph)
+    graph = phm_seg.graph_from_voxel_grid(voxel_grid)
+    voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph)
+    vms = phm_seg.maize_segmentation(voxel_skeleton, graph)
     vmsi = phm_seg.maize_analysis(vms)
 
 

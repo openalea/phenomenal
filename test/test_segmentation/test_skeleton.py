@@ -25,18 +25,16 @@ def test_running():
     voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
                                      voxels_size=voxels_size)
 
-    voxel_graph = phm_seg.voxel_graph_from_voxel_grid(voxel_grid)
-    voxel_skeleton = phm_seg.skeletonize(voxel_graph.graph,
-                                         voxel_graph.voxels_size)
+    graph = phm_seg.graph_from_voxel_grid(voxel_grid)
+    voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph)
 
-    image_views = list()
+    image_projection = list()
     for angle in [0, 120, 270]:
         projection = calibrations["side"].get_projection(angle)
-        image_views.append(
-            phm_obj.ImageView(bin_images["side"][angle], projection))
+        image_projection.append((bin_images["side"][angle], projection))
 
     voxel_skeleton_reduced = phm_seg.segment_reduction(
-        voxel_skeleton, image_views, tolerance=1, nb_min_pixel=100)
+        voxel_skeleton, image_projection, tolerance=1, nb_min_pixel=100)
 
 
 if __name__ == "__main__":

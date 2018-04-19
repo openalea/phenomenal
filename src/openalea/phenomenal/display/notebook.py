@@ -28,7 +28,8 @@ def plot_voxel(voxels_position, marker="box", color="green", size=2.0):
 def show_voxel_grid(voxel_grid,
                     color='green',
                     size=2,
-                    width=500, height=500):
+                    width=500,
+                    height=500):
 
     ipyvolume.figure(width=width, height=height, controls=True, lighting=True)
     plot_voxel(voxel_grid.voxels_position, size=size, color=color)

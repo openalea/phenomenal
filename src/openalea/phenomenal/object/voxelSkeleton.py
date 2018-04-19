@@ -42,4 +42,3 @@ class VoxelSkeleton(object):
 
     def to_voxel_grid(self):
         return VoxelGrid(self.voxels_position(), self.voxels_size)
-

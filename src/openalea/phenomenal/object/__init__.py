@@ -33,7 +33,6 @@ from .image3D import Image3D
 from .voxelOctree import VoxelOctree
 from .voxelGrid import VoxelGrid
 from .voxelSegment import VoxelSegment
-from .voxelGraph import VoxelGraph
 from .voxelSkeleton import VoxelSkeleton
 from .voxelOrgan import VoxelOrgan
 from .voxelSegmentation import VoxelSegmentation

@@ -18,7 +18,8 @@ from ..object import (VoxelSkeleton, VoxelGrid, VoxelSegment)
 # ==============================================================================
 
 
-def segment_reduction(voxel_skeleton, image_views, tolerance=4,
+def segment_reduction(voxel_skeleton, image_projection,
+                      tolerance=4,
                       nb_min_pixel=1):
 
     # Ordonner
@@ -28,15 +29,15 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
     d = dict()
     tips = dict()
     for i, vs in enumerate(orderer_voxel_segments):
-        for j, iv in enumerate(image_views):
+        for j, (image, projection) in enumerate(image_projection):
 
             vp = numpy.array(list(vs.voxels_position))
 
             d[(i, j)] = project_voxel_centers_on_image(
                 vp,
                 voxel_skeleton.voxels_size,
-                iv.image.shape,
-                iv.projection)
+                image.shape,
+                projection)
 
             # vp = numpy.array([vs.polyline[-1]])
             # tips[(i, j)] = openalea.phenomenal.multi_view_reconstruction. \
@@ -47,9 +48,9 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
             #     iv.projection)
 
     list_negative_image = list()
-    for iv in image_views:
+    for image, projection in image_projection:
 
-        negative_image = iv.image.copy()
+        negative_image = image.copy()
         negative_image[negative_image > 0] = 125
         negative_image[negative_image == 0] = 255
         negative_image[negative_image == 125] = 0
@@ -61,11 +62,11 @@ def segment_reduction(voxel_skeleton, image_views, tolerance=4,
 
         # print i, index_removed
         weight = 0
-        for j, iv in enumerate(image_views):
+        for j, (image, projection) in enumerate(image_projection):
             im1 = d[(i, j)]
             # im1 = tips[(i, j)]
 
-            im2 = numpy.zeros(iv.image.shape, dtype=numpy.int16)
+            im2 = numpy.zeros(image.shape, dtype=numpy.int16)
             for k, _ in enumerate(orderer_voxel_segments):
                 if k != i and k not in index_removed:
                     im2 += d[(k, j)]
@@ -219,13 +220,14 @@ def compute_all_shorted_path(graph, voxels_size):
     return all_shorted_path_to_stem_base
 
 
-def skeletonize(graph, voxels_size, subgraph=None):
+def skeletonize(voxel_grid, graph, subgraph=None):
 
     if subgraph is None:
         subgraph = graph
 
-    all_shorted_path_to_stem_base = compute_all_shorted_path(subgraph,
-                                                             voxels_size)
+    voxels_size = voxel_grid.voxels_size
+    all_shorted_path_to_stem_base = compute_all_shorted_path(
+        subgraph, voxels_size)
 
     # ==========================================================================
     voxels_position_remain = subgraph.nodes()
