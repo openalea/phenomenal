@@ -22,7 +22,7 @@ def test_graph():
     voxels_size = 16
     voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
                                      voxels_size=voxels_size)
-    graph = phm_seg.voxel_graph_from_voxel_grid(voxel_grid)
+    graph = phm_seg.graph_from_voxel_grid(voxel_grid)
 
 
 if __name__ == "__main__":

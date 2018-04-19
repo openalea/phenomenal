@@ -1,11 +1,11 @@
-name: phenome
+name: phenomenal
 channels:
-  - conda-forge
   - openalea
+  - conda-forge
   - defaults
 dependencies:
   - numba
-  - python
+  - python=2.7
   - setuptools
   - openalea.deploy
   - openalea.core
