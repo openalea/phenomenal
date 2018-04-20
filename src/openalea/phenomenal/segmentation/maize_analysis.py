@@ -289,6 +289,17 @@ def maize_growing_leaf_analysis(vo, voxels_size,
 
 
 def maize_analysis(maize_segmented):
+    """ Update info fiel of the VoxelSegmentation object with the analysis
+    result computed. Each organ are a specific algorithm to extract information.
+
+    Parameters
+    ----------
+    maize_segmented : VoxelSegmentation
+
+    Returns
+    -------
+    maize_segmented: VoxelSegmentation
+    """
 
     voxels_size = maize_segmented.voxels_size
     for vo in maize_segmented.voxel_organs:

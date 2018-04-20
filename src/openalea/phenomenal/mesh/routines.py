@@ -13,13 +13,37 @@ import numpy
 import cv2
 # ==============================================================================
 
-__all__ = ["normals", "centers"]
+__all__ = ["normals",
+           "centers",
+           "project_mesh_on_image",
+           "median_color_from_images"]
 
 # ==============================================================================
 
 
-def compute_color_for_mesh(vertices, faces, calibration, images):
+def median_color_from_images(vertices, faces, calibration, images):
+    """ Return the colors of each faces according the median of their color list
+    in the faces projected images.
 
+    Parameters
+    ----------
+
+    vertices : [(x, y, z), ...]
+        Spatial coordinates for unique mesh vertices.
+
+    faces : [(V1, V2, V3), ...]
+        Define triangular faces via referencing vertex indices from vertices.
+        This algorithm specifically outputs triangles, so each face has exactly
+        three indices
+
+    calibration: projection function
+
+    images: images[id_camera][angle] = imaga
+
+    Returns
+    -------
+
+    """
     height, length, _ = images["side"][0].shape
     img = numpy.zeros((height, length), dtype=numpy.uint8)
 
@@ -109,7 +133,16 @@ def centers(vertices, faces):
 
 
 def project_mesh_on_image(vertices, faces, shape_image, projection):
+    """ Return a binary image resulting of the projection of a mesh
+    object representation (vertices, faces) with a projection
+    function.
 
+    :param vertices: list of 3d points position
+    :param faces: list of 3-tuple index vertices
+    :param shape_image: shape of the image
+    :param projection: projection function
+    :return: 2D numpy array
+    """
     vertices = numpy.array(vertices)
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=numpy.uint8)

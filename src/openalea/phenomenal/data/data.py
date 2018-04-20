@@ -21,13 +21,19 @@ from ..object import VoxelGrid
 
 
 def _path_images(plant_number=0, dtype="bin"):
-
-    """
-    According to the plant number return a dict[id_camera][angle] containing
+    """ According to the plant number return a dict[id_camera][angle] containing
     filename of file.
-    :param plant_number: number of the plant desired (int)
-    :param dtype: bin, raw or chessboard
-    :return: dict[id_camera][angle] of filename
+
+    Parameters
+    ----------
+    plant_number : int
+
+    dtype :  "bin" or "raw" or "chessboard"
+
+    Returns
+    -------
+    d : dict of dict of string
+        dict[id_camera][angle] = filename
     """
     data_directory = pkg_resources.resource_filename(
         'openalea.phenomenal', 'data/plant_{}/{}/'.format(
@@ -43,11 +49,17 @@ def _path_images(plant_number=0, dtype="bin"):
 
 
 def path_bin_images(plant_number=0):
-    """
-    According to the plant number return a dict[id_camera][angle] containing
+    """ According to the plant number return a dict[id_camera][angle] containing
     filename of the binary image.
-    :param plant_number: number of the plant desired (int)
-    :return: dict[id_camera][angle] of filename
+
+    Parameters
+    ----------
+    plant_number : int
+        Number of the plant desired
+    Returns
+    -------
+    d : dict of dict of string
+        dict[id_camera][angle] = filename
     """
     return _path_images(plant_number=plant_number, dtype="bin")
 

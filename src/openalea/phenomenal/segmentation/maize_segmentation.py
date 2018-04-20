@@ -17,7 +17,7 @@ from ..object import VoxelOrgan, VoxelSegment, VoxelSegmentation
 # ==============================================================================
 
 
-def maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
+def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
     k = neighbor_size * voxel_size
 
     def func_if_true_add_node(node):
@@ -39,30 +39,7 @@ def maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
     return numpy.array(l)[index]
 
 
-def get_neighbors(graph, voxels):
-
-    voxels_neighbors = list()
-    for node in voxels:
-        voxels_neighbors += graph[node].keys()
-
-    return set(voxels_neighbors) - voxels
-
-
-def get_highest_segment(voxel_segments):
-
-    z_max = float("-inf")
-    highest_voxel_segment = None
-    for voxel_segment in voxel_segments:
-        z = numpy.max(numpy.array(voxel_segment.polyline)[-1, 2])
-
-        if z > z_max:
-            z_max = z
-            highest_voxel_segment = voxel_segment
-
-    return highest_voxel_segment
-
-
-def merge(graph, voxels, remaining_voxels, percentage=50):
+def _merge(graph, voxels, remaining_voxels, percentage=50):
 
     voxels_neighbors = list()
     for node in voxels:
@@ -82,14 +59,50 @@ def merge(graph, voxels, remaining_voxels, percentage=50):
 
     return voxels, voxels_neighbors, connected_components
 
+# ==============================================================================
+
+
+def get_highest_segment(segments):
+    """ Return the segments with the highest polyline point according to z axis
+
+    Parameters
+    ----------
+    segments : list
+        list of VoxelSegment
+    Returns
+    -------
+    highest_voxel_segment : VoxelSegment
+    """
+    z_max = float("-inf")
+    highest_voxel_segment = None
+    for segment in segments:
+        z = numpy.max(numpy.array(segment.polyline)[-1, 2])
+
+        if z > z_max:
+            z_max = z
+            highest_voxel_segment = segment
+
+    return highest_voxel_segment
+
 
 def maize_segmentation(voxel_skeleton, graph):
+    """ Labeling segments in voxel_skeleton into 4 label.
+    The label are "stem", "growing leaf", "mature_leaf", "unknown".
+    Parameters
+    ----------
+    voxel_skeleton : openalea.phenomenal.object.VoxelSkeleton
+    graph : networkx.Graph
+
+    Returns
+    -------
+    vms : VoxelSegmentation
+    """
 
     # ==========================================================================
     # Select the more highest segment on the skeleton
     voxels_size = voxel_skeleton.voxels_size
 
-    highest_voxel_segment = get_highest_segment(voxel_skeleton.voxel_segments)
+    highest_voxel_segment = get_highest_segment(voxel_skeleton.segments)
 
     stem_segment_voxel = highest_voxel_segment.voxels_position
     stem_segment_path = highest_voxel_segment.polyline
@@ -102,7 +115,7 @@ def maize_segmentation(voxel_skeleton, graph):
     # ==========================================================================
     # Remove stem voxels from segment voxels
 
-    for vs in voxel_skeleton.voxel_segments:
+    for vs in voxel_skeleton.segments:
 
         leaf_voxel = None
         subgraph = graph.subgraph(vs.voxels_position - stem_voxel)
@@ -124,7 +137,7 @@ def maize_segmentation(voxel_skeleton, graph):
 
     # ==========================================================================
     # Merge remains voxels of the not stem
-    for vs in voxel_skeleton.voxel_segments:
+    for vs in voxel_skeleton.segments:
         not_stem_voxel -= vs.leaf_voxel
 
     voxels_remain = not_stem_voxel
@@ -136,7 +149,7 @@ def maize_segmentation(voxel_skeleton, graph):
     organ_unknown.add_voxel_segment(voxels_remain, list())
 
     mature_organs, growing_organs = list(), list()
-    for vs in voxel_skeleton.voxel_segments:
+    for vs in voxel_skeleton.segments:
 
         if len(vs.real_polyline) == 0:
             organ_unknown.voxel_segments.append(vs.copy())

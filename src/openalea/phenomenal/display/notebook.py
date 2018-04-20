@@ -74,7 +74,7 @@ def show_skeleton(voxel_skeleton,
     voxels_position = voxel_skeleton.voxels_position_polyline()
     plot_voxel(voxels_position, size=size, color=polyline_color)
 
-    for vs in voxel_skeleton.voxel_segments:
+    for vs in voxel_skeleton.segments:
         for color, index in [("blue", 0), ("red", -1)]:
             plot_voxel(numpy.array([vs.polyline[index]]),
                        size=size * 2,

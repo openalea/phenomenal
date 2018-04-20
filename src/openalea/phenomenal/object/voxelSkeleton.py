@@ -17,24 +17,21 @@ from .voxelGrid import VoxelGrid
 
 class VoxelSkeleton(object):
 
-    def __init__(self, voxels_size):
-        self.voxel_segments = list()
+    def __init__(self, segments, voxels_size):
+        self.segments = segments
         self.voxels_size = voxels_size
-
-    def add_voxel_segment(self, voxel_segment):
-        self.voxel_segments.append(voxel_segment)
 
     def voxels_position(self):
         voxels_position = set()
-        for voxel_segment in self.voxel_segments:
+        for segment in self.segments:
             voxels_position = voxels_position.union(
-                voxel_segment.voxels_position)
+                segment.voxels_position)
         return numpy.array(list(voxels_position))
 
     def voxels_position_polyline(self):
         voxels_position = set()
-        for voxel_segment in self.voxel_segments:
-            voxels_position = voxels_position.union(voxel_segment.polyline)
+        for segment in self.segments:
+            voxels_position = voxels_position.union(segment.polyline)
         return numpy.array(list(voxels_position))
 
     def volume(self):

@@ -29,23 +29,20 @@ VoxelsStage = collections.namedtuple(
 # ==============================================================================
 
 def get_voxels_corners(voxels_position, voxels_size):
-    """
-    According the voxels position and their size, return a numpy array
-    containing tfor each input voxels the position of the 8 corners.
+    """ According the voxels position and their size, return a numpy array
+    containing for each input voxels the position of the 8 corners.
 
     Parameters
     ----------
-    voxels_position : numpy.array([[x, y, z], ...]
+    voxels_position : numpy.ndarray
         Center position of the voxels
 
     voxels_size : float
-        diameter size of the voxels
+        Diameter size of the voxels
 
     Returns
     -------
-    numpy.array([[x, y, z], ...] :
-         List of 8 tuple position
-
+    a : numpy.array
     """
 
     r = voxels_size / 2.0
@@ -76,13 +73,12 @@ def get_bounding_box_voxel_projected(voxels_position,
                                      voxels_size,
                                      projection):
 
-    """
-    Compute the bounding box value according the radius, angle and calibration
-    parameters of point_3d projection
+    """ Compute the bounding box value according the radius, angle and
+    calibration parameters of point_3d projection
 
     Parameters
     ----------
-    voxels_position : numpy.ndarray([[x, y, z], ...])
+    voxels_position : numpy.ndarray
         Center position of voxel
 
     voxels_size : float
@@ -90,11 +86,12 @@ def get_bounding_box_voxel_projected(voxels_position,
 
     projection : function ((x, y, z)) -> (x, y)
         Function of projection who take 1 argument (tuple of position (x, y, z))
-         and return this position 2D (x, y)
+        and return this position 2D (x, y)
 
     Returns
     -------
-    out : (x_min, x_max, y_min, y_max)
+    bbox : numpy.ndarray
+        [[x_min, x_max, y_min, y_max], ...]
         Containing min and max value of point_3d projection in x and y axes.
     """
 
@@ -112,8 +109,7 @@ def get_bounding_box_voxel_projected(voxels_position,
 
 
 def split_voxels_in_eight(voxels):
-    """
-    Split each voxel in 8 en return the numpy.array position
+    """ Split each voxel in 8 en return the numpy.array position
 
           _ _ _ _ _ _ _ _ _                              _ _ _ _ _ _ _ _ _
         /                  /|                          /        /         /|
@@ -130,14 +126,14 @@ def split_voxels_in_eight(voxels):
 
     Parameters
     ----------
-    voxels : collections.namedtuple("Voxels", ['position', 'size'])
-    where position is numpy.array([[x, y, z], ...] containing the center
-    position of each voxel and size the diameter size value (float) of each
-    voxel.
+    voxels : Voxels
+        Where position is a numpy.array([[x, y, z], ...] containing the center
+        position of each voxels and size the diameter size value (float) of each
+        voxels.
 
     Returns
     -------
-    voxels : collections.namedtuple("Voxels", ['position', 'size'])
+    voxels : Voxels
     """
     if len(voxels.position) == 0:
         return Voxels(voxels.position, voxels.size / 2.0)
@@ -368,7 +364,7 @@ def kept_visible_voxel(voxels_position,
         Center position of the voxels
 
     voxels_size : float
-        diameter size of the voxels
+        Diameter size of the voxels
 
     image_views : [(image, projection), ...]
         List of tuple (image, projection) where image is a binary image
@@ -379,14 +375,11 @@ def kept_visible_voxel(voxels_position,
     error_tolerance : int, optional
         Number of image will be ignored if the projected voxel is not visible.
 
-    image_int: Integrale image of the binary image (optimization)
+    int_images: Integral image of the binary image (optimization)
 
     Returns
     -------
-    out : collections.deque
-        List of visible voxel projected on each image according
-        the error_tolerance
-
+    out : VoxelsStage
     """
 
     photo_consistent = numpy.zeros((len(voxels_position), ),  dtype=int)
@@ -584,29 +577,23 @@ def reconstruction_3d(image_views,
         representation of this image
 
     voxels_size : float, optional
-        Size of side geometry of voxel that each voxel will have
+        Diameter size of the voxels
 
     error_tolerance : int, optional
 
     voxel_center_origin : (x, y, z), optional
         Center position of the first original voxel, who will be split.
 
-    world_size: int, optional
+    start_voxel_size: int, optional
         Minimum size that the origin voxel size must include at beginning
 
-    voxels_position : collections.deque, optional
+    voxels_position : numpy.ndarray, optional
         List of first original voxel who will be split. If None, a list is
         create with the voxel_center_origin value.
 
-    verbose : bool, optional
-        If True, print for each iteration of split, number of voxel before and
-        after projection on images
-
     Returns
     -------
-    out : collections.deque
-        List of visible voxel projected on each image according
-        the error_tolerance
+    out : VoxelGrid
     """
 
     if len(image_views) == 0:
@@ -663,15 +650,12 @@ def project_voxel_centers_on_image(voxels_position,
 
     Parameters
     ----------
-    voxels_position : [(x, y, z)]
-        cList (collections.deque) of center position of voxel
-
+    voxels_position : numpy.ndarray
+        Voxels center position [[x, y, z], ...]
     voxels_size : float
-        Size of side geometry of voxel
-
-    shape_image: Tuple
-        size height and length of the image target projected
-
+        Diameter size of the voxels
+    shape_image: 2-tuple
+        Size height and length of the image target projected
     projection : function ((x, y, z)) -> (x, y)
         Function of projection who take 1 argument (tuple of position (x, y, z))
          and return this position 2D (x, y)
@@ -681,8 +665,6 @@ def project_voxel_centers_on_image(voxels_position,
     out : numpy.ndarray
         Binary image
     """
-
-    voxels_position = numpy.array(voxels_position)
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=numpy.uint8)
 
@@ -757,6 +739,8 @@ def project_voxels_position_on_image(voxels_position,
         cv2.fillConvexPoly(img, points[hull.vertices], 255)
 
     return img
+
+# ==============================================================================
 
 
 def image_error(img_ref, img_src, precision=2):

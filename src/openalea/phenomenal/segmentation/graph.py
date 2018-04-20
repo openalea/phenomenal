@@ -18,27 +18,17 @@ from ..object import VoxelGrid
 # ==============================================================================
 
 
-def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
-
-    voxels_size = int(voxel_grid.voxels_size)
-    voxels_position = map(tuple, list(voxel_grid.voxels_position))
-
-    # ==========================================================================
-    # Graph creation
-    graph = create_graph(voxels_position, voxels_size=voxels_size)
-
-    if connect_all_point:
-        graph = connect_all_node_with_nearest_neighbors(graph)
-    else:
-        # Keep the biggest connected components
-        graph = max(networkx.connected_component_subgraphs(graph, copy=False),
-                    key=len)
-
-    return graph
-
-
 def connect_all_node_with_nearest_neighbors(graph):
+    """ Connect all the nodes in the graph together
 
+    Parameters
+    ----------
+    graph : networkx.Graph
+
+    Returns
+    -------
+    graph : networkx.Graph
+    """
     connected_component = list(networkx.connected_component_subgraphs(
         graph, copy=False))
 
@@ -73,7 +63,19 @@ def connect_all_node_with_nearest_neighbors(graph):
     return graph
 
 
-def create_graph(voxels_position, voxels_size=1):
+def create_graph(voxels_position, voxels_size):
+    """ Create a networkx.graph from voxels positions and voxels_size
+
+    Parameters
+    ----------
+    voxels_position : list
+        list of 3-tuple
+    voxels_size : int
+        Diameter size of voxels
+    Returns
+    -------
+    graph: networkx.Graph
+    """
 
     graph = networkx.Graph()
     graph.add_nodes_from(voxels_position)
@@ -126,8 +128,20 @@ def create_graph(voxels_position, voxels_size=1):
     return graph
 
 
-def create_graph_with_sklearn(voxels_position, voxels_size):
+def _create_graph_with_sklearn(voxels_position, voxels_size):
+    """
+    Implementation not used to create a graph with scikit-learn function
 
+    Parameters
+    ----------
+    voxels_position
+    voxels_size
+
+    Returns
+    -------
+    graph : networkx.Graph
+
+    """
     vpc = VoxelGrid(voxels_position, voxels_size)
 
     image = vpc.to_image_3d()
@@ -144,26 +158,43 @@ def create_graph_with_sklearn(voxels_position, voxels_size):
     return graph
 
 
-def add_nodes(graph, voxels_position, voxels_size=1):
+def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
+    """
+    Return a weigthed networkx graph builded from a voxel_grid object where
+    each node of the graph is the tuple position of the voxels center.
+    Each node are edged, if present, to the nodes depict their
+    26-neigbors in the voxel_grid. The weigth of each edge is the distance
+    between their voxel center position.
 
-    graph.add_nodes_from(voxels_position)
+    If connect_all_point is False, then the graph returned is the subgraph
+    with the biggest connected components. If connect_all_point is True,
+    the subgraph of connected components are edged via the closest neighbors
+    between the subgraph with a weigth equal to the distance between their
+    position.
 
-    vs = voxels_size
-    ijk = [(-vs, -vs, -vs), (-vs, -vs, 0), (-vs, -vs, vs),
-           (-vs, 0, -vs), (-vs, 0, 0), (-vs, 0, vs),
-           (-vs, vs, -vs), (-vs, vs, 0), (-vs, vs, vs),
-           (0, -vs, -vs), (0, -vs, 0), (0, -vs, vs),
-           (0, 0, -vs), (0, 0, 0), (0, 0, vs),
-           (0, vs, -vs), (0, vs, 0), (0, vs, vs),
-           (vs, -vs, -vs), (vs, -vs, 0), (vs, -vs, vs),
-           (vs, 0, -vs), (vs, 0, 0), (vs, 0, vs),
-           (vs, vs, -vs), (vs, vs, 0), (vs, vs, vs)]
+    Parameters
+    ----------
+    voxel_grid : VoxelGrid
+    connect_all_point : bool, optional
 
-    for pt in voxels_position:
-        for i, j, k in ijk:
-            pos = pt[0] + i, pt[1] + j, pt[2] + k
-            if graph.has_node(pos):
-                d = numpy.linalg.norm(numpy.array(pt) - numpy.array(pos))
-                graph.add_edge(pt, pos, weight=d)
+    Returns
+    -------
+    graph : networkx.Graph
+    """
+    voxels_size = int(voxel_grid.voxels_size)
+    voxels_position = map(tuple, list(voxel_grid.voxels_position))
+
+    # ==========================================================================
+    # Graph creation
+    graph = create_graph(voxels_position, voxels_size)
+
+    if connect_all_point:
+        graph = connect_all_node_with_nearest_neighbors(graph)
+    else:
+        # Keep the biggest connected components
+        graph = max(networkx.connected_component_subgraphs(graph, copy=False),
+                    key=len)
 
     return graph
+
+

@@ -35,8 +35,6 @@ Synthetic data (for test)
 
    bin_images_with_circle
    build_cube
-
-
 """
 # ==============================================================================
 from __future__ import division, print_function, absolute_import

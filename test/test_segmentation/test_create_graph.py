@@ -15,6 +15,7 @@ import networkx
 import numpy
 import time
 
+import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.segmentation as phm_seg
 # ==============================================================================
@@ -29,13 +30,13 @@ def test_time_graph():
     # print(voxel_grid.voxels_position)
     voxels_size = int(voxel_grid.voxels_size)
     voxels_position = map(tuple, list(voxel_grid.voxels_position))
+    voxel_grid = phm_obj.VoxelGrid(voxels_position, voxels_size)
 
     number_of_loop = 2
     best_time = float('inf')
     for i in range(number_of_loop):
         t0 = time.time()
-        graph = phm_seg.create_graph(voxels_position,
-                                     voxels_size)
+        graph = phm_seg.graph_from_voxel_grid(voxel_grid)
         best_time = min(best_time, float(time.time() - t0))
 
     print("{number_of_loop} loop, best of {number_of_loop}: "
@@ -56,7 +57,8 @@ def test_graph_1():
                        (5, 5, 5)]
 
     voxels_size = 1
-    graph = phm_seg.create_graph(voxels_position, voxels_size=voxels_size)
+    voxel_grid = phm_obj.VoxelGrid(voxels_position, voxels_size)
+    graph = phm_seg.graph_from_voxel_grid(voxel_grid)
 
     print("Number of nodes : {nb_nodes}".format(nb_nodes=len(graph.nodes())))
 

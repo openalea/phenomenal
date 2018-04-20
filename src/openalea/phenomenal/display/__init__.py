@@ -11,6 +11,7 @@
 =======
 Display
 =======
+
 .. currentmodule:: openalea.phenomenal.display
 
 Image

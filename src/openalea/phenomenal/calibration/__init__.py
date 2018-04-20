@@ -31,21 +31,6 @@ Calibration
    CalibrationCameraTop
    CalibrationCameraSideWith2TargetYXZ
 
-Calibration Manual
-==================
-.. autosummary::
-   :toctree: generated/
-
-   EnvironmentCamera
-   CalibrationCameraManual
-
-Calibration OpenCV
-==================
-.. autosummary::
-   :toctree: generated/
-
-   CalibrationCameraOpenCv
-
 Frame
 =====
 .. autosummary::
