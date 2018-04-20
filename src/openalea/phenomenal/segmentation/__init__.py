@@ -8,9 +8,9 @@
 #
 # ==============================================================================
 """
-========================
-3D Segmentation Function
-========================
+===============
+3D Segmentation
+===============
 
 .. currentmodule:: openalea.phenomenal.segmentation
 
@@ -19,11 +19,11 @@ Skeletonization
 .. autosummary::
     :toctree: generated/
 
+    connect_all_node_with_nearest_neighbors
     create_graph
-    add_nodes
+    graph_from_voxel_grid
     skeletonize
     segment_reduction
-    skeletonize_thinning
 
 Maize Segmentation
 ==================
@@ -31,8 +31,7 @@ Maize Segmentation
     :toctree: generated/
 
     maize_segmentation
-    peak_detection
-
+    maize_analysis
 """
 # ==============================================================================
 from __future__ import division, print_function, absolute_import

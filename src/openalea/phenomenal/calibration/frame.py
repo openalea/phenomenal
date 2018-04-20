@@ -1,8 +1,6 @@
 # -*- python -*-
 # -*- coding: latin-1 -*-
 #
-#       frame : mechanics package
-#
 #       Copyright INRIA - CIRAD - INRA
 #
 #       File author(s): Jerome Chopard
@@ -29,8 +27,6 @@ from numpy import (zeros,
                    cross,
                    transpose,
                    sign)
-
-
 # ==============================================================================
 
 __all__ = ["x_axis",

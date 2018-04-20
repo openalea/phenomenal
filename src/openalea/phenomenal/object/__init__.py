@@ -11,6 +11,7 @@
 ==============
 Data Structure
 ==============
+
 .. currentmodule:: openalea.phenomenal.object
 
 .. autosummary::
@@ -19,11 +20,10 @@ Data Structure
    Image3D
    ImageView
    VoxelGrid
-   VoxelGraph
-   VoxelOrgan
    VoxelSegment
+   VoxelOrgan
    VoxelSkeleton
-   ImageView
+   VoxelSegmentation
 """
 # ==============================================================================
 from __future__ import division, print_function, absolute_import

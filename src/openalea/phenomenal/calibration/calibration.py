@@ -8,7 +8,7 @@
 #
 # ==============================================================================
 """ This module contains a calibration model for phenoarch experiment
-where a target is rotating instead of a plant in a picture cabin.
+where a target is rotating instead of a plant in the image acuisition system.
 """
 # ==============================================================================
 from __future__ import division, print_function, absolute_import

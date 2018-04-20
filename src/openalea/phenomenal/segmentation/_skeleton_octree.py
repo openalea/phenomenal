@@ -16,7 +16,7 @@ from __future__ import division, print_function, absolute_import
 import networkx
 import numpy
 
-from .graph import voxel_graph_from_voxel_grid
+from .graph import graph_from_voxel_grid
 from .skeleton_phenomenal import skeletonize
 # ==============================================================================
 
@@ -51,8 +51,8 @@ def skeletonize_octree(voxel_octree,
     # ==========================================================================
 
     vpc = voxel_octree.get_voxel_point_cloud(voxels_size_to_skeletonize)
-    voxel_graph = voxel_graph_from_voxel_grid(vpc)
-    voxel_skeleton = skeletonize(voxel_graph.graph, voxel_graph.voxels_size,
+    voxel_graph = graph_from_voxel_grid(vpc)
+    voxel_skeleton = skeletonize(voxel_graph, graph,
                                  distance_plane=distance_planes)
 
     # return voxel_skeleton, voxel_graph
@@ -72,7 +72,7 @@ def skeletonize_octree(voxel_octree,
     all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
         voxel_graph.graph, (x_stem, y_stem, z_stem), weight="weight")
 
-    for voxel_segment in voxel_skeleton.voxel_segments:
+    for voxel_segment in voxel_skeleton.segments:
 
         voxels_position = list()
         for position in voxel_segment.voxels_position:

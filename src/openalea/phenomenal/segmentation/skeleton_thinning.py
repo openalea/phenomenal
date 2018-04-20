@@ -156,19 +156,25 @@ def _applied_masks(mat, masks):
     return mat - tmp
 
 
-def skeletonize_thinning(image_3d):
-    """
-    A 3D 6-subiteration thinning algorithm for extracting medial lines
+def skeletonize_thinning(img):
+    """ A 3D 6-subiteration thinning algorithm for extracting medial lines
     of Kalman Palagyi and Attila Kuba implementation
 
-    :param image_3d: numpy array
-    :return: matrix thinned (numpy array)
+    Parameters
+    ----------
+    img : ndarray, 3D
+
+    Returns
+    -------
+    skeleton : ndarray
+        The thinned image.
     """
 
-    mat_len_x, mat_len_y, mat_len_z = image_3d.shape
+
+    mat_len_x, mat_len_y, mat_len_z = img.shape
     mat_tmp = numpy.zeros((mat_len_x + 2, mat_len_y + 2, mat_len_z + 2),
                           dtype=int)
-    mat_tmp[1:-1, 1:-1, 1:-1] = image_3d.astype(int)
+    mat_tmp[1:-1, 1:-1, 1:-1] = img.astype(int)
 
     U, D, N, S, E, W = _build_mask()
 

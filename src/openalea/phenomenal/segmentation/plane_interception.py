@@ -283,7 +283,7 @@ def intercept_points_with_ball(points, ball_center, ball_radius):
 
 
 def intercept_points_along_polyline_with_ball(points,
-                                              points_graph,
+                                              graph,
                                               polyline,
                                               ball_radius=50):
     """
@@ -292,7 +292,7 @@ def intercept_points_along_polyline_with_ball(points,
 
     :param points: ndarray of points
     :param polyline: ndarray ot points
-    :param points_graph: graph of the points
+    :param graph: graph of the points
     :param ball_radius: size of the ball radius in mm
     :return: [[(x, y, z), ...], ...] : list of points intercepted by the ball
     """
@@ -305,7 +305,7 @@ def intercept_points_along_polyline_with_ball(points,
         points_in_ball = map(tuple, points_in_ball)
 
         points_in_ball = connected_points_with_point(points_in_ball,
-                                                     points_graph,
+                                                     graph,
                                                      tuple(point))
 
         intercepted_points.append(points_in_ball)

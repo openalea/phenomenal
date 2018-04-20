@@ -40,7 +40,7 @@ class DisplaySkeleton(DisplayVoxel):
                                  skeleton_color=(1, 0, 0),
                                  color_segment=None):
 
-        orderer_voxel_segments = sorted(voxel_skeleton.voxel_segments,
+        orderer_voxel_segments = sorted(voxel_skeleton.segments,
                                         key=lambda vs: len(vs.voxels_position))
 
         for i, vs in enumerate(orderer_voxel_segments):

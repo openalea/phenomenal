@@ -405,4 +405,10 @@ def voxelization(vtk_poly_data, voxels_size=1):
 
 
 def mesh_surface_area(vertices, faces):
+    """ Return the surface_area of a mesh
+
+    :param vertices:
+    :param faces:
+    :return:
+    """
     return skimage.measure.mesh_surface_area(vertices, faces)

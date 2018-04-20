@@ -16,10 +16,6 @@ from ..object import Image3D
 
 
 def remove_internal(image_3d):
-    """
-    :param image_3d:
-    :return:
-    """
     len_x, len_y, len_z = image_3d.shape
     im = Image3D.zeros((len_x + 2, len_y + 2, len_z + 2),
                        voxels_size=image_3d.voxels_size)
