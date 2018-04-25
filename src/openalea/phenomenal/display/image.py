@@ -53,5 +53,4 @@ def show_images(images, name_windows=''):
             ax.imshow(image)
 
     matplotlib.pyplot.show()
-    matplotlib.pyplot.tight_layout(h_pad=0.050, w_pad=0.001)
 

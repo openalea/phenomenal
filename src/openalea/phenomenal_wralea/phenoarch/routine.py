@@ -38,10 +38,12 @@ def routine_side_binarization(image, mean_img):
 
     # Threshold the image with difference between image and mean_image
     binary_mean_shift_image = phm_img.threshold_meanshift(
-        image, mean_img, threshold, dark_background, maks[2])
+        image, mean_img, threshold, dark_background, maks[1])
 
     # Add the two image
-    result = cv2.add(binary_hsv_image, binary_mean_shift_image * 255)
+    result = cv2.add(binary_hsv_image, binary_mean_shift_image)
+
+    # Erode and dilate the image to remove possible noise
     result = cv2.medianBlur(result, 3)
 
     return result
