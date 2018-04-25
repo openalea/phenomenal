@@ -9,12 +9,15 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
+import json
+import numpy
 import cv2
 import glob
 import os
 import collections
 import pkg_resources
 
+from ..mesh import read_ply_to_vertices_faces
 from ..calibration import (Chessboard, CalibrationCamera)
 from ..object import VoxelGrid
 # ==============================================================================
@@ -208,14 +211,44 @@ def tutorial_data_binarization_mask():
     """
 
     data_directory = pkg_resources.resource_filename(
-        'openalea.phenomenal', 'data/plant_1/mask/')
+        'openalea.phenomenal', 'data/plant_6/mask/')
 
     masks = list()
     for filename in ["mask_hsv.png",
-                     "mask_clean_noise.png",
                      "mask_mean_shift.png"]:
 
         masks.append(cv2.imread(os.path.join(data_directory, filename),
                                 flags=cv2.IMREAD_GRAYSCALE))
 
     return masks
+
+# ==============================================================================
+
+
+def synthetic_plant(plant_number=1, registration_point=(0, 0, 750)):
+    """ According to the plant number return the mesh plant and skeleton of the
+     synthetic plant.
+
+    Parameters
+    ----------
+    plant_number : int, optional
+        Number of the plant desired
+
+    registration_point: 3-tuple, optional
+        Position of the pot in the scene
+    Returns
+    -------
+        out : vertices, faces, meta_data
+
+    """
+    filename = pkg_resources.resource_filename(
+        'openalea.phenomenal',
+        'data/synthetic_plant_{}/synthetic_plant.ply'.format(plant_number))
+
+    vertices, faces = read_ply_to_vertices_faces(filename)
+    vertices = numpy.array(vertices) * 10 - numpy.array([registration_point])
+
+    with open(filename.replace("ply", "json"), 'r') as infile:
+        meta_data = json.load(infile)
+
+    return vertices, faces, meta_data

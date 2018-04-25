@@ -34,12 +34,17 @@ def show_voxel_grid(voxel_grid,
     ipyvolume.figure(width=width, height=height, controls=True, lighting=True)
     plot_voxel(voxel_grid.voxels_position, size=size, color=color)
 
-    ipyvolume.xlim(numpy.min(voxel_grid.voxels_position[:, 0]),
-                   numpy.max(voxel_grid.voxels_position[:, 0]))
-    ipyvolume.ylim(numpy.min(voxel_grid.voxels_position[:, 1]),
-                   numpy.max(voxel_grid.voxels_position[:, 1]))
-    ipyvolume.zlim(numpy.min(voxel_grid.voxels_position[:, 2]),
-                   numpy.max(voxel_grid.voxels_position[:, 2]))
+    x_min = voxel_grid.voxels_position[:, 0].min()
+    x_max = voxel_grid.voxels_position[:, 0].max()
+    y_min = voxel_grid.voxels_position[:, 1].min()
+    y_max = voxel_grid.voxels_position[:, 1].max()
+    z_min = voxel_grid.voxels_position[:, 2].min()
+    z_max = voxel_grid.voxels_position[:, 2].max()
+
+    xyz_max = max(x_max - x_min, y_max - y_min, z_max - z_min)
+    ipyvolume.xlim(x_min, x_min + xyz_max)
+    ipyvolume.ylim(y_min, y_min + xyz_max)
+    ipyvolume.zlim(z_min, z_min + xyz_max)
     ipyvolume.view(0, 90)
     ipyvolume.show()
 
@@ -51,9 +56,20 @@ def show_mesh(vertices, faces, color='green', width=500, height=500):
     ipyvolume.plot_trisurf(
         vertices[:, 0], vertices[:, 1], vertices[:, 2],
         triangles=faces, color=color)
-    ipyvolume.xlim(numpy.min(vertices[:, 0]), numpy.max(vertices[:, 0]))
-    ipyvolume.ylim(numpy.min(vertices[:, 1]), numpy.max(vertices[:, 1]))
-    ipyvolume.zlim(numpy.min(vertices[:, 2]), numpy.max(vertices[:, 2]))
+
+    x_min = vertices[:, 0].min()
+    x_max = vertices[:, 0].max()
+    y_min = vertices[:, 1].min()
+    y_max = vertices[:, 1].max()
+    z_min = vertices[:, 2].min()
+    z_max = vertices[:, 2].max()
+
+    xyz_max = max(x_max - x_min, y_max - y_min, z_max - z_min)
+
+    ipyvolume.xlim(x_min, x_min + xyz_max)
+    ipyvolume.ylim(y_min, y_min + xyz_max)
+    ipyvolume.zlim(z_min, z_min + xyz_max)
+
     ipyvolume.show()
 
 
@@ -81,13 +97,16 @@ def show_skeleton(voxel_skeleton,
                        marker="sphere",
                        color=color)
 
-    ipyvolume.xlim(numpy.min(voxels_position[:, 0]),
-                   numpy.max(voxels_position[:, 0]))
-    ipyvolume.ylim(numpy.min(voxels_position[:, 1]),
-                   numpy.max(voxels_position[:, 1]))
-    ipyvolume.zlim(numpy.min(voxels_position[:, 2]),
-                   numpy.max(voxels_position[:, 2]))
-
+    x_min = voxels_position[:, 0].min()
+    x_max = voxels_position[:, 0].max()
+    y_min = voxels_position[:, 1].min()
+    y_max = voxels_position[:, 1].max()
+    z_min = voxels_position[:, 2].min()
+    z_max = voxels_position[:, 2].max()
+    xyz_max = max(x_max - x_min, y_max - y_min, z_max - z_min)
+    ipyvolume.xlim(x_min, x_min + xyz_max)
+    ipyvolume.ylim(y_min, y_min + xyz_max)
+    ipyvolume.zlim(z_min, z_min + xyz_max)
     ipyvolume.show()
 
 
@@ -141,10 +160,55 @@ def show_segmentation(voxel_segmentation,
     voxels_position = numpy.array(list(
         voxel_segmentation.get_voxels_position()))
 
-    ipyvolume.xlim(numpy.min(voxels_position[:, 0]),
-                   numpy.max(voxels_position[:, 0]))
-    ipyvolume.ylim(numpy.min(voxels_position[:, 1]),
-                   numpy.max(voxels_position[:, 1]))
-    ipyvolume.zlim(numpy.min(voxels_position[:, 2]),
-                   numpy.max(voxels_position[:, 2]))
+    x_min = voxels_position[:, 0].min()
+    x_max = voxels_position[:, 0].max()
+    y_min = voxels_position[:, 1].min()
+    y_max = voxels_position[:, 1].max()
+    z_min = voxels_position[:, 2].min()
+    z_max = voxels_position[:, 2].max()
+    xyz_max = max(x_max - x_min, y_max - y_min, z_max - z_min)
+    ipyvolume.xlim(x_min, x_min + xyz_max)
+    ipyvolume.ylim(y_min, y_min + xyz_max)
+    ipyvolume.zlim(z_min, z_min + xyz_max)
+    ipyvolume.show()
+
+
+def show_syntehtic_plant(vertices, faces, meta_data=None,
+                         size=0.5, color='green',
+                         width=500, height=500):
+
+    ipyvolume.figure(width=width, height=height)
+    ipyvolume.view(0, 90)
+
+    ipyvolume.plot_trisurf(
+        vertices[:, 0], vertices[:, 1], vertices[:, 2],
+        triangles=faces, color=color)
+
+    voxels_position = vertices
+    if meta_data is not None:
+        ranks = meta_data['leaf_order']
+        polylines = {n: map(numpy.array, zip(*meta_data['leaf_polylines'][i]))
+                     for i, n in enumerate(ranks)}
+
+        voxels = set()
+        for leaf_order in polylines:
+            x, y, z, r = polylines[leaf_order]
+            polyline = numpy.array(zip(x, y, z)) * 10 - numpy.array([0, 0, 750])
+            plot_voxel(polyline, size=size, color="red")
+            voxels = voxels.union(set(map(tuple, list(polyline))))
+
+        voxels = voxels.union(set(map(tuple, list(voxels_position))))
+        voxels_position = numpy.array(list(voxels), dtype=numpy.int)
+
+    x_min = voxels_position[:, 0].min()
+    x_max = voxels_position[:, 0].max()
+    y_min = voxels_position[:, 1].min()
+    y_max = voxels_position[:, 1].max()
+    z_min = voxels_position[:, 2].min()
+    z_max = voxels_position[:, 2].max()
+    xyz_max = max(x_max - x_min, y_max - y_min, z_max - z_min)
+    ipyvolume.xlim(x_min, x_min + xyz_max)
+    ipyvolume.ylim(y_min, y_min + xyz_max)
+    ipyvolume.zlim(z_min, z_min + xyz_max)
+
     ipyvolume.show()

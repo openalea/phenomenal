@@ -21,7 +21,8 @@ from .vtk_transformation import (from_vertices_faces_to_vtk_poly_data,
 __all__ = ["write_vertices_faces_to_ply_file",
            "write_vtk_poly_data_to_ply_file",
            "write_vertices_faces_to_json_file",
-           "read_json_file_to_vertices_faces"]
+           "read_json_file_to_vertices_faces",
+           "read_ply_to_vertices_faces"]
 
 # ==============================================================================
 
