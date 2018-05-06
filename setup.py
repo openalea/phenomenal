@@ -16,7 +16,9 @@
 """
 """
 # ==============================================================================
-from setuptools import setup, find_packages
+import numpy
+from Cython.Build import cythonize
+from setuptools import setup, find_packages, Extension, Command
 # ==============================================================================
 
 namespace = "openalea"
@@ -27,6 +29,13 @@ package_dir = dict([('', pkg_root_dir)] +
                    [(pkg, pkg_root_dir + "/" + pkg.replace('.', '/'))
                     for pkg in top_pkgs])
 
+
+extentions = [Extension(
+    'openalea.phenomenal.segmentation._c_skeleton',
+    sources=['src/openalea/phenomenal/segmentation/src/skeleton.pyx',
+             'src/openalea/phenomenal/segmentation/src/skel.cpp'],
+    include_dirs=[numpy.get_include()],
+    language="c++")]
 
 setup(
     name="openalea.phenomenal",
@@ -53,6 +62,7 @@ setup(
     packages=packages,
     package_dir=package_dir,
     zip_safe=False,
+    ext_modules=cythonize(extentions),
 
     entry_points={
         "wralea": ["openalea.phenomenal = openalea.phenomenal_wralea", ],
@@ -61,5 +71,3 @@ setup(
     # See MANIFEST.in
     include_package_data=True,
     )
-
-

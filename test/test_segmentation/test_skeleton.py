@@ -12,7 +12,6 @@
 from __future__ import division, print_function
 
 import openalea.phenomenal.data as phm_data
-import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.segmentation as phm_seg
 # ==============================================================================
 
@@ -35,6 +34,7 @@ def test_running():
 
     voxel_skeleton_reduced = phm_seg.segment_reduction(
         voxel_skeleton, image_projection, required_visible=1, nb_min_pixel=100)
+
 
 
 if __name__ == "__main__":

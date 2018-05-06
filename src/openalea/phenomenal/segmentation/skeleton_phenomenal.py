@@ -43,23 +43,34 @@ def segment_reduction(voxel_skeleton,
     -------
 
     """
+    # ==========================================================================
+
 
     # Ordonner
     orderer_voxel_segments = sorted(voxel_skeleton.segments,
                                     key=lambda vs: len(vs.polyline))
 
-    d = dict()
-    tips = dict()
+    # ==========================================================================
+    import time
+    start = time.time()
+
+    # ==========================================================================
+
+    # tips = dict()
+    len_segments = len(orderer_voxel_segments)
+    len_images = len(image_projection)
+    list_array = [None] * len_segments * len_images
     for i, vs in enumerate(orderer_voxel_segments):
         for j, (image, projection) in enumerate(image_projection):
 
             vp = numpy.array(list(vs.voxels_position))
-
-            d[(i, j)] = project_voxel_centers_on_image(
+            list_array[i * len_images + j] = project_voxel_centers_on_image(
                 vp,
                 voxel_skeleton.voxels_size,
                 image.shape,
-                projection)
+                projection,
+                dtype=numpy.int,
+                value=1)
 
             # vp = numpy.array([vs.polyline[-1]])
             # tips[(i, j)] = openalea.phenomenal.multi_view_reconstruction. \
@@ -69,47 +80,60 @@ def segment_reduction(voxel_skeleton,
             #     iv.image.shape,
             #     iv.projection)
 
-    list_negative_image = list()
-    for image, projection in image_projection:
+    print("time processing , project_voxel_centers_on_image : {}".format(
+        time.time() - start))
+    # ==========================================================================
+    start = time.time()
 
-        negative_image = image.copy()
-        negative_image[negative_image > 0] = 125
-        negative_image[negative_image == 0] = 255
-        negative_image[negative_image == 125] = 0
+    list_negative_image = list()
+    for j, (image, projection) in enumerate(image_projection):
+
+        negative_image = image.copy().astype(numpy.int)
+        negative_image[negative_image > 0] = 2
+        negative_image[negative_image == 0] = 1
+        negative_image[negative_image == 2] = 0
         list_negative_image.append(negative_image)
 
-    index_removed = list()
-    segments = list()
-    for i, vs in enumerate(orderer_voxel_segments):
+        list_array.append(negative_image)
 
-        # print i, index_removed
+    print("time processing , negative_image : {}".format(time.time() - start))
+    # ==========================================================================
+    start = time.time()
+
+    is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
+    import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
+    c_skeleton.skeletonize(list_array, is_removed, len_segments, len_images)
+
+    segments = [orderer_voxel_segments[i] for i in range(len_segments) if
+                is_removed[i] == 0]
+    print("time processing , C code covered : {}".format(time.time() - start))
+    return VoxelSkeleton(segments, voxel_skeleton.voxels_size)
+
+    # ==========================================================================
+    is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
+
+    for i in range(len_segments):
         weight = 0
-        for j, (image, projection) in enumerate(image_projection):
-            im1 = d[(i, j)]
-            # im1 = tips[(i, j)]
+        for j in range(len(image_projection)):
 
-            im2 = numpy.zeros(image.shape, dtype=numpy.int16)
-            for k, _ in enumerate(orderer_voxel_segments):
-                if k != i and k not in index_removed:
-                    im2 += d[(k, j)]
+            im = list_array[i * len_images + j].copy()
+            # im = list_array[i * len_images + j] - list_negative_image[j]
+            for k in range(len_segments):
+                if k != i and not is_removed[k]:
+                    im -= list_array[k * len_images + j]
 
-            im1 = im1.astype(numpy.int16)
-            im2[im2 > 0] = 255
-
-            im = im1 - im2
-            im = im - list_negative_image[j]
-            im[im < 0] = 0
-            if numpy.count_nonzero(im) >= nb_min_pixel:
+            if numpy.count_nonzero(im > 0) >= nb_min_pixel:
                 weight += 1
 
             if weight >= required_visible:
                 break
 
-        if weight >= required_visible:
-            segments.append(vs)
-        else:
-            index_removed.append(i)
+        if weight < required_visible:
+            is_removed[i] = True
 
+    print("time processing , covered : {}".format(time.time() - start))
+    segments = [orderer_voxel_segments[i] for i in range(len_segments) if
+                not is_removed[i]]
     return VoxelSkeleton(segments, voxel_skeleton.voxels_size)
 
 # ==============================================================================

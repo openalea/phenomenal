@@ -643,7 +643,9 @@ def reconstruction_3d(image_views,
 def project_voxel_centers_on_image(voxels_position,
                                    voxels_size,
                                    shape_image,
-                                   projection):
+                                   projection,
+                                   value=255,
+                                   dtype=numpy.uint8):
     """
     Create a image with same shape that shape_image and project each voxel on
     image and write positive value (255) on it.
@@ -659,6 +661,10 @@ def project_voxel_centers_on_image(voxels_position,
     projection : function ((x, y, z)) -> (x, y)
         Function of projection who take 1 argument (tuple of position (x, y, z))
          and return this position 2D (x, y)
+    value : int
+        value between 0 and 255 of positive pixel. By default 255.
+    dtype : type
+        numpy type of the returned image. By default numpy.uint8.
 
     Returns
     -------
@@ -666,7 +672,7 @@ def project_voxel_centers_on_image(voxels_position,
         Binary image
     """
     height, length = shape_image
-    img = numpy.zeros((height, length), dtype=numpy.uint8)
+    img = numpy.zeros((height, length), dtype=dtype)
 
     min_xy_max_xy = get_bounding_box_voxel_projected(
         voxels_position, voxels_size, projection)
@@ -688,7 +694,7 @@ def project_voxel_centers_on_image(voxels_position,
     min_xy_max_xy = min_xy_max_xy.astype(int)
 
     for x_min, y_min, x_max, y_max in min_xy_max_xy:
-        img[y_min:y_max + 1, x_min:x_max + 1] = 255
+        img[y_min:y_max + 1, x_min:x_max + 1] = value
 
     return img
 
