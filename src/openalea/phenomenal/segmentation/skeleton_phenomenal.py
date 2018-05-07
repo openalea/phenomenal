@@ -17,6 +17,8 @@ from .plane_interception import (
     intercept_points_along_path_with_planes,
     intercept_points_along_polyline_with_ball)
 from ..object import (VoxelSkeleton, VoxelGrid, VoxelSegment)
+
+from . import _c_skeleton as c_skeleton
 # ==============================================================================
 
 
@@ -51,8 +53,8 @@ def segment_reduction(voxel_skeleton,
                                     key=lambda vs: len(vs.polyline))
 
     # ==========================================================================
-    import time
-    start = time.time()
+    # import time
+    # start = time.time()
 
     # ==========================================================================
 
@@ -69,7 +71,7 @@ def segment_reduction(voxel_skeleton,
                 voxel_skeleton.voxels_size,
                 image.shape,
                 projection,
-                dtype=numpy.int,
+                dtype=numpy.int32,
                 value=1)
 
             # vp = numpy.array([vs.polyline[-1]])
@@ -80,15 +82,15 @@ def segment_reduction(voxel_skeleton,
             #     iv.image.shape,
             #     iv.projection)
 
-    print("time processing , project_voxel_centers_on_image : {}".format(
-        time.time() - start))
+    # print("time processing , project_voxel_centers_on_image : {}".format(
+    #     time.time() - start))
     # ==========================================================================
-    start = time.time()
+    # start = time.time()
 
     list_negative_image = list()
     for j, (image, projection) in enumerate(image_projection):
 
-        negative_image = image.copy().astype(numpy.int)
+        negative_image = image.copy().astype(numpy.int32)
         negative_image[negative_image > 0] = 2
         negative_image[negative_image == 0] = 1
         negative_image[negative_image == 2] = 0
@@ -96,17 +98,17 @@ def segment_reduction(voxel_skeleton,
 
         list_array.append(negative_image)
 
-    print("time processing , negative_image : {}".format(time.time() - start))
+    # print("time processing , negative_image : {}".format(time.time() - start))
     # ==========================================================================
-    start = time.time()
+    # start = time.time()
 
     is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
-    import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
+
     c_skeleton.skeletonize(list_array, is_removed, len_segments, len_images)
 
     segments = [orderer_voxel_segments[i] for i in range(len_segments) if
                 is_removed[i] == 0]
-    print("time processing , C code covered : {}".format(time.time() - start))
+    # print("time processing , C code covered : {}".format(time.time() - start))
     return VoxelSkeleton(segments, voxel_skeleton.voxels_size)
 
     # ==========================================================================
