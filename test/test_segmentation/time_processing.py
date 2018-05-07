@@ -15,7 +15,7 @@ import time
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.segmentation as phm_seg
-import openalea.phenomenal.display as phm_display
+# import openalea.phenomenal.display as phm_display
 # ==============================================================================
 
 
@@ -60,10 +60,9 @@ print("len(voxel_skeleton_reduced.segments) : {}".format(
     len(voxel_skeleton_reduced.segments)))
 # assert (len_ref_segments[2] == len(voxel_skeleton_reduced.segments))
 
-import openalea.phenomenal.display as phm_display
-
-ds = phm_display.DisplaySkeleton()
-ds(voxel_skeleton_reduced)
+# import openalea.phenomenal.display as phm_display
+# ds = phm_display.DisplaySkeleton()
+# ds(voxel_skeleton_reduced)
 
 start = time.time()
 vms = phm_seg.maize_segmentation(voxel_skeleton, graph)
