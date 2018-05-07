@@ -110,31 +110,29 @@ def segment_reduction(voxel_skeleton,
     return VoxelSkeleton(segments, voxel_skeleton.voxels_size)
 
     # ==========================================================================
-    is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
-
-    for i in range(len_segments):
-        weight = 0
-        for j in range(len(image_projection)):
-
-            im = list_array[i * len_images + j].copy()
-            # im = list_array[i * len_images + j] - list_negative_image[j]
-            for k in range(len_segments):
-                if k != i and not is_removed[k]:
-                    im -= list_array[k * len_images + j]
-
-            if numpy.count_nonzero(im > 0) >= nb_min_pixel:
-                weight += 1
-
-            if weight >= required_visible:
-                break
-
-        if weight < required_visible:
-            is_removed[i] = True
-
-    print("time processing , covered : {}".format(time.time() - start))
-    segments = [orderer_voxel_segments[i] for i in range(len_segments) if
-                not is_removed[i]]
-    return VoxelSkeleton(segments, voxel_skeleton.voxels_size)
+    # is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
+    #
+    # for i in range(len_segments):
+    #     weight = 0
+    #     for j in range(len(image_projection)):
+    #         im = list_array[i * len_images + j] - list_negative_image[j]
+    #         for k in range(len_segments):
+    #             if k != i and not is_removed[k]:
+    #                 im -= list_array[k * len_images + j]
+    #
+    #         if numpy.count_nonzero(im > 0) >= nb_min_pixel:
+    #             weight += 1
+    #
+    #         if weight >= required_visible:
+    #             break
+    #
+    #     if weight < required_visible:
+    #         is_removed[i] = True
+    #
+    # print("time processing , covered : {}".format(time.time() - start))
+    # segments = [orderer_voxel_segments[i] for i in range(len_segments) if
+    #             not is_removed[i]]
+    # return VoxelSkeleton(segments, voxel_skeleton.voxels_size)
 
 # ==============================================================================
 
