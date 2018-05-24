@@ -105,7 +105,7 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     return vertices, faces
 
 
-def marching_cubes(vtk_image_data, iso_value=1.0, verbose=False):
+def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
     """
     Call of vtkMarchingCubes on a vtk_image_data with iso_value
 
