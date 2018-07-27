@@ -13,11 +13,12 @@ install_conda:
  script:
    - apt-get update
    - apt-get -y install freeglut3-dev
+   - apt-get -y install gcc
 
    - conda config --set always_yes yes --set changeps1 no
    - conda update -q conda
    - conda install conda-build
-   - conda create --name phenome python
+   - conda create --name phenome -c conda-forge -c openalea python
    - source activate phenome
    - pwd
    - cd ./conda
