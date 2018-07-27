@@ -1,22 +1,19 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import ast
 import os
 import gzip
-import json
 
-
-import openalea.phenomenal.object.voxelOrgan
-
+from .voxelOrgan import VoxelOrgan
 # ==============================================================================
 
 
@@ -26,6 +23,19 @@ class VoxelSegmentation(object):
 
         self.voxel_organs = list()
         self.voxels_size = voxels_size
+
+    def get_plant_info(self):
+        info = dict()
+
+        s = set()
+        for vo in self.voxel_organs:
+            s = s.union(vo.voxels_position())
+
+        info["pm_label"] = 'plant'
+        info["pm_voxels_volume"] = len(s) * self.voxels_size ** 3
+        info["pm_number_of_leaf"] = self.get_number_of_leaf()
+
+        return info
 
     def get_voxels_position(self, except_organs=None):
 
@@ -42,7 +52,7 @@ class VoxelSegmentation(object):
     def get_number_of_leaf(self):
         number = 0
         for vo in self.voxel_organs:
-            if vo.label == "mature_leaf" or vo.label == "cornet_leaf":
+            if vo.label == "mature_leaf" or vo.label == "growing_leaf":
                 number += 1
 
         return number
@@ -79,18 +89,18 @@ class VoxelSegmentation(object):
                 mature_leafs.append(vo)
         return mature_leafs
 
-    def get_cornet_leafs(self):
-        cornet_leafs = list()
+    def get_growing_leafs(self):
+        growing_leafs = list()
         for vo in self.voxel_organs:
-            if vo.label == "cornet_leaf":
-                cornet_leafs.append(vo)
-        return cornet_leafs
+            if vo.label == "growing_leaf":
+                growing_leafs.append(vo)
+        return growing_leafs
 
     def get_leafs(self):
 
         leafs = list()
         for vo in self.voxel_organs:
-            if vo.label == "cornet_leaf" or vo.label == "mature_leaf":
+            if vo.label == "growing_leaf" or vo.label == "mature_leaf":
                 leafs.append(vo)
         return leafs
 
@@ -108,12 +118,12 @@ class VoxelSegmentation(object):
 
             data = dict()
             data['voxels_size'] = self.voxels_size
-
             data['voxel_organs'] = list()
             for vo in self.voxel_organs:
 
                 dvo = dict()
                 dvo['label'] = vo.label
+                dvo['sub_label'] = vo.sub_label
                 dvo['info'] = vo.info
                 dvo['voxel_segments'] = list()
 
@@ -132,15 +142,16 @@ class VoxelSegmentation(object):
     def read_from_json_gz(filename):
 
         with gzip.open(filename, 'rb') as f:
-
             data = ast.literal_eval(f.read())
 
             vms = VoxelSegmentation(data['voxels_size'])
 
             for dvo in data['voxel_organs']:
 
-                vo = openalea.phenomenal.object.voxelOrgan.VoxelOrgan(
-                    dvo['label'])
+                vo = VoxelOrgan(dvo['label'])
+
+                if 'sub_label' in dvo:
+                    vo.sub_label = dvo['sub_label']
 
                 vo.info = dvo['info']
 

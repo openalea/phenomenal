@@ -1,17 +1,20 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function
+
 import vtk
 import random
-from openalea.phenomenal.display import Display
+import numpy.random
+
+
+from .display import Display
 # ==============================================================================
 
 
@@ -19,6 +22,14 @@ class DisplayVoxel(Display):
 
     def __init__(self):
         Display.__init__(self)
+
+    def add_actor(self, actor):
+        self._actors.append(actor)
+        self._renderer.AddActor(actor)
+
+    def add_actors(self, actors):
+        for actor in actors:
+            self.add_actor(actor)
 
     def add_actor_from_plane(self, center, normal, color=(0, 0, 1), radius=100):
 
@@ -72,7 +83,7 @@ class DisplayVoxel(Display):
         actor.AddPosition(position[0], position[1], position[2])
         actor.GetProperty().SetColor(color[0], color[1], color[2])
 
-        self._actors.append(actor)
+        self._text_actors.append(actor)
         self._renderer.AddActor(actor)
 
         return actor
@@ -161,12 +172,16 @@ class DisplayVoxel(Display):
     def add_actor_from_vertices_faces(self,
                                       vertices,
                                       faces,
-                                      color=None):
+                                      colors=None,
+                                      color=None,):
 
         if color is None:
-            color = (random.uniform(0, 1),
-                     random.uniform(0, 1),
-                     random.uniform(0, 1))
+            color = numpy.random.uniform(0, 1, 3)
+
+        # Setup the colors array
+        vtk_colors = vtk.vtkUnsignedCharArray()
+        vtk_colors.SetNumberOfComponents(3)
+        vtk_colors.SetName("Colors")
 
         # ======================================================================
 
@@ -183,14 +198,21 @@ class DisplayVoxel(Display):
         # Load the point, cell, and data attributes.
         for i in range(len(vertices)):
             points.InsertPoint(i, vertices[i])
-        for i in range(len(faces)):
-            polys.InsertNextCell(make_vtk_id_list(faces[i]))
-
-        # We now assign the pieces to the vtkPolyData.
         poly_data.SetPoints(points)
         del points
+
+        for i in range(len(faces)):
+            polys.InsertNextCell(make_vtk_id_list(faces[i]))
         poly_data.SetPolys(polys)
         del polys
+
+        if colors is not None:
+            vtk_colors = vtk.vtkUnsignedCharArray()
+            vtk_colors.SetNumberOfComponents(3)
+            vtk_colors.SetName("Colors")
+            for color in colors:
+                vtk_colors.InsertNextTuple3(color[0], color[1], color[2])
+            poly_data.GetCellData().SetScalars(vtk_colors)
 
         # ======================================================================
 
@@ -199,7 +221,7 @@ class DisplayVoxel(Display):
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().SetColor(color[0], color[1], color[2])
+        # actor.GetProperty().SetColor(color[0], color[1], color[2])
 
         self._actors.append(actor)
         self._renderer.AddActor(actor)

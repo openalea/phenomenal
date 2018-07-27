@@ -1,21 +1,20 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
-#
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
 """
 Post processing algorithms to improve binarization of a image
 """
 # ==============================================================================
+from __future__ import division, print_function
+
 import cv2
 import numpy
-
 # ==============================================================================
 
 

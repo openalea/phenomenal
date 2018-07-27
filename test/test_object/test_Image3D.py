@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -9,14 +9,12 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from openalea.phenomenal.data import plant_1_images
+from __future__ import division, print_function
 
-
+import openalea.phenomenal.data as phm_data
 # ==============================================================================
 
-def test_image3d():
-    images = plant_1_images()
-
+# NOTHING
 
 # ==============================================================================
 

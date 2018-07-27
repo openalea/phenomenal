@@ -1,14 +1,14 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import cv2
 import numpy
 import json
@@ -103,7 +103,7 @@ class Chessboard(object):
 
         return found
 
-    def dump(self, file_path):
+    def dump(self, filename):
         # Convert to json format
         image_points = collections.defaultdict(dict)
         for id_camera in self.image_points:
@@ -116,16 +116,16 @@ class Chessboard(object):
         save_class['shape'] = self.shape
         save_class['image_points'] = image_points
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
                       separators=(',', ': '))
 
     @staticmethod
-    def load(file_path):
+    def load(filename):
 
-        with open(file_path + '.json', 'r') as input_file:
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             square_size = float(save_class['square_size'])

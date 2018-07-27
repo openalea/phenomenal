@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -9,20 +9,17 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import numpy
 
-from openalea.phenomenal.image import (
-    close,
-    dilate_erode,
-    erode_dilate)
+import openalea.phenomenal.image as phm_img
+# ==============================================================================
 
-# ==============================================================================
-# MORPHOLOGY CLOSE TEST
-# ==============================================================================
 
 def test_close_wrong_parameters_1():
     try:
-        close(None)
+        phm_img.close(None)
     except Exception, e:
         assert e.message == 'image must be a numpy.ndarray'
         assert type(e) == TypeError
@@ -34,7 +31,7 @@ def test_close_wrong_parameters_2():
 
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        close(image)
+        phm_img.close(image)
     except Exception, e:
         assert e.message == 'image must be 2D array'
         assert type(e) == ValueError
@@ -47,7 +44,7 @@ def test_close_wrong_parameters_3():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = 42
     try:
-        close(image, mask=mask)
+        phm_img.close(image, mask=mask)
     except Exception, e:
         assert e.message == 'mask must be a numpy.ndarray'
         assert type(e) == TypeError
@@ -60,7 +57,7 @@ def test_close_wrong_parameters_4():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        close(image, mask=mask)
+        phm_img.close(image, mask=mask)
     except Exception, e:
         assert e.message == 'mask must be 2D array'
         assert type(e) == ValueError
@@ -73,7 +70,7 @@ def test_close_1():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    image_cleaning = close(image, mask=mask)
+    image_cleaning = phm_img.close(image, mask=mask)
 
     assert isinstance(image_cleaning, numpy.ndarray)
     assert image_cleaning.ndim == 2
@@ -82,7 +79,7 @@ def test_close_1():
 def test_close_2():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    image_cleaning = close(image)
+    image_cleaning = phm_img.close(image)
 
     assert isinstance(image_cleaning, numpy.ndarray)
     assert image_cleaning.ndim == 2
@@ -94,7 +91,7 @@ def test_close_2():
 
 def test_dilate_erode_wrong_parameters_1():
     try:
-        dilate_erode(None)
+        phm_img.dilate_erode(None)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -104,7 +101,7 @@ def test_dilate_erode_wrong_parameters_1():
 def test_dilate_erode_wrong_parameters_2():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        dilate_erode(image)
+        phm_img.dilate_erode(image)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -115,7 +112,7 @@ def test_dilate_erode_wrong_parameters_3():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = 42
     try:
-        dilate_erode(image, mask=mask)
+        phm_img.dilate_erode(image, mask=mask)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -126,7 +123,7 @@ def test_dilate_erode_wrong_parameters_4():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        dilate_erode(image, mask=mask)
+        phm_img.dilate_erode(image, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -137,7 +134,7 @@ def test_dilate_erode_1():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    image_cleaning = dilate_erode(image, mask=mask)
+    image_cleaning = phm_img.dilate_erode(image, mask=mask)
 
     assert isinstance(image_cleaning, numpy.ndarray)
     assert image_cleaning.ndim == 2
@@ -146,7 +143,7 @@ def test_dilate_erode_1():
 def test_dilate_erode_2():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    image_cleaning = dilate_erode(image)
+    image_cleaning = phm_img.dilate_erode(image)
 
     assert isinstance(image_cleaning, numpy.ndarray)
     assert image_cleaning.ndim == 2
@@ -155,9 +152,10 @@ def test_dilate_erode_2():
 # MORPHOLOGY ERODE_DILATE TEST
 # ==============================================================================
 
+
 def test_erode_dilate_wrong_parameters_1():
     try:
-        erode_dilate(None)
+        phm_img.erode_dilate(None)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -168,7 +166,7 @@ def test_erode_dilate_wrong_parameters_2():
 
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        erode_dilate(image)
+        phm_img.erode_dilate(image)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -180,7 +178,7 @@ def test_erode_dilate_wrong_parameters_3():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = 42
     try:
-        erode_dilate(image, mask=mask)
+        phm_img.erode_dilate(image, mask=mask)
     except Exception, e:
         assert type(e) == TypeError
     else:
@@ -192,7 +190,7 @@ def test_erode_dilate_wrong_parameters_4():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
-        erode_dilate(image, mask=mask)
+        phm_img.erode_dilate(image, mask=mask)
     except Exception, e:
         assert type(e) == ValueError
     else:
@@ -204,7 +202,7 @@ def test_erode_dilate_1():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    image_cleaning = erode_dilate(image, mask=mask)
+    image_cleaning = phm_img.erode_dilate(image, mask=mask)
 
     assert isinstance(image_cleaning, numpy.ndarray)
     assert image_cleaning.ndim == 2
@@ -213,12 +211,11 @@ def test_erode_dilate_1():
 def test_erode_dilate_2():
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
 
-    image_cleaning = erode_dilate(image)
+    image_cleaning = phm_img.erode_dilate(image)
 
     assert isinstance(image_cleaning, numpy.ndarray)
     assert image_cleaning.ndim == 2
 
-# ==============================================================================
 
 if __name__ == "__main__":
     for func_name in dir():
