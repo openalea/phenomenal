@@ -10,7 +10,9 @@ cdef extern from "skel.h":
                   int **shape,
                   unsigned char* is_removed,
                   int len_segments,
-                  int len_images)
+                  int len_images,
+                  int nb_required_pixel,
+                  int required_visible)
 
 
 def fpy(n, np.ndarray[np.uint8_t, ndim=2] a,
@@ -29,7 +31,9 @@ def fpy(n, np.ndarray[np.uint8_t, ndim=2] a,
 def skeletonize(list list_of_arrays,
                 np.ndarray[np.uint8_t, ndim=1] is_removed,
                 int len_segments,
-                int len_images):
+                int len_images,
+                int nb_required_pixel,
+                int required_visible):
 
     cdef int n_arrays  = len_segments * len_images + len_images
     cdef int **images = <int **> malloc(n_arrays * sizeof(int *))
@@ -48,7 +52,9 @@ def skeletonize(list list_of_arrays,
                   shapes,
                   <unsigned char*> is_removed.data,
                   len_segments,
-                  len_images)
+                  len_images,
+                  nb_required_pixel,
+                  required_visible)
     # Free memory
     for i in range(n_arrays):
         free(shapes[i])

@@ -22,9 +22,7 @@ class DisplaySegmentation(DisplayVoxel):
         DisplayVoxel.__init__(self)
 
     def __call__(self, voxel_segmentation, mode=1, windows_size=(600, 800)):
-
         self._voxel_segmentation = voxel_segmentation
-
         self.show(mode=mode, windows_size=windows_size)
 
         # self.add_actor_from_voxel_segmentation(self._voxel_segmentation)
@@ -32,7 +30,7 @@ class DisplaySegmentation(DisplayVoxel):
     def show(self, mode=1, windows_size=(600, 800)):
 
         if mode == 1:
-            self.display_classic_analysis(self._voxel_segmentation)
+            self.add_actor_classic_analysis(self._voxel_segmentation)
         if mode == 2:
             self.display_leaf_split(
                 self._voxel_segmentation)
@@ -44,10 +42,6 @@ class DisplaySegmentation(DisplayVoxel):
             self.display_skeleton(self._voxel_segmentation)
         if mode == 6:
             self.display_classic_segmentation(self._voxel_segmentation)
-
-        DisplayVoxel.show(self, windows_size=windows_size)
-
-    def record(self, windows_size=(600, 800)):
 
         DisplayVoxel.show(self, windows_size=windows_size)
 
@@ -278,9 +272,9 @@ class DisplaySegmentation(DisplayVoxel):
 
                     vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
 
-    def display_classic_analysis(self, vmsi):
+    def add_actor_classic_analysis(self, vmsi, plot_number=True):
 
-        def plot(vo):
+        def add(vo):
             if vo is None:
                 return
 
@@ -310,24 +304,26 @@ class DisplaySegmentation(DisplayVoxel):
                 pos = vo.info['pm_position_tip']
                 pos = (pos[0] - 10, pos[1] - 10, pos[2])
 
-                # if 'pm_leaf_number' in vo.info:
-                #     order = str(vo.info['pm_leaf_number'])
-                #     vo.text_actor = self.add_actor_from_text(
-                #         order,
-                #         position=pos,
-                #         scale=40,
-                #         color=(r, g, b))
-                #
-                #     vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
+                if plot_number and 'pm_leaf_number' in vo.info:
+                    order = str(vo.info['pm_leaf_number'])
+                    vo.text_actor = self.add_actor_from_text(
+                        order,
+                        position=pos,
+                        scale=40,
+                        color=(r, g, b))
+
+                    vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
 
         # plot(vmsi.get_unknown())
         for vo in vmsi.get_leafs():
-            plot(vo)
-        plot(vmsi.get_stem())
+            add(vo)
+        add(vmsi.get_stem())
 
     def record(self, list_vmsi, filename):
 
-        func = lambda vmsi: self.display_classic_analysis(vmsi)
+        func = lambda vmsi: self.add_actor_classic_analysis(
+            vmsi, plot_number=False)
+
         self.record_video(filename, list_vmsi, func)
 
 

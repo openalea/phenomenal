@@ -18,8 +18,8 @@ import openalea.phenomenal.segmentation as phm_seg
 
 def test_maize():
 
-    plant_number = 1
-    voxels_size = 16
+    plant_number = 3
+    voxels_size = 4
     voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
                                      voxels_size=voxels_size)
 

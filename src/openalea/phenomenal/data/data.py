@@ -245,7 +245,7 @@ def synthetic_plant(plant_number=1, registration_point=(0, 0, 750)):
         'openalea.phenomenal',
         'data/synthetic_plant_{}/synthetic_plant.ply'.format(plant_number))
 
-    vertices, faces = read_ply_to_vertices_faces(filename)
+    vertices, faces, color = read_ply_to_vertices_faces(filename)
     vertices = numpy.array(vertices) * 10 - numpy.array([registration_point])
 
     with open(filename.replace("ply", "json"), 'r') as infile:

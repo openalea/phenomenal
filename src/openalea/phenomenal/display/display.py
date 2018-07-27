@@ -10,6 +10,12 @@
 from __future__ import division, print_function
 
 import vtk
+import math
+import numpy
+
+from ..calibration.transformations import rotation_matrix
+
+R = rotation_matrix(math.pi / 180.0, [0, 0, 1], [0, 0, 0])
 # ==============================================================================
 
 
@@ -139,6 +145,8 @@ class Display(object):
                           quality=2,
                           rate=100):
 
+        self.stop = False
+
         self.reset_camera()
         self.render_window = vtk.vtkRenderWindow()
         self.render_window.AddRenderer(self._renderer)
@@ -164,9 +172,10 @@ class Display(object):
         self.writer.Start()
 
         def cb(interactor, event):
-            interactor.GetRenderWindow().Render()
-            self.windowToImageFilter.Modified()
-            self.writer.Write()
+            if not self.stop:
+                interactor.GetRenderWindow().Render()
+                self.windowToImageFilter.Modified()
+                self.writer.Write()
 
         self.render_window_interactor.AddObserver('TimerEvent', cb)
         timerId = self.render_window_interactor.CreateRepeatingTimer(1)
@@ -187,29 +196,40 @@ class Display(object):
         del self.render_window
         del self.render_window_interactor
 
-        self.render_window = None
-        self.render_window_interactor = None
+        # self.render_window = None
+        # self.render_window_interactor = None
 
     def switch_elements(self, elements, func):
-
+        global R
         self.it = 0
         def cb_change_plant(interactor, event):
+            if not self.stop:
+                if self.it % 360 == 0:
+                    if elements:
+                        element = elements.pop(0)
+                        self.clean_all_actors()
+                        func(element)
+                        self.it = 0
+                    else:
+                        self.writer.End()
+                        self.clean_all_actors()
+                        self.stop = True
 
-            if self.it % 360 == 0:
-                if elements:
-                    element = elements.pop(0)
-                    self.clean_all_actors()
-                    func(element)
-                    self.it = 0
-                else:
-                    self.writer.End()
-                    interactor.ExitCallback()
+                        # interactor.ExitCallback()
 
-            for actor in self._actors:
-                actor.RotateZ(1)
-            self.it += 1
+                for actor in self._actors:
+                    actor.RotateZ(1)
 
-            interactor.GetRenderWindow().Render()
+
+                for text_actor in self._text_actors:
+                    x, y, z = text_actor.GetPosition()
+                    pos = numpy.dot(R, numpy.array([x, y, z, 1]))
+                    text_actor.SetPosition(pos[:3])
+                    text_actor.SetCamera(self._renderer.GetActiveCamera())
+
+                self.it += 1
+
+                interactor.GetRenderWindow().Render()
 
         self.render_window_interactor.AddObserver('TimerEvent', cb_change_plant)
         timerId = self.render_window_interactor.CreateRepeatingTimer(5)

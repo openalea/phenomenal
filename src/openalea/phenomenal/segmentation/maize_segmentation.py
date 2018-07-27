@@ -207,10 +207,9 @@ def maize_segmentation(voxel_skeleton, graph):
             if i == j:
                 continue
 
-            vs = vo_1.get_longest_segment()
-            pos = set(vs.closest_nodes[-1])
-            res = len(pos.intersection(vo_2.voxels_position()))
-            if res > 0:
+            nodes = vo_1.voxels_position().intersection(vo_2.voxels_position())
+            v = networkx.number_connected_components(graph.subgraph(nodes))
+            if v > 1:
                 vo_1.sub_label = "connected"
 
 

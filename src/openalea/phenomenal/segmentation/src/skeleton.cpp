@@ -1656,6 +1656,8 @@ static const char __pyx_k_skeletonize[] = "skeletonize";
 static const char __pyx_k_RuntimeError[] = "RuntimeError";
 static const char __pyx_k_len_segments[] = "len_segments";
 static const char __pyx_k_list_of_arrays[] = "list_of_arrays";
+static const char __pyx_k_required_visible[] = "required_visible";
+static const char __pyx_k_nb_required_pixel[] = "nb_required_pixel";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
@@ -1689,6 +1691,7 @@ static PyObject *__pyx_n_s_list_of_arrays;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_n;
 static PyObject *__pyx_n_s_n_arrays;
+static PyObject *__pyx_n_s_nb_required_pixel;
 static PyObject *__pyx_kp_u_ndarray_is_not_C_contiguous;
 static PyObject *__pyx_kp_u_ndarray_is_not_Fortran_contiguou;
 static PyObject *__pyx_n_s_np;
@@ -1697,6 +1700,7 @@ static PyObject *__pyx_kp_s_numpy_core_multiarray_failed_to;
 static PyObject *__pyx_kp_s_numpy_core_umath_failed_to_impor;
 static PyObject *__pyx_n_s_openalea_phenomenal_segmentation;
 static PyObject *__pyx_n_s_range;
+static PyObject *__pyx_n_s_required_visible;
 static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_shapes;
 static PyObject *__pyx_n_s_skeletonize;
@@ -1707,7 +1711,7 @@ static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_x;
 static PyObject *__pyx_n_s_z;
 static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_fpy(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_n, PyArrayObject *__pyx_v_a, PyArrayObject *__pyx_v_b, PyArrayObject *__pyx_v_z); /* proto */
-static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2skeletonize(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_arrays, PyArrayObject *__pyx_v_is_removed, int __pyx_v_len_segments, int __pyx_v_len_images); /* proto */
+static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2skeletonize(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_arrays, PyArrayObject *__pyx_v_is_removed, int __pyx_v_len_segments, int __pyx_v_len_images, int __pyx_v_nb_required_pixel, int __pyx_v_required_visible); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static PyObject *__pyx_tuple_;
@@ -1725,7 +1729,7 @@ static PyObject *__pyx_codeobj__11;
 static PyObject *__pyx_codeobj__13;
 /* Late includes */
 
-/* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":16
+/* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":18
  * 
  * 
  * def fpy(n, np.ndarray[np.uint8_t, ndim=2] a,             # <<<<<<<<<<<<<<
@@ -1772,23 +1776,23 @@ static PyObject *__pyx_pw_8openalea_10phenomenal_12segmentation_11_c_skeleton_1f
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_a)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("fpy", 1, 4, 4, 1); __PYX_ERR(0, 16, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("fpy", 1, 4, 4, 1); __PYX_ERR(0, 18, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_b)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("fpy", 1, 4, 4, 2); __PYX_ERR(0, 16, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("fpy", 1, 4, 4, 2); __PYX_ERR(0, 18, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_z)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("fpy", 1, 4, 4, 3); __PYX_ERR(0, 16, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("fpy", 1, 4, 4, 3); __PYX_ERR(0, 18, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "fpy") < 0)) __PYX_ERR(0, 16, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "fpy") < 0)) __PYX_ERR(0, 18, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
       goto __pyx_L5_argtuple_error;
@@ -1805,15 +1809,15 @@ static PyObject *__pyx_pw_8openalea_10phenomenal_12segmentation_11_c_skeleton_1f
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("fpy", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 16, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("fpy", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 18, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("openalea.phenomenal.segmentation._c_skeleton.fpy", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_a), __pyx_ptype_5numpy_ndarray, 1, "a", 0))) __PYX_ERR(0, 16, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_b), __pyx_ptype_5numpy_ndarray, 1, "b", 0))) __PYX_ERR(0, 17, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_z), __pyx_ptype_5numpy_ndarray, 1, "z", 0))) __PYX_ERR(0, 18, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_a), __pyx_ptype_5numpy_ndarray, 1, "a", 0))) __PYX_ERR(0, 18, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_b), __pyx_ptype_5numpy_ndarray, 1, "b", 0))) __PYX_ERR(0, 19, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_z), __pyx_ptype_5numpy_ndarray, 1, "z", 0))) __PYX_ERR(0, 20, __pyx_L1_error)
   __pyx_r = __pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_fpy(__pyx_self, __pyx_v_n, __pyx_v_a, __pyx_v_b, __pyx_v_z);
 
   /* function exit code */
@@ -1857,21 +1861,21 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_fp
   __pyx_pybuffernd_z.rcbuffer = &__pyx_pybuffer_z;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_a.rcbuffer->pybuffer, (PyObject*)__pyx_v_a, &__Pyx_TypeInfo_nn___pyx_t_5numpy_uint8_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 16, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_a.rcbuffer->pybuffer, (PyObject*)__pyx_v_a, &__Pyx_TypeInfo_nn___pyx_t_5numpy_uint8_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 18, __pyx_L1_error)
   }
   __pyx_pybuffernd_a.diminfo[0].strides = __pyx_pybuffernd_a.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_a.diminfo[0].shape = __pyx_pybuffernd_a.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_a.diminfo[1].strides = __pyx_pybuffernd_a.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_a.diminfo[1].shape = __pyx_pybuffernd_a.rcbuffer->pybuffer.shape[1];
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_b.rcbuffer->pybuffer, (PyObject*)__pyx_v_b, &__Pyx_TypeInfo_nn___pyx_t_5numpy_uint8_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 16, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_b.rcbuffer->pybuffer, (PyObject*)__pyx_v_b, &__Pyx_TypeInfo_nn___pyx_t_5numpy_uint8_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 18, __pyx_L1_error)
   }
   __pyx_pybuffernd_b.diminfo[0].strides = __pyx_pybuffernd_b.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_b.diminfo[0].shape = __pyx_pybuffernd_b.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_b.diminfo[1].strides = __pyx_pybuffernd_b.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_b.diminfo[1].shape = __pyx_pybuffernd_b.rcbuffer->pybuffer.shape[1];
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_z.rcbuffer->pybuffer, (PyObject*)__pyx_v_z, &__Pyx_TypeInfo_nn___pyx_t_5numpy_uint8_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 16, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_z.rcbuffer->pybuffer, (PyObject*)__pyx_v_z, &__Pyx_TypeInfo_nn___pyx_t_5numpy_uint8_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 18, __pyx_L1_error)
   }
   __pyx_pybuffernd_z.diminfo[0].strides = __pyx_pybuffernd_z.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_z.diminfo[0].shape = __pyx_pybuffernd_z.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_z.diminfo[1].strides = __pyx_pybuffernd_z.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_z.diminfo[1].shape = __pyx_pybuffernd_z.rcbuffer->pybuffer.shape[1];
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":20
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":22
  *            np.ndarray[np.uint8_t, ndim=2] z):
  *     """ wrap np arrays to fc( a.data ... ) """
  *     assert n <= len(a) == len(b) == len(z)             # <<<<<<<<<<<<<<
@@ -1880,46 +1884,46 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_fp
  */
   #ifndef CYTHON_WITHOUT_ASSERTIONS
   if (unlikely(!Py_OptimizeFlag)) {
-    __pyx_t_1 = PyObject_Length(((PyObject *)__pyx_v_a)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 20, __pyx_L1_error)
-    __pyx_t_2 = PyInt_FromSsize_t(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 20, __pyx_L1_error)
+    __pyx_t_1 = PyObject_Length(((PyObject *)__pyx_v_a)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 22, __pyx_L1_error)
+    __pyx_t_2 = PyInt_FromSsize_t(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 22, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = PyObject_RichCompare(__pyx_v_n, __pyx_t_2, Py_LE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 20, __pyx_L1_error)
+    __pyx_t_3 = PyObject_RichCompare(__pyx_v_n, __pyx_t_2, Py_LE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 22, __pyx_L1_error)
     if (__Pyx_PyObject_IsTrue(__pyx_t_3)) {
       __Pyx_DECREF(__pyx_t_3);
-      __pyx_t_1 = PyObject_Length(((PyObject *)__pyx_v_b)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 20, __pyx_L1_error)
-      __pyx_t_4 = PyInt_FromSsize_t(__pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 20, __pyx_L1_error)
+      __pyx_t_1 = PyObject_Length(((PyObject *)__pyx_v_b)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 22, __pyx_L1_error)
+      __pyx_t_4 = PyInt_FromSsize_t(__pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 22, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_3 = PyObject_RichCompare(__pyx_t_2, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 20, __pyx_L1_error)
+      __pyx_t_3 = PyObject_RichCompare(__pyx_t_2, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 22, __pyx_L1_error)
       if (__Pyx_PyObject_IsTrue(__pyx_t_3)) {
         __Pyx_DECREF(__pyx_t_3);
-        __pyx_t_1 = PyObject_Length(((PyObject *)__pyx_v_z)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 20, __pyx_L1_error)
-        __pyx_t_5 = PyInt_FromSsize_t(__pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 20, __pyx_L1_error)
+        __pyx_t_1 = PyObject_Length(((PyObject *)__pyx_v_z)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 22, __pyx_L1_error)
+        __pyx_t_5 = PyInt_FromSsize_t(__pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 22, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_3 = PyObject_RichCompare(__pyx_t_4, __pyx_t_5, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 20, __pyx_L1_error)
+        __pyx_t_3 = PyObject_RichCompare(__pyx_t_4, __pyx_t_5, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 22, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     }
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 20, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 22, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     if (unlikely(!__pyx_t_6)) {
       PyErr_SetNone(PyExc_AssertionError);
-      __PYX_ERR(0, 20, __pyx_L1_error)
+      __PYX_ERR(0, 22, __pyx_L1_error)
     }
   }
   #endif
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":21
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":23
  *     """ wrap np arrays to fc( a.data ... ) """
  *     assert n <= len(a) == len(b) == len(z)
  *     fcret = fc(n,             # <<<<<<<<<<<<<<
  *                <const unsigned char*> a.data,
  *                <const unsigned char*> b.data,
  */
-  __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_v_n); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 21, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_v_n); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 23, __pyx_L1_error)
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":24
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":26
  *                <const unsigned char*> a.data,
  *                <const unsigned char*> b.data,
  *                <unsigned char*> z.data)             # <<<<<<<<<<<<<<
@@ -1928,7 +1932,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_fp
  */
   __pyx_v_fcret = fc(__pyx_t_7, ((unsigned char const *)__pyx_v_a->data), ((unsigned char const *)__pyx_v_b->data), ((unsigned char *)__pyx_v_z->data));
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":26
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":28
  *                <unsigned char*> z.data)
  * 
  *     return fcret             # <<<<<<<<<<<<<<
@@ -1936,13 +1940,13 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_fp
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_fcret); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_fcret); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":16
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":18
  * 
  * 
  * def fpy(n, np.ndarray[np.uint8_t, ndim=2] a,             # <<<<<<<<<<<<<<
@@ -1977,7 +1981,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_fp
   return __pyx_r;
 }
 
-/* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":29
+/* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":31
  * 
  * 
  * def skeletonize(list list_of_arrays,             # <<<<<<<<<<<<<<
@@ -1993,16 +1997,22 @@ static PyObject *__pyx_pw_8openalea_10phenomenal_12segmentation_11_c_skeleton_3s
   PyArrayObject *__pyx_v_is_removed = 0;
   int __pyx_v_len_segments;
   int __pyx_v_len_images;
+  int __pyx_v_nb_required_pixel;
+  int __pyx_v_required_visible;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("skeletonize (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_list_of_arrays,&__pyx_n_s_is_removed,&__pyx_n_s_len_segments,&__pyx_n_s_len_images,0};
-    PyObject* values[4] = {0,0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_list_of_arrays,&__pyx_n_s_is_removed,&__pyx_n_s_len_segments,&__pyx_n_s_len_images,&__pyx_n_s_nb_required_pixel,&__pyx_n_s_required_visible,0};
+    PyObject* values[6] = {0,0,0,0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case  6: values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
+        CYTHON_FALLTHROUGH;
+        case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
+        CYTHON_FALLTHROUGH;
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         CYTHON_FALLTHROUGH;
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
@@ -2023,48 +2033,64 @@ static PyObject *__pyx_pw_8openalea_10phenomenal_12segmentation_11_c_skeleton_3s
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_is_removed)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 4, 4, 1); __PYX_ERR(0, 29, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 6, 6, 1); __PYX_ERR(0, 31, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_len_segments)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 4, 4, 2); __PYX_ERR(0, 29, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 6, 6, 2); __PYX_ERR(0, 31, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_len_images)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 4, 4, 3); __PYX_ERR(0, 29, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 6, 6, 3); __PYX_ERR(0, 31, __pyx_L3_error)
+        }
+        CYTHON_FALLTHROUGH;
+        case  4:
+        if (likely((values[4] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_nb_required_pixel)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 6, 6, 4); __PYX_ERR(0, 31, __pyx_L3_error)
+        }
+        CYTHON_FALLTHROUGH;
+        case  5:
+        if (likely((values[5] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_required_visible)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 6, 6, 5); __PYX_ERR(0, 31, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "skeletonize") < 0)) __PYX_ERR(0, 29, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "skeletonize") < 0)) __PYX_ERR(0, 31, __pyx_L3_error)
       }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 6) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+      values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
+      values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
     }
     __pyx_v_list_of_arrays = ((PyObject*)values[0]);
     __pyx_v_is_removed = ((PyArrayObject *)values[1]);
-    __pyx_v_len_segments = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_len_segments == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 31, __pyx_L3_error)
-    __pyx_v_len_images = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_len_images == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L3_error)
+    __pyx_v_len_segments = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_len_segments == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L3_error)
+    __pyx_v_len_images = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_len_images == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 34, __pyx_L3_error)
+    __pyx_v_nb_required_pixel = __Pyx_PyInt_As_int(values[4]); if (unlikely((__pyx_v_nb_required_pixel == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 35, __pyx_L3_error)
+    __pyx_v_required_visible = __Pyx_PyInt_As_int(values[5]); if (unlikely((__pyx_v_required_visible == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 36, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 29, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("skeletonize", 1, 6, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 31, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("openalea.phenomenal.segmentation._c_skeleton.skeletonize", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_list_of_arrays), (&PyList_Type), 1, "list_of_arrays", 1))) __PYX_ERR(0, 29, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_is_removed), __pyx_ptype_5numpy_ndarray, 1, "is_removed", 0))) __PYX_ERR(0, 30, __pyx_L1_error)
-  __pyx_r = __pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2skeletonize(__pyx_self, __pyx_v_list_of_arrays, __pyx_v_is_removed, __pyx_v_len_segments, __pyx_v_len_images);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_list_of_arrays), (&PyList_Type), 1, "list_of_arrays", 1))) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_is_removed), __pyx_ptype_5numpy_ndarray, 1, "is_removed", 0))) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_r = __pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2skeletonize(__pyx_self, __pyx_v_list_of_arrays, __pyx_v_is_removed, __pyx_v_len_segments, __pyx_v_len_images, __pyx_v_nb_required_pixel, __pyx_v_required_visible);
 
   /* function exit code */
   goto __pyx_L0;
@@ -2075,7 +2101,7 @@ static PyObject *__pyx_pw_8openalea_10phenomenal_12segmentation_11_c_skeleton_3s
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2skeletonize(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_arrays, PyArrayObject *__pyx_v_is_removed, int __pyx_v_len_segments, int __pyx_v_len_images) {
+static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2skeletonize(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_arrays, PyArrayObject *__pyx_v_is_removed, int __pyx_v_len_segments, int __pyx_v_len_images, int __pyx_v_nb_required_pixel, int __pyx_v_required_visible) {
   int __pyx_v_n_arrays;
   int **__pyx_v_images;
   int **__pyx_v_shapes;
@@ -2113,12 +2139,12 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
   __pyx_pybuffernd_is_removed.rcbuffer = &__pyx_pybuffer_is_removed;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_is_removed.rcbuffer->pybuffer, (PyObject*)__pyx_v_is_removed, &__Pyx_TypeInfo_nn___pyx_t_5numpy_uint8_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 29, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_is_removed.rcbuffer->pybuffer, (PyObject*)__pyx_v_is_removed, &__Pyx_TypeInfo_nn___pyx_t_5numpy_uint8_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 31, __pyx_L1_error)
   }
   __pyx_pybuffernd_is_removed.diminfo[0].strides = __pyx_pybuffernd_is_removed.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_is_removed.diminfo[0].shape = __pyx_pybuffernd_is_removed.rcbuffer->pybuffer.shape[0];
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":34
- *                 int len_images):
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":38
+ *                 int required_visible):
  * 
  *     cdef int n_arrays  = len_segments * len_images + len_images             # <<<<<<<<<<<<<<
  *     cdef int **images = <int **> malloc(n_arrays * sizeof(int *))
@@ -2126,7 +2152,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
  */
   __pyx_v_n_arrays = ((__pyx_v_len_segments * __pyx_v_len_images) + __pyx_v_len_images);
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":35
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":39
  * 
  *     cdef int n_arrays  = len_segments * len_images + len_images
  *     cdef int **images = <int **> malloc(n_arrays * sizeof(int *))             # <<<<<<<<<<<<<<
@@ -2135,7 +2161,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
  */
   __pyx_v_images = ((int **)malloc((__pyx_v_n_arrays * (sizeof(int *)))));
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":36
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":40
  *     cdef int n_arrays  = len_segments * len_images + len_images
  *     cdef int **images = <int **> malloc(n_arrays * sizeof(int *))
  *     cdef int **shapes   = <int **> malloc(n_arrays * sizeof(int *))             # <<<<<<<<<<<<<<
@@ -2144,7 +2170,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
  */
   __pyx_v_shapes = ((int **)malloc((__pyx_v_n_arrays * (sizeof(int *)))));
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":40
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":44
  *     cdef np.ndarray[int, ndim=2, mode="c"] temp;
  * 
  *     for i in range(n_arrays):             # <<<<<<<<<<<<<<
@@ -2156,7 +2182,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
   for (__pyx_t_3 = 0; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
     __pyx_v_i = __pyx_t_3;
 
-    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":41
+    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":45
  * 
  *     for i in range(n_arrays):
  *         temp = list_of_arrays[i]             # <<<<<<<<<<<<<<
@@ -2165,11 +2191,11 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
  */
     if (unlikely(__pyx_v_list_of_arrays == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 41, __pyx_L1_error)
+      __PYX_ERR(0, 45, __pyx_L1_error)
     }
-    __pyx_t_4 = __Pyx_GetItemInt_List(__pyx_v_list_of_arrays, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 1, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 41, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt_List(__pyx_v_list_of_arrays, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 1, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 45, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 41, __pyx_L1_error)
+    if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 45, __pyx_L1_error)
     __pyx_t_5 = ((PyArrayObject *)__pyx_t_4);
     {
       __Pyx_BufFmt_StackElem __pyx_stack[1];
@@ -2186,13 +2212,13 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
         __pyx_t_7 = __pyx_t_8 = __pyx_t_9 = 0;
       }
       __pyx_pybuffernd_temp.diminfo[0].strides = __pyx_pybuffernd_temp.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_temp.diminfo[0].shape = __pyx_pybuffernd_temp.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_temp.diminfo[1].strides = __pyx_pybuffernd_temp.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_temp.diminfo[1].shape = __pyx_pybuffernd_temp.rcbuffer->pybuffer.shape[1];
-      if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 41, __pyx_L1_error)
+      if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 45, __pyx_L1_error)
     }
     __pyx_t_5 = 0;
     __Pyx_XDECREF_SET(__pyx_v_temp, ((PyArrayObject *)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":42
+    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":46
  *     for i in range(n_arrays):
  *         temp = list_of_arrays[i]
  *         images[i]  = &temp[0, 0]             # <<<<<<<<<<<<<<
@@ -2212,11 +2238,11 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
     } else if (unlikely(__pyx_t_11 >= __pyx_pybuffernd_temp.diminfo[1].shape)) __pyx_t_6 = 1;
     if (unlikely(__pyx_t_6 != -1)) {
       __Pyx_RaiseBufferIndexError(__pyx_t_6);
-      __PYX_ERR(0, 42, __pyx_L1_error)
+      __PYX_ERR(0, 46, __pyx_L1_error)
     }
     (__pyx_v_images[__pyx_v_i]) = (&(*__Pyx_BufPtrCContig2d(int *, __pyx_pybuffernd_temp.rcbuffer->pybuffer.buf, __pyx_t_10, __pyx_pybuffernd_temp.diminfo[0].strides, __pyx_t_11, __pyx_pybuffernd_temp.diminfo[1].strides)));
 
-    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":43
+    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":47
  *         temp = list_of_arrays[i]
  *         images[i]  = &temp[0, 0]
  *         shapes[i] = <int *> malloc(2 * sizeof(int))             # <<<<<<<<<<<<<<
@@ -2225,7 +2251,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
  */
     (__pyx_v_shapes[__pyx_v_i]) = ((int *)malloc((2 * (sizeof(int)))));
 
-    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":44
+    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":48
  *         images[i]  = &temp[0, 0]
  *         shapes[i] = <int *> malloc(2 * sizeof(int))
  *         for j in range(2):             # <<<<<<<<<<<<<<
@@ -2235,7 +2261,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
     for (__pyx_t_12 = 0; __pyx_t_12 < 2; __pyx_t_12+=1) {
       __pyx_v_j = __pyx_t_12;
 
-      /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":45
+      /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":49
  *         shapes[i] = <int *> malloc(2 * sizeof(int))
  *         for j in range(2):
  *             shapes[i][j] = list_of_arrays[i].shape[j]             # <<<<<<<<<<<<<<
@@ -2244,33 +2270,33 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
  */
       if (unlikely(__pyx_v_list_of_arrays == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 45, __pyx_L1_error)
+        __PYX_ERR(0, 49, __pyx_L1_error)
       }
-      __pyx_t_4 = __Pyx_GetItemInt_List(__pyx_v_list_of_arrays, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 1, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 45, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_GetItemInt_List(__pyx_v_list_of_arrays, __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 1, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 49, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_shape); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 45, __pyx_L1_error)
+      __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_shape); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 49, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_13);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_13, __pyx_v_j, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 45, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_13, __pyx_v_j, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 49, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
-      __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_4); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 45, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_4); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 49, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       ((__pyx_v_shapes[__pyx_v_i])[__pyx_v_j]) = __pyx_t_6;
     }
   }
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":47
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":51
  *             shapes[i][j] = list_of_arrays[i].shape[j]
  * 
  *     x = my_func_c(images,             # <<<<<<<<<<<<<<
  *                   shapes,
  *                   <unsigned char*> is_removed.data,
  */
-  __pyx_v_x = my_func_c(__pyx_v_images, __pyx_v_shapes, ((unsigned char *)__pyx_v_is_removed->data), __pyx_v_len_segments, __pyx_v_len_images);
+  __pyx_v_x = my_func_c(__pyx_v_images, __pyx_v_shapes, ((unsigned char *)__pyx_v_is_removed->data), __pyx_v_len_segments, __pyx_v_len_images, __pyx_v_nb_required_pixel, __pyx_v_required_visible);
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":53
- *                   len_images)
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":59
+ *                   required_visible)
  *     # Free memory
  *     for i in range(n_arrays):             # <<<<<<<<<<<<<<
  *         free(shapes[i])
@@ -2281,7 +2307,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
   for (__pyx_t_3 = 0; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
     __pyx_v_i = __pyx_t_3;
 
-    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":54
+    /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":60
  *     # Free memory
  *     for i in range(n_arrays):
  *         free(shapes[i])             # <<<<<<<<<<<<<<
@@ -2291,7 +2317,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
     free((__pyx_v_shapes[__pyx_v_i]));
   }
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":55
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":61
  *     for i in range(n_arrays):
  *         free(shapes[i])
  *     free(images)             # <<<<<<<<<<<<<<
@@ -2300,7 +2326,7 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
  */
   free(__pyx_v_images);
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":56
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":62
  *         free(shapes[i])
  *     free(images)
  *     free(shapes)             # <<<<<<<<<<<<<<
@@ -2309,19 +2335,19 @@ static PyObject *__pyx_pf_8openalea_10phenomenal_12segmentation_11_c_skeleton_2s
  */
   free(__pyx_v_shapes);
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":58
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":64
  *     free(shapes)
  * 
  *     return x             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_x); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_x); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 64, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_r = __pyx_t_4;
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":29
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":31
  * 
  * 
  * def skeletonize(list list_of_arrays,             # <<<<<<<<<<<<<<
@@ -4874,6 +4900,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_n_s_n, __pyx_k_n, sizeof(__pyx_k_n), 0, 0, 1, 1},
   {&__pyx_n_s_n_arrays, __pyx_k_n_arrays, sizeof(__pyx_k_n_arrays), 0, 0, 1, 1},
+  {&__pyx_n_s_nb_required_pixel, __pyx_k_nb_required_pixel, sizeof(__pyx_k_nb_required_pixel), 0, 0, 1, 1},
   {&__pyx_kp_u_ndarray_is_not_C_contiguous, __pyx_k_ndarray_is_not_C_contiguous, sizeof(__pyx_k_ndarray_is_not_C_contiguous), 0, 1, 0, 0},
   {&__pyx_kp_u_ndarray_is_not_Fortran_contiguou, __pyx_k_ndarray_is_not_Fortran_contiguou, sizeof(__pyx_k_ndarray_is_not_Fortran_contiguou), 0, 1, 0, 0},
   {&__pyx_n_s_np, __pyx_k_np, sizeof(__pyx_k_np), 0, 0, 1, 1},
@@ -4882,6 +4909,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_numpy_core_umath_failed_to_impor, __pyx_k_numpy_core_umath_failed_to_impor, sizeof(__pyx_k_numpy_core_umath_failed_to_impor), 0, 0, 1, 0},
   {&__pyx_n_s_openalea_phenomenal_segmentation, __pyx_k_openalea_phenomenal_segmentation, sizeof(__pyx_k_openalea_phenomenal_segmentation), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
+  {&__pyx_n_s_required_visible, __pyx_k_required_visible, sizeof(__pyx_k_required_visible), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
   {&__pyx_n_s_shapes, __pyx_k_shapes, sizeof(__pyx_k_shapes), 0, 0, 1, 1},
   {&__pyx_n_s_skeletonize, __pyx_k_skeletonize, sizeof(__pyx_k_skeletonize), 0, 0, 1, 1},
@@ -4894,7 +4922,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 44, __pyx_L1_error)
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(1, 229, __pyx_L1_error)
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) __PYX_ERR(1, 810, __pyx_L1_error)
   __pyx_builtin_ImportError = __Pyx_GetBuiltinName(__pyx_n_s_ImportError); if (!__pyx_builtin_ImportError) __PYX_ERR(1, 1000, __pyx_L1_error)
@@ -5004,29 +5032,29 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":16
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":18
  * 
  * 
  * def fpy(n, np.ndarray[np.uint8_t, ndim=2] a,             # <<<<<<<<<<<<<<
  *            np.ndarray[np.uint8_t, ndim=2] b,
  *            np.ndarray[np.uint8_t, ndim=2] z):
  */
-  __pyx_tuple__10 = PyTuple_Pack(5, __pyx_n_s_n, __pyx_n_s_a, __pyx_n_s_b, __pyx_n_s_z, __pyx_n_s_fcret); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 16, __pyx_L1_error)
+  __pyx_tuple__10 = PyTuple_Pack(5, __pyx_n_s_n, __pyx_n_s_a, __pyx_n_s_b, __pyx_n_s_z, __pyx_n_s_fcret); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__10);
   __Pyx_GIVEREF(__pyx_tuple__10);
-  __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(4, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_openalea_phenomenal_segmenta, __pyx_n_s_fpy, 16, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 16, __pyx_L1_error)
+  __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(4, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_openalea_phenomenal_segmenta, __pyx_n_s_fpy, 18, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 18, __pyx_L1_error)
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":29
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":31
  * 
  * 
  * def skeletonize(list list_of_arrays,             # <<<<<<<<<<<<<<
  *                 np.ndarray[np.uint8_t, ndim=1] is_removed,
  *                 int len_segments,
  */
-  __pyx_tuple__12 = PyTuple_Pack(11, __pyx_n_s_list_of_arrays, __pyx_n_s_is_removed, __pyx_n_s_len_segments, __pyx_n_s_len_images, __pyx_n_s_n_arrays, __pyx_n_s_images, __pyx_n_s_shapes, __pyx_n_s_x, __pyx_n_s_temp, __pyx_n_s_i, __pyx_n_s_j); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_tuple__12 = PyTuple_Pack(13, __pyx_n_s_list_of_arrays, __pyx_n_s_is_removed, __pyx_n_s_len_segments, __pyx_n_s_len_images, __pyx_n_s_nb_required_pixel, __pyx_n_s_required_visible, __pyx_n_s_n_arrays, __pyx_n_s_images, __pyx_n_s_shapes, __pyx_n_s_x, __pyx_n_s_temp, __pyx_n_s_i, __pyx_n_s_j); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
-  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(4, 0, 11, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_openalea_phenomenal_segmenta, __pyx_n_s_skeletonize, 29, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(6, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_openalea_phenomenal_segmenta, __pyx_n_s_skeletonize, 31, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -5303,28 +5331,28 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":16
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":18
  * 
  * 
  * def fpy(n, np.ndarray[np.uint8_t, ndim=2] a,             # <<<<<<<<<<<<<<
  *            np.ndarray[np.uint8_t, ndim=2] b,
  *            np.ndarray[np.uint8_t, ndim=2] z):
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_8openalea_10phenomenal_12segmentation_11_c_skeleton_1fpy, NULL, __pyx_n_s_openalea_phenomenal_segmentation); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_8openalea_10phenomenal_12segmentation_11_c_skeleton_1fpy, NULL, __pyx_n_s_openalea_phenomenal_segmentation); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_fpy, __pyx_t_1) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_fpy, __pyx_t_1) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":29
+  /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":31
  * 
  * 
  * def skeletonize(list list_of_arrays,             # <<<<<<<<<<<<<<
  *                 np.ndarray[np.uint8_t, ndim=1] is_removed,
  *                 int len_segments,
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_8openalea_10phenomenal_12segmentation_11_c_skeleton_3skeletonize, NULL, __pyx_n_s_openalea_phenomenal_segmentation); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_8openalea_10phenomenal_12segmentation_11_c_skeleton_3skeletonize, NULL, __pyx_n_s_openalea_phenomenal_segmentation); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_skeletonize, __pyx_t_1) < 0) __PYX_ERR(0, 29, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_skeletonize, __pyx_t_1) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "src/openalea/phenomenal/segmentation/src/skeleton.pyx":1

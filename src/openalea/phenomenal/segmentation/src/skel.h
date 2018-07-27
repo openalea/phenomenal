@@ -10,4 +10,6 @@ int my_func_c(int **images,
               int **shapes,
               unsigned char* is_removed,
               int len_segments,
-              int len_images);
+              int len_images,
+              int nb_required_pixel,
+              int required_visible);

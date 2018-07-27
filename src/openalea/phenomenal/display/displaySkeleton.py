@@ -69,3 +69,16 @@ class DisplaySkeleton(DisplayVoxel):
                                               radius=10,
                                               color=(1, 0, 0))
 
+    def record(self, list_voxel_skeleton, filename,
+               with_voxel=True,
+               voxel_color=(0, 1, 0),
+               skeleton_color=(1, 0, 0)):
+
+        func = lambda voxel_skeleton: self.add_actor_voxel_skeleton(
+            voxel_skeleton,
+            with_voxel=with_voxel,
+            voxel_color=voxel_color,
+            skeleton_color=skeleton_color)
+
+        self.set_camera(elevation=20)
+        self.record_video(filename, list_voxel_skeleton, func)
