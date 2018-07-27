@@ -1,20 +1,14 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import vtk
-import random
-
-from ._order_color_map import order_color_map
 from .displayVoxel import DisplayVoxel
 # ==============================================================================
 
@@ -24,7 +18,8 @@ class DisplaySkeleton(DisplayVoxel):
     def __init__(self):
         DisplayVoxel.__init__(self)
 
-    def __call__(self, voxel_skeleton,
+    def __call__(self,
+                 voxel_skeleton,
                  with_voxel=True,
                  voxel_color=(0, 1, 0),
                  skeleton_color=(1, 0, 0),
@@ -38,13 +33,14 @@ class DisplaySkeleton(DisplayVoxel):
 
         self.show()
 
-    def add_actor_voxel_skeleton(self, voxel_skeleton,
+    def add_actor_voxel_skeleton(self,
+                                 voxel_skeleton,
                                  with_voxel=False,
                                  voxel_color=(0, 1, 0),
                                  skeleton_color=(1, 0, 0),
                                  color_segment=None):
 
-        orderer_voxel_segments = sorted(voxel_skeleton.voxel_segments,
+        orderer_voxel_segments = sorted(voxel_skeleton.segments,
                                         key=lambda vs: len(vs.voxels_position))
 
         for i, vs in enumerate(orderer_voxel_segments):
@@ -57,7 +53,7 @@ class DisplaySkeleton(DisplayVoxel):
             elif with_voxel:
                 self.add_actor_from_voxels(
                     vs.voxels_position,
-                    voxel_skeleton.voxels_size * 0.25,
+                    voxel_skeleton.voxels_size * 0.15,
                     color=voxel_color)
 
             self.add_actor_from_voxels(
@@ -73,3 +69,16 @@ class DisplaySkeleton(DisplayVoxel):
                                               radius=10,
                                               color=(1, 0, 0))
 
+    def record(self, list_voxel_skeleton, filename,
+               with_voxel=True,
+               voxel_color=(0, 1, 0),
+               skeleton_color=(1, 0, 0)):
+
+        func = lambda voxel_skeleton: self.add_actor_voxel_skeleton(
+            voxel_skeleton,
+            with_voxel=with_voxel,
+            voxel_color=voxel_color,
+            skeleton_color=skeleton_color)
+
+        self.set_camera(elevation=20)
+        self.record_video(filename, list_voxel_skeleton, func)

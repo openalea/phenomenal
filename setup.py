@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       File author(s):
 #
@@ -16,13 +16,30 @@
 """
 """
 # ==============================================================================
-from setuptools import setup, find_packages
+import numpy
+from Cython.Build import cythonize
+from setuptools import setup, find_packages, Extension, Command
 # ==============================================================================
 
+namespace = "openalea"
+pkg_root_dir = 'src'
+packages = [pkg for pkg in find_packages(pkg_root_dir)]
+top_pkgs = [pkg for pkg in packages if len(pkg.split('.')) <= 2]
+package_dir = dict([('', pkg_root_dir)] +
+                   [(pkg, pkg_root_dir + "/" + pkg.replace('.', '/'))
+                    for pkg in top_pkgs])
+
+
+extentions = [Extension(
+    'openalea.phenomenal.segmentation._c_skeleton',
+    sources=['src/openalea/phenomenal/segmentation/src/skeleton.pyx',
+             'src/openalea/phenomenal/segmentation/src/skel.cpp'],
+    include_dirs=[numpy.get_include()],
+    language="c++")]
 
 setup(
     name="openalea.phenomenal",
-    version="1.4.0",
+    version="1.6.0",
     description="",
     long_description="",
 
@@ -33,7 +50,7 @@ setup(
            "* Chopard Jerome\n"
            "* Christophe Pradal\n",
 
-    author_email="",
+    author_email="simon.artzet@gmail.com",
     maintainer="Simon Artzet",
     maintainer_email="simon.artzet@gmail.com",
 
@@ -42,10 +59,10 @@ setup(
     keywords='',
 
     # package installation
-    namespace_packages = ['openalea'],
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
+    packages=packages,
+    package_dir=package_dir,
     zip_safe=False,
+    ext_modules=cythonize(extentions),
 
     entry_points={
         "wralea": ["openalea.phenomenal = openalea.phenomenal_wralea", ],
@@ -54,5 +71,3 @@ setup(
     # See MANIFEST.in
     include_package_data=True,
     )
-
-

@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -8,20 +8,18 @@
 #
 # ==============================================================================
 """ This module contains a calibration model for phenoarch experiment
-where a target is rotating instead of a plant in a picture cabin.
+where a target is rotating instead of a plant in the image acuisition system.
 """
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import json
 import math
-
 import numpy
 import scipy.optimize
 
-from openalea.phenomenal.calibration.frame import (
-    Frame, x_axis, y_axis, z_axis)
-
-from openalea.phenomenal.calibration.transformations import (
-    concatenate_matrices, rotation_matrix)
+from .frame import (Frame, x_axis, y_axis, z_axis)
+from .transformations import (concatenate_matrices, rotation_matrix)
 # ==============================================================================
 
 __all__ = ["CalibrationCamera",
@@ -222,8 +220,8 @@ class CalibrationCamera(object):
         return projection
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCamera()
@@ -245,7 +243,7 @@ class CalibrationCamera(object):
 
         return c
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -262,7 +260,7 @@ class CalibrationCamera(object):
         save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
             (16, )).tolist()
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
@@ -346,8 +344,8 @@ class RegistrationCamera(CalibrationCamera):
                 best_parameters = parameters
 
             if self._verbose:
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -368,8 +366,8 @@ class RegistrationCamera(CalibrationCamera):
         return pts
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraTop()
@@ -425,8 +423,8 @@ class RegistrationCamera(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -475,7 +473,7 @@ class RegistrationCameraPosition(CalibrationCamera):
                 numpy.array(pt) - self._ref_target_points_2d[i]).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -505,8 +503,8 @@ class RegistrationCameraPosition(CalibrationCamera):
                 best_parameters = parameters
 
             if self._verbose:
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -527,8 +525,8 @@ class RegistrationCameraPosition(CalibrationCamera):
         return pts
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraTop()
@@ -582,8 +580,8 @@ class RegistrationCameraPosition(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -665,8 +663,8 @@ class RegistrationCameraFocal(CalibrationCamera):
                 best_parameters = parameters
 
             if self._verbose:
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -687,8 +685,8 @@ class RegistrationCameraFocal(CalibrationCamera):
         return pts
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraTop()
@@ -735,8 +733,8 @@ class RegistrationCameraFocal(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -783,7 +781,7 @@ class CalibrationCameraTop(CalibrationCamera):
                 numpy.array(pts) - self._ref_target_points_2d[i], axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -816,8 +814,8 @@ class CalibrationCameraTop(CalibrationCamera):
                 best_parameters = parameters
 
             if self._verbose:
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -838,8 +836,8 @@ class CalibrationCameraTop(CalibrationCamera):
         return pts
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraTop()
@@ -895,8 +893,8 @@ class CalibrationCameraTop(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -972,7 +970,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -1016,8 +1014,8 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
 
             if self._verbose:
                 err = self.fit_function(parameters)
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -1073,15 +1071,15 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
         return err / self._ref_number
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraSideWith1Target()
@@ -1110,7 +1108,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
 
         return c
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -1134,7 +1132,7 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
         save_class['target_rot_y'] = self._target_rot_y
         save_class['target_rot_z'] = self._target_rot_z
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
@@ -1300,7 +1298,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -1352,8 +1350,8 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
 
             if self._verbose:
                 err = self.fit_function(parameters)
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -1423,8 +1421,8 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
@@ -1514,7 +1512,7 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         return map(lambda pt: fr_target.global_point(pt),
                    ref_target_2_points_local_3d)
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -1545,15 +1543,15 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
         save_class['target_2_rot_y'] = self._target_2_rot_y
         save_class['target_2_rot_z'] = self._target_2_rot_z
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
                       separators=(',', ': '))
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraSideWith2Target()
@@ -1704,7 +1702,7 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -1757,8 +1755,8 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
 
             if self._verbose:
                 err = self.fit_function(parameters)
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -1918,14 +1916,14 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
         return err / self._ref_number
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -1956,15 +1954,15 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
         save_class['target_2_rot_y'] = self._target_2_rot_y
         save_class['target_2_rot_z'] = self._target_2_rot_z
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
                       separators=(',', ': '))
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraSideWith2TargetYXZ()
@@ -2117,7 +2115,7 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self._verbose:
-            print err
+            print(err)
 
         return err
 
@@ -2173,8 +2171,8 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
 
             if self._verbose:
                 err = self.fit_function(parameters)
-                print 'Result : ', parameters
-                print 'Err : ', err / self._ref_number
+                print('Result : ', parameters)
+                print('Err : ', err / self._ref_number)
 
         return best_parameters
 
@@ -2327,14 +2325,14 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
 
         err = self.fit_function(parameters)
         if self._verbose:
-            print 'Result : ', parameters
-            print 'Err : ', err, ' -- ', err / self._ref_number
+            print('Result : ', parameters)
+            print('Err : ', err, ' -- ', err / self._ref_number)
 
         self._verbose = False
 
         return err / self._ref_number
 
-    def dump(self, file_path):
+    def dump(self, filename):
         save_class = dict()
 
         save_class['cam_width_image'] = self._cam_width_image
@@ -2365,15 +2363,15 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
         save_class['target_2_rot_y'] = self._target_2_rot_y
         save_class['target_2_rot_z'] = self._target_2_rot_z
 
-        with open(file_path + '.json', 'w') as output_file:
+        with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
                       indent=4,
                       separators=(',', ': '))
 
     @staticmethod
-    def load(file_path):
-        with open(file_path + '.json', 'r') as input_file:
+    def load(filename):
+        with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
             c = CalibrationCameraSideWith2TargetYXZ()

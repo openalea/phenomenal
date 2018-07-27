@@ -1,29 +1,35 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
-#
 # ==============================================================================
+from __future__ import division, print_function, absolute_import
+
 import vtk
 import vtk.util.numpy_support
 import numpy
 import math
+import skimage.measure
 
-from openalea.phenomenal.mesh.vtk_transformation import (
+from .vtk_transformation import (
+    from_numpy_matrix_to_vtk_image_data,
     from_vtk_poly_data_to_vertices_faces,
-    from_numpy_matrix_to_vtk_image_data)
+    from_vertices_faces_to_vtk_poly_data,
+    from_vtk_image_data_to_voxels_center)
+
 # ==============================================================================
 
 __all__ = ["meshing",
            "marching_cubes",
            "smoothing",
            "decimation",
-           "voxelization"]
+           "voxelization",
+           "mesh_surface_area",
+           "from_vertices_faces_to_voxels_position"]
 
 # ==============================================================================
 
@@ -79,7 +85,8 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
 
     image_3d = image_3d.astype(numpy.uint8)
 
-    vtk_image_data = from_numpy_matrix_to_vtk_image_data(image_3d)
+    vtk_image_data = from_numpy_matrix_to_vtk_image_data(
+        image_3d)
 
     vtk_poly_data = marching_cubes(vtk_image_data, verbose=verbose)
 
@@ -98,13 +105,14 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     if vtk_poly_data.GetNumberOfPoints() == 0:
         return list(), list()
 
-    vertices, faces = from_vtk_poly_data_to_vertices_faces(vtk_poly_data)
+    vertices, faces, color = from_vtk_poly_data_to_vertices_faces(
+        vtk_poly_data)
     vertices = vertices * image_3d.voxels_size + image_3d.world_coordinate
 
     return vertices, faces
 
 
-def marching_cubes(vtk_image_data, iso_value=1.0, verbose=False):
+def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
     """
     Call of vtkMarchingCubes on a vtk_image_data with iso_value
 
@@ -377,8 +385,6 @@ def voxelization(vtk_poly_data, voxels_size=1):
     edges.NonManifoldEdgesOn()
     edges.BoundaryEdgesOn()
     edges.Update()
-    print "HERE :", edges.GetOutput().GetNumberOfCells()
-
 
     pol2stenc = vtk.vtkPolyDataToImageStencil()
     pol2stenc.SetOutputOrigin(origin)
@@ -404,3 +410,18 @@ def voxelization(vtk_poly_data, voxels_size=1):
 
     return imgstenc.GetOutput()
 
+
+def mesh_surface_area(vertices, faces):
+    """ Return the surface_area of a mesh
+
+    :param vertices:
+    :param faces:
+    :return:
+    """
+    return skimage.measure.mesh_surface_area(vertices, faces)
+
+def from_vertices_faces_to_voxels_position(vertices, faces, voxels_size=4):
+    poly_data = from_vertices_faces_to_vtk_poly_data(vertices, faces)
+    image_data = voxelization(poly_data, voxels_size=voxels_size)
+    voxels_position = from_vtk_image_data_to_voxels_center(image_data)
+    return voxels_position

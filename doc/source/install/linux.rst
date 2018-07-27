@@ -43,7 +43,7 @@ http://conda.pydata.org/miniconda.html
     conda install numba numpy scikit-learn scikit-image scipy matplotlib networkx vtk opencv
 
     # Usefull tools for running example and documentation
-    conda install nose notebook sphinx sphinx_rtd_theme pandoc ipyvolume
+    conda install -c conda-forge nose notebook sphinx sphinx_rtd_theme pandoc ipyvolume
 
     # On windows
     conda install pywin32 [win]

@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
@@ -9,12 +9,11 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+from __future__ import division, print_function
+
 import numpy
 
-from openalea.phenomenal.object import (
-    VoxelGrid)
-
-
+import openalea.phenomenal.object as phm_obj
 # ==============================================================================
 
 
@@ -26,7 +25,7 @@ def test_simply_working_1():
 
     voxels_size = 2
 
-    im = VoxelGrid(voxels_position, voxels_size).to_image_3d()
+    im = phm_obj.VoxelGrid(voxels_position, voxels_size).to_image_3d()
 
     assert im.ndim == 3
 
@@ -44,15 +43,15 @@ def test_simply_working_2():
     voxels_position = list()
     voxels_position.append((1, 42, 1))
 
-    im = VoxelGrid(voxels_position, voxels_size).to_image_3d()
+    im = phm_obj.VoxelGrid(voxels_position, voxels_size).to_image_3d()
 
     assert im == [[[1]]]
     assert im.world_coordinate == (1, 42, 1)
 
-    vpc = VoxelGrid.from_image_3d(im)
+    vpc = phm_obj.VoxelGrid.from_image_3d(im)
 
     assert len(vpc.voxels_position) == 1
-    assert vpc.voxels_position[0] == (1, 42, 1)
+    assert tuple(vpc.voxels_position[0]) == (1, 42, 1)
     assert vpc.voxels_size == 16
 
 

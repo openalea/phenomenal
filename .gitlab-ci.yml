@@ -7,22 +7,24 @@ image: continuumio/miniconda:latest
 stages:
  - build
 
-install_conda:
+deploy_phenomenal_on_linux:
  stage: build
 
  script:
    - apt-get update
    - apt-get -y install freeglut3-dev
+   - apt-get -y install gcc
+   - apt-get -y install g++
 
    - conda config --set always_yes yes --set changeps1 no
    - conda update -q conda
    - conda install conda-build
-   - conda create --name phenome python
+   - conda create --name phenome -c conda-forge -c openalea python
    - source activate phenome
    - pwd
-   - cd ./build_tools/conda
+   - cd ./conda
    - conda build -c conda-forge -c openalea .
-   - cd ../..
+   - cd ..
 
    - conda install -c conda-forge -c openalea --use-local openalea.phenomenal
    - conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert

@@ -37,7 +37,6 @@ Installation
 ------------
 
 .. toctree::
-    :maxdepth: 2
 
    ./install/index.rst
 
@@ -50,13 +49,13 @@ Tutorial Jupyter Notebooks
 Tutorial Jupyter Notebooks are available on the git repository in the folder
 examples.
 
-References
-''''''''''
+API References
+''''''''''''''
 
 .. toctree::
-    :maxdepth: 4
 
     ./references/index.rst
+
 
 Authors
 -------

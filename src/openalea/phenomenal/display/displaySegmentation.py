@@ -1,12 +1,10 @@
 # -*- python -*-
 #
-#       Copyright 2015 INRIA - CIRAD - INRA
+#       Copyright INRIA - CIRAD - INRA
 #
 #       Distributed under the Cecill-C License.
 #       See accompanying file LICENSE.txt or copy at
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
-#
-#       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
@@ -15,7 +13,6 @@ import numpy
 
 from ._order_color_map import order_color_map
 from .displayVoxel import DisplayVoxel
-
 # ==============================================================================
 
 
@@ -25,9 +22,7 @@ class DisplaySegmentation(DisplayVoxel):
         DisplayVoxel.__init__(self)
 
     def __call__(self, voxel_segmentation, mode=1, windows_size=(600, 800)):
-
         self._voxel_segmentation = voxel_segmentation
-
         self.show(mode=mode, windows_size=windows_size)
 
         # self.add_actor_from_voxel_segmentation(self._voxel_segmentation)
@@ -35,7 +30,7 @@ class DisplaySegmentation(DisplayVoxel):
     def show(self, mode=1, windows_size=(600, 800)):
 
         if mode == 1:
-            self.display_classic_analysis(self._voxel_segmentation)
+            self.add_actor_classic_analysis(self._voxel_segmentation)
         if mode == 2:
             self.display_leaf_split(
                 self._voxel_segmentation)
@@ -56,43 +51,39 @@ class DisplaySegmentation(DisplayVoxel):
             return 0.5, 0.5, 0.5
         elif label == "unknown":
             return 1, 1, 1
-        elif 'order' in info:
+        elif 'pm_leaf_number' in info:
             color_map = order_color_map()
-            return color_map[info['order']]
+            return color_map[info['pm_leaf_number']]
         else:
-            if label == "cornet_leaf":
+            if label == "growing_leaf":
                 return 1, 0, 0
             else:
                 return None
 
     def display_skeleton(self, vmsi, order=5):
 
-        for vo in vmsi.voxel_organs:
-            self.add_actor_from_voxels(vo.voxels_position(),
-                                       vmsi.voxels_size * 0.25,
-                                       color=(0, 1, 0))
-
         for vo in vmsi.get_leafs():
-            for vs in vo.voxel_segments:
-                self.add_actor_from_voxels(vs.polyline,
-                                           vmsi.voxels_size * 1,
-                                           color=(1, 0, 0))
+            self.add_actor_from_voxels(
+                vo.voxels_position(), vmsi.voxels_size * 0.25, color=(0, 1, 0))
 
-                self.add_actor_from_ball_position(vs.polyline[0],
-                                                  radius=5,
-                                                  color=(0, 0, 1))
+            polyline = vo.get_longest_segment().polyline
+            # for vs in vo.voxel_segments:
+            self.add_actor_from_voxels(
+                polyline, vmsi.voxels_size * 1, color=(1, 0, 0))
 
-                self.add_actor_from_ball_position(vs.polyline[-1],
-                                                  radius=5,
-                                                  color=(1, 0, 0))
+            self.add_actor_from_ball_position(
+                polyline[0], radius=5, color=(0, 0, 1))
 
-        for vo in vmsi.get_leafs():
-            if 'order' in vo.info and vo.info['order'] == order:
-                vs = vo.get_highest_polyline()
-                self.add_actor_from_voxels(
-                    vs.polyline,
-                    vmsi.voxels_size * 1.5,
-                    color=(0, 0, 1))
+            self.add_actor_from_ball_position(
+                polyline[-1], radius=5, color=(1, 0, 0))
+
+        # for vo in vmsi.get_leafs():
+        #     if 'order' in vo.info and vo.info['order'] == order:
+        #         vs = vo.get_highest_polyline()
+        #         self.add_actor_from_voxels(
+        #             vs.polyline,
+        #             vmsi.voxels_size * 1.5,
+        #             color=(0, 0, 1))
 
     def display_stem_only(self, vmsi):
 
@@ -117,7 +108,7 @@ class DisplaySegmentation(DisplayVoxel):
                 color=color)
 
     def display_leaf_order(self, vmsi, leaf_order=4):
-        pos_stem = vmsi.get_stem().longest_polyline()[-1]
+        pos_stem = vmsi.get_stem().get_longest_polyline()[-1]
 
         vo = vmsi.get_leaf_order(leaf_order)
 
@@ -125,12 +116,12 @@ class DisplaySegmentation(DisplayVoxel):
             map(tuple, list(vo.voxels_position())))
 
         pos = vo.info['position_base']
-        if vo.label == "cornet_leaf":
+        if vo.label == "growing_leaf":
             pos = pos_stem
 
             closest_nodes = vo.get_closest_nodes()
 
-            i = vo.longest_polyline().index(vo.info['position_base'])
+            i = vo.get_longest_polyline().index(vo.info['position_base'])
 
             nodes = list(set.union(*[set(nodes) for nodes in
                                      closest_nodes[0:i]]))
@@ -183,8 +174,6 @@ class DisplaySegmentation(DisplayVoxel):
             vmsi.voxels_size * 1,
             color=(1, 0, 0))
 
-
-
         # r, g, b = (0, 0, 1)
         # pos = vo.info['position_tip']
         # pos = (pos[0] - 10, pos[1] - 10, pos[2])
@@ -201,7 +190,7 @@ class DisplaySegmentation(DisplayVoxel):
 
     def display_leaf_split(self, vmsi):
 
-        pos_stem = vmsi.get_stem().longest_polyline()[-1]
+        pos_stem = vmsi.get_stem().get_longest_polyline()[-1]
 
         for vo in vmsi.voxel_organs:
 
@@ -222,13 +211,13 @@ class DisplaySegmentation(DisplayVoxel):
                 vm = numpy.array(vo.info['vector_mean'])
 
                 pos = vo.info['position_base']
-                if vo.label == "cornet_leaf":
+                if vo.label == "growing_leaf":
                     pos = pos_stem
                     vm = vm * 2
 
                     closest_nodes = vo.get_closest_nodes()
 
-                    i = vo.longest_polyline().index(vo.info['position_base'])
+                    i = vo.get_longest_polyline().index(vo.info['position_base'])
 
                     v_base = set.union(*[set(nodes) for nodes in
                                          closest_nodes[:i]])
@@ -283,10 +272,9 @@ class DisplaySegmentation(DisplayVoxel):
 
                     vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
 
-    def display_classic_analysis(self, vmsi):
+    def add_actor_classic_analysis(self, vmsi, plot_number=True):
 
-        def plot(vo):
-
+        def add(vo):
             if vo is None:
                 return
 
@@ -295,16 +283,17 @@ class DisplaySegmentation(DisplayVoxel):
 
             self.add_actor_from_voxels(
                 voxels_position,
-                vmsi.voxels_size * 0.50,
+                vmsi.voxels_size,
                 color=self.get_color(vo.label, vo.info))
 
-            if ((vo.label == "mature_leaf" or vo.label == "cornet_leaf") and
-                    len(vo.voxel_segments) > 0 and "position_tip" in vo.info):
+            if ((vo.label == "mature_leaf" or vo.label == "growing_leaf") and
+                    len(vo.voxel_segments) > 0 and "pm_position_tip" in
+                vo.info):
 
-                pos = vo.info['position_base']
+                pos = vo.info['pm_position_base']
 
                 self.add_actor_from_ball_position(
-                    vo.info['position_tip'],
+                    vo.info['pm_position_tip'],
                     radius=vmsi.voxels_size * 2,
                     color=(1, 0, 0))
 
@@ -312,11 +301,11 @@ class DisplaySegmentation(DisplayVoxel):
                     pos, radius=vmsi.voxels_size * 2, color=(0, 0, 1))
 
                 r, g, b = (0, 0, 1)
-                pos = vo.info['position_tip']
+                pos = vo.info['pm_position_tip']
                 pos = (pos[0] - 10, pos[1] - 10, pos[2])
 
-                if 'order' in vo.info:
-                    order = str(vo.info['order'])
+                if plot_number and 'pm_leaf_number' in vo.info:
+                    order = str(vo.info['pm_leaf_number'])
                     vo.text_actor = self.add_actor_from_text(
                         order,
                         position=pos,
@@ -325,10 +314,17 @@ class DisplaySegmentation(DisplayVoxel):
 
                     vo.text_actor.SetCamera(self._renderer.GetActiveCamera())
 
-        plot(vmsi.get_unknown())
-        len_leafs = vmsi.get_number_of_leaf()
-        for i in range(len_leafs, -1, -1):
-            plot(vmsi.get_leaf_order(i))
-        plot(vmsi.get_stem())
+        # plot(vmsi.get_unknown())
+        for vo in vmsi.get_leafs():
+            add(vo)
+        add(vmsi.get_stem())
+
+    def record(self, list_vmsi, filename):
+
+        func = lambda vmsi: self.add_actor_classic_analysis(
+            vmsi, plot_number=False)
+
+        self.record_video(filename, list_vmsi, func)
+
 
 
