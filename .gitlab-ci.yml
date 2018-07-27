@@ -24,7 +24,7 @@ deploy_phenomenal_on_linux:
    - pwd
    - cd ./conda
    - conda build -c conda-forge -c openalea .
-   - cd ../..
+   - cd ..
 
    - conda install -c conda-forge -c openalea --use-local openalea.phenomenal
    - conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
