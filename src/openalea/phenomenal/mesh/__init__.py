@@ -19,10 +19,10 @@ Algorithms
 .. autosummary::
    :toctree: generated/
 
-   meshing
-   marching_cubes
-   smoothing
-   decimation
+   algorithms.meshing
+   algorithms.marching_cubes
+   algorithms.smoothing
+   algorithms.decimation
 
 Formats
 =======

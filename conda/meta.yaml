@@ -17,6 +17,7 @@ requirements:
     - setuptools
     - openalea.deploy
     - pywin32 [win]
+    - cython
   run:
     - python
     - numba

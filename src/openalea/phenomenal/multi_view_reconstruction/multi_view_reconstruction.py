@@ -482,7 +482,7 @@ def check_groups(neigh, inconsistent, groups, nb_distance):
     return Voxels(position, inconsistent.size)
 
 
-def reconstruction_inconsistent(image_views, stages):
+def reconstruction_inconsistent(image_views, stages, attractor=None):
 
     for iv in image_views:
         if iv.image_ref is not None:
@@ -499,7 +499,10 @@ def reconstruction_inconsistent(image_views, stages):
     if numpy.size(stages[-1].consistent.position) == 0:
         consistent_neighbors.fit(numpy.array([[0, 0, 0]]))
     else:
-        consistent_neighbors.fit(stages[-1].consistent.position)
+        if attractor is not None:
+            consistent_neighbors.fit(attractor)
+        else:
+            consistent_neighbors.fit(stages[-1].consistent.position)
 
     consistents = [None] * len(stages)
     for i, stage in enumerate(stages):
@@ -562,7 +565,8 @@ def reconstruction_3d(image_views,
                       error_tolerance=0,
                       voxel_center_origin=(0.0, 0.0, 0.0),
                       start_voxel_size=4096,
-                      voxels_position=None):
+                      voxels_position=None,
+                      attractor=None):
     """
     Construct a list of voxel represented object with positive value on binary
     image in images of images_projections.
@@ -633,7 +637,8 @@ def reconstruction_3d(image_views,
 
     consistent_stages = [stage.consistent for stage in stages]
     if have_image_ref(image_views):
-        consistent_stages = reconstruction_inconsistent(image_views, stages)
+        consistent_stages = reconstruction_inconsistent(image_views, stages,
+                                                        attractor=attractor)
 
     return VoxelGrid(consistent_stages[-1].position, consistent_stages[-1].size)
 
@@ -757,12 +762,21 @@ def image_error(img_ref, img_src, precision=2):
 
     img_ref = img_ref.astype(numpy.int32)
     nb_ref = max(numpy.count_nonzero(img_ref), 1)
+    nb_ref2 = max(numpy.count_nonzero(img_ref == 0), 1)
     img_src = img_src.astype(numpy.int32)
     img = numpy.subtract(img_ref, img_src)
-    false_positive = round(len(img[img < 0]) * 100.0 / nb_ref, precision)
-    true_negative = round(len(img[img > 0]) * 100.0 / nb_ref, precision)
+    true_negative = numpy.bitwise_and(img_ref == 0, img_src == 0)
+    true_negative = round(numpy.count_nonzero(true_negative) * 100.0 / nb_ref2,
+                          precision)
+    # true_negative = numpy.bitwise_and(img_ref == 0, img_src == 0)
 
-    return false_positive, true_negative
+
+    false_positive = round(numpy.count_nonzero(img[img < 0]) * 100.0 / nb_ref2,
+                           precision)
+    false_negative = round(numpy.count_nonzero(img[img > 0]) * 100.0 / nb_ref,
+                           precision)
+    print(true_negative, false_positive, false_negative)
+    return false_positive, false_negative
 
 
 def reconstruction_error(voxels_grid, image_views):
@@ -792,7 +806,7 @@ def reconstruction_error(voxels_grid, image_views):
     """
 
     sum_false_positive = 0
-    sum_true_negative = 0
+    sum_false_negative = 0
     for image_view in image_views:
 
         img_src = project_voxel_centers_on_image(
@@ -801,13 +815,13 @@ def reconstruction_error(voxels_grid, image_views):
             image_view.image.shape,
             image_view.projection)
 
-        false_positive, true_negative = image_error(
+        false_positive, false_negative = image_error(
             image_view.image, img_src)
 
         sum_false_positive += false_positive
-        sum_true_negative += true_negative
+        sum_false_negative += false_negative
 
     mean_false_positive = sum_false_positive / len(image_views)
-    mean_true_negative = sum_true_negative / len(image_views)
+    mean_false_negative = sum_false_negative / len(image_views)
 
-    return mean_false_positive, mean_true_negative
+    return mean_false_positive, mean_false_negative

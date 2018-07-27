@@ -13,6 +13,7 @@ import vtk
 import random
 import numpy.random
 
+
 from .display import Display
 # ==============================================================================
 
@@ -206,8 +207,11 @@ class DisplayVoxel(Display):
         del polys
 
         if colors is not None:
+            vtk_colors = vtk.vtkUnsignedCharArray()
+            vtk_colors.SetNumberOfComponents(3)
+            vtk_colors.SetName("Colors")
             for color in colors:
-                vtk_colors.InsertNextTypedTuple(color)
+                vtk_colors.InsertNextTuple3(color[0], color[1], color[2])
             poly_data.GetCellData().SetScalars(vtk_colors)
 
         # ======================================================================
@@ -217,7 +221,7 @@ class DisplayVoxel(Display):
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().SetColor(color[0], color[1], color[2])
+        # actor.GetProperty().SetColor(color[0], color[1], color[2])
 
         self._actors.append(actor)
         self._renderer.AddActor(actor)

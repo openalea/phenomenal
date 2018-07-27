@@ -12,6 +12,7 @@ from __future__ import division, print_function, absolute_import
 import vtk
 import vtk.util.numpy_support
 import operator
+
 # ==============================================================================
 
 __all__ = ["from_vertices_faces_to_vtk_poly_data",
@@ -23,7 +24,10 @@ __all__ = ["from_vertices_faces_to_vtk_poly_data",
 # ==============================================================================
 
 
-def from_vertices_faces_to_vtk_poly_data(vertices, faces):
+def from_vertices_faces_to_vtk_poly_data(vertices, faces,
+                                         vertices_colors=None,
+                                         faces_colors=None):
+
     def make_vtk_id_list(it):
         vil = vtk.vtkIdList()
         for j in it:
@@ -46,7 +50,25 @@ def from_vertices_faces_to_vtk_poly_data(vertices, faces):
     poly_data.SetPolys(polys)
     del polys
 
+    if vertices_colors is not None:
+        vtk_colors = vtk.vtkUnsignedCharArray()
+        vtk_colors.SetNumberOfComponents(3)
+        vtk_colors.SetName("Colors")
+        for color in vertices_colors:
+            vtk_colors.InsertNextTuple3(color[0], color[1], color[2])
+        poly_data.GetPointData().SetScalars(vtk_colors)
+
+    if faces_colors is not None:
+        vtk_colors = vtk.vtkUnsignedCharArray()
+        vtk_colors.SetNumberOfComponents(3)
+        vtk_colors.SetName("Colors")
+        for color in faces_colors:
+            vtk_colors.InsertNextTuple3(color[0], color[1], color[2])
+        poly_data.GetCellData().SetScalars(vtk_colors)
+
     return poly_data
+
+
 
 
 def from_vtk_poly_data_to_vertices_faces(vtk_poly_data):
@@ -59,7 +81,9 @@ def from_vtk_poly_data_to_vertices_faces(vtk_poly_data):
 
     faces = faces.reshape((len(faces) // 4, 4))
 
-    return vertices, faces[:, 1:]
+    colors = vtk_poly_data.GetPointData().GetScalars()
+
+    return vertices, faces[:, 1:], colors
 
 
 def from_numpy_matrix_to_vtk_image_data(data_matrix):
@@ -147,3 +171,5 @@ def from_voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
             nx, ny, nz, 0, 1)
 
     return image_data, (x_min, y_min, z_min)
+
+

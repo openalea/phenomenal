@@ -15,8 +15,12 @@ import numpy
 import math
 import skimage.measure
 
-from .vtk_transformation import (from_vtk_poly_data_to_vertices_faces,
-                                 from_numpy_matrix_to_vtk_image_data)
+from .vtk_transformation import (
+    from_numpy_matrix_to_vtk_image_data,
+    from_vtk_poly_data_to_vertices_faces,
+    from_vertices_faces_to_vtk_poly_data,
+    from_vtk_image_data_to_voxels_center)
+
 # ==============================================================================
 
 __all__ = ["meshing",
@@ -24,7 +28,8 @@ __all__ = ["meshing",
            "smoothing",
            "decimation",
            "voxelization",
-           "mesh_surface_area"]
+           "mesh_surface_area",
+           "from_vertices_faces_to_voxels_position"]
 
 # ==============================================================================
 
@@ -80,7 +85,8 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
 
     image_3d = image_3d.astype(numpy.uint8)
 
-    vtk_image_data = from_numpy_matrix_to_vtk_image_data(image_3d)
+    vtk_image_data = from_numpy_matrix_to_vtk_image_data(
+        image_3d)
 
     vtk_poly_data = marching_cubes(vtk_image_data, verbose=verbose)
 
@@ -99,7 +105,8 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     if vtk_poly_data.GetNumberOfPoints() == 0:
         return list(), list()
 
-    vertices, faces = from_vtk_poly_data_to_vertices_faces(vtk_poly_data)
+    vertices, faces, color = from_vtk_poly_data_to_vertices_faces(
+        vtk_poly_data)
     vertices = vertices * image_3d.voxels_size + image_3d.world_coordinate
 
     return vertices, faces
@@ -412,3 +419,9 @@ def mesh_surface_area(vertices, faces):
     :return:
     """
     return skimage.measure.mesh_surface_area(vertices, faces)
+
+def from_vertices_faces_to_voxels_position(vertices, faces, voxels_size=4):
+    poly_data = from_vertices_faces_to_vtk_poly_data(vertices, faces)
+    image_data = voxelization(poly_data, voxels_size=voxels_size)
+    voxels_position = from_vtk_image_data_to_voxels_center(image_data)
+    return voxels_position

@@ -104,7 +104,8 @@ def segment_reduction(voxel_skeleton,
 
     is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
 
-    c_skeleton.skeletonize(list_array, is_removed, len_segments, len_images)
+    c_skeleton.skeletonize(list_array, is_removed, len_segments, len_images,
+                           nb_min_pixel, required_visible)
 
     segments = [orderer_voxel_segments[i] for i in range(len_segments) if
                 is_removed[i] == 0]
@@ -289,6 +290,7 @@ def compute_all_shorted_path(graph, voxels_size):
 def skeletonize(voxel_grid,
                 graph,
                 subgraph=None,
+                voxels_position_remain=None,
                 mode="plane",
                 plane_width=None,
                 ball_radius=None):
@@ -321,7 +323,7 @@ def skeletonize(voxel_grid,
     voxel_skeleton : VoxelSkeleton
     """
     if plane_width is None:
-        plane_width = voxel_grid.voxels_size
+        plane_width = voxel_grid.voxels_size * 2
 
     if ball_radius is None:
         ball_radius = voxel_grid.voxels_size * 4
@@ -334,7 +336,9 @@ def skeletonize(voxel_grid,
         subgraph, voxels_size)
 
     # ==========================================================================
-    voxels_position_remain = subgraph.nodes()
+    if voxels_position_remain is None:
+        voxels_position_remain = subgraph.nodes()
+
     np_arr_all_graph_voxels_plant = numpy.array(graph.nodes())
     # ==========================================================================
 

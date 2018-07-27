@@ -398,14 +398,14 @@ def test_threshold_meanshift_4():
 
 def test_threshold_meanshift_no_regression_1():
 
-    plant_number = 1
+    plant_number = 6
     raw_side_images = phm_data.raw_images(plant_number=plant_number)['side']
-    mask = phm_data.tutorial_data_binarization_mask()[2]
+    mask = phm_data.tutorial_data_binarization_mask()[1]
     mean_im = phm_img.mean_image(raw_side_images.values())
 
     im_bin = phm_img.threshold_meanshift(raw_side_images[0], mean_im, mask=mask)
 
-    ref = 121663
+    ref = 158482
     # Acceptation error of 0.01 %
     acceptation_error = ref * 0.001
     if abs(numpy.count_nonzero(im_bin) - ref) > acceptation_error:

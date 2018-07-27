@@ -58,9 +58,8 @@ def test_meshing():
                                        smoothing_iteration=2,
                                        reduction=0.95,
                                        verbose=True)
-
-    assert 100 <= len(vertices) <= 273
-    assert 200 <= len(faces) <= 542
+    assert 100 <= len(vertices) <= 500, len(vertices)
+    assert 200 <= len(faces) <= 1000, len(faces)
 
     poly_data = phm_mesh.from_vertices_faces_to_vtk_poly_data(vertices, faces)
 
@@ -70,6 +69,11 @@ def test_meshing():
 
     assert len(voxels_position) >= 1000
 
+
+def test_format():
+    vertices, faces, color = phm_data.synthetic_plant(plant_number=1)
+
+    print(type(color))
 
 if __name__ == "__main__":
     for func_name in dir():

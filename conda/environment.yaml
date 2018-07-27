@@ -24,3 +24,4 @@ dependencies:
   - pandoc
   - ipyvolume
   - pywin32 [win]
+  - cython
