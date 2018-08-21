@@ -6,18 +6,28 @@ source:
   path: ..
 
 build:
+  features:
+    - vc9               [win and py27]
+    - vc14              [win and py36]
+  track_features:
+    - vc9               [win and py27]
+    - vc14              [win and py36]
   number: 0
   preserve_egg_dir: True
   string: phenomenal
-  script: python setup.py install
+  script:
+    - python setup.py build_ext --inplace
+    - python setup.py install
 
 requirements:
   build:
     - python
     - setuptools
     - openalea.deploy
-    - pywin32 [win]
     - cython
+    - vs2008_runtime    [win and py27]
+    - vs2015_runtime    [win and py36]
+    - pywin32 [win]
     - numpy
   run:
     - python
@@ -33,6 +43,7 @@ requirements:
     - vtk
     - pywin32 [win]
     - nose
+    - cython
 
 test:
   imports:
