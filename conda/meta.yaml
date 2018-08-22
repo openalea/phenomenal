@@ -29,6 +29,9 @@ requirements:
     - vs2015_runtime    [win and py36]
     - pywin32 [win]
     - numpy
+    - {{ compiler("c") }}
+    - {{ compiler("cxx") }}
+
   run:
     - python
     - numba

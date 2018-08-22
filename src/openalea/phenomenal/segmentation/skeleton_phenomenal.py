@@ -18,7 +18,9 @@ from .plane_interception import (
     intercept_points_along_polyline_with_ball)
 from ..object import (VoxelSkeleton, VoxelGrid, VoxelSegment)
 
-from . import _c_skeleton as c_skeleton
+import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
+
+# from . import _c_skeleton as c_skeleton
 # ==============================================================================
 
 
