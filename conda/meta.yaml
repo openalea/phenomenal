@@ -16,8 +16,8 @@ build:
   preserve_egg_dir: True
   string: phenomenal
   script:
-    - python setup.py build_ext
-    - python setup.py install
+#    - python setup.py build_ext
+    - python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
   build:
@@ -27,6 +27,7 @@ requirements:
     - cython
     - vs2008_runtime    [win and py27]
     - vs2015_runtime    [win and py36]
+    - libgcc-ng [unix]
     - pywin32 [win]
     - numpy
 
