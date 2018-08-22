@@ -29,6 +29,8 @@ deploy_phenomenal_on_linux:
    - conda create -n deploy -c openalea -c conda-forge --use-local python=2.7 openalea.phenomenal
    - source activate deploy
 
+   - ls /builds/phenome/phenomenal/src/openalea/phenomenal/segmentation/
+
    - conda install -c openalea -c conda-forge notebook sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
 
    - conda info -e
