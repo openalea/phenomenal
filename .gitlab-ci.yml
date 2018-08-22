@@ -19,15 +19,17 @@ deploy_phenomenal_on_linux:
    - conda config --set always_yes yes --set changeps1 no
    - conda update -q conda
    - conda install conda-build
-   - conda create --name phenome -c conda-forge -c openalea python
-   - source activate phenome
+
    - pwd
-   - cd ./conda
+
+   - cd conda
    - conda build -c conda-forge -c openalea .
    - cd ..
 
-   - conda install -c conda-forge -c openalea --use-local openalea.phenomenal
-   - conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
+   - conda create -n deploy -c openalea -c conda-forge --use-local python=2.7 openalea.phenomenal
+   - source activate deploy
+
+   - conda install -c openalea -c conda-forge notebook sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
 
    - conda info -e
    - conda list
