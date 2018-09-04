@@ -16,8 +16,8 @@ How solve the server certificate verification failed problem on a ubuntu VM ?
 How solve the hostnanme on a ubuntu VM ?
 ----------------------------------------
 
-cat /etc/host
-nano /etc/hostname
+    cat /etc/host
+    nano /etc/hostname
 
 
 How to install Python-Irodsclient ?

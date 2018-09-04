@@ -36,7 +36,8 @@ class Target(object):
 
 
 class Chessboard(object):
-    def __init__(self, square_size, shape):
+
+    def __init__(self, square_size=50, shape=(7, 7)):
         self.square_size = square_size
         self.shape = shape
         self.image_points = collections.defaultdict(dict)
@@ -79,7 +80,8 @@ class Chessboard(object):
         :return: True if chessboard corner are found otherwise False.
         """
 
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        if len(image.shape) == 3:
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
         try:
 

@@ -12,9 +12,7 @@ deploy_phenomenal_on_linux:
 
  script:
    - apt-get update
-   - apt-get -y install freeglut3-dev
-   - apt-get -y install gcc
-   - apt-get -y install g++
+   - apt-get -y install freeglut3-dev gcc g++
 
    - conda config --set always_yes yes --set changeps1 no
    - conda update -q conda
@@ -27,9 +25,8 @@ deploy_phenomenal_on_linux:
    - cd ..
 
    - conda create -n deploy -c openalea -c conda-forge --use-local python=2.7 openalea.phenomenal
-   - source activate deploy
-
-   - ls /builds/phenome/phenomenal/src/openalea/phenomenal/segmentation/
+   - conda activate deploy
+   - conda install -c openalea -c conda-forge opencv
 
    - conda install -c openalea -c conda-forge notebook sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
 
@@ -37,7 +34,7 @@ deploy_phenomenal_on_linux:
    - conda list
 
    - nosetests test --with-coverage --cover-erase --cover-html --cover-package=openalea.phenomenal --cover-tests --cover-inclusive
-   - source deactivate
+   - conda deactivate
 
 
  artifacts:

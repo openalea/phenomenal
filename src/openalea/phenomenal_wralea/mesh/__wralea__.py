@@ -1,5 +1,5 @@
 
-# This file has been generated at Thu Apr 19 15:43:13 2018
+# This file has been generated at Fri Aug 31 15:42:12 2018
 
 from openalea.core import *
 
@@ -12,16 +12,16 @@ __license__ = 'CeCILL-C'
 __authors__ = 'Simon Artzet et al.'
 
 
-__all__ = ['openalea_phenomenal_mesh_meshing', 'openalea_phenomenal_mesh_centers', 'openalea_phenomenal_mesh_mesh_surface_area', 'openalea_phenomenal_mesh_from_numpy_matrix_to_vtk_image_data', 'openalea_phenomenal_mesh_marching_cubes', 'openalea_phenomenal_mesh_read_json_file_to_vertices_faces', 'openalea_phenomenal_mesh_smoothing', 'openalea_phenomenal_mesh_from_voxel_centers_to_vtk_image_data', 'openalea_phenomenal_mesh_from_vtk_image_data_to_voxels_center', 'openalea_phenomenal_mesh_write_vtk_poly_data_to_ply_file', 'openalea_phenomenal_mesh_voxelization', 'openalea_phenomenal_mesh_decimation', 'openalea_phenomenal_mesh_from_vtk_poly_data_to_vertices_faces', 'openalea_phenomenal_mesh_normals', 'openalea_phenomenal_mesh_write_vertices_faces_to_ply_file', 'openalea_phenomenal_mesh_from_vertices_faces_to_vtk_poly_data', 'openalea_phenomenal_mesh_write_vertices_faces_to_json_file']
+__all__ = ['openalea_phenomenal_mesh_from_voxel_centers_to_vtk_image_data', 'openalea_phenomenal_mesh_centers', 'openalea_phenomenal_mesh_median_color_from_images', 'openalea_phenomenal_mesh_from_numpy_matrix_to_vtk_image_data', 'openalea_phenomenal_mesh_marching_cubes', 'openalea_phenomenal_mesh_meshing', 'openalea_phenomenal_mesh_smoothing', 'openalea_phenomenal_mesh_read_ply_to_vertices_faces', 'openalea_phenomenal_mesh_from_vtk_image_data_to_voxels_center', 'openalea_phenomenal_mesh_write_vtk_poly_data_to_ply_file', 'openalea_phenomenal_mesh_normals', 'openalea_phenomenal_mesh_decimation', 'openalea_phenomenal_mesh_project_mesh_on_image', 'openalea_phenomenal_mesh_from_vtk_poly_data_to_vertices_faces', 'openalea_phenomenal_mesh_from_vertices_faces_to_voxels_position', 'openalea_phenomenal_mesh_mesh_surface_area', 'openalea_phenomenal_mesh_voxelization', 'openalea_phenomenal_mesh_write_vertices_faces_to_ply_file', 'openalea_phenomenal_mesh_from_vertices_faces_to_vtk_poly_data']
 
 
 
-openalea_phenomenal_mesh_meshing = Factory(name='meshing',
+openalea_phenomenal_mesh_from_voxel_centers_to_vtk_image_data = Factory(name='from_voxel_centers_to_vtk_image_data',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.mesh',
                 nodemodule='openalea.phenomenal.mesh',
-                nodeclass='meshing',
+                nodeclass='from_voxel_centers_to_vtk_image_data',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -46,12 +46,12 @@ openalea_phenomenal_mesh_centers = Factory(name='centers',
 
 
 
-openalea_phenomenal_mesh_mesh_surface_area = Factory(name='mesh_surface_area',
+openalea_phenomenal_mesh_median_color_from_images = Factory(name='median_color_from_images',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.mesh',
                 nodemodule='openalea.phenomenal.mesh',
-                nodeclass='mesh_surface_area',
+                nodeclass='median_color_from_images',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -91,12 +91,12 @@ openalea_phenomenal_mesh_marching_cubes = Factory(name='marching_cubes',
 
 
 
-openalea_phenomenal_mesh_read_json_file_to_vertices_faces = Factory(name='read_json_file_to_vertices_faces',
+openalea_phenomenal_mesh_meshing = Factory(name='meshing',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.mesh',
                 nodemodule='openalea.phenomenal.mesh',
-                nodeclass='read_json_file_to_vertices_faces',
+                nodeclass='meshing',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -121,12 +121,12 @@ openalea_phenomenal_mesh_smoothing = Factory(name='smoothing',
 
 
 
-openalea_phenomenal_mesh_from_voxel_centers_to_vtk_image_data = Factory(name='from_voxel_centers_to_vtk_image_data',
+openalea_phenomenal_mesh_read_ply_to_vertices_faces = Factory(name='read_ply_to_vertices_faces',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.mesh',
                 nodemodule='openalea.phenomenal.mesh',
-                nodeclass='from_voxel_centers_to_vtk_image_data',
+                nodeclass='read_ply_to_vertices_faces',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -166,12 +166,12 @@ openalea_phenomenal_mesh_write_vtk_poly_data_to_ply_file = Factory(name='write_v
 
 
 
-openalea_phenomenal_mesh_voxelization = Factory(name='voxelization',
+openalea_phenomenal_mesh_normals = Factory(name='normals',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.mesh',
                 nodemodule='openalea.phenomenal.mesh',
-                nodeclass='voxelization',
+                nodeclass='normals',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -196,6 +196,21 @@ openalea_phenomenal_mesh_decimation = Factory(name='decimation',
 
 
 
+openalea_phenomenal_mesh_project_mesh_on_image = Factory(name='project_mesh_on_image',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.mesh',
+                nodemodule='openalea.phenomenal.mesh',
+                nodeclass='project_mesh_on_image',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
 openalea_phenomenal_mesh_from_vtk_poly_data_to_vertices_faces = Factory(name='from_vtk_poly_data_to_vertices_faces',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
@@ -211,12 +226,42 @@ openalea_phenomenal_mesh_from_vtk_poly_data_to_vertices_faces = Factory(name='fr
 
 
 
-openalea_phenomenal_mesh_normals = Factory(name='normals',
+openalea_phenomenal_mesh_from_vertices_faces_to_voxels_position = Factory(name='from_vertices_faces_to_voxels_position',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.mesh',
                 nodemodule='openalea.phenomenal.mesh',
-                nodeclass='normals',
+                nodeclass='from_vertices_faces_to_voxels_position',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_mesh_mesh_surface_area = Factory(name='mesh_surface_area',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.mesh',
+                nodemodule='openalea.phenomenal.mesh',
+                nodeclass='mesh_surface_area',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_mesh_voxelization = Factory(name='voxelization',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.mesh',
+                nodemodule='openalea.phenomenal.mesh',
+                nodeclass='voxelization',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -247,21 +292,6 @@ openalea_phenomenal_mesh_from_vertices_faces_to_vtk_poly_data = Factory(name='fr
                 category='openalea.phenomenal.mesh',
                 nodemodule='openalea.phenomenal.mesh',
                 nodeclass='from_vertices_faces_to_vtk_poly_data',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_mesh_write_vertices_faces_to_json_file = Factory(name='write_vertices_faces_to_json_file',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.mesh',
-                nodemodule='openalea.phenomenal.mesh',
-                nodeclass='write_vertices_faces_to_json_file',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,

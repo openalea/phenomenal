@@ -1,5 +1,5 @@
 
-# This file has been generated at Thu Apr 19 15:43:13 2018
+# This file has been generated at Fri Aug 31 15:42:11 2018
 
 from openalea.core import *
 
@@ -12,7 +12,7 @@ __license__ = 'CeCILL-C'
 __authors__ = 'Simon Artzet et al.'
 
 
-__all__ = ['openalea_phenomenal_display_show_image_with_chessboard_corners', 'openalea_phenomenal_display_show_poly_data', 'openalea_phenomenal_display_plot_values', 'openalea_phenomenal_display_order_color_map', 'openalea_phenomenal_display_DisplaySegmentation', 'openalea_phenomenal_display_show_chessboard_3d_projection_on_image', 'openalea_phenomenal_display_DisplayVoxelGrid', 'openalea_phenomenal_display_vtk_show_poly_data', 'openalea_phenomenal_display_DisplayMesh', 'openalea_phenomenal_display_show_image', 'openalea_phenomenal_display_DisplayVoxel', 'openalea_phenomenal_display_show_values', 'openalea_phenomenal_display_Display', 'openalea_phenomenal_display_show_images', 'openalea_phenomenal_display_vtk_voxel_point_cloud_to_polydata', 'openalea_phenomenal_display_DisplaySkeleton']
+__all__ = ['openalea_phenomenal_display_show_image_with_chessboard_corners', 'openalea_phenomenal_display_show_poly_data', 'openalea_phenomenal_display_plot_values', 'openalea_phenomenal_display_order_color_map', 'openalea_phenomenal_display_DisplaySegmentation', 'openalea_phenomenal_display_show_chessboard_3d_projection_on_image', 'openalea_phenomenal_display_DisplayVoxelGrid', 'openalea_phenomenal_display_vtk_show_poly_data', 'openalea_phenomenal_display_rotation_matrix', 'openalea_phenomenal_display_DisplayMesh', 'openalea_phenomenal_display_show_image', 'openalea_phenomenal_display_DisplayVoxel', 'openalea_phenomenal_display_show_values', 'openalea_phenomenal_display_Display', 'openalea_phenomenal_display_show_images', 'openalea_phenomenal_display_vtk_voxel_point_cloud_to_polydata', 'openalea_phenomenal_display_DisplaySkeleton']
 
 
 
@@ -127,6 +127,21 @@ openalea_phenomenal_display_vtk_show_poly_data = Factory(name='vtk_show_poly_dat
                 category='openalea.phenomenal.display',
                 nodemodule='openalea.phenomenal.display',
                 nodeclass='vtk_show_poly_data',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_rotation_matrix = Factory(name='rotation_matrix',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='rotation_matrix',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,

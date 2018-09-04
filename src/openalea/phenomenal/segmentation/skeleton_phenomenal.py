@@ -18,9 +18,8 @@ from .plane_interception import (
     intercept_points_along_polyline_with_ball)
 from ..object import (VoxelSkeleton, VoxelGrid, VoxelSegment)
 
-import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
-
-# from . import _c_skeleton as c_skeleton
+# import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
+from . import _c_skeleton as c_skeleton
 # ==============================================================================
 
 
@@ -259,7 +258,7 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
     return base_stem_position
 
 
-def compute_all_shorted_path(graph, voxels_size):
+def compute_all_shorted_path(graph, voxels_size, neighbor_size=45):
     """ Compute all the shorted path from the base position of the graph
     position.
 
@@ -278,7 +277,10 @@ def compute_all_shorted_path(graph, voxels_size):
     """
     # ==========================================================================
     # Get the high points in the matrix and the supposed base plant points
-    x_stem, y_stem, z_stem = find_base_stem_position(graph.nodes(), voxels_size)
+    x_stem, y_stem, z_stem = find_base_stem_position(
+        graph.nodes(),
+        voxels_size,
+        neighbor_size=neighbor_size)
 
     # ==========================================================================
     # Compute the shorted path
@@ -295,7 +297,8 @@ def skeletonize(voxel_grid,
                 voxels_position_remain=None,
                 mode="plane",
                 plane_width=None,
-                ball_radius=None):
+                ball_radius=None,
+                neighbor_size=45):
     """ Compute phenomenal skeletonization on the voxel_grid based on the graph.
 
     Parameters
@@ -335,7 +338,7 @@ def skeletonize(voxel_grid,
 
     voxels_size = voxel_grid.voxels_size
     all_shorted_path_to_stem_base = compute_all_shorted_path(
-        subgraph, voxels_size)
+        subgraph, voxels_size, neighbor_size=neighbor_size)
 
     # ==========================================================================
     if voxels_position_remain is None:

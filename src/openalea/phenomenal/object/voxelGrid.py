@@ -110,6 +110,8 @@ class VoxelGrid(object):
             len_y = int((y_max - y_min) / self.voxels_size + 1)
             len_z = int((z_max - z_min) / self.voxels_size + 1)
 
+            print(len_x, len_y, len_z)
+
             image_3d = Image3D.zeros((len_x, len_y, len_z),
                                      dtype=numpy.bool,
                                      voxels_size=self.voxels_size,

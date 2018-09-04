@@ -61,13 +61,15 @@ class DisplaySkeleton(DisplayVoxel):
                 voxel_skeleton.voxels_size * 1.5,
                 color=skeleton_color)
 
-            self.add_actor_from_ball_position(vs.polyline[0],
-                                              radius=10,
-                                              color=(0, 0, 1))
+            self.add_actor_from_ball_position(
+                vs.polyline[0],
+                radius=voxel_skeleton.voxels_size * 4,
+                color=(0, 0, 1))
 
-            self.add_actor_from_ball_position(vs.polyline[-1],
-                                              radius=10,
-                                              color=(1, 0, 0))
+            self.add_actor_from_ball_position(
+                vs.polyline[-1],
+                radius=voxel_skeleton.voxels_size * 4,
+                color=(1, 0, 0))
 
     def record(self, list_voxel_skeleton, filename,
                with_voxel=True,

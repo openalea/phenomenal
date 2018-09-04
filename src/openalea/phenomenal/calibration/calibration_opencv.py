@@ -58,23 +58,15 @@ class CalibrationCameraOpenCv(object):
     def calibrate(self,
                   ref_target_points_2d,
                   ref_target_points_local_3d,
-                  ref_target_points_2d_2,
-                  ref_target_points_local_3d_2,
                   size_image):
 
         image_points = list()
         object_points = list()
-        for angle in ref_target_points_2d:
-            corners = ref_target_points_2d[angle].astype(numpy.float32)
+
+        for id_view in ref_target_points_2d:
+            corners = ref_target_points_2d[id_view].astype(numpy.float32)
             image_points.append(corners)
             pts_3d = numpy.array(ref_target_points_local_3d)
-            pts_3d = pts_3d.astype(numpy.float32)
-            object_points.append(pts_3d)
-
-        for angle in ref_target_points_2d_2:
-            corners = ref_target_points_2d_2[angle].astype(numpy.float32)
-            image_points.append(corners)
-            pts_3d = numpy.array(ref_target_points_local_3d_2)
             pts_3d = pts_3d.astype(numpy.float32)
             object_points.append(pts_3d)
 
@@ -103,26 +95,25 @@ class CalibrationCameraOpenCv(object):
         self.distortion_coefficient = distortion_coefficient
 
         i = 0
-        for angle in ref_target_points_2d:
-            self.rotation_vectors[angle] = rvecs[i]
-            self.translation_vectors[angle] = tvecs[i]
+        for id_view in ref_target_points_2d:
+            self.rotation_vectors[id_view] = rvecs[i]
+            self.translation_vectors[id_view] = tvecs[i]
             i += 1
 
-    def get_projection(self, angle):
-        def project_point(point):
-            pt = numpy.reshape(point, (1, 3))
-            pt = pt.astype(numpy.float32)
+    def get_projection(self, id_view):
+        def project_points(pts):
+            pts = pts.astype(numpy.float32)
 
-            projection_point, _ = cv2.projectPoints(
-                pt,
-                self.rotation_vectors[angle],
-                self.translation_vectors[angle],
+            projected_pts, _ = cv2.projectPoints(
+                pts,
+                self.rotation_vectors[id_view],
+                self.translation_vectors[id_view],
                 self.focal_matrix,
                 self.distortion_coefficient)
 
-            return projection_point[0, 0, 0], projection_point[0, 0, 1]
+            return projected_pts[:, 0, :]
 
-        return lambda pt3d: project_point(pt3d)
+        return lambda pt3d: project_points(pt3d)
 
     def dump(self, file_path):
         save_class = dict()
