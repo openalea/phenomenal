@@ -35,7 +35,8 @@ deploy_phenomenal_on_linux:
    - conda info -e
    - conda list
 
-   - nosetests test --with-coverage --cover-erase --cover-html --cover-package=openalea.phenomenal --cover-tests --cover-inclusive
+   - cd test
+   - nosetests --with-coverage --cover-erase --cover-html --cover-package=openalea.phenomenal --cover-tests --cover-inclusive
    - conda deactivate
 
  artifacts:
