@@ -23,14 +23,12 @@ deploy_phenomenal_on_linux:
    - pwd
 
    - cd conda
-   - conda build -c conda-forge -c openalea .
+   - conda build -c openalea -c conda-forge .
    - cd ..
 
    - conda create -n deploy -c openalea -c conda-forge --use-local python=2.7 openalea.phenomenal
    - conda activate deploy
    - conda install -c openalea -c conda-forge opencv
-
-   - conda install -c openalea -c conda-forge notebook sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
 
    - conda info -e
    - conda list
@@ -38,6 +36,7 @@ deploy_phenomenal_on_linux:
    - nosetests test --with-coverage --cover-erase --cover-html --cover-package=openalea.phenomenal --cover-tests --cover-inclusive
    - conda deactivate
 
+- conda install -c openalea -c conda-forge notebook sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
 
  artifacts:
   paths:
