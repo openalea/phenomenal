@@ -16,7 +16,6 @@ build:
   preserve_egg_dir: True
   string: phenomenal
   script:
-#    - python setup.py build_ext --inplace
     - python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
@@ -50,6 +49,14 @@ requirements:
 test:
   imports:
     - openalea.phenomenal
+    - openalea.phenomenal.calibration
+    - openalea.phenomenal.data
+    - openalea.phenomenal.display
+    - openalea.phenomenal.image
+    - openalea.phenomenal.mesh
+    - openalea.phenomenal.multi_view_reconstruction
+    - openalea.phenomenal.object
+    - openalea.phenomenal.segmentation
 
   script: nosetests test
 
