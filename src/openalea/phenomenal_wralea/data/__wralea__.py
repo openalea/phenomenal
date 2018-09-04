@@ -1,5 +1,5 @@
 
-# This file has been generated at Thu Apr 19 15:43:13 2018
+# This file has been generated at Fri Aug 31 15:42:11 2018
 
 from openalea.core import *
 
@@ -12,7 +12,7 @@ __license__ = 'CeCILL-C'
 __authors__ = 'Simon Artzet et al.'
 
 
-__all__ = ['openalea_phenomenal_data_CalibrationCamera', 'openalea_phenomenal_data_bin_images_with_circle', 'openalea_phenomenal_data_path_chessboard_images', 'openalea_phenomenal_data_chessboards', 'openalea_phenomenal_data_tutorial_data_binarization_mask', 'openalea_phenomenal_data_bin_images', 'openalea_phenomenal_data_path_bin_images', 'openalea_phenomenal_data_path_raw_images', 'openalea_phenomenal_data_raw_images', 'openalea_phenomenal_data_Chessboard', 'openalea_phenomenal_data_calibrations', 'openalea_phenomenal_data_voxel_grid', 'openalea_phenomenal_data_build_cube', 'openalea_phenomenal_data_chessboard_images', 'openalea_phenomenal_data_VoxelGrid']
+__all__ = ['openalea_phenomenal_data_CalibrationCamera', 'openalea_phenomenal_data_bin_images_with_circle', 'openalea_phenomenal_data_path_chessboard_images', 'openalea_phenomenal_data_chessboards', 'openalea_phenomenal_data_tutorial_data_binarization_mask', 'openalea_phenomenal_data_synthetic_plant', 'openalea_phenomenal_data_bin_images', 'openalea_phenomenal_data_path_bin_images', 'openalea_phenomenal_data_path_raw_images', 'openalea_phenomenal_data_raw_images', 'openalea_phenomenal_data_Chessboard', 'openalea_phenomenal_data_read_ply_to_vertices_faces', 'openalea_phenomenal_data_voxel_grid', 'openalea_phenomenal_data_build_cube', 'openalea_phenomenal_data_chessboard_images', 'openalea_phenomenal_data_calibrations', 'openalea_phenomenal_data_VoxelGrid']
 
 
 
@@ -82,6 +82,21 @@ openalea_phenomenal_data_tutorial_data_binarization_mask = Factory(name='tutoria
                 category='openalea.phenomenal.data',
                 nodemodule='openalea.phenomenal.data',
                 nodeclass='tutorial_data_binarization_mask',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_data_synthetic_plant = Factory(name='synthetic_plant',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.data',
+                nodemodule='openalea.phenomenal.data',
+                nodeclass='synthetic_plant',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -166,12 +181,12 @@ openalea_phenomenal_data_Chessboard = Factory(name='Chessboard',
 
 
 
-openalea_phenomenal_data_calibrations = Factory(name='calibrations',
+openalea_phenomenal_data_read_ply_to_vertices_faces = Factory(name='read_ply_to_vertices_faces',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.data',
                 nodemodule='openalea.phenomenal.data',
-                nodeclass='calibrations',
+                nodeclass='read_ply_to_vertices_faces',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -217,6 +232,21 @@ openalea_phenomenal_data_chessboard_images = Factory(name='chessboard_images',
                 category='openalea.phenomenal.data',
                 nodemodule='openalea.phenomenal.data',
                 nodeclass='chessboard_images',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_data_calibrations = Factory(name='calibrations',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.data',
+                nodemodule='openalea.phenomenal.data',
+                nodeclass='calibrations',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,

@@ -31,7 +31,11 @@ class DisplayVoxel(Display):
         for actor in actors:
             self.add_actor(actor)
 
-    def add_actor_from_plane(self, center, normal, color=(0, 0, 1), radius=100):
+    def add_actor_from_plane(self,
+                             center,
+                             normal,
+                             color=(0, 0, 1),
+                             radius=100):
 
         source = vtk.vtkPlaneSource()
         source.SetXResolution(radius)
@@ -175,8 +179,8 @@ class DisplayVoxel(Display):
                                       colors=None,
                                       color=None,):
 
-        if color is None:
-            color = numpy.random.uniform(0, 1, 3)
+        # if color is None:
+        #     color = numpy.random.uniform(0, 1, 3)
 
         # Setup the colors array
         vtk_colors = vtk.vtkUnsignedCharArray()
@@ -221,7 +225,8 @@ class DisplayVoxel(Display):
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        # actor.GetProperty().SetColor(color[0], color[1], color[2])
+        if color is not None and colors is None:
+            actor.GetProperty().SetColor(color[0], color[1], color[2])
 
         self._actors.append(actor)
         self._renderer.AddActor(actor)

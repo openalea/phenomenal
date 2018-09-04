@@ -11,11 +11,70 @@ from __future__ import division, print_function, absolute_import
 
 import cv2
 import collections
+import numpy
 
+import openalea.phenomenal.calibration as phm_calib
 import openalea.phenomenal.image as phm_img
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.display as phm_display
+# ==============================================================================
+# ROUTINE CALIBRATION
+# ==============================================================================
+
+
+def detect_chessboard(chessboard_images,
+                      size_of_chessboard=47,
+                      shape_of_chessboard=(8, 6)):
+
+    # BUILD CHESSBOARD OBJECT
+    chessboard = phm_calib.Chessboard(size_of_chessboard,
+                                      shape_of_chessboard)
+
+    for id_camera in chessboard_images:
+        for angle in chessboard_images[id_camera]:
+            im = chessboard_images[id_camera][angle]
+            found = chessboard.detect_corners(id_camera, angle, im)
+
+    return [chessboard],
+
+
+def calibrations(chessboards,
+                 size_image=(2056, 2454),
+                 number_of_repetition=1):
+
+    id_cameras = ["side", "top"]
+    calibrations = dict()
+    for id_camera in id_cameras:
+        calibration = None
+        if len(chessboards) == 1:
+            calibration = phm_calib.CalibrationCameraSideWith1Target()
+            err = calibration.calibrate(chessboards[0].get_corners_2d(id_camera),
+                                        chessboards[0].get_corners_local_3d(),
+                                        size_image,
+                                        number_of_repetition=number_of_repetition,
+                                        # repetion here is 0 to optimize time consuming (for better result put 4)
+                                        verbose=False)
+
+        if len(chessboards) == 2:
+            calibration = phm_calib.CalibrationCameraSideWith2TargetYXZ()
+            err = calibration.calibrate(chessboards[0].get_corners_2d(id_camera),
+                                        chessboards[0].get_corners_local_3d(),
+                                        chessboards[1].get_corners_2d(id_camera),
+                                        chessboards[1].get_corners_local_3d(),
+                                        size_image,
+                                        number_of_repetition=number_of_repetition,
+                                        # repetion here is 0 to optimize time consuming (for better result put 4)
+                                        verbose=False)
+
+        calibrations[id_camera] = calibration
+
+    # Error of reprojection (in pixel distance) for all point in the target (48)
+    # So real error is err / 48
+
+    return phm_data.calibrations(6)
+    # return calibrations
+
 # ==============================================================================
 # ROUTINE BINARIZATION
 # ==============================================================================
@@ -87,7 +146,7 @@ def binarize(raw_images):
     return bin_images
 
 
-def show_phenoarch_images(images, id_camera="side", angles="[0, 30, 60]"):
+def show_images(images, id_camera="side", angles="[0, 30, 60]"):
     images = [images[id_camera][angle] for angle in eval(angles)]
     phm_display.show_images(images)
 
@@ -151,3 +210,14 @@ def get_image_views(bin_images, calibrations, with_ref_view=True):
 
 
     return image_views
+
+# ==============================================================================
+# ROUTINE MVR
+# ==============================================================================
+
+
+def show_mesh(vertices_faces):
+
+    vertices, faces = vertices_faces
+    dm = phm_display.DisplayMesh()
+    dm(vertices, faces)

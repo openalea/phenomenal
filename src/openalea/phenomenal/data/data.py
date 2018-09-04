@@ -23,7 +23,7 @@ from ..object import VoxelGrid
 # ==============================================================================
 
 
-def _path_images(plant_number=0, dtype="bin"):
+def _path_images(plant_number=1, dtype="bin"):
     """ According to the plant number return a dict[id_camera][angle] containing
     filename of file.
 
@@ -48,10 +48,11 @@ def _path_images(plant_number=0, dtype="bin"):
         for filename in filenames:
             angle = int(os.path.basename(filename).split('.png')[0])
             d[id_camera][angle] = filename
+
     return d
 
 
-def path_bin_images(plant_number=0):
+def path_bin_images(plant_number=1):
     """ According to the plant number return a dict[id_camera][angle] containing
     filename of the binary image.
 
@@ -67,7 +68,7 @@ def path_bin_images(plant_number=0):
     return _path_images(plant_number=plant_number, dtype="bin")
 
 
-def path_raw_images(plant_number=0):
+def path_raw_images(plant_number=1):
     """
     According to the plant number return a dict[id_camera][angle] containing
     filename of the raw image.
@@ -77,7 +78,7 @@ def path_raw_images(plant_number=0):
     return _path_images(plant_number=plant_number, dtype="raw")
 
 
-def path_chessboard_images(plant_number=0):
+def path_chessboard_images(plant_number=1):
     """
     According to the plant number return a dict[id_camera][angle] containing
     filename of the raw image.
@@ -87,7 +88,7 @@ def path_chessboard_images(plant_number=0):
     return _path_images(plant_number=plant_number, dtype="chessboard")
 
 
-def raw_images(plant_number=0):
+def raw_images(plant_number=1):
     """
     According to the plant number return a dict[id_camera][angle] of
     numpy array of the loader raw image.
@@ -103,7 +104,7 @@ def raw_images(plant_number=0):
     return d
 
 
-def bin_images(plant_number=0):
+def bin_images(plant_number=1):
     """
     According to the plant number return a dict[id_camera][angle] of
     numpy array of the loader binary image.
@@ -120,7 +121,7 @@ def bin_images(plant_number=0):
     return d
 
 
-def chessboard_images(plant_number=0):
+def chessboard_images(plant_number=1):
     """
     According to the plant number return a dict[id_camera][angle] of
     numpy array of the loader binary image.
@@ -134,12 +135,12 @@ def chessboard_images(plant_number=0):
         for angle in d[id_camera]:
             img = cv2.imread(d[id_camera][angle], cv2.IMREAD_COLOR)
             d[id_camera][angle] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    return d
+    return d,
 
 # ==============================================================================
 
 
-def chessboards(plant_number=0):
+def chessboards(plant_number=1):
     """
     According to the plant number return a dict[id_camera] of camera
     calibration object
@@ -159,7 +160,7 @@ def chessboards(plant_number=0):
     return chessboards
 
 
-def calibrations(plant_number=0):
+def calibrations(plant_number=1):
     """
     According to the plant number return a dict[id_camera] of camera
     calibration object
@@ -180,7 +181,7 @@ def calibrations(plant_number=0):
     return calibration
 
 
-def voxel_grid(plant_number=0, voxels_size=4):
+def voxel_grid(plant_number=1, voxels_size=4):
     """
     According to the plant number and the voxel size desired return the
     voxel_grid of the plant.

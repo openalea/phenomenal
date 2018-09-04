@@ -1,5 +1,5 @@
 
-# This file has been generated at Thu Apr 19 15:43:13 2018
+# This file has been generated at Fri Aug 31 15:42:12 2018
 
 from openalea.core import *
 
@@ -12,7 +12,22 @@ __license__ = 'CeCILL-C'
 __authors__ = 'Simon Artzet et al.'
 
 
-__all__ = ['openalea_phenomenal_wralea_phenoarch_routine_side_binarization', 'openalea_phenomenal_wralea_phenoarch_show_phenoarch_images', 'openalea_phenomenal_wralea_phenoarch_routine_top_binarization', 'openalea_phenomenal_wralea_phenoarch_get_side_image_projection_list', 'openalea_phenomenal_wralea_phenoarch_binarize', 'openalea_phenomenal_wralea_phenoarch_routine_select_ref_angle', 'openalea_phenomenal_wralea_phenoarch_get_image_views']
+__all__ = ['openalea_phenomenal_wralea_phenoarch_show_images', 'openalea_phenomenal_wralea_phenoarch_routine_side_binarization', 'openalea_phenomenal_wralea_phenoarch_detect_chessboard', 'openalea_phenomenal_wralea_phenoarch_calibrations', 'openalea_phenomenal_wralea_phenoarch_routine_top_binarization', 'openalea_phenomenal_wralea_phenoarch_get_side_image_projection_list', 'openalea_phenomenal_wralea_phenoarch_binarize', 'openalea_phenomenal_wralea_phenoarch_show_mesh', 'openalea_phenomenal_wralea_phenoarch_routine_select_ref_angle', 'openalea_phenomenal_wralea_phenoarch_get_image_views']
+
+
+
+openalea_phenomenal_wralea_phenoarch_show_images = Factory(name='show_images',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.phenoarch',
+                nodemodule='openalea.phenomenal_wralea.phenoarch',
+                nodeclass='show_images',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
 
 
 
@@ -31,12 +46,27 @@ openalea_phenomenal_wralea_phenoarch_routine_side_binarization = Factory(name='r
 
 
 
-openalea_phenomenal_wralea_phenoarch_show_phenoarch_images = Factory(name='show_phenoarch_images',
+openalea_phenomenal_wralea_phenoarch_detect_chessboard = Factory(name='detect_chessboard',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.phenoarch',
                 nodemodule='openalea.phenomenal_wralea.phenoarch',
-                nodeclass='show_phenoarch_images',
+                nodeclass='detect_chessboard',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_wralea_phenoarch_calibrations = Factory(name='calibrations',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.phenoarch',
+                nodemodule='openalea.phenomenal_wralea.phenoarch',
+                nodeclass='calibrations',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -82,6 +112,21 @@ openalea_phenomenal_wralea_phenoarch_binarize = Factory(name='binarize',
                 category='openalea.phenomenal.phenoarch',
                 nodemodule='openalea.phenomenal_wralea.phenoarch',
                 nodeclass='binarize',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_wralea_phenoarch_show_mesh = Factory(name='show_mesh',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.phenoarch',
+                nodemodule='openalea.phenomenal_wralea.phenoarch',
+                nodeclass='show_mesh',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,

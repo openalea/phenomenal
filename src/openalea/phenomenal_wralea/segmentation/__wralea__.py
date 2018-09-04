@@ -1,5 +1,5 @@
 
-# This file has been generated at Thu Apr 19 15:43:13 2018
+# This file has been generated at Fri Aug 31 15:42:12 2018
 
 from openalea.core import *
 
@@ -12,7 +12,7 @@ __license__ = 'CeCILL-C'
 __authors__ = 'Simon Artzet et al.'
 
 
-__all__ = ['openalea_phenomenal_segmentation_intercept_points_from_src_point_with_plane_equation', 'openalea_phenomenal_segmentation_connected_voxel_with_point', 'openalea_phenomenal_segmentation_compute_plane_equation', 'openalea_phenomenal_segmentation_maize_mature_leaf_analysis', 'openalea_phenomenal_segmentation_unit_vector', 'openalea_phenomenal_segmentation_get_highest_segment', 'openalea_phenomenal_segmentation_VoxelOrgan', 'openalea_phenomenal_segmentation_max_distance_in_points', 'openalea_phenomenal_segmentation_compute_insertion_angle', 'openalea_phenomenal_segmentation_connected_points_with_point', 'openalea_phenomenal_segmentation_merge', 'openalea_phenomenal_segmentation_skeletonize', 'openalea_phenomenal_segmentation_create_graph_with_sklearn', 'openalea_phenomenal_segmentation_find_base_stem_position', 'openalea_phenomenal_segmentation_maize_segmentation', 'openalea_phenomenal_segmentation_project_voxel_centers_on_image', 'openalea_phenomenal_segmentation_orientation_vector_of_point_in_polyline', 'openalea_phenomenal_segmentation_organ_analysis', 'openalea_phenomenal_segmentation_Image3D', 'openalea_phenomenal_segmentation_create_graph', 'openalea_phenomenal_segmentation_compute_fitted_width', 'openalea_phenomenal_segmentation_intercept_points_with_ball', 'openalea_phenomenal_segmentation_VoxelSegment', 'openalea_phenomenal_segmentation_get_neighbors', 'openalea_phenomenal_segmentation_compute_length_organ', 'openalea_phenomenal_segmentation_angle_between', 'openalea_phenomenal_segmentation_connect_all_node_with_nearest_neighbors', 'openalea_phenomenal_segmentation_maize_stem_analysis', 'openalea_phenomenal_segmentation_compute_azimuth_vector_mean_organ', 'openalea_phenomenal_segmentation_VoxelSegmentation', 'openalea_phenomenal_segmentation_get_nodes_radius', 'openalea_phenomenal_segmentation_intercept_points_along_path_with_planes', 'openalea_phenomenal_segmentation_intercept_points_along_polyline_with_ball', 'openalea_phenomenal_segmentation_compute_width_organ', 'openalea_phenomenal_segmentation_segment_path', 'openalea_phenomenal_segmentation_compute_all_shorted_path', 'openalea_phenomenal_segmentation_maize_base_stem_position_octree', 'openalea_phenomenal_segmentation_stem_detection', 'openalea_phenomenal_segmentation_max_distance_from_point_to_points', 'openalea_phenomenal_segmentation_VoxelGrid', 'openalea_phenomenal_segmentation_get_max_distance', 'openalea_phenomenal_segmentation_maize_growing_leaf_analysis', 'openalea_phenomenal_segmentation_kept_biggest_connected_component', 'openalea_phenomenal_segmentation_maize_stem_peak_detection', 'openalea_phenomenal_segmentation_maize_growing_leaf_analysis_real_length', 'openalea_phenomenal_segmentation_remove_internal', 'openalea_phenomenal_segmentation_maize_analysis', 'openalea_phenomenal_segmentation_segment_reduction', 'openalea_phenomenal_segmentation_add_nodes', 'openalea_phenomenal_segmentation_smooth', 'openalea_phenomenal_segmentation_labeling_connected_component', 'openalea_phenomenal_segmentation_compute_curvilinear_abscissa', 'openalea_phenomenal_segmentation_graph_from_voxel_grid', 'openalea_phenomenal_segmentation_peak_detection', 'openalea_phenomenal_segmentation_VoxelSkeleton', 'openalea_phenomenal_segmentation_skeletonize_thinning']
+__all__ = ['openalea_phenomenal_segmentation_intercept_points_from_src_point_with_plane_equation', 'openalea_phenomenal_segmentation_connected_voxel_with_point', 'openalea_phenomenal_segmentation_compute_plane_equation', 'openalea_phenomenal_segmentation_stem_detection', 'openalea_phenomenal_segmentation_unit_vector', 'openalea_phenomenal_segmentation_get_highest_segment', 'openalea_phenomenal_segmentation_VoxelOrgan', 'openalea_phenomenal_segmentation_max_distance_in_points', 'openalea_phenomenal_segmentation_compute_insertion_angle', 'openalea_phenomenal_segmentation_connected_points_with_point', 'openalea_phenomenal_segmentation_maize_mature_leaf_analysis', 'openalea_phenomenal_segmentation_skeletonize', 'openalea_phenomenal_segmentation_find_base_stem_position', 'openalea_phenomenal_segmentation_maize_segmentation', 'openalea_phenomenal_segmentation_project_voxel_centers_on_image', 'openalea_phenomenal_segmentation_orientation_vector_of_point_in_polyline', 'openalea_phenomenal_segmentation_organ_analysis', 'openalea_phenomenal_segmentation_create_graph', 'openalea_phenomenal_segmentation_compute_fitted_width', 'openalea_phenomenal_segmentation_intercept_points_with_ball', 'openalea_phenomenal_segmentation_VoxelSegment', 'openalea_phenomenal_segmentation_compute_length_organ', 'openalea_phenomenal_segmentation_angle_between', 'openalea_phenomenal_segmentation_connect_all_node_with_nearest_neighbors', 'openalea_phenomenal_segmentation_maize_stem_analysis', 'openalea_phenomenal_segmentation_compute_azimuth_vector_mean_organ', 'openalea_phenomenal_segmentation_VoxelSegmentation', 'openalea_phenomenal_segmentation_get_nodes_radius', 'openalea_phenomenal_segmentation_intercept_points_along_path_with_planes', 'openalea_phenomenal_segmentation_intercept_points_along_polyline_with_ball', 'openalea_phenomenal_segmentation_compute_width_organ', 'openalea_phenomenal_segmentation_maize_growing_leaf_analysis', 'openalea_phenomenal_segmentation_compute_all_shorted_path', 'openalea_phenomenal_segmentation_max_distance_from_point_to_points', 'openalea_phenomenal_segmentation_VoxelGrid', 'openalea_phenomenal_segmentation_get_max_distance', 'openalea_phenomenal_segmentation_Image3D', 'openalea_phenomenal_segmentation_kept_biggest_connected_component', 'openalea_phenomenal_segmentation_maize_stem_peak_detection', 'openalea_phenomenal_segmentation_maize_growing_leaf_analysis_real_length', 'openalea_phenomenal_segmentation_remove_internal', 'openalea_phenomenal_segmentation_maize_analysis', 'openalea_phenomenal_segmentation_segment_reduction', 'openalea_phenomenal_segmentation_smooth', 'openalea_phenomenal_segmentation_labeling_connected_component', 'openalea_phenomenal_segmentation_compute_curvilinear_abscissa', 'openalea_phenomenal_segmentation_graph_from_voxel_grid', 'openalea_phenomenal_segmentation_peak_detection', 'openalea_phenomenal_segmentation_VoxelSkeleton', 'openalea_phenomenal_segmentation_skeletonize_thinning']
 
 
 
@@ -61,12 +61,12 @@ openalea_phenomenal_segmentation_compute_plane_equation = Factory(name='compute_
 
 
 
-openalea_phenomenal_segmentation_maize_mature_leaf_analysis = Factory(name='maize_mature_leaf_analysis',
+openalea_phenomenal_segmentation_stem_detection = Factory(name='stem_detection',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.segmentation',
                 nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='maize_mature_leaf_analysis',
+                nodeclass='stem_detection',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -166,12 +166,12 @@ openalea_phenomenal_segmentation_connected_points_with_point = Factory(name='con
 
 
 
-openalea_phenomenal_segmentation_merge = Factory(name='merge',
+openalea_phenomenal_segmentation_maize_mature_leaf_analysis = Factory(name='maize_mature_leaf_analysis',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.segmentation',
                 nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='merge',
+                nodeclass='maize_mature_leaf_analysis',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -187,21 +187,6 @@ openalea_phenomenal_segmentation_skeletonize = Factory(name='skeletonize',
                 category='openalea.phenomenal.segmentation',
                 nodemodule='openalea.phenomenal.segmentation',
                 nodeclass='skeletonize',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_segmentation_create_graph_with_sklearn = Factory(name='create_graph_with_sklearn',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.segmentation',
-                nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='create_graph_with_sklearn',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -286,21 +271,6 @@ openalea_phenomenal_segmentation_organ_analysis = Factory(name='organ_analysis',
 
 
 
-openalea_phenomenal_segmentation_Image3D = Factory(name='Image3D',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.segmentation',
-                nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='Image3D',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
 openalea_phenomenal_segmentation_create_graph = Factory(name='create_graph',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
@@ -352,21 +322,6 @@ openalea_phenomenal_segmentation_VoxelSegment = Factory(name='VoxelSegment',
                 category='openalea.phenomenal.segmentation',
                 nodemodule='openalea.phenomenal.segmentation',
                 nodeclass='VoxelSegment',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_segmentation_get_neighbors = Factory(name='get_neighbors',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.segmentation',
-                nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='get_neighbors',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -526,12 +481,12 @@ openalea_phenomenal_segmentation_compute_width_organ = Factory(name='compute_wid
 
 
 
-openalea_phenomenal_segmentation_segment_path = Factory(name='segment_path',
+openalea_phenomenal_segmentation_maize_growing_leaf_analysis = Factory(name='maize_growing_leaf_analysis',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.segmentation',
                 nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='segment_path',
+                nodeclass='maize_growing_leaf_analysis',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -547,36 +502,6 @@ openalea_phenomenal_segmentation_compute_all_shorted_path = Factory(name='comput
                 category='openalea.phenomenal.segmentation',
                 nodemodule='openalea.phenomenal.segmentation',
                 nodeclass='compute_all_shorted_path',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_segmentation_maize_base_stem_position_octree = Factory(name='maize_base_stem_position_octree',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.segmentation',
-                nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='maize_base_stem_position_octree',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_segmentation_stem_detection = Factory(name='stem_detection',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.segmentation',
-                nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='stem_detection',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -631,12 +556,12 @@ openalea_phenomenal_segmentation_get_max_distance = Factory(name='get_max_distan
 
 
 
-openalea_phenomenal_segmentation_maize_growing_leaf_analysis = Factory(name='maize_growing_leaf_analysis',
+openalea_phenomenal_segmentation_Image3D = Factory(name='Image3D',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.segmentation',
                 nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='maize_growing_leaf_analysis',
+                nodeclass='Image3D',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -727,21 +652,6 @@ openalea_phenomenal_segmentation_segment_reduction = Factory(name='segment_reduc
                 category='openalea.phenomenal.segmentation',
                 nodemodule='openalea.phenomenal.segmentation',
                 nodeclass='segment_reduction',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_segmentation_add_nodes = Factory(name='add_nodes',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.segmentation',
-                nodemodule='openalea.phenomenal.segmentation',
-                nodeclass='add_nodes',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
