@@ -16,6 +16,7 @@ deploy_phenomenal_on_linux:
 
    - echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc
    - source ~/.bashrc
+
    - conda config --set always_yes yes --set changeps1 no
    - conda update -q conda
    - conda install conda-build
@@ -35,8 +36,6 @@ deploy_phenomenal_on_linux:
 
    - nosetests test --with-coverage --cover-erase --cover-html --cover-package=openalea.phenomenal --cover-tests --cover-inclusive
    - conda deactivate
-
-- conda install -c openalea -c conda-forge notebook sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
 
  artifacts:
   paths:
