@@ -40,8 +40,8 @@ from __future__ import division, print_function, absolute_import
 from .calibration import *
 from .image import *
 from .peak import *
-from .Display import *
-from .Scene import *
+from .display import *
+from .scene import *
 from .show_basic import *
 from .show_skeleton import *
 from .show_segmentation import *
