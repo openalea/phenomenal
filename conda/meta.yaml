@@ -32,20 +32,21 @@ requirements:
 
   run:
     - python
-    - numba
     - numpy
+    - numba
+    - cython
+    - openalea.deploy
     - scipy
     - scikit-image
     - scikit-learn
-    - openalea.deploy
     - networkx
     - opencv
     - matplotlib
     - vtk
     - pywin32 [win]
     - nose
-    - cython
-
+    - coverage
+    - sphinx
 test:
   imports:
     - openalea.phenomenal
