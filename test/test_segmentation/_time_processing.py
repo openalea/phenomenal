@@ -75,7 +75,7 @@ print("time processing , maize_analysis : {}".format(time.time() - start))
 print("time processing , ALL : {}".format(time.time() - init_start))
 
 # Profilage
-exit()
+
 
 def test():
     voxel_skeleton_reduced = phm_seg.segment_reduction(
