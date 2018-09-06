@@ -31,7 +31,7 @@ deploy_phenomenal_on_linux:
    - conda create -n deploy -c openalea -c conda-forge --use-local python=2.7 openalea.phenomenal
    - conda activate deploy
    - conda install -c openalea -c conda-forge opencv
-   - conda install -c openalea -c conda-forge jupyter nose sphinx sphinx_rtd_theme pandoc coverage ipyvolume
+   - conda install -c openalea -c conda-forge coverage
 
    - conda info -e
    - conda list

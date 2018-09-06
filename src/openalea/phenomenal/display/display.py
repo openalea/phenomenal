@@ -219,6 +219,7 @@ class Display(object):
             self.clean_all_actors()
 
         self.switch_elements(elements, func)
+        self.stop = False
         self.render_window_interactor.Start()
 
         del self.render_window
@@ -227,7 +228,7 @@ class Display(object):
     def switch_elements(self, elements, func):
         self.it = 0
         def cb_change_plant(interactor, event):
-            if not self.stop:
+            if not self.stop and self.lock.acquire(False):
                 if self.it % 360 == 0:
                     if elements:
                         element = elements.pop(0)
@@ -251,6 +252,7 @@ class Display(object):
                 self.it += 1
 
                 interactor.GetRenderWindow().Render()
+                self.lock.release()
 
         self.render_window_interactor.AddObserver('TimerEvent', cb_change_plant)
         timerId = self.render_window_interactor.CreateRepeatingTimer(5)
