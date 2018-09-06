@@ -12,7 +12,7 @@ from __future__ import division, print_function, absolute_import
 import vtk
 import random
 
-from .Display import Display
+from .display import Display
 # ==============================================================================
 
 

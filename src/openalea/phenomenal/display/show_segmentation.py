@@ -12,7 +12,7 @@ from __future__ import division, print_function, absolute_import
 import numpy
 
 from ._order_color_map import order_color_map
-from .Scene import Scene
+from .scene import Scene
 # ==============================================================================
 
 
