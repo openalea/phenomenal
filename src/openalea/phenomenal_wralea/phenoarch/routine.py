@@ -208,7 +208,6 @@ def get_image_views(bin_images, calibrations, with_ref_view=True):
                 inclusive=inclusive,
                 image_ref=image_ref))
 
-
     return image_views
 
 # ==============================================================================
@@ -216,8 +215,24 @@ def get_image_views(bin_images, calibrations, with_ref_view=True):
 # ==============================================================================
 
 
-def show_mesh(vertices_faces):
+def show_mesh(vertices_faces,
+              color=(0.1, 0.8, 0.1),
+              colors=None,
+              windows_size=(600, 800),
+              screenshot_filename=None,
+              screenshot_magnification=10,
+              record_filename=None,
+              record_quality=2,
+              record_rate=25):
 
     vertices, faces = vertices_faces
-    dm = phm_display.DisplayMesh()
-    dm(vertices, faces)
+    phm_display.show_mesh(vertices,
+                          faces,
+                          color=color,
+                          colors=colors,
+                          windows_size=windows_size,
+                          screenshot_filename=screenshot_filename,
+                          screenshot_magnification=screenshot_magnification,
+                          record_filename=record_filename,
+                          record_quality=record_quality,
+                          record_rate=record_rate)
