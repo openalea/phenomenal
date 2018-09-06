@@ -247,18 +247,18 @@ class Scene(Display):
         polydata = vtk.vtkPolyData()
         polydata.SetPoints(points)
 
-        cubeSource = vtk.vtkCubeSource()
-        cubeSource.SetXLength(voxels_size)
-        cubeSource.SetYLength(voxels_size)
-        cubeSource.SetZLength(voxels_size)
+        cube_source = vtk.vtkCubeSource()
+        cube_source.SetXLength(voxels_size)
+        cube_source.SetYLength(voxels_size)
+        cube_source.SetZLength(voxels_size)
 
         glyph3D = vtk.vtkGlyph3D()
 
         if vtk.VTK_MAJOR_VERSION <= 5:
-            glyph3D.SetSource(cubeSource.GetOutput())
+            glyph3D.SetSource(cube_source.GetOutput())
             glyph3D.SetInput(polydata)
         else:
-            glyph3D.SetSourceConnection(cubeSource.GetOutputPort())
+            glyph3D.SetSourceConnection(cube_source.GetOutputPort())
             glyph3D.SetInputData(polydata)
 
         glyph3D.Update()
