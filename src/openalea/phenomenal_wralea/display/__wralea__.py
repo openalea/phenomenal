@@ -1,5 +1,5 @@
 
-# This file has been generated at Fri Aug 31 15:42:11 2018
+# This file has been generated at Thu Sep 06 11:38:35 2018
 
 from openalea.core import *
 
@@ -12,16 +12,16 @@ __license__ = 'CeCILL-C'
 __authors__ = 'Simon Artzet et al.'
 
 
-__all__ = ['openalea_phenomenal_display_show_image_with_chessboard_corners', 'openalea_phenomenal_display_show_poly_data', 'openalea_phenomenal_display_plot_values', 'openalea_phenomenal_display_order_color_map', 'openalea_phenomenal_display_DisplaySegmentation', 'openalea_phenomenal_display_show_chessboard_3d_projection_on_image', 'openalea_phenomenal_display_DisplayVoxelGrid', 'openalea_phenomenal_display_vtk_show_poly_data', 'openalea_phenomenal_display_rotation_matrix', 'openalea_phenomenal_display_DisplayMesh', 'openalea_phenomenal_display_show_image', 'openalea_phenomenal_display_DisplayVoxel', 'openalea_phenomenal_display_show_values', 'openalea_phenomenal_display_Display', 'openalea_phenomenal_display_show_images', 'openalea_phenomenal_display_vtk_voxel_point_cloud_to_polydata', 'openalea_phenomenal_display_DisplaySkeleton']
+__all__ = ['openalea_phenomenal_display_get_actors_from_voxel_organ', 'openalea_phenomenal_display_get_actors_from_segmentation_classic_mode', 'openalea_phenomenal_display_record_skeleton', 'openalea_phenomenal_display_get_color', 'openalea_phenomenal_display_show_segmentation', 'openalea_phenomenal_display_show_voxel_grid', 'openalea_phenomenal_display_show_image', 'openalea_phenomenal_display_record_segmentation', 'openalea_phenomenal_display_plot_values', 'openalea_phenomenal_display_order_color_map', 'openalea_phenomenal_display_Display', 'openalea_phenomenal_display_show_values', 'openalea_phenomenal_display_Scene', 'openalea_phenomenal_display_show_vtk_poly_data', 'openalea_phenomenal_display_show_chessboard_3d_projection_on_image', 'openalea_phenomenal_display_show_images', 'openalea_phenomenal_display_show_skeleton', 'openalea_phenomenal_display_get_actors_from_skeleton', 'openalea_phenomenal_display_show_image_with_chessboard_corners', 'openalea_phenomenal_display_Lock', 'openalea_phenomenal_display_record_voxel_grids', 'openalea_phenomenal_display_show_mesh', 'openalea_phenomenal_display_get_actors_from_segmentation_split_mode', 'openalea_phenomenal_display_get_actors_from_segmentation_stem_mode', 'openalea_phenomenal_display_get_actors_from_segmentation_skeleton_mode', 'openalea_phenomenal_display_rotation_matrix']
 
 
 
-openalea_phenomenal_display_show_image_with_chessboard_corners = Factory(name='show_image_with_chessboard_corners',
+openalea_phenomenal_display_get_actors_from_voxel_organ = Factory(name='get_actors_from_voxel_organ',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.display',
                 nodemodule='openalea.phenomenal.display',
-                nodeclass='show_image_with_chessboard_corners',
+                nodeclass='get_actors_from_voxel_organ',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -31,12 +31,102 @@ openalea_phenomenal_display_show_image_with_chessboard_corners = Factory(name='s
 
 
 
-openalea_phenomenal_display_show_poly_data = Factory(name='show_poly_data',
+openalea_phenomenal_display_get_actors_from_segmentation_classic_mode = Factory(name='get_actors_from_segmentation_classic_mode',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.display',
                 nodemodule='openalea.phenomenal.display',
-                nodeclass='show_poly_data',
+                nodeclass='get_actors_from_segmentation_classic_mode',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_record_skeleton = Factory(name='record_skeleton',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='record_skeleton',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_get_color = Factory(name='get_color',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='get_color',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_show_segmentation = Factory(name='show_segmentation',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='show_segmentation',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_show_voxel_grid = Factory(name='show_voxel_grid',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='show_voxel_grid',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_show_image = Factory(name='show_image',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='show_image',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_record_segmentation = Factory(name='record_segmentation',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='record_segmentation',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -76,117 +166,12 @@ openalea_phenomenal_display_order_color_map = Factory(name='order_color_map',
 
 
 
-openalea_phenomenal_display_DisplaySegmentation = Factory(name='DisplaySegmentation',
+openalea_phenomenal_display_Display = Factory(name='Display',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.display',
                 nodemodule='openalea.phenomenal.display',
-                nodeclass='DisplaySegmentation',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_display_show_chessboard_3d_projection_on_image = Factory(name='show_chessboard_3d_projection_on_image',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.display',
-                nodemodule='openalea.phenomenal.display',
-                nodeclass='show_chessboard_3d_projection_on_image',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_display_DisplayVoxelGrid = Factory(name='DisplayVoxelGrid',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.display',
-                nodemodule='openalea.phenomenal.display',
-                nodeclass='DisplayVoxelGrid',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_display_vtk_show_poly_data = Factory(name='vtk_show_poly_data',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.display',
-                nodemodule='openalea.phenomenal.display',
-                nodeclass='vtk_show_poly_data',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_display_rotation_matrix = Factory(name='rotation_matrix',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.display',
-                nodemodule='openalea.phenomenal.display',
-                nodeclass='rotation_matrix',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_display_DisplayMesh = Factory(name='DisplayMesh',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.display',
-                nodemodule='openalea.phenomenal.display',
-                nodeclass='DisplayMesh',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_display_show_image = Factory(name='show_image',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.display',
-                nodemodule='openalea.phenomenal.display',
-                nodeclass='show_image',
-                inputs=None,
-                outputs=None,
-                widgetmodule=None,
-                widgetclass=None,
-               )
-
-
-
-
-openalea_phenomenal_display_DisplayVoxel = Factory(name='DisplayVoxel',
-                authors='Simon Artzet et al. (wralea authors)',
-                description='',
-                category='openalea.phenomenal.display',
-                nodemodule='openalea.phenomenal.display',
-                nodeclass='DisplayVoxel',
+                nodeclass='Display',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -211,12 +196,42 @@ openalea_phenomenal_display_show_values = Factory(name='show_values',
 
 
 
-openalea_phenomenal_display_Display = Factory(name='Display',
+openalea_phenomenal_display_Scene = Factory(name='Scene',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.display',
                 nodemodule='openalea.phenomenal.display',
-                nodeclass='Display',
+                nodeclass='Scene',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_show_vtk_poly_data = Factory(name='show_vtk_poly_data',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='show_vtk_poly_data',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_show_chessboard_3d_projection_on_image = Factory(name='show_chessboard_3d_projection_on_image',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='show_chessboard_3d_projection_on_image',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -241,12 +256,12 @@ openalea_phenomenal_display_show_images = Factory(name='show_images',
 
 
 
-openalea_phenomenal_display_vtk_voxel_point_cloud_to_polydata = Factory(name='vtk_voxel_point_cloud_to_polydata',
+openalea_phenomenal_display_show_skeleton = Factory(name='show_skeleton',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.display',
                 nodemodule='openalea.phenomenal.display',
-                nodeclass='vtk_voxel_point_cloud_to_polydata',
+                nodeclass='show_skeleton',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,
@@ -256,12 +271,132 @@ openalea_phenomenal_display_vtk_voxel_point_cloud_to_polydata = Factory(name='vt
 
 
 
-openalea_phenomenal_display_DisplaySkeleton = Factory(name='DisplaySkeleton',
+openalea_phenomenal_display_get_actors_from_skeleton = Factory(name='get_actors_from_skeleton',
                 authors='Simon Artzet et al. (wralea authors)',
                 description='',
                 category='openalea.phenomenal.display',
                 nodemodule='openalea.phenomenal.display',
-                nodeclass='DisplaySkeleton',
+                nodeclass='get_actors_from_skeleton',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_show_image_with_chessboard_corners = Factory(name='show_image_with_chessboard_corners',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='show_image_with_chessboard_corners',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_Lock = Factory(name='Lock',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='Lock',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_record_voxel_grids = Factory(name='record_voxel_grids',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='record_voxel_grids',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_show_mesh = Factory(name='show_mesh',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='show_mesh',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_get_actors_from_segmentation_split_mode = Factory(name='get_actors_from_segmentation_split_mode',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='get_actors_from_segmentation_split_mode',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_get_actors_from_segmentation_stem_mode = Factory(name='get_actors_from_segmentation_stem_mode',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='get_actors_from_segmentation_stem_mode',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_get_actors_from_segmentation_skeleton_mode = Factory(name='get_actors_from_segmentation_skeleton_mode',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='get_actors_from_segmentation_skeleton_mode',
+                inputs=None,
+                outputs=None,
+                widgetmodule=None,
+                widgetclass=None,
+               )
+
+
+
+
+openalea_phenomenal_display_rotation_matrix = Factory(name='rotation_matrix',
+                authors='Simon Artzet et al. (wralea authors)',
+                description='',
+                category='openalea.phenomenal.display',
+                nodemodule='openalea.phenomenal.display',
+                nodeclass='rotation_matrix',
                 inputs=None,
                 outputs=None,
                 widgetmodule=None,

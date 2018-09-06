@@ -59,7 +59,14 @@ def show_skeleton(voxel_skeleton,
                   with_voxel=True,
                   voxel_color=(0, 1, 0),
                   skeleton_color=(1, 0, 0),
-                  color_segment=None):
+                  color_segment=None,
+                  windows_size=(600, 800),
+                  screenshot_filename=None,
+                  screenshot_magnification=10,
+                  record_filename=None,
+                  record_quality=2,
+                  record_rate=25):
+
     scene = Scene()
     actors = get_actors_from_skeleton(voxel_skeleton,
                                       with_voxel=with_voxel,
@@ -67,7 +74,13 @@ def show_skeleton(voxel_skeleton,
                                       skeleton_color=skeleton_color,
                                       color_segment=color_segment)
     scene.add_actors(actors)
-    scene.show()
+    scene.show(windows_size=windows_size,
+               screenshot_filename=screenshot_filename,
+               screenshot_magnification=screenshot_magnification,
+               record_filename=record_filename,
+               record_quality=record_quality,
+               record_rate=record_rate)
+
 
 # ==============================================================================
 

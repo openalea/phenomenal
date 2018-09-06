@@ -16,7 +16,8 @@ from .Scene import Scene
 # ==============================================================================
 
 
-def get_color(label, info):
+def get_color(label,
+              info):
     if label == "stem":
         return 0.5, 0.5, 0.5
     elif label == "unknown":
@@ -31,7 +32,9 @@ def get_color(label, info):
             return None
 
 
-def get_actors_from_voxel_organ(voxel_organ, voxels_size, plot_number=True):
+def get_actors_from_voxel_organ(voxel_organ,
+                                voxels_size,
+                                plot_number=True):
 
     actors, text_actors = list(), list()
 
@@ -111,7 +114,8 @@ def get_actors_from_segmentation_stem_mode(vmsi):
     return actors, text_actors
 
 
-def get_actors_from_segmentation_skeleton_mode(vmsi, order=None):
+def get_actors_from_segmentation_skeleton_mode(vmsi,
+                                               order=None):
 
     actors, text_actors = list(), list()
     for vo in vmsi.get_leafs():
@@ -228,7 +232,14 @@ def get_actors_from_segmentation_split_mode(vmsi):
 # ==============================================================================
 
 
-def show_segmentation(vmsi, mode="classic"):
+def show_segmentation(vmsi,
+                      mode="classic",
+                      windows_size=(600, 800),
+                      screenshot_filename=None,
+                      screenshot_magnification=10,
+                      record_filename=None,
+                      record_quality=2,
+                      record_rate=25):
 
     actors, text_actors = list(), list()
     if mode == "classic":
@@ -239,9 +250,6 @@ def show_segmentation(vmsi, mode="classic"):
     if mode == "only_skeleton":
         actors, text_actors = get_actors_from_segmentation_skeleton_mode(
             vmsi)
-    if mode == "ordered":
-        actors, text_actors = get_actors_from_segmentation_order_mode(
-            vmsi)
     if mode == "separated_leaf":
         actors, text_actors = get_actors_from_segmentation_split_mode(
             vmsi)
@@ -249,7 +257,12 @@ def show_segmentation(vmsi, mode="classic"):
     scene = Scene()
     scene.add_actors(actors)
     scene.add_text_actors(text_actors)
-    scene.show()
+    scene.show(windows_size=windows_size,
+               screenshot_filename=screenshot_filename,
+               screenshot_magnification=screenshot_magnification,
+               record_filename=record_filename,
+               record_quality=record_quality,
+               record_rate=record_rate)
 
 
 def record_segmentation(vmsis, filename, record_elevation=20):
