@@ -59,7 +59,7 @@ class VoxelSegmentation(object):
 
     def get_leaf_order(self, number):
         for vo in self.voxel_organs:
-            if "order" in vo.info and vo.info["order"] == number:
+            if "pm_leaf_number" in vo.info and vo.info["pm_leaf_number"] == number:
                 return vo
         return None
 
@@ -67,8 +67,8 @@ class VoxelSegmentation(object):
         vs1 = self.get_leaf_order(number_1)
         vs2 = self.get_leaf_order(number_2)
 
-        vs1.info['order'] = number_2
-        vs2.info['order'] = number_1
+        vs1.info['pm_leaf_number'] = number_2
+        vs2.info['pm_leaf_number'] = number_1
 
     def get_stem(self):
         for vo in self.voxel_organs:

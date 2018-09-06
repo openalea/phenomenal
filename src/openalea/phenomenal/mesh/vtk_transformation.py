@@ -19,12 +19,46 @@ __all__ = ["from_vertices_faces_to_vtk_poly_data",
            "from_vtk_poly_data_to_vertices_faces",
            "from_voxel_centers_to_vtk_image_data",
            "from_numpy_matrix_to_vtk_image_data",
-           "from_vtk_image_data_to_voxels_center"]
+           "from_vtk_image_data_to_voxels_center",
+           "voxel_grid_to_vtk_poly_data"]
 
 # ==============================================================================
 
 
-def from_vertices_faces_to_vtk_poly_data(vertices, faces,
+def voxel_grid_to_vtk_poly_data(voxel_grid,
+                                color=None):
+
+    voxels_position = voxel_grid.voxels_position
+    voxels_size = voxel_grid.voxels_size
+
+    points = vtk.vtkPoints()
+    for v in voxels_position:
+        points.InsertNextPoint(v[0], v[1], v[2])
+
+    polydata = vtk.vtkPolyData()
+    polydata.SetPoints(points)
+
+    cube_source = vtk.vtkCubeSource()
+    cube_source.SetXLength(voxels_size)
+    cube_source.SetYLength(voxels_size)
+    cube_source.SetZLength(voxels_size)
+
+    glyph3D = vtk.vtkGlyph3D()
+
+    if vtk.VTK_MAJOR_VERSION <= 5:
+        glyph3D.SetSource(cube_source.GetOutput())
+        glyph3D.SetInput(polydata)
+    else:
+        glyph3D.SetSourceConnection(cube_source.GetOutputPort())
+        glyph3D.SetInputData(polydata)
+
+    glyph3D.Update()
+
+    return glyph3D.GetOutput()
+
+
+def from_vertices_faces_to_vtk_poly_data(vertices,
+                                         faces,
                                          vertices_colors=None,
                                          faces_colors=None):
 
@@ -67,8 +101,6 @@ def from_vertices_faces_to_vtk_poly_data(vertices, faces,
         poly_data.GetCellData().SetScalars(vtk_colors)
 
     return poly_data
-
-
 
 
 def from_vtk_poly_data_to_vertices_faces(vtk_poly_data):
@@ -135,7 +167,8 @@ def from_vtk_image_data_to_voxels_center(image_data,
     return voxels_points
 
 
-def from_voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
+def from_voxel_centers_to_vtk_image_data(voxel_centers,
+                                         voxel_size):
 
     x_min = min(voxel_centers, key=operator.itemgetter(0))[0]
     x_max = max(voxel_centers, key=operator.itemgetter(0))[0]

@@ -30,7 +30,6 @@ class VoxelOrgan(object):
 
         voxels_position = set()
         for voxel_segment in self.voxel_segments:
-            # print voxel_segment.voxels_position
             voxels_position = voxels_position.union(
                 voxel_segment.voxels_position)
 

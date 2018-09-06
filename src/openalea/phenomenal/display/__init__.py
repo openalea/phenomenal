@@ -30,27 +30,21 @@ Image
    :toctree: generated/
 
    Display
-   DisplayVoxel
-   DisplayVoxelGrid
-   DisplaySkeleton
-   DisplaySegmentation
-   DisplayMesh
+   Scene
+
+
 """
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
 from .calibration import *
 from .image import *
-from .mesh import *
 from .peak import *
-
-from .display import *
-from .displayVtk import *
-from .displayVoxel import *
-from .displaySkeleton import *
-from .displayVoxelGrid import *
-from .displaySegmentation import *
-from .displayMesh import *
+from .Display import *
+from .Scene import *
+from .show_basic import *
+from .show_skeleton import *
+from .show_segmentation import *
 # ==============================================================================
 
 __all__ = [s for s in dir() if not s.startswith('_')]

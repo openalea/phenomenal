@@ -7,18 +7,16 @@
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
 # ==============================================================================
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 
 import vtk
 import random
-import numpy.random
 
-
-from .display import Display
+from .Display import Display
 # ==============================================================================
 
 
-class DisplayVoxel(Display):
+class Scene(Display):
 
     def __init__(self):
         Display.__init__(self)
@@ -31,8 +29,19 @@ class DisplayVoxel(Display):
         for actor in actors:
             self.add_actor(actor)
 
-    def add_actor_from_plane(self,
-                             center,
+    def add_text_actor(self, text_actor):
+        self._text_actors.append(text_actor)
+        self._renderer.AddActor(text_actor)
+        text_actor.SetCamera(self._renderer.GetActiveCamera())
+
+    def add_text_actors(self, text_actors):
+        for text_actor in text_actors:
+            self.add_text_actor(text_actor)
+
+    # ==========================================================================
+
+    @staticmethod
+    def get_actor_from_plane(center,
                              normal,
                              color=(0, 0, 1),
                              radius=100):
@@ -65,21 +74,20 @@ class DisplayVoxel(Display):
         actor.SetMapper(mapper)
         actor.GetProperty().SetColor(color[0], color[1], color[2])
 
-        self._actors.append(actor)
-        self._renderer.AddActor(actor)
+        return actor
 
-    def add_actor_from_text(self,
-                            text,
+    @staticmethod
+    def get_actor_from_text(text,
                             position=(0, 0, 0),
                             scale=5,
                             color=(0, 0, 1)):
 
-        textSource = vtk.vtkVectorText()
-        textSource.SetText(text)
-        textSource.Update()
+        text_source = vtk.vtkVectorText()
+        text_source.SetText(text)
+        text_source.Update()
 
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(textSource.GetOutputPort())
+        mapper.SetInputConnection(text_source.GetOutputPort())
 
         actor = vtk.vtkFollower()
         actor.SetMapper(mapper)
@@ -87,100 +95,92 @@ class DisplayVoxel(Display):
         actor.AddPosition(position[0], position[1], position[2])
         actor.GetProperty().SetColor(color[0], color[1], color[2])
 
-        self._text_actors.append(actor)
-        self._renderer.AddActor(actor)
-
         return actor
 
-    def add_actor_from_ball_position(self,
-                                     position,
+    @staticmethod
+    def get_actor_from_ball_position(position,
                                      radius=5,
                                      color=(1, 0, 0)):
 
-        sphereSource = vtk.vtkSphereSource()
-        sphereSource.SetCenter(position[0], position[1], position[2])
-        sphereSource.SetRadius(radius)
+        sphere_source = vtk.vtkSphereSource()
+        sphere_source.SetCenter(position[0], position[1], position[2])
+        sphere_source.SetRadius(radius)
 
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(sphereSource.GetOutputPort())
+        mapper.SetInputConnection(sphere_source.GetOutputPort())
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         actor.GetProperty().SetColor(color[0], color[1], color[2])
 
-        self._actors.append(actor)
-        self._renderer.AddActor(actor)
+        return actor
 
-    def add_actor_from_arrow_vector(self,
-                                    startPoint,
-                                    endPoint,
+    @staticmethod
+    def get_actor_from_arrow_vector(start_point,
+                                    end_point,
                                     color=(0, 0, 0),
                                     line_width=20):
 
-        arrowSource = vtk.vtkArrowSource()
+        arrow_source = vtk.vtkArrowSource()
 
         random.seed(8775070)
 
         # Compute a basis
-        normalizedX = [0] * 3
-        normalizedY = [0] * 3
-        normalizedZ = [0] * 3
+        normalized_x = [0] * 3
+        normalized_y = [0] * 3
+        normalized_z = [0] * 3
         # The X axis is a vector from start to end
 
         math = vtk.vtkMath()
-        math.Subtract(endPoint, startPoint, normalizedX)
-        length = math.Norm(normalizedX)
-        math.Normalize(normalizedX)
+        math.Subtract(end_point, start_point, normalized_x)
+        length = math.Norm(normalized_x)
+        math.Normalize(normalized_x)
 
         # The Z axis is an arbitrary vector cross X
         arbitrary = [0] * 3
         arbitrary[0] = random.uniform(-10, 10)
         arbitrary[1] = random.uniform(-10, 10)
         arbitrary[2] = random.uniform(-10, 10)
-        math.Cross(normalizedX, arbitrary, normalizedZ)
-        math.Normalize(normalizedZ)
+        math.Cross(normalized_x, arbitrary, normalized_z)
+        math.Normalize(normalized_z)
 
         # The Y axis is Z cross X
-        math.Cross(normalizedZ, normalizedX, normalizedY)
+        math.Cross(normalized_z, normalized_x, normalized_y)
         matrix = vtk.vtkMatrix4x4()
 
         # Create the direction cosine matrix
         matrix.Identity()
         for i in range(3):
-            matrix.SetElement(i, 0, normalizedX[i])
-            matrix.SetElement(i, 1, normalizedY[i])
-            matrix.SetElement(i, 2, normalizedZ[i])
+            matrix.SetElement(i, 0, normalized_x[i])
+            matrix.SetElement(i, 1, normalized_y[i])
+            matrix.SetElement(i, 2, normalized_z[i])
 
         # Apply the transforms
         transform = vtk.vtkTransform()
-        transform.Translate(startPoint)
+        transform.Translate(start_point)
         transform.Concatenate(matrix)
         transform.Scale(length, line_width, line_width)
 
         # Transform the polydata
-        transformPD = vtk.vtkTransformPolyDataFilter()
-        transformPD.SetTransform(transform)
-        transformPD.SetInputConnection(arrowSource.GetOutputPort())
+        transform_pd = vtk.vtkTransformPolyDataFilter()
+        transform_pd.SetTransform(transform)
+        transform_pd.SetInputConnection(arrow_source.GetOutputPort())
 
         # Create a mapper and actor for the arrow
         mapper = vtk.vtkPolyDataMapper()
         actor = vtk.vtkActor()
 
-        mapper.SetInputConnection(transformPD.GetOutputPort())
+        mapper.SetInputConnection(transform_pd.GetOutputPort())
         actor.SetMapper(mapper)
         actor.GetProperty().SetColor(color[0], color[1], color[2])
 
-        self._actors.append(actor)
-        self._renderer.AddActor(actor)
+        return actor
 
-    def add_actor_from_vertices_faces(self,
-                                      vertices,
+    @staticmethod
+    def get_actor_from_vertices_faces(vertices,
                                       faces,
-                                      colors=None,
-                                      color=None,):
-
-        # if color is None:
-        #     color = numpy.random.uniform(0, 1, 3)
+                                      color=None,
+                                      colors=None):
 
         # Setup the colors array
         vtk_colors = vtk.vtkUnsignedCharArray()
@@ -228,11 +228,10 @@ class DisplayVoxel(Display):
         if color is not None and colors is None:
             actor.GetProperty().SetColor(color[0], color[1], color[2])
 
-        self._actors.append(actor)
-        self._renderer.AddActor(actor)
+        return actor
 
-    def add_actor_from_voxels(self,
-                              voxels_position,
+    @staticmethod
+    def get_actor_from_voxels(voxels_position,
                               voxels_size,
                               color=None):
 
@@ -271,8 +270,82 @@ class DisplayVoxel(Display):
         actor.SetMapper(mapper)
         actor.GetProperty().SetColor(color[0], color[1], color[2])
 
-        self._actors.append(actor)
-        self._renderer.AddActor(actor)
+        return actor
+
+    # ==========================================================================
+
+    def add_actor_from_plane(self,
+                             center,
+                             normal,
+                             color=(0, 0, 1),
+                             radius=100):
+
+        actor = self.get_actor_from_plane(center,
+                                          normal,
+                                          color=color,
+                                          radius=radius)
+        self.add_actor(actor)
+
+    def add_actor_from_text(self,
+                            text,
+                            position=(0, 0, 0),
+                            scale=5,
+                            color=(0, 0, 1)):
+
+        actor = self.get_actor_from_text(text,
+                                         position=position,
+                                         scale=scale,
+                                         color=color)
+
+        self.add_text_actor(actor)
+
+    def add_actor_from_ball_position(self,
+                                     position,
+                                     radius=5,
+                                     color=(1, 0, 0)):
+
+        actor = self.get_actor_from_ball_position(position,
+                                                  radius=radius,
+                                                  color=color)
+        self.add_actor(actor)
+
+    def add_actor_from_arrow_vector(self,
+                                    start_point,
+                                    end_point,
+                                    color=(0, 0, 0),
+                                    line_width=20):
+
+        actor = self.get_actor_from_arrow_vector(start_point,
+                                                 end_point,
+                                                 color=color,
+                                                 line_width=line_width)
+
+        self.add_actor(actor)
+
+    def add_actor_from_vertices_faces(self,
+                                      vertices,
+                                      faces,
+                                      color=None,
+                                      colors=None):
+
+        actor = self.get_actor_from_vertices_faces(vertices,
+                                                   faces,
+                                                   color=color,
+                                                   colors=colors)
+        self.add_actor(actor)
+
+    def add_actor_from_voxels(self,
+                              voxels_position,
+                              voxels_size,
+                              color=None):
+
+        actor = self.get_actor_from_voxels(voxels_position,
+                                           voxels_size,
+                                           color=color)
+
+        self.add_actor(actor)
+
+    # ==========================================================================
 
     def add_actors_from_voxels_list(self,
                                     voxels_positions,
