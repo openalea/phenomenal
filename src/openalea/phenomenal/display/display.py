@@ -7,15 +7,16 @@
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
 # ==============================================================================
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 
+import time
 import vtk
 import math
 import numpy
+from threading import Lock
 
 from ..calibration.transformations import rotation_matrix
 
-R = rotation_matrix(math.pi / 180.0, [0, 0, 1], [0, 0, 0])
 # ==============================================================================
 
 
@@ -32,6 +33,8 @@ class Display(object):
 
         self.set_camera(elevation=-90, azimuth=-90)
         self.set_background_color(background_color)
+
+        self._R = rotation_matrix(math.pi / 180.0, [0, 0, 1], [0, 0, 0])
 
     def set_camera(self,
                    elevation=0,
@@ -122,31 +125,54 @@ class Display(object):
         render_window.SetSize(windows_size[0], windows_size[1])
         render_window.Render()
 
-    def show(self, windows_size=(600, 800)):
+    def show(self,
+             windows_size=(600, 800),
+             screenshot_filename=None,
+             screenshot_magnification=10,
+             record_filename=None,
+             record_quality=2,
+             record_rate=25):
 
         self.reset_camera()
-        render_window = vtk.vtkRenderWindow()
-        render_window.AddRenderer(self._renderer)
-        render_window.SetSize(windows_size[0], windows_size[1])
 
-        render_window_interactor = vtk.vtkRenderWindowInteractor()
-        render_window_interactor.SetInteractorStyle(
-            vtk.vtkInteractorStyleTrackballCamera())
-        render_window_interactor.SetRenderWindow(render_window)
-        render_window.Render()
+        if record_filename is not None:
+            self.init_record_video(record_filename,
+                                   windows_size=windows_size,
+                                   quality=record_quality,
+                                   rate=record_rate)
+        else:
+            self.render_window = vtk.vtkRenderWindow()
+            self.render_window.AddRenderer(self._renderer)
+            self.render_window.SetSize(windows_size[0], windows_size[1])
 
-        render_window_interactor.Start()
+            self.render_window_interactor = vtk.vtkRenderWindowInteractor()
+            self.render_window_interactor.SetInteractorStyle(
+                vtk.vtkInteractorStyleTrackballCamera())
+            self.render_window_interactor.SetRenderWindow(self.render_window)
+            self.render_window.Render()
 
-        del render_window
-        del render_window_interactor
+        if record_filename is not None:
+            self.stop = False
+
+        self.render_window_interactor.Start()
+
+        if record_filename is not None:
+            self.stop = True
+            self.writer.End()
+
+        del self.render_window
+        del self.render_window_interactor
+
+        if screenshot_filename is not None:
+            self.screenshot(screenshot_filename,
+                            magnification=screenshot_magnification)
 
     def init_record_video(self, filename,
                           windows_size=(800, 1000),
                           quality=2,
-                          rate=100):
+                          rate=25):
 
-        self.stop = False
-
+        self.stop = True
         self.reset_camera()
         self.render_window = vtk.vtkRenderWindow()
         self.render_window.AddRenderer(self._renderer)
@@ -171,14 +197,16 @@ class Display(object):
         self.writer.SetQuality(quality)
         self.writer.Start()
 
+        self.lock = Lock()
         def cb(interactor, event):
-            if not self.stop:
-                interactor.GetRenderWindow().Render()
+            if not self.stop and self.lock.acquire(False):
                 self.windowToImageFilter.Modified()
                 self.writer.Write()
+                self.lock.release()
 
         self.render_window_interactor.AddObserver('TimerEvent', cb)
-        timerId = self.render_window_interactor.CreateRepeatingTimer(1)
+        self.render_window_interactor.AddObserver('RenderEvent', cb)
+        self.render_window_interactor.CreateRepeatingTimer(1)
 
     def record_video(self, video_filename, elements, func):
 
@@ -196,11 +224,7 @@ class Display(object):
         del self.render_window
         del self.render_window_interactor
 
-        # self.render_window = None
-        # self.render_window_interactor = None
-
     def switch_elements(self, elements, func):
-        global R
         self.it = 0
         def cb_change_plant(interactor, event):
             if not self.stop:
@@ -215,15 +239,12 @@ class Display(object):
                         self.clean_all_actors()
                         self.stop = True
 
-                        # interactor.ExitCallback()
-
                 for actor in self._actors:
                     actor.RotateZ(1)
 
-
                 for text_actor in self._text_actors:
                     x, y, z = text_actor.GetPosition()
-                    pos = numpy.dot(R, numpy.array([x, y, z, 1]))
+                    pos = numpy.dot(self._R, numpy.array([x, y, z, 1]))
                     text_actor.SetPosition(pos[:3])
                     text_actor.SetCamera(self._renderer.GetActiveCamera())
 

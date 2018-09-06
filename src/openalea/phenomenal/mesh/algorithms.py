@@ -411,7 +411,8 @@ def voxelization(vtk_poly_data, voxels_size=1):
     return imgstenc.GetOutput()
 
 
-def mesh_surface_area(vertices, faces):
+def mesh_surface_area(vertices,
+                      faces):
     """ Return the surface_area of a mesh
 
     :param vertices:
@@ -420,8 +421,13 @@ def mesh_surface_area(vertices, faces):
     """
     return skimage.measure.mesh_surface_area(vertices, faces)
 
-def from_vertices_faces_to_voxels_position(vertices, faces, voxels_size=4):
+
+def from_vertices_faces_to_voxels_position(vertices,
+                                           faces,
+                                           voxels_size=4):
+
     poly_data = from_vertices_faces_to_vtk_poly_data(vertices, faces)
     image_data = voxelization(poly_data, voxels_size=voxels_size)
     voxels_position = from_vtk_image_data_to_voxels_center(image_data)
+
     return voxels_position
