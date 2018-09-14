@@ -25,18 +25,15 @@ class VoxelSegmentation(object):
         self.voxels_size = voxels_size
         self.info = dict()
 
-    def get_plant_info(self):
-        info = dict()
-
+    def update_plant_info(self):
         s = set()
         for vo in self.voxel_organs:
             s = s.union(vo.voxels_position())
 
-        info["pm_label"] = 'plant'
-        info["pm_voxels_volume"] = len(s) * self.voxels_size ** 3
-        info["pm_number_of_leaf"] = self.get_number_of_leaf()
+        self.info["pm_label"] = 'plant'
+        self.info["pm_voxels_volume"] = len(s) * self.voxels_size ** 3
+        self.info["pm_number_of_leaf"] = self.get_number_of_leaf()
 
-        return info
 
     def get_voxels_position(self, except_organs=None):
 
@@ -167,6 +164,6 @@ class VoxelSegmentation(object):
 
                 vms.voxel_organs.append(vo)
 
-            vms.info = vms.get_plant_info()
+            vms.update_plant_info()
 
         return vms
