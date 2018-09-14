@@ -23,6 +23,7 @@ class VoxelSegmentation(object):
 
         self.voxel_organs = list()
         self.voxels_size = voxels_size
+        self.info = dict()
 
     def get_plant_info(self):
         info = dict()
@@ -119,6 +120,8 @@ class VoxelSegmentation(object):
             data = dict()
             data['voxels_size'] = self.voxels_size
             data['voxel_organs'] = list()
+            data['info'] = self.info
+
             for vo in self.voxel_organs:
 
                 dvo = dict()
@@ -139,7 +142,7 @@ class VoxelSegmentation(object):
             f.write(str(data))
 
     @staticmethod
-    def read_from_json_gz(filename):
+    def read_from_json_gz(filename, without_info=False):
 
         with gzip.open(filename, 'rb') as f:
             data = ast.literal_eval(f.read())
@@ -153,7 +156,8 @@ class VoxelSegmentation(object):
                 if 'sub_label' in dvo:
                     vo.sub_label = dvo['sub_label']
 
-                vo.info = dvo['info']
+                if not without_info:
+                    vo.info = dvo['info']
 
                 for dvs in dvo['voxel_segments']:
                     voxels_position = set(map(tuple, dvs['voxels_position']))
@@ -162,5 +166,7 @@ class VoxelSegmentation(object):
                     vo.add_voxel_segment(voxels_position, polyline)
 
                 vms.voxel_organs.append(vo)
+
+            vms.info = vms.get_plant_info()
 
         return vms
