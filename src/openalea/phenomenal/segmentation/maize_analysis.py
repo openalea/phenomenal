@@ -387,4 +387,6 @@ def maize_analysis(maize_segmented):
     for leaf_number, (vo, _) in enumerate(mature_leafs + growing_leafs):
         vo.info["pm_leaf_number"] = leaf_number + 1
 
+    maize_segmented.update_plant_info()
+
     return maize_segmented

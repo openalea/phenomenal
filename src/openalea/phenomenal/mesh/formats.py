@@ -9,10 +9,9 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
+
 import vtk
-import os
-import json
-import numpy
+import vtk.util.numpy_support
 
 from .vtk_transformation import (from_vertices_faces_to_vtk_poly_data,
                                  from_vtk_poly_data_to_vertices_faces)
@@ -38,8 +37,7 @@ def write_vertices_faces_to_ply_file(filename, vertices, faces,
 
     write_vtk_poly_data_to_ply_file(filename, vtk_poly_data)
 
-import vtk
-import vtk.util.numpy_support
+
 def read_ply_to_vertices_faces(filename):
     """ Read ply file to vertices and faces
     """
@@ -59,6 +57,7 @@ def read_ply_to_vertices_faces(filename):
     faces = faces.reshape((len(faces) // 4, 4))
 
     colors = vtk_poly_data.GetPointData().GetScalars()
+    colors = vtk.util.numpy_support.vtk_to_numpy(colors)
 
     return vertices, faces[:, 1:], colors
 
