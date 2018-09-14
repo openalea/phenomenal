@@ -24,6 +24,7 @@ def unit_vector(vector):
 
 def angle_between(v1, v2):
     """ Returns the angle in radians between vectors 'v1' and 'v2'::
+        0 and between 2pi
 
             >>> angle_between((1, 0, 0), (0, 1, 0))
             1.5707963267948966
@@ -80,6 +81,26 @@ def compute_length_organ(polyline):
     return length
 
 
+def compute_inclination_angle(polyline, step=3):
+
+    if not len(polyline) >= step:
+        return None
+
+    angles = list()
+    z_axis = numpy.array([0, 0, 1])
+    for (x0, y0, z0), (x1, y1, z2) in zip(polyline[::step],
+                                          polyline[step::step]):
+        vector = (x1 - x0, y1 - y0, z2 - z0)
+        angle = angle_between(z_axis, numpy.array(vector))
+        angles.append(math.degrees(angle))
+
+    inclination_angle = sum(angles) / float(len(angles))
+    if inclination_angle > 180.0:
+        inclination_angle -= 360.0
+
+    return inclination_angle
+
+
 def compute_fitted_width(width, curvilinear_abscissa):
 
     x = numpy.array(curvilinear_abscissa)
@@ -90,7 +111,7 @@ def compute_fitted_width(width, curvilinear_abscissa):
     return fitted_width
 
 
-def compute_azimuth_vector_mean_organ(polyline):
+def compute_vector_mean(polyline):
 
     x, y, z = polyline[0]
 
@@ -103,11 +124,16 @@ def compute_azimuth_vector_mean_organ(polyline):
 
     vector_mean = numpy.array(vectors).mean(axis=0)
 
-    x, y, z = vector_mean
-    angle = math.atan2(y, x)
-    angle = angle + 2 * math.pi if angle < 0 else angle
+    return vector_mean
 
-    return tuple(vector_mean), angle
+
+def compute_azimuth_angle(polyline):
+
+    vector_mean = compute_vector_mean(polyline)
+    x, y, z = vector_mean
+    azimuth_angle = math.degrees(math.atan2(y, x))
+
+    return azimuth_angle, tuple(vector_mean)
 
 
 def compute_insertion_angle(polyline, stem_vector_mean):
@@ -117,15 +143,16 @@ def compute_insertion_angle(polyline, stem_vector_mean):
     vectors = list()
     for i in range(1, len(polyline) / 4 + 1):
         xx, yy, zz = polyline[i]
+        vectors.append((xx - x, yy - y, zz - z))
 
-        v = (xx - x, yy - y, zz - z)
-        vectors.append(v)
+    insertion_vector = numpy.array(vectors).mean(axis=0)
+    insertion_angle = angle_between(insertion_vector, stem_vector_mean)
+    insertion_angle = math.degrees(insertion_angle)
 
-    vector_mean = numpy.array(vectors).mean(axis=0)
+    if insertion_angle > 180.0:
+        insertion_angle -= 360.0
 
-    insertion_angle = angle_between(vector_mean, stem_vector_mean)
-
-    return insertion_angle, tuple(vector_mean)
+    return insertion_angle, tuple(insertion_vector)
 
 # ==============================================================================
 # ==============================================================================
@@ -145,22 +172,28 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
     # Compute width
     width = compute_width_organ(closest_nodes)
 
-    organ.info['pm_max_width'] = max(width)
-    organ.info['pm_average_width'] = sum(width) / float(len(width))
+    organ.info['pm_width_max'] = max(width)
+    organ.info['pm_width_mean'] = sum(width) / float(len(width))
+    organ.info['pm_surface'] = numpy.trapz(width)
 
     length = compute_length_organ(polyline)
     organ.info['pm_length'] = length
 
     curvilinear_abscissa = compute_curvilinear_abscissa(polyline, length)
     fitted_width = compute_fitted_width(width, curvilinear_abscissa)
-    organ.info['pm_max_width_fitted'] = max(fitted_width)
-    organ.info['pm_average_width_fitted'] = (sum(fitted_width) / float(len(
+    organ.info['pm_fitted_width_max'] = max(fitted_width)
+    organ.info['pm_fitted_width_mean'] = (sum(fitted_width) /
+                                                     float(len(
         fitted_width)))
+    organ.info['pm_fitted_surface'] = numpy.trapz(width)
 
     # Compute azimuth
-    vector_mean, angle = compute_azimuth_vector_mean_organ(polyline)
+    azimuth_angle, vector_mean = compute_azimuth_angle(polyline)
     organ.info['pm_vector_mean'] = vector_mean
-    organ.info['pm_azimuth'] = angle
+    organ.info['pm_azimuth_angle'] = azimuth_angle
+
+    inclination_angle = compute_inclination_angle(polyline)
+    organ.info['pm_inclination_angle'] = inclination_angle
 
     if stem_vector_mean is not None and len(polyline) >= 4:
         insertion_angle, vector = compute_insertion_angle(

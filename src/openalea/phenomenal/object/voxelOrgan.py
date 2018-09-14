@@ -69,20 +69,17 @@ class VoxelOrgan(object):
         long_polyline = self.get_longest_segment().polyline
         index_position_base = len(long_polyline) - 1
         for i in range(len(long_polyline) - 1, -1, -1):
-            if long_polyline[i] not in set(voxels_position):
+            if long_polyline[i] in set(voxels_position):
                 index_position_base = i
+            else:
                 break
         return index_position_base
 
     def real_longest_polyline(self):
 
-        voxels_position = self.voxels_position()
         long_polyline = self.get_longest_segment().polyline
-        index_position_base = len(long_polyline) - 1
-        for i in range(len(long_polyline) - 1, -1, -1):
-            if long_polyline[i] not in set(voxels_position):
-                index_position_base = i
-                break
+        index_position_base = self.get_real_index_position_base()
+
         real_polyline = long_polyline[index_position_base:]
 
         return real_polyline
