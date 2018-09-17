@@ -57,7 +57,8 @@ def read_ply_to_vertices_faces(filename):
     faces = faces.reshape((len(faces) // 4, 4))
 
     colors = vtk_poly_data.GetPointData().GetScalars()
-    colors = vtk.util.numpy_support.vtk_to_numpy(colors)
+    if colors is not None:
+        colors = vtk.util.numpy_support.vtk_to_numpy(colors)
 
     return vertices, faces[:, 1:], colors
 
