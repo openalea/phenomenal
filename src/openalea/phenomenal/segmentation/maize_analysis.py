@@ -83,7 +83,7 @@ def compute_length_organ(polyline):
 
 def compute_inclination_angle(polyline, step=3):
 
-    if not len(polyline) >= step:
+    if not len(polyline) > step:
         return None
 
     angles = list()
