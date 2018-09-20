@@ -114,7 +114,7 @@ def maize_segmentation(voxel_skeleton, graph):
 
     # ==========================================================================
     # Remove stem voxels from segment voxels
-
+    vs_to_remove = list()
     for vs in voxel_skeleton.segments:
 
         leaf_voxel = None
@@ -123,6 +123,10 @@ def maize_segmentation(voxel_skeleton, graph):
             if vs.polyline[-1] in voxel_group:
                 leaf_voxel = voxel_group
         vs.leaf_voxel = leaf_voxel
+
+        if leaf_voxel is None:
+            vs_to_remove.append(vs)
+            continue
 
         # ======================================================================
 
@@ -134,6 +138,9 @@ def maize_segmentation(voxel_skeleton, graph):
                 break
 
         vs.real_polyline = vs.polyline[index_position_base:index_position_tip]
+
+    for vs in vs_to_remove:
+        voxel_skeleton.segments.remove(vs)
 
     # ==========================================================================
     # Merge remains voxels of the not stem
