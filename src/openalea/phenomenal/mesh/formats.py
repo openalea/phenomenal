@@ -9,12 +9,10 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-
 import vtk
 import vtk.util.numpy_support
 
-from .vtk_transformation import (from_vertices_faces_to_vtk_poly_data,
-                                 from_vtk_poly_data_to_vertices_faces)
+from .vtk_transformation import (from_vertices_faces_to_vtk_poly_data)
 # ==============================================================================
 
 __all__ = ["write_vertices_faces_to_ply_file",
@@ -80,8 +78,3 @@ def read_ply_to_vtk_poly_data(filename):
     ply_reader.Update()
 
     return ply_reader.GetOutput()
-
-# def write_vtk_poly_data_to_x3d(filename, vtk_poly_data):
-#     x3d_writer = vtk.vtkX3DExporter()
-#     x3d_writer.SetFileName(filename)
-#     x3d_writer.Set

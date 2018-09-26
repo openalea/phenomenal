@@ -182,8 +182,7 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
     curvilinear_abscissa = compute_curvilinear_abscissa(polyline, length)
     fitted_width = compute_fitted_width(width, curvilinear_abscissa)
     organ.info['pm_fitted_width_max'] = max(fitted_width)
-    organ.info['pm_fitted_width_mean'] = (sum(fitted_width) /
-                                                     float(len(
+    organ.info['pm_fitted_width_mean'] = (sum(fitted_width) /float(len(
         fitted_width)))
     organ.info['pm_fitted_surface'] = numpy.trapz(width)
 

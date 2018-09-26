@@ -49,7 +49,12 @@ def show_voxel_grid(voxel_grid,
     ipyvolume.show()
 
 
-def show_mesh(vertices, faces, color='green', width=500, height=500):
+def show_mesh(vertices,
+              faces,
+              color='green',
+              width=500,
+              height=500,
+              colors=None):
 
     ipyvolume.figure(width=width, height=height)
     ipyvolume.view(0, 90)

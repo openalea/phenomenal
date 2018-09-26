@@ -53,19 +53,19 @@ def t_directory(dirname):
         assert bool(error) is False
 
 
-def test_notebook():
-    try:
-        import ipyvolume
-        import nbconvert
-        import notebook
-        import jupyter
-    except ImportError:
-        return
-
-    dirname = os.path.dirname(__file__)
-    dirname_example = os.path.abspath(os.path.join(dirname, '../../examples/'))
-
-    t_directory(dirname_example)
+# def test_notebook():
+#     try:
+#         import ipyvolume
+#         import nbconvert
+#         import notebook
+#         import jupyter
+#     except ImportError:
+#         return
+#
+#     dirname = os.path.dirname(__file__)
+#     dirname_example = os.path.abspath(os.path.join(dirname, '../../examples/'))
+#
+#     t_directory(dirname_example)
 
 
 if __name__ == "__main__":
