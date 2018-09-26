@@ -11,6 +11,7 @@ from __future__ import print_function, absolute_import
 
 import numpy
 import math
+import scipy.integrate
 
 from .plane_interception import (intercept_points_along_path_with_planes,
                                  max_distance_in_points)
@@ -62,12 +63,11 @@ def compute_width_organ(closest_nodes):
 
 def compute_curvilinear_abscissa(polyline, length):
 
-    curvilinear_abscissa = list()
-    l = 0
+    v = 0.0
+    curvilinear_abscissa = [0]
     for n1, n2 in zip(polyline, polyline[1:]):
-        l += numpy.linalg.norm(numpy.array(n1) - numpy.array(n2))
-        curvilinear_abscissa.append(l / float(length))
-    curvilinear_abscissa.append(1)
+        v += numpy.linalg.norm(numpy.array(n1) - numpy.array(n2))
+        curvilinear_abscissa.append(v / float(length))
 
     return curvilinear_abscissa
 
@@ -154,6 +154,7 @@ def compute_insertion_angle(polyline, stem_vector_mean):
 
     return insertion_angle, tuple(insertion_vector)
 
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -169,23 +170,25 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
     organ.info['pm_z_tip'] = polyline[-1][2]
     organ.info['pm_z_base'] = polyline[0][2]
 
+    length = compute_length_organ(polyline)
+    organ.info['pm_length'] = length
+    normalized_curvilinear_abscissa = compute_curvilinear_abscissa(
+        polyline, length)
+    curvilinear_abscissa = compute_curvilinear_abscissa(polyline, 1)
     # Compute width
     width = compute_width_organ(closest_nodes)
 
     organ.info['pm_width_max'] = max(width)
     organ.info['pm_width_mean'] = sum(width) / float(len(width))
-    organ.info['pm_surface'] = numpy.trapz(width)
+    organ.info['pm_surface'] = scipy.integrate.simps(
+        width, curvilinear_abscissa)
 
-    length = compute_length_organ(polyline)
-    organ.info['pm_length'] = length
-
-    curvilinear_abscissa = compute_curvilinear_abscissa(polyline, length)
-    fitted_width = compute_fitted_width(width, curvilinear_abscissa)
+    fitted_width = compute_fitted_width(width, normalized_curvilinear_abscissa)
     organ.info['pm_fitted_width_max'] = max(fitted_width)
     organ.info['pm_fitted_width_mean'] = (sum(fitted_width) /float(len(
         fitted_width)))
-    organ.info['pm_fitted_surface'] = numpy.trapz(width)
-
+    organ.info['pm_fitted_surface'] = scipy.integrate.simps(
+        fitted_width, curvilinear_abscissa)
     # Compute azimuth
     azimuth_angle, vector_mean = compute_azimuth_angle(polyline)
     organ.info['pm_vector_mean'] = vector_mean
