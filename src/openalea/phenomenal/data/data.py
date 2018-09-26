@@ -253,3 +253,15 @@ def synthetic_plant(plant_number=1, registration_point=(0, 0, 750)):
         meta_data = json.load(infile)
 
     return vertices, faces, meta_data
+
+# ==============================================================================
+
+
+def mesh_mccormik_plant(plant_number=1):
+    filename = pkg_resources.resource_filename(
+        'openalea.phenomenal',
+        'data/mccormick_plant_{}/segmentedMesh.ply'.format(plant_number))
+
+    vertices, faces, colors = read_ply_to_vertices_faces(filename)
+
+    return vertices, faces, colors
