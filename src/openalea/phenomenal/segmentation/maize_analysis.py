@@ -103,9 +103,8 @@ def compute_inclination_angle(polyline, step=1):
 
     inclination_angle = sum(angles) / float(len(angles))
 
-    # if inclination_angle > 180.0:
-    #     inclination_angle -= 360.0
-    print(inclination_angle)
+    if inclination_angle > 180.0:
+        inclination_angle -= 360.0
     return inclination_angle
 
 
