@@ -88,13 +88,16 @@ def compute_inclination_angle(polyline, step=3):
 
     angles = list()
     z_axis = numpy.array([0, 0, 1])
+    length = 0
     for (x0, y0, z0), (x1, y1, z2) in zip(polyline[::step],
                                           polyline[step::step]):
-        vector = (x1 - x0, y1 - y0, z2 - z0)
-        angle = angle_between(z_axis, numpy.array(vector))
-        angles.append(math.degrees(angle))
+        vector = numpy.array((x1 - x0, y1 - y0, z2 - z0))
+        norm = numpy.linalg.norm(vector)
+        angle = angle_between(z_axis, vector)
+        angles.append(math.degrees(angle) * norm)
+        length += norm
 
-    inclination_angle = sum(angles) / float(len(angles))
+    inclination_angle = sum(angles) / (float(len(angles) * length))
     if inclination_angle > 180.0:
         inclination_angle -= 360.0
 
