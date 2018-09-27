@@ -2,7 +2,6 @@
     :target: https://travis-ci.org/openalea/phenomenal
     :alt: Travis Status
 
-
 .. image::  https://ci.appveyor.com/api/projects/status/k7up7iy2ur2wmipx/branch/master?svg=true
     :target: https://ci.appveyor.com/project/artzet/phenomenal
     :alt: Appveyor Status
@@ -11,7 +10,9 @@
     :target: https://phenomenal.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-
+.. image:: https://mybinder.org/badge.svg
+    :target: https://mybinder.org/v2/gh/openalea/phenomenal/master
+    :alt: Binder Status
 
 ==========
 Phenomenal
@@ -43,46 +44,22 @@ To replay notebook tutorial launch with the following command
 
     jupyter notebook
 
-=================================================
-Installation with Miniconda (Windows, linux, OSX)
-=================================================
+============
+Installation
+============
 
-Miniconda installation
-----------------------
-
-Follow official website instruction to install miniconda :
-
-http://conda.pydata.org/miniconda.html
-
-1. Install conda-build if not already installed
-...............................................
+Conda/Anaconda
+--------------
 
 .. code:: shell
 
-    conda install conda-build
+    conda install -c openalea openalea.phenomenal
 
-2. Create virtual environment and activate it
-.............................................
-
-.. code:: shell
-
-    conda create --name phenomenal python
-    source activate phenomenal
-
-3. Build and install openalea.phenomenal package
-................................................
+On windows you need to add the conda-forge channels to find opencv package
 
 .. code:: shell
 
-    cd phenomenal/build_tools/conda
-    conda build -c conda-forge -c openalea .
-    conda install -c conda-forge -c openalea --use-local openalea.phenomenal
-
-(Optional) Install several package managing tools :
-
-.. code:: shell
-
-    conda install -c conda-forge notebook nose sphinx sphinx_rtd_theme pandoc coverage ipyvolume nbconvert
+    conda install -c openalea -c conda-forge openalea.phenomenal
 
 Authors
 -------
@@ -94,8 +71,8 @@ Authors
 * Fournier	    Christian
 * Pradal        Christophe
 
-Mainteners
-----------
+Maintainers
+-----------
 
 * Artzet	    Simon
 * Fournier	    Christian
