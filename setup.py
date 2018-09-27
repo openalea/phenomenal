@@ -39,7 +39,7 @@ extentions = [Extension(
 
 setup(
     name="openalea.phenomenal",
-    version="1.6.0",
+    version="1.6.1",
     description="",
     long_description="",
 
@@ -54,7 +54,7 @@ setup(
     maintainer="Simon Artzet",
     maintainer_email="simon.artzet@gmail.com",
 
-    url="https://gitlab.inria.fr/phenome/phenomenal",
+    url="https://github.com/openalea/phenomenal",
     license="Cecill-C",
     keywords='',
 
