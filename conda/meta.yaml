@@ -26,7 +26,7 @@ requirements:
     - cython
     - vs2008_runtime    [win and py27]
     - vs2015_runtime    [win and py36]
-    - libgcc-ng [unix]
+    - libgcc-ng [linux]
     - pywin32 [win]
     - numpy
 
