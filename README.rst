@@ -46,12 +46,8 @@ Tutorials are available in the example folder as a Jupyter Notebook.
 Try out in mybinder:
 
 .. image:: https://mybinder.org/badge.svg
-    :target: https://mybinder.org/v2/gh/openalea/phenomenal/master
-    :alt: Binder Status
-
-.. code:: shell
-
-    jupyter notebook
+    :target: https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples
+    :alt: Launch interactive phenomenal notebook with myBinder service
 
 ============
 Installation
