@@ -6,6 +6,7 @@ channels:
 dependencies:
   - python=2.7
   - openalea.phenomenal
+  - vtk=6
   - nose
   - sphinx
   - sphinx_rtd_theme
