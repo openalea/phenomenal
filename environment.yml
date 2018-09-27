@@ -1,13 +1,10 @@
 name: phenomenal
 channels:
   - openalea
-  - conda-forge
   - defaults
+  - conda-forge
 
 dependencies:
   - python=2.7
   - openalea.phenomenal
-  - nose
-  - sphinx
-  - sphinx_rtd_theme
   - ipyvolume
