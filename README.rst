@@ -88,8 +88,8 @@ Authors
 -------
 
 * Artzet	    Simon
-* Fournier	    Christian
 * Brichet	    Nicolas
 * Chopard       Jerome
-* Christophe    Pradal
-* Mielewczik	Michael
+* Fournier	    Christian
+* Pradal        Christophe
+
