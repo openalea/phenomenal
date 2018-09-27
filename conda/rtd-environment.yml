@@ -1,0 +1,12 @@
+name: phenomenal
+channels:
+  - openalea
+  - defaults
+
+dependencies:
+  - python=2.7
+  - openalea.phenomenal
+  - nose
+  - sphinx
+  - sphinx_rtd_theme
+  - ipyvolume
