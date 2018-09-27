@@ -81,26 +81,31 @@ def compute_length_organ(polyline):
     return length
 
 
-def compute_inclination_angle(polyline, step=3):
+def compute_inclination_angle(polyline, step=1):
 
     if not len(polyline) > step:
         return None
 
+    length = 0
+    for (x0, y0, z0), (x1, y1, z1) in zip(polyline[::step],
+                                          polyline[step::step]):
+        length += numpy.linalg.norm(numpy.array((x1 - x0, y1 - y0, z1 - z0)))
+
     angles = list()
     z_axis = numpy.array([0, 0, 1])
-    length = 0
-    for (x0, y0, z0), (x1, y1, z2) in zip(polyline[::step],
+
+    for (x0, y0, z0), (x1, y1, z1) in zip(polyline[::step],
                                           polyline[step::step]):
-        vector = numpy.array((x1 - x0, y1 - y0, z2 - z0))
+        vector = numpy.array((x1 - x0, y1 - y0, z1 - z0))
         norm = numpy.linalg.norm(vector)
         angle = angle_between(z_axis, vector)
-        angles.append(math.degrees(angle) * norm)
-        length += norm
+        angles.append(math.degrees(angle) * (norm / length))
 
-    inclination_angle = sum(angles) / (float(len(angles) * length))
-    if inclination_angle > 180.0:
-        inclination_angle -= 360.0
+    inclination_angle = sum(angles) / float(len(angles))
 
+    # if inclination_angle > 180.0:
+    #     inclination_angle -= 360.0
+    print(inclination_angle)
     return inclination_angle
 
 
