@@ -22,5 +22,4 @@ dependencies:
   - sphinx_rtd_theme
   - pandoc
   - ipyvolume
-  - pywin32 [win]
   - cython
