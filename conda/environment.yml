@@ -1,7 +1,6 @@
 name: phenomenal
 channels:
   - openalea
-  - conda-forge
   - defaults
 dependencies:
   - numba

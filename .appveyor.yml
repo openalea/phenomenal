@@ -7,15 +7,6 @@ environment:
     - CONDA_RECIPE: conda
       CONDA_VERSION: 2
 
-# matrix:
-#   allow_failures:
-#     - platform: x86
-#       CONDA_RECIPE: conda
-#       CONDA_VERSION: 3
-#     - platform: x64
-#       CONDA_RECIPE: conda
-#       CONDA_VERSION: 3
-
 install:
   - git clone https://github.com/OpenAlea/appveyor-ci.git
   - cd appveyor-ci
