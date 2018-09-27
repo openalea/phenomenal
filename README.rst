@@ -4,7 +4,7 @@
 
 
 .. image::  https://ci.appveyor.com/api/projects/status/k7up7iy2ur2wmipx/branch/master?svg=true
-    :target: https://ci.appveyor.com/api/projects/status/k7up7iy2ur2wmipx/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/artzet/phenomenal
     :alt: Appveyor Status
 
 .. image:: https://readthedocs.org/projects/phenomenal/badge/?version=latest
