@@ -90,6 +90,14 @@ Authors
 * Artzet	    Simon
 * Brichet	    Nicolas
 * Chopard       Jerome
+* Mielewczik    Michael
+* Fournier	    Christian
+* Pradal        Christophe
+
+Mainteners
+----------
+
+* Artzet	    Simon
 * Fournier	    Christian
 * Pradal        Christophe
 
