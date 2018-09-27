@@ -1,3 +1,6 @@
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1436634.svg
+   :target: https://doi.org/10.5281/zenodo.1436634
+
 .. image:: https://anaconda.org/openalea/openalea.phenomenal/badges/license.svg
     :target: http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
     :alt: Licence Status
