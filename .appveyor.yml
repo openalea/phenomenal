@@ -6,8 +6,6 @@ environment:
   matrix:
     - CONDA_RECIPE: conda
       CONDA_VERSION: 2
-    - CONDA_RECIPE: conda
-      CONDA_VERSION: 3
 
 # matrix:
 #   allow_failures:
@@ -22,6 +20,7 @@ install:
   - git clone https://github.com/OpenAlea/appveyor-ci.git
   - cd appveyor-ci
   - call install.bat
+  - conda config --prepend channels conda-forge
 
 before_build:
   - call before_build.bat
