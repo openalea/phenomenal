@@ -1,6 +1,17 @@
-.. image:: https://gitlab.inria.fr/phenome/phenomenal/badges/master/pipeline.svg
-    :target: https://gitlab.inria.fr/phenome/phenomenal/commits/master
-    :alt: pipeline status
+.. image:: https://travis-ci.org/openalea/phenomenal.svg?branch=master
+    :target: https://travis-ci.org/openalea/phenomenal
+    :alt: Travis Status
+
+
+.. image::  https://ci.appveyor.com/api/projects/status/k7up7iy2ur2wmipx/branch/master?svg=true
+    :target: https://ci.appveyor.com/api/projects/status/k7up7iy2ur2wmipx/branch/master?svg=true
+    :alt: Appveyor Status
+
+.. image:: https://readthedocs.org/projects/phenomenal/badge/?version=latest
+    :target: https://phenomenal.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+
 
 ==========
 Phenomenal
