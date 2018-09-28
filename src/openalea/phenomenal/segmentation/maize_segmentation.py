@@ -159,7 +159,7 @@ def maize_segmentation(voxel_skeleton, graph):
     for vs in voxel_skeleton.segments:
 
         if len(vs.real_polyline) == 0:
-            organ_unknown.voxel_segments.append(vs.copy())
+            organ_unknown.voxel_segments.append(vs)
             continue
 
         vs = VoxelSegment(vs.polyline, vs.leaf_voxel, vs.closest_nodes)
