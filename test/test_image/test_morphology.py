@@ -16,12 +16,14 @@ import numpy
 import openalea.phenomenal.image as phm_img
 # ==============================================================================
 
+def message(e):
+    return e.args[0]
 
 def test_close_wrong_parameters_1():
     try:
         phm_img.close(None)
-    except Exception, e:
-        assert e.message == 'image must be a numpy.ndarray'
+    except Exception as e:
+        assert message(e) == 'image must be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -32,8 +34,8 @@ def test_close_wrong_parameters_2():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.close(image)
-    except Exception, e:
-        assert e.message == 'image must be 2D array'
+    except Exception as e:
+        assert message(e) == 'image must be 2D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -45,8 +47,8 @@ def test_close_wrong_parameters_3():
     mask = 42
     try:
         phm_img.close(image, mask=mask)
-    except Exception, e:
-        assert e.message == 'mask must be a numpy.ndarray'
+    except Exception as e:
+        assert message(e) == 'mask must be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -58,8 +60,8 @@ def test_close_wrong_parameters_4():
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.close(image, mask=mask)
-    except Exception, e:
-        assert e.message == 'mask must be 2D array'
+    except Exception as e:
+        assert message(e) == 'mask must be 2D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -92,7 +94,7 @@ def test_close_2():
 def test_dilate_erode_wrong_parameters_1():
     try:
         phm_img.dilate_erode(None)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -102,7 +104,7 @@ def test_dilate_erode_wrong_parameters_2():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.dilate_erode(image)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -113,7 +115,7 @@ def test_dilate_erode_wrong_parameters_3():
     mask = 42
     try:
         phm_img.dilate_erode(image, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -124,7 +126,7 @@ def test_dilate_erode_wrong_parameters_4():
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.dilate_erode(image, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -156,7 +158,7 @@ def test_dilate_erode_2():
 def test_erode_dilate_wrong_parameters_1():
     try:
         phm_img.erode_dilate(None)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -167,7 +169,7 @@ def test_erode_dilate_wrong_parameters_2():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.erode_dilate(image)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -179,7 +181,7 @@ def test_erode_dilate_wrong_parameters_3():
     mask = 42
     try:
         phm_img.erode_dilate(image, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -191,7 +193,7 @@ def test_erode_dilate_wrong_parameters_4():
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.erode_dilate(image, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False

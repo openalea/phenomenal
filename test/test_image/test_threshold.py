@@ -17,6 +17,8 @@ import openalea.phenomenal.image as phm_img
 import openalea.phenomenal.data as phm_data
 # ==============================================================================
 
+def message(e):
+    return e.args[0]
 
 def test_threshold_hsv_wrong_parameters_1():
 
@@ -27,7 +29,7 @@ def test_threshold_hsv_wrong_parameters_1():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -42,7 +44,7 @@ def test_threshold_hsv_wrong_parameters_2():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -57,7 +59,7 @@ def test_threshold_hsv_wrong_parameters_3():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -72,7 +74,7 @@ def test_threshold_hsv_wrong_parameters_4():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -87,7 +89,7 @@ def test_threshold_hsv_wrong_parameters_5():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -102,7 +104,7 @@ def test_threshold_hsv_wrong_parameters_6():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -117,7 +119,7 @@ def test_threshold_hsv_wrong_parameters_7():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -132,7 +134,7 @@ def test_threshold_hsv_wrong_parameters_8():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -147,7 +149,7 @@ def test_threshold_hsv_wrong_parameters_9():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -162,7 +164,7 @@ def test_threshold_hsv_wrong_parameters_10():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -176,7 +178,7 @@ def test_threshold_hsv_wrong_parameters_13():
 
     try:
         phm_img.threshold_hsv(image, hsv_min, hsv_max, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -202,8 +204,8 @@ def test_threshold_meanshift_wrong_parameters_1():
     mean_image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.threshold_meanshift(None, mean_image)
-    except Exception, e:
-        assert e.message == 'image should be a numpy.ndarray'
+    except Exception as e:
+        assert message(e) == 'image should be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -213,8 +215,8 @@ def test_threshold_meanshift_wrong_parameters_2():
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.threshold_meanshift(image, None)
-    except Exception, e:
-        assert e.message == 'mean should be a numpy.ndarray'
+    except Exception as e:
+        assert message(e) == 'mean should be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -227,8 +229,8 @@ def test_threshold_meanshift_wrong_parameters_3():
 
     try:
         phm_img.threshold_meanshift(image, mean_image)
-    except Exception, e:
-        assert e.message == 'image should be 3D array'
+    except Exception as e:
+        assert message(e) == 'image should be 3D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -241,8 +243,8 @@ def test_threshold_meanshift_wrong_parameters_4():
 
     try:
         phm_img.threshold_meanshift(image, mean_im)
-    except Exception, e:
-        assert e.message == 'image should be 3D array'
+    except Exception as e:
+        assert message(e) == 'image should be 3D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -255,8 +257,8 @@ def test_threshold_meanshift_wrong_parameters_5():
 
     try:
         phm_img.threshold_meanshift(image, mean_im)
-    except Exception, e:
-        assert e.message == 'mean should be 3D array'
+    except Exception as e:
+        assert message(e) == 'mean should be 3D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -268,8 +270,8 @@ def test_threshold_meanshift_wrong_parameters_6():
 
     try:
         phm_img.threshold_meanshift(image, mean_im)
-    except Exception, e:
-        assert e.message == 'image and mean must have equal sizes'
+    except Exception as e:
+        assert message(e) == 'image and mean must have equal sizes'
         assert type(e) == ValueError
     else:
         assert False
@@ -281,8 +283,8 @@ def test_threshold_meanshift_wrong_parameters_7():
 
     try:
         phm_img.threshold_meanshift(image, mean_im)
-    except Exception, e:
-        assert e.message == 'mean should be 3D array'
+    except Exception as e:
+        assert message(e) == 'mean should be 3D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -294,7 +296,7 @@ def test_threshold_meanshift_wrong_parameters_8():
 
     try:
         phm_img.threshold_meanshift(image, mean_im, threshold=2)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -306,7 +308,7 @@ def test_threshold_meanshift_wrong_parameters_9():
 
     try:
         phm_img.threshold_meanshift(image, mean_image, reverse=None)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -319,7 +321,7 @@ def test_threshold_meanshift_wrong_parameters_10():
 
     try:
         phm_img.threshold_meanshift(image, mean_image, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -332,7 +334,7 @@ def test_threshold_meanshift_wrong_parameters_11():
 
     try:
         phm_img.threshold_meanshift(image, mean_image, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -345,7 +347,7 @@ def test_threshold_meanshift_wrong_parameters_12():
 
     try:
         phm_img.threshold_meanshift(image, mean_image, mask=mask)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -401,7 +403,7 @@ def test_threshold_meanshift_no_regression_1():
     plant_number = 6
     raw_side_images = phm_data.raw_images(plant_number=plant_number)['side']
     mask = phm_data.tutorial_data_binarization_mask()[1]
-    mean_im = phm_img.mean_image(raw_side_images.values())
+    mean_im = phm_img.mean_image(list(raw_side_images.values()))
 
     im_bin = phm_img.threshold_meanshift(raw_side_images[0], mean_im, mask=mask)
 

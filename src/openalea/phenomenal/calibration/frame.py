@@ -27,6 +27,7 @@ from numpy import (zeros,
                    cross,
                    transpose,
                    sign)
+from functools import reduce
 # ==============================================================================
 
 __all__ = ["x_axis",

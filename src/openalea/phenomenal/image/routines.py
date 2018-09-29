@@ -19,6 +19,7 @@ import cv2
 import numpy
 
 from .threshold import threshold_hsv, threshold_meanshift
+from functools import reduce
 # ==============================================================================
 
 
