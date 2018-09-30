@@ -1,0 +1,44 @@
+platform:
+  - x86
+  - x64
+
+environment:
+  matrix:
+    - CONDA_RECIPE: conda
+      CONDA_VERSION: 2
+
+install:
+  - git clone https://github.com/OpenAlea/appveyor-ci.git
+  - cd appveyor-ci
+  - call install.bat
+  - conda config --prepend channels conda-forge
+
+before_build:
+  - call before_build.bat
+
+build_script:
+  - call build_script.bat
+
+after_build:
+  - call after_build.bat
+
+deploy:
+  provider: Script
+
+before_deploy:
+  - call before_deploy.bat
+
+deploy_script:
+  - call deploy_script.bat
+
+after_deploy:
+  - call after_deploy.bat
+
+on_success:
+  - call on_success.bat
+
+on_failure:
+  - call on_failure.bat
+
+on_finish:
+  - call on_finish.bat
