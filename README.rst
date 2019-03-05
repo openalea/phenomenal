@@ -55,20 +55,21 @@ Try out in mybinder:
 =============
 Citation
 =============
+
 Please, cite the software, if you are using for your research.
-```
-@misc{artzet2019,
-  author       = {Simon Artzet and
-                  Christophe Pradal and Christian Fournier and
-                  Nicolas Brichet and Gaetan Heidsieck and
-                  Jerome Chopard},
-  title        = {OpenAlea.Phenomenal},
-  month        = sep,
-  year         = 2018,
-  doi          = {10.5281/zenodo.1436634},
-  url          = {https://doi.org/10.5281/zenodo.1436634}
-}
-```
+
+      @misc{artzet2019,
+        author       = {Simon Artzet and
+                        Christophe Pradal and Christian Fournier and
+                        Nicolas Brichet and Gaetan Heidsieck and
+                        Jerome Chopard},
+        title        = {OpenAlea.Phenomenal},
+        month        = sep,
+        year         = 2018,
+        doi          = {10.5281/zenodo.1436634},
+        url          = {https://doi.org/10.5281/zenodo.1436634}
+      }
+
 ============
 Installation
 ============
