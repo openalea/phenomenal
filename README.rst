@@ -57,13 +57,14 @@ Citation
 =============
 
 Please, cite the software, if you are using for your research.
-
-      @misc{artzet2019,
+      @misc{artzet2018,
         author       = {Simon Artzet and
-                        Christophe Pradal and Christian Fournier and
-                        Nicolas Brichet and Gaetan Heidsieck and
-                        Jerome Chopard},
-        title        = {OpenAlea.Phenomenal},
+                        Nicolas Brichet and
+                        Jerome Chopard and
+                         Michael Mielewczik and
+                         Christian Fournier and
+                        Christophe Pradal},
+        title        = {OpenAlea.Phenomenal: A Workflow for Plant Phenotyping},
         month        = sep,
         year         = 2018,
         doi          = {10.5281/zenodo.1436634},
