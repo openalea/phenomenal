@@ -39,7 +39,7 @@ extentions = [Extension(
 
 setup(
     name="openalea.phenomenal",
-    version="1.7.0-beta",
+    version="1.7.0b0",
     description="",
     long_description="",
 
