@@ -58,8 +58,17 @@ test:
     - openalea.phenomenal.multi_view_reconstruction
     - openalea.phenomenal.object
     - openalea.phenomenal.segmentation
-
-  script: nosetests test
+  requires:
+    - pytest
+  source_files:
+    - test/test_calibration/**
+    - test/test_image/**
+    - test/test_mesh/**
+    - test/test_multi_view_reconstruction/**
+    - test/test_object/**
+    - test/test_segmentation/**
+  commands:
+    - pytest
 
 about:
   home: https://github.com/openalea/phenomenal
