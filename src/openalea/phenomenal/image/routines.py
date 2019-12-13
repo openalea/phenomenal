@@ -15,10 +15,12 @@ Routines functions to binarize images
 # ==============================================================================
 from __future__ import division, print_function
 
+from __future__ import absolute_import
 import cv2
 import numpy
 
 from .threshold import threshold_hsv, threshold_meanshift
+from functools import reduce
 # ==============================================================================
 
 
