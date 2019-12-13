@@ -356,12 +356,12 @@ class RegistrationCamera(CalibrationCamera):
             self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
             self._cam_origin_axis)
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), points_3d)
+            self._cam_focal_length_y), points_3d))
 
         return pts
 
@@ -515,12 +515,12 @@ class RegistrationCameraPosition(CalibrationCamera):
             self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
             self._cam_origin_axis)
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), points_3d)
+            self._cam_focal_length_y), points_3d))
 
         return pts
 
@@ -675,12 +675,12 @@ class RegistrationCameraFocal(CalibrationCamera):
             self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
             self._cam_origin_axis)
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), points_3d)
+            self._cam_focal_length_y), points_3d))
 
         return pts
 
@@ -769,13 +769,13 @@ class CalibrationCameraTop(CalibrationCamera):
             cam_rot_x, cam_rot_y, cam_rot_z,
             self._cam_origin_axis)
 
-        for i in xrange(len(self._ref_target_points_2d)):
-            pts = map(lambda pt: self.pixel_coordinates(
+        for i in range(len(self._ref_target_points_2d)):
+            pts = list(map(lambda pt: self.pixel_coordinates(
                 fr_cam.local_point(pt),
                 self._cam_width_image,
                 self._cam_height_image,
                 cam_focal_length_x,
-                cam_focal_length_y), self._ref_target_points_3d[i])
+                cam_focal_length_y), self._ref_target_points_3d[i]))
 
             err += numpy.linalg.norm(
                 numpy.array(pts) - self._ref_target_points_2d[i], axis=1).sum()
@@ -826,12 +826,12 @@ class CalibrationCameraTop(CalibrationCamera):
             self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
             self._cam_origin_axis)
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), points_3d)
+            self._cam_focal_length_y), points_3d))
 
         return pts
 
@@ -957,15 +957,15 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
                 target_rot_x, target_rot_y, target_rot_z,
                 math.radians(alpha * angle_factor))
 
-            target_pts = map(lambda pt: fr_target.global_point(pt),
-                             self._ref_target_points_local_3d)
+            target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                             self._ref_target_points_local_3d))
 
-            pts = map(lambda pt: self.pixel_coordinates(
+            pts = list(map(lambda pt: self.pixel_coordinates(
                 fr_cam.local_point(pt),
                 self._cam_width_image,
                 self._cam_height_image,
                 cam_focal_length_x,
-                cam_focal_length_y), target_pts)
+                cam_focal_length_y), target_pts))
 
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
@@ -1145,7 +1145,8 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
             self._target_rot_x, self._target_rot_y, self._target_rot_z,
             math.radians(alpha * self._angle_factor))
 
-        return map(lambda pt: fr_target.global_point(pt), ref_points_local_3d)
+        return list(map(lambda pt: fr_target.global_point(pt),
+                      ref_points_local_3d))
 
     def get_target_projected(self, alpha, ref_target_1_points_local_3d):
 
@@ -1162,15 +1163,15 @@ class CalibrationCameraSideWith1Target(CalibrationCamera):
                                       self._target_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        target_pts = map(lambda pt: fr_target.global_point(pt),
-                         ref_target_1_points_local_3d)
+        target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                         ref_target_1_points_local_3d))
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), target_pts)
+            self._cam_focal_length_y), target_pts))
 
         return pts
 
@@ -1263,15 +1264,15 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                           target_1_rot_z,
                                           math.radians(alpha * angle_factor))
 
-            target_pts = map(lambda pt: fr_target.global_point(pt),
-                             self._ref_target_1_points_local_3d)
+            target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                             self._ref_target_1_points_local_3d))
 
-            pts = map(lambda pt: self.pixel_coordinates(
+            pts = list(map(lambda pt: self.pixel_coordinates(
                 fr_cam.local_point(pt),
                 self._cam_width_image,
                 self._cam_height_image,
                 cam_focal_length_x,
-                cam_focal_length_y), target_pts)
+                cam_focal_length_y), target_pts))
 
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
@@ -1285,15 +1286,15 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                           target_2_rot_z,
                                           math.radians(alpha * angle_factor))
 
-            target_pts = map(lambda pt: fr_target.global_point(pt),
-                             self._ref_target_2_points_local_3d)
+            target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                             self._ref_target_2_points_local_3d))
 
-            pts = map(lambda pt: self.pixel_coordinates(
+            pts = list(map(lambda pt: self.pixel_coordinates(
                 fr_cam.local_point(pt),
                 self._cam_width_image,
                 self._cam_height_image,
                 cam_focal_length_x,
-                cam_focal_length_y), target_pts)
+                cam_focal_length_y), target_pts))
 
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
@@ -1443,15 +1444,15 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                       self._target_1_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        target_pts = map(lambda pt: fr_target.global_point(pt),
-                         ref_target_1_points_local_3d)
+        target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                         ref_target_1_points_local_3d))
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), target_pts)
+            self._cam_focal_length_y), target_pts))
 
         return pts
 
@@ -1470,15 +1471,15 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                       self._target_2_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        target_pts = map(lambda pt: fr_target.global_point(pt),
-                         ref_target_2_points_local_3d)
+        target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                         ref_target_2_points_local_3d))
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), target_pts)
+            self._cam_focal_length_y), target_pts))
 
         return pts
 
@@ -1494,8 +1495,8 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                       self._target_1_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        return map(lambda pt: fr_target.global_point(pt),
-                   ref_target_1_points_local_3d)
+        return list(map(lambda pt: fr_target.global_point(pt),
+                   ref_target_1_points_local_3d))
 
     def get_target_2_ref_points_global_3d(self,
                                           alpha,
@@ -1509,8 +1510,8 @@ class CalibrationCameraSideWith2Target(CalibrationCamera):
                                       self._target_2_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        return map(lambda pt: fr_target.global_point(pt),
-                   ref_target_2_points_local_3d)
+        return list(map(lambda pt: fr_target.global_point(pt),
+                   ref_target_2_points_local_3d))
 
     def dump(self, filename):
         save_class = dict()
@@ -1668,15 +1669,15 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
                                           target_1_rot_z,
                                           math.radians(alpha * angle_factor))
 
-            target_pts = map(lambda pt: fr_target.global_point(pt),
-                             self._ref_target_1_points_local_3d)
+            target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                             self._ref_target_1_points_local_3d))
 
-            pts = map(lambda pt: self.pixel_coordinates(
+            pts = list(map(lambda pt: self.pixel_coordinates(
                 fr_cam.local_point(pt),
                 self._cam_width_image,
                 self._cam_height_image,
                 cam_focal_length_x,
-                cam_focal_length_y), target_pts)
+                cam_focal_length_y), target_pts))
 
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
@@ -1689,15 +1690,15 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
                                           target_2_rot_z,
                                           math.radians(alpha * angle_factor))
 
-            target_pts = map(lambda pt: fr_target.global_point(pt),
-                             self._ref_target_2_points_local_3d)
+            target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                             self._ref_target_2_points_local_3d))
 
-            pts = map(lambda pt: self.pixel_coordinates(
+            pts = list(map(lambda pt: self.pixel_coordinates(
                 fr_cam.local_point(pt),
                 self._cam_width_image,
                 self._cam_height_image,
                 cam_focal_length_x,
-                cam_focal_length_y), target_pts)
+                cam_focal_length_y), target_pts))
 
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
@@ -1775,15 +1776,15 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
                                       self._target_1_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        target_pts = map(lambda pt: fr_target.global_point(pt),
-                         ref_target_1_points_local_3d)
+        target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                         ref_target_1_points_local_3d))
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), target_pts)
+            self._cam_focal_length_y), target_pts))
 
         return pts
 
@@ -1802,15 +1803,15 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
                                       self._target_2_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        target_pts = map(lambda pt: fr_target.global_point(pt),
-                         ref_target_2_points_local_3d)
+        target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                         ref_target_2_points_local_3d))
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), target_pts)
+            self._cam_focal_length_y), target_pts))
 
         return pts
 
@@ -1826,8 +1827,8 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
                                       self._target_1_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        return map(lambda pt: fr_target.global_point(pt),
-                   ref_target_1_points_local_3d)
+        return list(map(lambda pt: fr_target.global_point(pt),
+                   ref_target_1_points_local_3d))
 
     def get_target_2_ref_points_global_3d(self,
                                           alpha,
@@ -1841,8 +1842,8 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
                                       self._target_2_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        return map(lambda pt: fr_target.global_point(pt),
-                   ref_target_2_points_local_3d)
+        return list(map(lambda pt: fr_target.global_point(pt),
+                   ref_target_2_points_local_3d))
 
     def calibrate(self,
                   ref_target_1_points_2d,
@@ -2081,15 +2082,15 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
                                           target_1_rot_z,
                                           math.radians(alpha * angle_factor))
 
-            target_pts = map(lambda pt: fr_target.global_point(pt),
-                             self._ref_target_1_points_local_3d)
+            target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                             self._ref_target_1_points_local_3d))
 
-            pts = map(lambda pt: self.pixel_coordinates(
+            pts = list(map(lambda pt: self.pixel_coordinates(
                 fr_cam.local_point(pt),
                 self._cam_width_image,
                 self._cam_height_image,
                 cam_focal_length_x,
-                cam_focal_length_y), target_pts)
+                cam_focal_length_y), target_pts))
 
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
@@ -2102,15 +2103,15 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
                                           target_2_rot_z,
                                           math.radians(alpha * angle_factor))
 
-            target_pts = map(lambda pt: fr_target.global_point(pt),
-                             self._ref_target_2_points_local_3d)
+            target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                             self._ref_target_2_points_local_3d))
 
-            pts = map(lambda pt: self.pixel_coordinates(
+            pts = list(map(lambda pt: self.pixel_coordinates(
                 fr_cam.local_point(pt),
                 self._cam_width_image,
                 self._cam_height_image,
                 cam_focal_length_x,
-                cam_focal_length_y), target_pts)
+                cam_focal_length_y), target_pts))
 
             err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
@@ -2191,15 +2192,15 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
                                       self._target_1_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        target_pts = map(lambda pt: fr_target.global_point(pt),
-                         ref_target_1_points_local_3d)
+        target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                         ref_target_1_points_local_3d))
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), target_pts)
+            self._cam_focal_length_y), target_pts))
 
         return pts
 
@@ -2218,15 +2219,15 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
                                       self._target_2_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        target_pts = map(lambda pt: fr_target.global_point(pt),
-                         ref_target_2_points_local_3d)
+        target_pts = list(map(lambda pt: fr_target.global_point(pt),
+                         ref_target_2_points_local_3d))
 
-        pts = map(lambda pt: self.pixel_coordinates(
+        pts = list(map(lambda pt: self.pixel_coordinates(
             fr_cam.local_point(pt),
             self._cam_width_image,
             self._cam_height_image,
             self._cam_focal_length_x,
-            self._cam_focal_length_y), target_pts)
+            self._cam_focal_length_y), target_pts))
 
         return pts
 
@@ -2242,8 +2243,8 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
                                       self._target_1_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        return map(lambda pt: fr_target.global_point(pt),
-                   ref_target_1_points_local_3d)
+        return list(map(lambda pt: fr_target.global_point(pt),
+                   ref_target_1_points_local_3d))
 
     def get_target_2_ref_points_global_3d(self,
                                           alpha,
@@ -2257,8 +2258,8 @@ class CalibrationCameraSideWith2TargetYXZBis(CalibrationCamera):
                                       self._target_2_rot_z,
                                       math.radians(alpha * self._angle_factor))
 
-        return map(lambda pt: fr_target.global_point(pt),
-                   ref_target_2_points_local_3d)
+        return list(map(lambda pt: fr_target.global_point(pt),
+                   ref_target_2_points_local_3d))
 
     def calibrate(self,
                   ref_target_1_points_2d,

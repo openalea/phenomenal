@@ -39,7 +39,7 @@ requirements:
     - scipy
     - scikit-image
     - scikit-learn
-    - networkx
+    - networkx=2.3
     - opencv
     - matplotlib
     - vtk
