@@ -157,7 +157,7 @@ def get_actors_from_segmentation_split_mode(vmsi):
     for vo in vmsi.get_leafs():
 
         voxels_position = numpy.array(
-            map(tuple, list(vo.voxels_position())))
+            list(map(tuple, list(vo.voxels_position()))))
 
         if "pm_position_tip" in vo.info:
 

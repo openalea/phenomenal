@@ -148,7 +148,7 @@ def compute_insertion_angle(polyline, stem_vector_mean):
     x, y, z = polyline[0]
 
     vectors = list()
-    for i in range(1, len(polyline) / 4 + 1):
+    for i in range(1, len(polyline) // 4 + 1):
         xx, yy, zz = polyline[i]
         vectors.append((xx - x, yy - y, zz - z))
 

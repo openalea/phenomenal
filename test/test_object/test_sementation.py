@@ -12,31 +12,49 @@
 from __future__ import division, print_function
 
 import os
+from random import randrange
+import numpy
+import numpy.random
 
 import openalea.phenomenal.data as phm_data
-import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.segmentation as phm_seg
+import openalea.phenomenal.object as phm_obj
+
 # ==============================================================================
 
 
-def test_maize():
+def _generate_random_segment():
+    return phm_obj.VoxelSegment(numpy.random.random(size=(10, 3)),
+                                numpy.random.random(size=(100, 3)),
+                                numpy.random.random(size=(50, 3)))
 
-    plant_number = 1
-    voxels_size = 32
-    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
-                                     voxels_size=voxels_size)
 
-    graph = phm_seg.graph_from_voxel_grid(voxel_grid)
-    voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph)
-    vms = phm_seg.maize_segmentation(voxel_skeleton, graph)
-    vmsi = phm_seg.maize_analysis(vms)
+def _generate_random_orange(label):
+
+    vo = phm_obj.VoxelOrgan(label)
+
+    for i in range(randrange(0, 10)):
+        vo.voxel_segments.append(_generate_random_segment())
+
+    return vo
+
+
+def test_voxel_segmentation():
+
+    voxels_size = 4
+
+    vms = phm_obj.VoxelSegmentation(voxels_size)
+    vms.voxel_organs.append(_generate_random_orange('leaf'))
+    vms.voxel_organs.append(_generate_random_orange('leaf'))
+    vms.voxel_organs.append(_generate_random_orange('leaf'))
+    vms.voxel_organs.append(_generate_random_orange('stem'))
 
     # Write
     filename = 'tmp.json'
     vms.write_to_json_gz(filename)
     vms = phm_obj.VoxelSegmentation.read_from_json_gz(filename)
-
     os.remove(filename)
+
 if __name__ == "__main__":
     for func_name in dir():
         if func_name.startswith('test_'):

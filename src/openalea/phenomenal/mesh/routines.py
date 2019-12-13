@@ -70,7 +70,7 @@ def median_color_from_images(vertices, faces, calibration, images):
         color = numpy.median(cc, axis=0).astype(int)
         colors.append(color)
 
-    colors = map(tuple, colors)
+    colors = list(map(tuple, colors))
 
     return colors
 

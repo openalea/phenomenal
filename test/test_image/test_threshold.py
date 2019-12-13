@@ -204,7 +204,7 @@ def test_threshold_meanshift_wrong_parameters_1():
     try:
         phm_img.threshold_meanshift(None, mean_image)
     except Exception as e:
-        assert e.msg == 'image should be a numpy.ndarray'
+        assert str(e) == 'image should be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -215,7 +215,7 @@ def test_threshold_meanshift_wrong_parameters_2():
     try:
         phm_img.threshold_meanshift(image, None)
     except Exception as e:
-        assert e.msg == 'mean should be a numpy.ndarray'
+        assert str(e) == 'mean should be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -229,7 +229,7 @@ def test_threshold_meanshift_wrong_parameters_3():
     try:
         phm_img.threshold_meanshift(image, mean_image)
     except Exception as e:
-        assert e.msg == 'image should be 3D array'
+        assert str(e) == 'image should be 3D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -243,7 +243,7 @@ def test_threshold_meanshift_wrong_parameters_4():
     try:
         phm_img.threshold_meanshift(image, mean_im)
     except Exception as e:
-        assert e.msg == 'image should be 3D array'
+        assert str(e) == 'image should be 3D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -257,7 +257,7 @@ def test_threshold_meanshift_wrong_parameters_5():
     try:
         phm_img.threshold_meanshift(image, mean_im)
     except Exception as e:
-        assert e.msg == 'mean should be 3D array'
+        assert str(e) == 'mean should be 3D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -270,7 +270,7 @@ def test_threshold_meanshift_wrong_parameters_6():
     try:
         phm_img.threshold_meanshift(image, mean_im)
     except Exception as e:
-        assert e.msg == 'image and mean must have equal sizes'
+        assert str(e) == 'image and mean must have equal sizes'
         assert type(e) == ValueError
     else:
         assert False
@@ -283,7 +283,7 @@ def test_threshold_meanshift_wrong_parameters_7():
     try:
         phm_img.threshold_meanshift(image, mean_im)
     except Exception as e:
-        assert e.msg == 'mean should be 3D array'
+        assert str(e) == 'mean should be 3D array'
         assert type(e) == ValueError
     else:
         assert False

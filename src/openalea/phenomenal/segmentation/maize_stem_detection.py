@@ -83,20 +83,22 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
         arr_stem_segment_path,
         ball_radius=ball_radius)
 
-    nodes_length = map(float, map(len, closest_nodes_ball))
+    nodes_length = list(map(float, map(len, closest_nodes_ball)))
     index_20_percent = int(float(len(nodes_length)) * 0.20)
     stop_index = nodes_length.index((max(nodes_length)))
 
     if stop_index <= index_20_percent:
         stop_index = len(nodes_length)
 
-    nodes_length = map(float, map(len, arr_closest_nodes_planes))
+    nodes_length = list(map(float, map(len, arr_closest_nodes_planes)))
     min_peaks_stem = maize_stem_peak_detection(nodes_length, stop_index)
 
-    window_length = max(4, len(nodes_length) / 8)
+    window_length = max(4, len(nodes_length) // 8)
     window_length = window_length + 1 if window_length % 2 == 0 else window_length
     smooth_distances = scipy.signal.savgol_filter(
-        numpy.array(distances), window_length=window_length, polyorder=2)
+        numpy.array(distances, dtype=numpy.uint8),
+        window_length=window_length,
+        polyorder=2)
 
     # ==========================================================================
 
