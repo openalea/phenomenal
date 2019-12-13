@@ -26,6 +26,8 @@ before_script:
 
 script:
   - source script.sh
+  - conda install nose
+  - cd test; nosetests
 
 after_success:
   - source after_success.sh
