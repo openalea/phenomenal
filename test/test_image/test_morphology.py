@@ -21,7 +21,7 @@ def test_close_wrong_parameters_1():
     try:
         phm_img.close(None)
     except Exception, e:
-        assert e.message == 'image must be a numpy.ndarray'
+        assert e.msg == 'image must be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -33,7 +33,7 @@ def test_close_wrong_parameters_2():
     try:
         phm_img.close(image)
     except Exception, e:
-        assert e.message == 'image must be 2D array'
+        assert e.msg == 'image must be 2D array'
         assert type(e) == ValueError
     else:
         assert False
@@ -46,7 +46,7 @@ def test_close_wrong_parameters_3():
     try:
         phm_img.close(image, mask=mask)
     except Exception, e:
-        assert e.message == 'mask must be a numpy.ndarray'
+        assert e.msg == 'mask must be a numpy.ndarray'
         assert type(e) == TypeError
     else:
         assert False
@@ -59,7 +59,7 @@ def test_close_wrong_parameters_4():
     try:
         phm_img.close(image, mask=mask)
     except Exception, e:
-        assert e.message == 'mask must be 2D array'
+        assert e.msg == 'mask must be 2D array'
         assert type(e) == ValueError
     else:
         assert False
