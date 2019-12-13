@@ -2,6 +2,7 @@ name: phenomenal
 channels:
   - openalea
   - defaults
+  - conda-forge
 
 dependencies:
   - python=2.7
