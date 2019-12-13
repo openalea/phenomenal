@@ -22,7 +22,6 @@ requirements:
   build:
     - python
     - setuptools
-    - openalea.deploy
     - cython
     - vs2008_runtime    [win and py27]
     - vs2015_runtime    [win and py36]
@@ -35,7 +34,6 @@ requirements:
     - numpy
     - numba
     - cython
-    - openalea.deploy
     - scipy
     - scikit-image
     - scikit-learn
@@ -69,3 +67,4 @@ about:
 extra:
   recipe-maintainers:
     - artzet-s
+    - pradal
