@@ -54,7 +54,7 @@ def test_graph_1():
                        (2, 1, 2),
                        (1, 2, 1),
                        (2, 2, 2),
-                       (3, 3, 3)]
+                       (5, 5, 5)]
 
     voxels_size = 1
     voxel_grid = phm_obj.VoxelGrid(voxels_position, voxels_size)

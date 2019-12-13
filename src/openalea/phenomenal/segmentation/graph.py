@@ -29,8 +29,11 @@ def connect_all_node_with_nearest_neighbors(graph):
     -------
     graph : networkx.Graph
     """
-    connected_component = list(networkx.connected_component_subgraphs(
-        graph, copy=False))
+    # connected_component = list(networkx.connected_component_subgraphs(
+    #     graph, copy=False))
+
+    connected_component = [
+        graph.subgraph(c) for c in networkx.connected_components(graph)]
 
     nodes_connected_component = [list(cc.nodes()) for cc in connected_component]
 
@@ -188,8 +191,7 @@ def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
     # Graph creation
     graph = create_graph(voxels_position, voxels_size)
 
-
-    if False: #connect_all_point:
+    if connect_all_point:
         graph = connect_all_node_with_nearest_neighbors(graph)
     else:
         graph = max([graph.subgraph(c) for c in networkx.connected_components(
