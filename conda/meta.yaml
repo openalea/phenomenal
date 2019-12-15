@@ -40,7 +40,8 @@ requirements:
     - scikit-image
     - scikit-learn
     - networkx=2.3
-    - opencv
+    - opencv [win or linux]
+    - opencv!=4.1.2 [osx]
     - matplotlib
     - vtk
     - pywin32 [win]
