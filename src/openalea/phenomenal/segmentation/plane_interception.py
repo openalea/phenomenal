@@ -111,7 +111,7 @@ def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
         if voxels_point.size == 0:
             break
 
-    return map(tuple, closest_node)
+    return list(map(tuple, closest_node))
 
 
 def intercept_points_from_src_point_with_plane_equation(
@@ -250,10 +250,10 @@ def intercept_points_along_path_with_planes(points,
             distance_from_src_point)
 
         if without_connection:
-            pts = map(tuple, pts)
+            pts = list(map(tuple, pts))
         elif points_graph is not None:
 
-            pts = map(tuple, pts)
+            pts = list(map(tuple, pts))
             pts = connected_points_with_point(pts, points_graph, point)
         else:
             pts = connected_voxel_with_point(pts, voxels_size, point)
@@ -302,7 +302,7 @@ def intercept_points_along_polyline_with_ball(points,
                                                     point,
                                                     ball_radius)
 
-        points_in_ball = map(tuple, points_in_ball)
+        points_in_ball = list(map(tuple, points_in_ball))
 
         points_in_ball = connected_points_with_point(points_in_ball,
                                                      graph,

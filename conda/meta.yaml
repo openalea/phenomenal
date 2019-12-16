@@ -1,6 +1,6 @@
 package:
   name: openalea.phenomenal
-  version: "1.7.0.beta"
+  version: "1.7.0b0"
 
 source:
   path: ..
@@ -37,8 +37,9 @@ requirements:
     - scipy
     - scikit-image
     - scikit-learn
-    - networkx
-    - opencv
+    - networkx=2.3
+    - opencv [win or linux]
+    - opencv!=4.1.2 [osx]
     - matplotlib
     - vtk
     - pywin32 [win]
@@ -56,8 +57,17 @@ test:
     - openalea.phenomenal.multi_view_reconstruction
     - openalea.phenomenal.object
     - openalea.phenomenal.segmentation
-
-  script: nosetests test
+  requires:
+    - pytest
+  source_files:
+    - test/test_calibration/**
+    - test/test_image/**
+    - test/test_mesh/**
+    - test/test_multi_view_reconstruction/**
+    - test/test_object/**
+    - test/test_segmentation/**
+  commands:
+    - pytest
 
 about:
   home: https://github.com/openalea/phenomenal

@@ -20,7 +20,7 @@ import openalea.phenomenal.image as phm_img
 def test_mean_image_wrong_parameters_1():
     try:
         phm_img.mean_image(None)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -29,7 +29,7 @@ def test_mean_image_wrong_parameters_1():
 def test_mean_image_wrong_parameters_2():
     try:
         phm_img.mean_image(list())
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False
@@ -38,7 +38,7 @@ def test_mean_image_wrong_parameters_2():
 def test_mean_image_wrong_parameters_3():
     try:
         phm_img.mean_image([[]])
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -47,7 +47,7 @@ def test_mean_image_wrong_parameters_3():
 def test_mean_image_wrong_parameters_4():
     try:
         phm_img.mean_image([[]])
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -57,7 +57,7 @@ def test_mean_image_wrong_parameters_5():
     try:
         image = numpy.zeros((25, 25, 3))
         phm_img.mean_image(image)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -67,7 +67,7 @@ def test_mean_image_wrong_parameters_6():
     try:
         image = numpy.zeros((25, 25, 3))
         phm_img.mean_image(image)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == TypeError
     else:
         assert False
@@ -80,7 +80,7 @@ def test_mean_image_wrong_parameters_7():
 
     try:
         phm_img.mean_image(images)
-    except Exception, e:
+    except Exception as e:
         assert type(e) == ValueError
     else:
         assert False

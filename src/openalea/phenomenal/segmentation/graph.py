@@ -29,8 +29,11 @@ def connect_all_node_with_nearest_neighbors(graph):
     -------
     graph : networkx.Graph
     """
-    connected_component = list(networkx.connected_component_subgraphs(
-        graph, copy=False))
+    # connected_component = list(networkx.connected_component_subgraphs(
+    #     graph, copy=False))
+
+    connected_component = [
+        graph.subgraph(c) for c in networkx.connected_components(graph)]
 
     nodes_connected_component = [list(cc.nodes()) for cc in connected_component]
 
@@ -120,7 +123,7 @@ def create_graph(voxels_position, voxels_size):
     distances = numpy.linalg.norm(neighbors, axis=1)
 
     for i, pt in enumerate(voxels_position):
-        neighbors_position = map(tuple, neighbors + arr_vs[i])
+        neighbors_position = list(map(tuple, neighbors + arr_vs[i]))
         for j, pos in enumerate(neighbors_position):
             if graph.has_node(pos):
                 graph.add_edge(pt, pos, weight=distances[j])
@@ -181,8 +184,8 @@ def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
     -------
     graph : networkx.Graph
     """
-    voxels_size = int(voxel_grid.voxels_size)
-    voxels_position = map(tuple, list(voxel_grid.voxels_position))
+    voxels_size = voxel_grid.voxels_size
+    voxels_position = list(map(tuple, list(voxel_grid.voxels_position)))
 
     # ==========================================================================
     # Graph creation
@@ -191,9 +194,8 @@ def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
     if connect_all_point:
         graph = connect_all_node_with_nearest_neighbors(graph)
     else:
-        # Keep the biggest connected components
-        graph = max(networkx.connected_component_subgraphs(graph, copy=False),
-                    key=len)
+        graph = max([graph.subgraph(c) for c in networkx.connected_components(
+            graph)], key=lambda g: g.number_of_nodes())
 
     return graph
 

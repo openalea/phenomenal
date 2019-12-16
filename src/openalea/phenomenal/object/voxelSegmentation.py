@@ -12,6 +12,7 @@ from __future__ import division, print_function, absolute_import
 import ast
 import os
 import gzip
+import json
 
 from .voxelOrgan import VoxelOrgan
 # ==============================================================================
@@ -129,20 +130,21 @@ class VoxelSegmentation(object):
 
                 for vs in vo.voxel_segments:
                     dvs = dict()
-                    dvs['polyline'] = map(tuple, list(vs.polyline))
-                    dvs['voxels_position'] = map(
-                        tuple, list(vs.voxels_position))
+                    dvs['polyline'] = list(map(tuple, list(vs.polyline)))
+                    dvs['voxels_position'] = list(map(
+                        tuple, list(vs.voxels_position)))
                     dvo['voxel_segments'].append(dvs)
 
                 data['voxel_organs'].append(dvo)
 
-            f.write(str(data))
+            f.write(json.dumps(data).encode('utf-8'))
 
     @staticmethod
     def read_from_json_gz(filename, without_info=False):
 
         with gzip.open(filename, 'rb') as f:
-            data = ast.literal_eval(f.read())
+            data = json.loads(f.read().decode('utf-8'))
+            # data = ast.literal_eval(f.read())
 
             vms = VoxelSegmentation(data['voxels_size'])
 
@@ -158,7 +160,7 @@ class VoxelSegmentation(object):
 
                 for dvs in dvo['voxel_segments']:
                     voxels_position = set(map(tuple, dvs['voxels_position']))
-                    polyline = map(tuple, list(dvs["polyline"]))
+                    polyline = list(map(tuple, list(dvs["polyline"])))
 
                     vo.add_voxel_segment(voxels_position, polyline)
 

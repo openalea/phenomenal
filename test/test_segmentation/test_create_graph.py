@@ -27,9 +27,9 @@ def test_time_graph():
     voxels_size = 16
     voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
                                      voxels_size=voxels_size)
-    # print(voxel_grid.voxels_position)
-    voxels_size = int(voxel_grid.voxels_size)
-    voxels_position = map(tuple, list(voxel_grid.voxels_position))
+
+    voxels_size = voxel_grid.voxels_size
+    voxels_position = voxel_grid.voxels_position
     voxel_grid = phm_obj.VoxelGrid(voxels_position, voxels_size)
 
     number_of_loop = 2

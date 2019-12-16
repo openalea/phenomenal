@@ -143,7 +143,7 @@ def show_segmentation(voxel_segmentation,
     for vo in voxel_segmentation.voxel_organs:
 
         voxels_position = numpy.array(
-            map(tuple, list(vo.voxels_position())))
+            list(map(tuple, list(vo.voxels_position()))))
 
         plot_voxel(voxels_position,
                    size=size * 1,
@@ -192,13 +192,16 @@ def show_syntehtic_plant(vertices, faces, meta_data=None,
     voxels_position = vertices
     if meta_data is not None:
         ranks = meta_data['leaf_order']
-        polylines = {n: map(numpy.array, zip(*meta_data['leaf_polylines'][i]))
+        polylines = {n: list(map(
+            numpy.array, list(zip(*meta_data['leaf_polylines'][i]))))
                      for i, n in enumerate(ranks)}
 
         voxels = set()
         for leaf_order in polylines:
             x, y, z, r = polylines[leaf_order]
-            polyline = numpy.array(zip(x, y, z)) * 10 - numpy.array([0, 0, 750])
+            polyline = numpy.array(list(zip(x, y, z))) * 10 - \
+                       numpy.array([0, 0, 750])
+
             plot_voxel(polyline, size=size, color="red")
             voxels = voxels.union(set(map(tuple, list(polyline))))
 

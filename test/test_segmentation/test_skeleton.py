@@ -18,13 +18,14 @@ import openalea.phenomenal.segmentation as phm_seg
 
 def test_running():
     plant_number = 1
-    voxels_size = 16
+    voxels_size = 32
     bin_images = phm_data.bin_images(plant_number=plant_number)
     calibrations = phm_data.calibrations(plant_number=plant_number)
     voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
                                      voxels_size=voxels_size)
 
     graph = phm_seg.graph_from_voxel_grid(voxel_grid)
+
     voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph)
 
     image_projection = list()
