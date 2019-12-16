@@ -7,3 +7,4 @@ channels:
 dependencies:
   - openalea.phenomenal
   - ipyvolume
+  
