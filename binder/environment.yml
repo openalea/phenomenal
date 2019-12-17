@@ -1,10 +1,8 @@
 name: phenomenal
 channels:
-  - openalea
   - conda-forge
-  - defaults
 
 dependencies:
   - openalea.phenomenal
   - ipyvolume
-  
+
