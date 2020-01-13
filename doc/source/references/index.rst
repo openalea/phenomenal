@@ -21,3 +21,17 @@ parameters available for the algorithms.
     openalea.phenomenal.multi_view_reconstruction
     openalea.phenomenal.mesh
     openalea.phenomenal.segmentation
+
+API References
+''''''''''''''
+
+.. toctree::
+
+    generated/openalea.phenomenal.data.rst
+    generated/openalea.phenomenal.image.rst
+    generated/openalea.phenomenal.calibration.rst
+    generated/openalea.phenomenal.object.rst
+    generated/openalea.phenomenal.display.rst
+    generated/openalea.phenomenal.multi_view_reconstruction.rst
+    generated/openalea.phenomenal.mesh.rst
+    generated/openalea.phenomenal.segmentation.rst

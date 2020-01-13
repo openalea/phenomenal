@@ -30,9 +30,10 @@ Formats
    :toctree: generated/
 
    write_vertices_faces_to_ply_file
+   read_ply_to_vertices_faces
    write_vtk_poly_data_to_ply_file
-   write_vertices_faces_to_json_file
-   read_json_file_to_vertices_faces
+   read_ply_to_vtk_poly_data
+
 
 Routines
 ========
