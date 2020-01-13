@@ -2,7 +2,7 @@ conda:
   channels:
     - conda-forge
     - openalea
-  file: doc/environment.yml
+  file: doc/environment_list.txt
 
 build:
   image: latest
