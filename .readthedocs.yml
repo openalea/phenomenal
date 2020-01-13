@@ -1,10 +1,11 @@
 conda:
+  channels:
+    - conda-forge
+    - openalea
   file: doc/environment_list.txt
 
 build:
   image: latest
 
 python:
-  version: 3.7
-  pip_install: true
   setup_py_install: True

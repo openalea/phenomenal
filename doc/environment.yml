@@ -5,17 +5,17 @@ channels:
 
 dependencies:
   - python
-  - cython
   - opencv
-  - numpy
-  - numba
-  - scipy
-  - scikit-image
-  - scikit-learn
   - networkx=2.3
   - vtk
   - ipyvolume
   - pip:
+      - scikit-learn
+      - scikit-image
+      - scipy
+      - numba
+      - numpy
+      - cython
       - matplotlib
       - sphinx
       - sphinx_rtd_theme
