@@ -6,7 +6,6 @@ channels:
 dependencies:
   - python
   - openalea.phenomenal
-  - nose
   - sphinx
   - sphinx_rtd_theme
   - ipyvolume
