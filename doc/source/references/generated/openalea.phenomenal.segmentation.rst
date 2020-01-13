@@ -1,1 +1,0 @@
-.. automodule:: openalea.phenomenal.segmentation
