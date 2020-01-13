@@ -13,8 +13,9 @@ dependencies:
   - scikit-image
   - scikit-learn
   - networkx=2.3
-  - matplotlib
   - vtk
-  - sphinx
-  - sphinx_rtd_theme
   - ipyvolume
+  - pip:
+      - matplotlib
+      - sphinx
+      - sphinx_rtd_theme
