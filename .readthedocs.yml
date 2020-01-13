@@ -5,4 +5,4 @@ build:
   image: latest
 
 python:
-  setup_py_install: false
+  setup_py_install: True
