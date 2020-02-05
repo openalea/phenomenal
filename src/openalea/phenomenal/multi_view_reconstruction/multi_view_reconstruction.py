@@ -10,7 +10,6 @@
 from __future__ import division, print_function
 
 import math
-import numba
 import cv2
 import scipy.spatial
 import collections
@@ -299,13 +298,6 @@ def voxels_is_visible_in_image(voxels_position,
     min_xy_max_xy = get_bounding_box_voxel_projected(
         voxels_position, voxels_size, projection)
 
-    # result = numba_optimize_voxels_is_visible_in_image(
-    #     min_xy_max_xy, image_int, result, length, height, inclusive)
-    #
-    # ori_result[not_cond] = result
-    #
-    # return ori_result
-
     vv = ((min_xy_max_xy[:, 2] < 0) | (min_xy_max_xy[:, 0] >= length) |
           (min_xy_max_xy[:, 3] < 0) | (min_xy_max_xy[:, 1] >= height))
 
@@ -543,7 +535,6 @@ def reconstruction_inconsistent(image_views, stages, attractor=None):
 
 # ==============================================================================
 
-# @numba.jit()
 def get_integrale_image(img):
     a = numpy.zeros_like(img, dtype=int)
     a[img > 0] = 1

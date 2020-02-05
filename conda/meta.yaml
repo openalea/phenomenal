@@ -7,10 +7,8 @@ source:
 
 build:
   features:
-    - vc9               [win and py27]
     - vc14              [win and py36]
   track_features:
-    - vc9               [win and py27]
     - vc14              [win and py36]
   number: 0
   preserve_egg_dir: True
@@ -20,20 +18,17 @@ build:
 
 requirements:
   build:
-    - python
+    - python>=3
     - setuptools
     - cython
-    - vs2008_runtime    [win and py27]
     - vs2015_runtime    [win and py36]
     - libgcc-ng [linux]
     - pywin32 [win]
     - numpy
 
   run:
-    - python
+    - python>=3
     - numpy
-    - numba
-    - cython
     - scipy
     - scikit-image
     - scikit-learn
@@ -43,9 +38,7 @@ requirements:
     - matplotlib
     - vtk
     - pywin32 [win]
-    - nose
-    - coverage
-    - sphinx
+
 test:
   imports:
     - openalea.phenomenal
