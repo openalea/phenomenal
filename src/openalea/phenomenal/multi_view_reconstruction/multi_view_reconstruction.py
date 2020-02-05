@@ -17,6 +17,8 @@ import collections
 import numpy
 import sklearn.neighbors
 
+import openalea.phenomenal.multi_view_reconstruction._c_mvr as c_mvr
+
 from ..object import VoxelGrid
 # ==============================================================================
 # Class
@@ -541,21 +543,19 @@ def reconstruction_inconsistent(image_views, stages, attractor=None):
 
 # ==============================================================================
 
-@numba.jit()
+# @numba.jit()
 def get_integrale_image(img):
     a = numpy.zeros_like(img, dtype=int)
+    a[img > 0] = 1
     for y, x in numpy.ndindex(a.shape):
-            r = 0
-            if img[y, x] > 0:
-                r += 1
-            if x - 1 >= 0:
-                r += a[y, x - 1]
-            if y - 1 >= 0:
-                r += a[y - 1, x]
-            if x - 1 >= 0 and y - 1 >= 0:
-                r -= a[y - 1, x - 1]
-            a[y, x] = r
+        if x - 1 >= 0:
+            a[y, x] += a[y, x - 1]
+        if y - 1 >= 0:
+            a[y, x] += a[y - 1, x]
+        if x - 1 >= 0 and y - 1 >= 0:
+            a[y, x] -= a[y - 1, x - 1]
     return a
+
 
 # ==============================================================================
 
@@ -611,10 +611,14 @@ def reconstruction_3d(image_views,
 
     # Pre-processing (optimization): Compute integral image for speed
     # computation
+
     int_images = list()
     for i, image_view in enumerate(image_views):
-        a = get_integrale_image(image_view.image)
+
+        a = numpy.zeros_like(image_view.image, dtype=numpy.uint32)
+        c_mvr.integral_image(image_view.image, a)
         int_images.append(a)
+
 
     stage = VoxelsStage(Voxels(voxels_position, list_voxels_size[0]), None)
     stages = [stage]
@@ -624,6 +628,8 @@ def reconstruction_3d(image_views,
             break
 
         voxels = split_voxels_in_eight(stage.consistent)
+
+        print(voxels.size)
 
         if voxels.size < 512:
             stage = kept_visible_voxel(
