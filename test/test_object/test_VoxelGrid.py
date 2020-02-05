@@ -21,7 +21,7 @@ import openalea.phenomenal.object as phm_obj
 def test_read_write():
 
     plant_number = 1
-    voxels_size = 8
+    voxels_size = 16
     voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
                                      voxels_size=voxels_size)
 

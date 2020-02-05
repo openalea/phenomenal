@@ -25,6 +25,9 @@
     :target: https://phenomenal.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. image:: https://mybinder.org/badge.svg
+    :target: https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples
+    :alt: Launch interactive phenomenal notebook with myBinder service
 
 ==========
 Phenomenal
@@ -39,24 +42,11 @@ plant phenotyping data
 .. contents::
 
 =============
-Documentation
-=============
-
-The documentation is available at `<https://phenomenal.readthedocs.io>`_
-
-Tutorials are available in the example folder as a Jupyter Notebook.
-
-Try out in mybinder:
-
-.. image:: https://mybinder.org/badge.svg
-    :target: https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples
-    :alt: Launch interactive phenomenal notebook with myBinder service
-
-=============
 Citation
 =============
 
 Please, cite the software, if you are using for your research.
+
       @misc{artzet2018,
         author       = {Simon Artzet and
                         Nicolas Brichet and
@@ -75,21 +65,66 @@ Please, cite the software, if you are using for your research.
 Installation
 ============
 
-Conda/Anaconda
---------------
+With conda (https://docs.conda.io/en/latest/index.html)
+-------------------------------------------------------
+
+Create a new environment with phenomenal installed in there
 
 .. code:: shell
 
-    conda install -c openalea openalea.phenomenal
+    conda create -n phm -c conda-forge -c openalea openalea.phenomenal
+    conda activate phm
 
-On windows you need to add the conda-forge channels to find opencv package
+In a existing environment
 
 .. code:: shell
 
-    conda install -c openalea -c conda-forge openalea.phenomenal
+    conda install -c conda-forge -c openalea openalea.phenomenal
 
+(Optional) Test your installation
+
+.. code
+
+    conda install -c conda-forge pytest
+    git clone https://github.com/openalea/phenomenal.git
+    cd phenomenal/test; pytest
+
+From source (developer only)
+----------------------------
+
+.. code::
+
+    # Install dependency with conda
+    conda create -n phm -c conda-forge python=3
+    conda activate phm
+    conda install -c conda-forge -c openalea cython numpy numba scipy scikit-image scikit-learn networkx=2.3 opencv matplotlib vtk pytest
+
+    # Load phenomenal and install
+    git clone https://github.com/openalea/phenomenal.git
+    cd phenomenal
+    python setup.py develop
+
+    # (Optional) Test your installation
+    cd test; pytest
+
+
+=========================
+Code & more documentation
+=========================
+
+More complete documentation is available at `<https://phenomenal.readthedocs.io>`_
+
+========
+Tutorial
+========
+
+Tutorials are available in the example folder as a Jupyter Notebook.
+
+You can try out with binder: https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples
+
+=======
 Authors
--------
+=======
 
 * Artzet	    Simon
 * Brichet	    Nicolas
