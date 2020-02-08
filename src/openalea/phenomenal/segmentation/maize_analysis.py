@@ -112,7 +112,7 @@ def compute_fitted_width(width, curvilinear_abscissa):
 
     x = numpy.array(curvilinear_abscissa)
     XX = numpy.vstack((x ** 2, x)).T
-    p_all = numpy.linalg.lstsq(XX, width[::-1])[0]
+    p_all = numpy.linalg.lstsq(XX, width[::-1], rcond=None)[0]
     fitted_width = numpy.dot(p_all, XX.T)
 
     return fitted_width

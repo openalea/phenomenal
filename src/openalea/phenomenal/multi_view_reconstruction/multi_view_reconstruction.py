@@ -237,69 +237,13 @@ def voxels_is_visible_in_image(voxels_position,
 
     # ==========================================================================
 
-    # voxels_corners = get_voxels_corners(voxels_position, voxels_size)
-    # pt = projection(voxels_corners)
-    # pt = numpy.reshape(pt, (pt.shape[0] // 8, 8, 2))
-    # tim = image.astype(int)
-    # im = numpy.zeros_like(tim, dtype=int)
-    # conds = list()
-    #
-    # for points in pt:
-    #
-    #     if (numpy.all(points[:, 0] < 0) == True or
-    #         numpy.all(points[:, 0] >= length) == True or
-    #         numpy.all(points[:, 1] < 0) == True or
-    #         numpy.all(points[:, 1] >= height) == True):
-    #         conds.append(False)
-    #         continue
-    #
-    #     points[points < 0] = 0
-    #     (points[:, 0])[points[:, 0] >= length] = length - 1
-    #     (points[:, 1])[points[:, 1] >= height] = height - 1
-    #     points = numpy.floor(points).astype(int)
-    #
-    #     if numpy.all(points[:, 0] == points[0, 0]) == True:
-    #         x = points[0, 0]
-    #         y_min = numpy.min(points[:, 1])
-    #         y_max = numpy.max(points[:, 1])
-    #
-    #         if numpy.count_nonzero(image[y_min:y_max, x]) > 0:
-    #             conds.append(True)
-    #         else:
-    #             conds.append(False)
-    #         continue
-    #
-    #     if numpy.all(points[:, 1] == points[0, 1]) == True:
-    #         y = points[0, 1]
-    #         x_min = numpy.min(points[:, 0])
-    #         x_max = numpy.max(points[:, 0])
-    #
-    #         if numpy.count_nonzero(image[y, x_min:x_max]) > 0:
-    #             conds.append(True)
-    #         else:
-    #             conds.append(False)
-    #         continue
-    #
-    #     hull = scipy.spatial.ConvexHull(points)
-    #     im[:] = 0
-    #     cv2.fillConvexPoly(im, points[hull.vertices], 1)
-    #     if numpy.any(tim[im == 1] > 0) == True:
-    #         conds.append(True)
-    #     else:
-    #         conds.append(False)
-    #
-    # result[conds] = 1
-    # ori_result[not_cond] = result
-    #
-    # return ori_result
-
-    # ==========================================================================
-
     min_xy_max_xy = get_bounding_box_voxel_projected(
         voxels_position, voxels_size, projection)
 
-    vv = ((min_xy_max_xy[:, 2] < 0) | (min_xy_max_xy[:, 0] >= length) |
-          (min_xy_max_xy[:, 3] < 0) | (min_xy_max_xy[:, 1] >= height))
+    vv = ((min_xy_max_xy[:, 2] < 0) |
+          (min_xy_max_xy[:, 0] >= length) |
+          (min_xy_max_xy[:, 3] < 0) |
+          (min_xy_max_xy[:, 1] >= height))
 
     not_vv = numpy.logical_not(vv)
     result[vv] = 1 if inclusive else 0
@@ -307,28 +251,24 @@ def voxels_is_visible_in_image(voxels_position,
     min_xy_max_xy = min_xy_max_xy[not_vv]
     bb = result[not_vv]
 
-    min_xy_max_xy = numpy.floor(min_xy_max_xy)
-    min_xy_max_xy[min_xy_max_xy < 0] = 0
+    min_xy_max_xy = numpy.floor(min_xy_max_xy).astype(int)
+
+    # X limit
     (min_xy_max_xy[:, 0])[min_xy_max_xy[:, 0] >= length] = length - 1
-    (min_xy_max_xy[:, 1])[min_xy_max_xy[:, 1] >= height] = height - 1
     (min_xy_max_xy[:, 2])[min_xy_max_xy[:, 2] >= length] = length - 1
+    # Y limit
+    (min_xy_max_xy[:, 1])[min_xy_max_xy[:, 1] >= height] = height - 1
     (min_xy_max_xy[:, 3])[min_xy_max_xy[:, 3] >= height] = height - 1
-    min_xy_max_xy = min_xy_max_xy.astype(int)
+    # Under zero limit
+    min_xy_max_xy[:, 0:2] -= 1 # For integral image optimization
+    min_xy_max_xy[min_xy_max_xy < 0] = 0
 
     # ==========================================================================
 
-    min_xy_max_xy[:, 0:2] -= 1
     for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
 
-        r1 = image_int[y_max, x_max]
-        if y_min > 0:
-            r1 -= image_int[y_min, x_max]
-        if x_min > 0:
-            r1 -= image_int[y_max, x_min]
-        if y_min > 0 and x_min > 0:
-            r1 += image_int[y_min, x_min]
-
-        if r1 > 0:
+        if (image_int[y_max, x_max] + image_int[y_min, x_min]
+        - image_int[y_min, x_max] - image_int[y_max, x_min]) > 0:
             bb[i] = 1
 
     # for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
@@ -470,8 +410,7 @@ def check_groups(neigh, inconsistent, groups, nb_distance):
         xx = distance.argsort()[:nb_distance]
         positions.append(inconsistent.position[index[xx]])
 
-    position = numpy.concatenate(positions, axis=0)
-    position = numpy.vstack(set(tuple(row) for row in position))
+    position = numpy.unique(numpy.concatenate(positions, axis=0), axis=0)
 
     return Voxels(position, inconsistent.size)
 
@@ -509,7 +448,7 @@ def reconstruction_inconsistent(image_views, stages, attractor=None):
             voxels = split_voxels_in_eight(consistents[i - 1])
             position = numpy.concatenate(
                 (inconsistent.position, voxels.position), axis=0)
-            position = numpy.vstack(set(tuple(row) for row in position))
+            position = numpy.unique(position, axis=0)
             inconsistent = Voxels(position, inconsistent.size)
 
         groups = create_groups(image_views, inconsistent)
@@ -525,8 +464,7 @@ def reconstruction_inconsistent(image_views, stages, attractor=None):
             voxels_position = numpy.concatenate(
                 (consistent_stages[i].position, consistent.position), axis=0)
 
-            voxels_position = numpy.vstack(
-                set(tuple(row) for row in voxels_position))
+            voxels_position = numpy.unique(voxels_position, axis=0)
 
             consistent_stages[i] = Voxels(voxels_position, consistent.size)
 

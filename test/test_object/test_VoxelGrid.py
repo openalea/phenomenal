@@ -12,7 +12,7 @@
 from __future__ import division, print_function
 
 import os
-
+import numpy.random
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
 # ==============================================================================
@@ -20,15 +20,17 @@ import openalea.phenomenal.object as phm_obj
 
 def test_read_write():
 
-    plant_number = 1
     voxels_size = 16
-    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
-                                     voxels_size=voxels_size)
+    voxels_position = numpy.array(list(numpy.ndindex((10, 15, 5)))) * 16
+    src_vg = phm_obj.VoxelGrid(voxels_position, voxels_size)
 
     filename = 'test.npz'
-    voxel_grid.write_to_npz(filename)
-    vg = phm_obj.VoxelGrid.read_from_npz(filename)
+    src_vg.write_to_npz(filename)
+    dist_vg = phm_obj.VoxelGrid.read_from_npz(filename)
     os.remove(filename)
+
+    assert src_vg.voxels_size == dist_vg.voxels_size
+    assert (src_vg.voxels_position == dist_vg.voxels_position).all()
 
 
 if __name__ == "__main__":

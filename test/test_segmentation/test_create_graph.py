@@ -23,14 +23,7 @@ import openalea.phenomenal.segmentation as phm_seg
 
 def test_time_graph():
 
-    plant_number = 1
-    voxels_size = 16
-    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
-                                     voxels_size=voxels_size)
-
-    voxels_size = voxel_grid.voxels_size
-    voxels_position = voxel_grid.voxels_position
-    voxel_grid = phm_obj.VoxelGrid(voxels_position, voxels_size)
+    voxel_grid = phm_data.random_voxel_grid(voxels_size=16)
 
     number_of_loop = 2
     best_time = float('inf')

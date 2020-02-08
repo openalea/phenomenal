@@ -15,7 +15,7 @@ import cv2
 from ..object import Image3D, VoxelGrid
 # ==============================================================================
 
-__all__ = ["bin_images_with_circle", "build_cube"]
+__all__ = ["bin_images_with_circle", "build_cube", "random_voxel_grid"]
 
 # ==============================================================================
 
@@ -41,3 +41,12 @@ def build_cube(cube_size, voxels_size, voxels_position):
                             world_coordinate=voxels_position)
 
     return VoxelGrid.from_image_3d(image_3d).voxels_position
+
+
+def random_voxel_grid(shape=(10, 15, 5), voxels_size=16, int_choice=1000):
+
+    voxels_position = numpy.array(list(numpy.ndindex(shape))) * voxels_size
+    voxels_position = voxels_position.astype(numpy.float)
+    numpy.random.shuffle(voxels_position)
+
+    return VoxelGrid(voxels_position[:int_choice], voxels_size)
