@@ -38,7 +38,6 @@ plant phenotyping data
 
 **Phenomenal** is released under a `Cecill-C <http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html>`_ licence.
 
-
 .. contents::
 
 =============
@@ -65,23 +64,25 @@ Please, cite the software, if you are using for your research.
 Installation
 ============
 
-With conda (https://docs.conda.io/en/latest/index.html)
--------------------------------------------------------
+First install conda : https://docs.conda.io/en/latest/index.html
 
-Create a new environment with phenomenal installed in there
+User
+----
+
+Create a new environment with phenomenal installed in there :
 
 .. code:: shell
 
     conda create -n phm -c conda-forge -c openalea openalea.phenomenal
     conda activate phm
 
-In a existing environment
+In a existing environment :
 
 .. code:: shell
 
     conda install -c conda-forge -c openalea openalea.phenomenal
 
-(Optional) Test your installation
+(Optional) Test your installation :
 
 .. code
 
@@ -89,8 +90,8 @@ In a existing environment
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal/test; pytest
 
-From source (developer only)
-----------------------------
+From source
+-----------
 
 .. code::
 
@@ -108,11 +109,11 @@ From source (developer only)
     cd test; pytest
 
 
-=========================
-Code & more documentation
-=========================
+=============
+Documentation
+=============
 
-More complete documentation is available at `<https://phenomenal.readthedocs.io>`_
+Complete documentation is available at `<https://phenomenal.readthedocs.io>`_
 
 ========
 Tutorial
