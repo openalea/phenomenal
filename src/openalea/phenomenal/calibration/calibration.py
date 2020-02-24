@@ -874,9 +874,10 @@ class Calibration(CalibrationCamera):
         self._ref_target_1_points_2d = None
         self._ref_target_2_points_2d = None
 
+        self._cam_pos_x = 0.0
         self._cam_pos_z = 0.0
 
-        self._cam_rot_y = 0.0
+        # self._cam_rot_y = 0.0
         self._cam_origin_axis = numpy.array([[1., 0., 0., 0.],
                                              [0., 0., -1., 0.],
                                              [0., 1., 0., 0.],
@@ -900,13 +901,13 @@ class Calibration(CalibrationCamera):
         err = 0
 
         cam_focal_length_x, cam_focal_length_y, \
-        cam_pos_x, cam_pos_y, \
-        cam_rot_x, cam_rot_z, \
+        cam_pos_y, \
+        cam_rot_x, cam_rot_y, cam_rot_z, \
         angle_factor = x0[0:7]
 
         fr_cam = self.camera_frame(
-            cam_pos_x, cam_pos_y, self._cam_pos_z,
-            cam_rot_x, self._cam_rot_y, cam_rot_z,
+            self._cam_pos_x, cam_pos_y, self._cam_pos_z,
+            cam_rot_x, cam_rot_y, cam_rot_z,
             self._cam_origin_axis)
 
 
@@ -954,14 +955,15 @@ class Calibration(CalibrationCamera):
             cam_pos_y = - numpy.random.uniform(10000.0, 1000.0)
 
             cam_rot_x = 0.0
+            cam_rot_y = 0.0
             cam_rot_z = 0.0
 
             angle_factor = 1.0
 
 
             parameters = [cam_focal_length_x, cam_focal_length_y,
-                          cam_pos_x, cam_pos_y,
-                          cam_rot_x, cam_rot_z,
+                          cam_pos_y,
+                          cam_rot_x, cam_rot_y, cam_rot_z,
                           angle_factor]
 
             for i in range(self.nb_target):
@@ -975,8 +977,7 @@ class Calibration(CalibrationCamera):
             parameters = scipy.optimize.minimize(
                 self.fit_function, 
                 parameters, 
-                method='BFGS',
-                options={'maxiter':1}).x
+                method='BFGS').x
 
             err = self.fit_function(parameters)
             if err < min_err:
@@ -1105,16 +1106,13 @@ class Calibration(CalibrationCamera):
 
         parameters = self.find_parameters(number_of_repetition)
 
-        for i in [4, 6, 10, 11, 12, 16, 17, 18]:
-            parameters[i] %= math.pi * 2.0
-
         # Camera Parameters
         self._cam_focal_length_x = parameters[0]
         self._cam_focal_length_y = parameters[1]
-        self._cam_pos_x = parameters[2]
-        self._cam_pos_y = parameters[3]
-        self._cam_rot_x = parameters[4]
-        self._cam_rot_z = parameters[5]
+        self._cam_pos_y = parameters[2]
+        self._cam_rot_x = parameters[3] % math.pi * 2.0
+        self._cam_rot_y = parameters[4] % math.pi * 2.0
+        self._cam_rot_z = parameters[5] % math.pi * 2.0
 
         self._angle_factor = parameters[6]
 
@@ -1123,9 +1121,9 @@ class Calibration(CalibrationCamera):
             target_param._pos_x = parameters[7 + i * 6]
             target_param._pos_y = parameters[8 + i * 6]
             target_param._pos_z = parameters[9 + i * 6]
-            target_param._rot_x = parameters[10 + i * 6]
-            target_param._rot_y = parameters[11 + i * 6]
-            target_param._rot_z = parameters[12 + i * 6]
+            target_param._rot_x = parameters[10 + i * 6] % math.pi * 2.0
+            target_param._rot_y = parameters[11 + i * 6] % math.pi * 2.0
+            target_param._rot_z = parameters[12 + i * 6] % math.pi * 2.0
             
 
         err = self.fit_function(parameters)
