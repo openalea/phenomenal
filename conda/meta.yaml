@@ -18,16 +18,17 @@ build:
 
 requirements:
 
-  host:
-    - python
-    - setuptools
-    - numpy
-
   build:
     - cython
     - vs2015_runtime [win and py36]
     - libgcc-ng [linux]
     - pywin32 [win]
+    - numpy
+
+  host:
+    - python
+    - setuptools
+    - numpy
 
   run:
     - python
