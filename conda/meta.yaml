@@ -17,17 +17,20 @@ build:
     - python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
-  build:
-    - python>=3
+
+  host:
+    - python
     - setuptools
-    - cython
-    - vs2015_runtime    [win and py36]
-    - libgcc-ng [linux]
-    - pywin32 [win]
     - numpy
 
+  build:
+    - cython
+    - vs2015_runtime [win and py36]
+    - libgcc-ng [linux]
+    - pywin32 [win]
+
   run:
-    - python>=3
+    - python
     - numpy
     - scipy
     - scikit-image
