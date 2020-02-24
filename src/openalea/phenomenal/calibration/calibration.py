@@ -843,6 +843,7 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
 
 class TargetParameters(object):
     def __init__(self):
+
         self._pos_x = None
         self._pos_y = None
         self._pos_z = None
@@ -859,7 +860,7 @@ class TargetParameters(object):
         out += '\tRotation Y : ' + str(self._rot_y) + '\n'
         out += '\tRotation Z : ' + str(self._rot_z) + '\n\n'
         return out
-
+        
 
 class Calibration(CalibrationCamera):
 
@@ -972,7 +973,10 @@ class Calibration(CalibrationCamera):
                                0]                                     # Z Rotation
                     
             parameters = scipy.optimize.minimize(
-                self.fit_function, parameters, method='BFGS').x
+                self.fit_function, 
+                parameters, 
+                method='BFGS',
+                options={'maxiter':1}).x
 
             err = self.fit_function(parameters)
             if err < min_err:
@@ -1150,19 +1154,9 @@ class Calibration(CalibrationCamera):
         save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
             (16,)).tolist()
 
-        save_class['target_1_pos_x'] = self._target_1_pos_x
-        save_class['target_1_pos_y'] = self._target_1_pos_y
-        save_class['target_1_pos_z'] = self._target_1_pos_z
-        save_class['target_1_rot_x'] = self._target_1_rot_x
-        save_class['target_1_rot_y'] = self._target_1_rot_y
-        save_class['target_1_rot_z'] = self._target_1_rot_z
 
-        save_class['target_2_pos_x'] = self._target_2_pos_x
-        save_class['target_2_pos_y'] = self._target_2_pos_y
-        save_class['target_2_pos_z'] = self._target_2_pos_z
-        save_class['target_2_rot_x'] = self._target_2_rot_x
-        save_class['target_2_rot_y'] = self._target_2_rot_y
-        save_class['target_2_rot_z'] = self._target_2_rot_z
+
+        save_class['targets_parameters'] = [t.__dict__ for t in self._targets_parameters]
 
         with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
@@ -1175,7 +1169,7 @@ class Calibration(CalibrationCamera):
         with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
-            c = CalibrationCameraSideWith2TargetYXZ()
+            c = Calibration(len(save_class['targets_parameters']))
 
             c._cam_width_image = save_class['cam_width_image']
             c._cam_height_image = save_class['cam_height_image']
@@ -1192,23 +1186,20 @@ class Calibration(CalibrationCamera):
                 save_class['cam_origin_axis']).reshape((4, 4)).astype(
                 numpy.float32)
 
-            c._target_1_pos_x = save_class['target_1_pos_x']
-            c._target_1_pos_y = save_class['target_1_pos_y']
-            c._target_1_pos_z = save_class['target_1_pos_z']
-            c._target_1_rot_x = save_class['target_1_rot_x']
-            c._target_1_rot_y = save_class['target_1_rot_y']
-            c._target_1_rot_z = save_class['target_1_rot_z']
-
-            c._target_2_pos_x = save_class['target_2_pos_x']
-            c._target_2_pos_y = save_class['target_2_pos_y']
-            c._target_2_pos_z = save_class['target_2_pos_z']
-            c._target_2_rot_x = save_class['target_2_rot_x']
-            c._target_2_rot_y = save_class['target_2_rot_y']
-            c._target_2_rot_z = save_class['target_2_rot_z']
-
-        return c
-
-
+            c._targets_parameters = list()
+            for target_param in save_class['targets_parameters']:
+                print(target_param)
+                tp = TargetParameters()
+                tp._pos_x = target_param["_pos_x"]
+                tp._pos_y = target_param["_pos_y"]
+                tp._pos_z = target_param["_pos_z"]
+                tp._rot_x = target_param["_rot_x"]
+                tp._rot_y = target_param["_rot_y"]
+                tp._rot_z = target_param["_rot_z"]
+                print(tp)
+                c._targets_parameters.append(tp)
+            print(c._targets_parameters)
+            return c
 
 
 def find_position_3d_points(pt2d, calibrations):
