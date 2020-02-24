@@ -46,7 +46,9 @@ def test_running():
         image_projection.append((bin_images["side"][angle], projection))
 
     voxel_skeleton = phm_seg.segment_reduction(
-        voxel_skeleton, image_projection, required_visible=1, nb_min_pixel=100)
+        voxel_skeleton, image_projection,
+        required_visible=1,
+        nb_min_pixel=100)
 
 
 if __name__ == "__main__":
