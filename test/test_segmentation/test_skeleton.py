@@ -32,8 +32,6 @@ def test_running():
     bin_images = phm_data.bin_images(plant_1_dir)
     calibrations = phm_data.calibrations(plant_1_dir)
     voxel_grid = phm_data.voxel_grid(data_dir, 1, 32)
-    voxel_grid = phm_data.random_voxel_grid(shape=(25, 25, 25),
-                                            voxels_size=32)
 
     # Load images binarize
 
