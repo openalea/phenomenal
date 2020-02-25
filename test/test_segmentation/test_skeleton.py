@@ -18,7 +18,7 @@ import openalea.phenomenal.segmentation as phm_seg
 # ==============================================================================
 
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                        "../data/plant_1")
+                        "../data/")
 
 plant_1_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                         "../data/plant_1")
@@ -31,6 +31,7 @@ def test_running():
 
     bin_images = phm_data.bin_images(plant_1_dir)
     calibrations = phm_data.calibrations(plant_1_dir)
+    voxel_grid = phm_data.voxel_grid(data_dir, 1, 32)
     voxel_grid = phm_data.random_voxel_grid(shape=(25, 25, 25),
                                             voxels_size=32)
 
