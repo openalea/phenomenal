@@ -6,29 +6,25 @@ source:
   path: ..
 
 build:
-  features:
-    - vc14              [win and py36]
-  track_features:
-    - vc14              [win and py36]
   number: 0
   preserve_egg_dir: True
   string: phenomenal
   script:
-    - python setup.py install --single-version-externally-managed --record record.txt
+    - {{ PYTHON }} setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
 
   build:
-    - cython
-    - vs2015_runtime [win and py36]
-    - libgcc-ng [linux]
-    - pywin32 [win]
-    - numpy
+    - {{ compiler('c') }}
+    - {{ compiler("cxx") }}
+    
 
   host:
     - python
     - setuptools
+    - cython    
     - numpy
+    - scipy
 
   run:
     - python
