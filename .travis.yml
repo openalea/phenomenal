@@ -18,6 +18,7 @@ install:
   - cd travis-ci
   - source install.sh
   - conda config --prepend channels conda-forge
+  - conda install -y conda-verify
 
 before_script:
   - source before_script.sh
