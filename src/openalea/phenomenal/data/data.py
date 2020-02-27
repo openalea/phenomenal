@@ -16,6 +16,8 @@ import glob
 import os
 import collections
 import pkg_resources
+import pathlib
+
 
 from ..mesh import read_ply_to_vertices_faces
 from ..calibration import (Chessboard, CalibrationCamera)
@@ -43,7 +45,7 @@ def _path_images(name_dir, dtype="bin"):
     for id_camera in ["side", "top"]:
         filenames = glob.glob(os.path.join(data_directory, id_camera, '*'))
         for filename in filenames:
-            angle = int(os.path.basename(filename)[:-4])
+            angle = int(pathlib.Path(filename).stem)
             d[id_camera][angle] = filename
 
     return d
