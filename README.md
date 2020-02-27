@@ -15,8 +15,6 @@
 
 This work is based on our [biorxiv report](https://doi.org/10.1101/805739)
 
-.. contents::
-
 ### Citation
 
 If you find our work useful in your research, please consider citing:
@@ -37,34 +35,26 @@ If you find our work useful in your research, please consider citing:
 
 ### Installation
 
-First install conda : https://docs.conda.io/en/latest/index.html
+Conda environement : https://docs.conda.io/en/latest/index.html
 
 #### User
 
-Create a new environment with phenomenal installed in there :
-
-.. code:: shell
+##### Create a new environment with phenomenal installed in there :
 
     conda create -n phm -c conda-forge -c openalea openalea.phenomenal
     conda activate phm
 
-In a existing environment :
-
-.. code:: shell
+##### In a existing environment :
 
     conda install -c conda-forge -c openalea openalea.phenomenal
 
-(Optional) Test your installation :
-
-.. code
+##### (Optional) Test your installation :
 
     conda install -c conda-forge pytest
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal/test; pytest
 
 #### From source
-
-.. code::
 
     # Install dependency with conda
     conda create -n phm -c conda-forge python=3
@@ -82,7 +72,7 @@ In a existing environment :
 
 ### Usage :
 
-Complete documentation is available at `<https://phenomenal.readthedocs.io>`_
+Complete documentation is available at https://phenomenal.readthedocs.io
 
 Tutorials are available in the example folder as a Jupyter Notebook.
 
@@ -97,4 +87,4 @@ You can try online with binder: https://mybinder.org/v2/gh/openalea/phenomenal/m
 
 ### License
 
-Our code is released under `Cecill-C <https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt>`_ licence. (see LICENSE file for details).
+Our code is released under **Cecill-C** (https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt) licence. (see LICENSE file for details).
