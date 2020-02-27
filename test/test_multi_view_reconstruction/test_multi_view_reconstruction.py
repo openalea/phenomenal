@@ -19,14 +19,9 @@ import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.multi_view_reconstruction as phm_mvr
 # ==============================================================================
 
-data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                        "../data/plant_1")
-
 plant_1_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                         "../data/plant_1")
 
-plant_1_bin__dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                        "../data/plant_1/bin")
 
 
 def test_split_voxel_centers_in_eight_1():
