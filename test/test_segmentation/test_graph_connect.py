@@ -18,10 +18,8 @@ import openalea.phenomenal.segmentation as phm_seg
 
 def test_graph():
 
-    plant_number = 1
-    voxels_size = 16
-    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
-                                     voxels_size=voxels_size)
+    voxel_grid = phm_data.random_voxel_grid(voxels_size=16)
+
     graph = phm_seg.graph_from_voxel_grid(voxel_grid)
 
 

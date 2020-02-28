@@ -18,6 +18,6 @@ for i in range(len_segments):
         list_array[i * len_images + j] = numpy.random.rand(n, n)
 
 is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
-print is_removed
+print(is_removed)
 c_skeleton.skeletonize(list_array, is_removed, len_segments, len_images)
-print is_removed
+print(is_removed)

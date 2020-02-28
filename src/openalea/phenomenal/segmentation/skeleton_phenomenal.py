@@ -48,7 +48,6 @@ def segment_reduction(voxel_skeleton,
     """
     # ==========================================================================
 
-
     # Ordonner
     orderer_voxel_segments = sorted(voxel_skeleton.segments,
                                     key=lambda vs: len(vs.polyline))

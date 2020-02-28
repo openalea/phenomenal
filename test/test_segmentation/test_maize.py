@@ -21,10 +21,7 @@ import openalea.phenomenal.segmentation as phm_seg
 
 def test_maize():
 
-    plant_number = 1
-    voxels_size = 32
-    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
-                                     voxels_size=voxels_size)
+    voxel_grid = phm_data.random_voxel_grid(voxels_size=32)
 
     graph = phm_seg.graph_from_voxel_grid(voxel_grid)
     voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph)
@@ -35,8 +32,8 @@ def test_maize():
     filename = 'tmp.json'
     vms.write_to_json_gz(filename)
     vms = phm_obj.VoxelSegmentation.read_from_json_gz(filename)
-
     os.remove(filename)
+
 if __name__ == "__main__":
     for func_name in dir():
         if func_name.startswith('test_'):

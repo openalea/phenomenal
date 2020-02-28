@@ -30,12 +30,18 @@ package_dir = dict([('', pkg_root_dir)] +
                     for pkg in top_pkgs])
 
 
-extentions = [Extension(
-    'openalea.phenomenal.segmentation._c_skeleton',
-    sources=['src/openalea/phenomenal/segmentation/src/skeleton.pyx',
+extentions = [
+    Extension('openalea.phenomenal.segmentation._c_skeleton',
+        sources=['src/openalea/phenomenal/segmentation/src/skeleton.pyx',
              'src/openalea/phenomenal/segmentation/src/skel.cpp'],
-    include_dirs=[numpy.get_include()],
-    language="c++")]
+        include_dirs=[numpy.get_include()],
+        language="c++"),
+    Extension('openalea.phenomenal.multi_view_reconstruction._c_mvr',
+        sources=['src/openalea/phenomenal/multi_view_reconstruction/src/c_mvr.pyx',
+                 'src/openalea/phenomenal/multi_view_reconstruction/src/integral_image.cpp'],
+        include_dirs=[numpy.get_include()],
+        language="c++")
+        ]
 
 setup(
     name="openalea.phenomenal",
