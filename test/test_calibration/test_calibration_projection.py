@@ -36,7 +36,7 @@ def test_array_pixel_coordinates():
                           [-322.20389648, 162.67521638, -4866.89129462],
                           [-322.20389648, 162.67521638, -4866.89129462]])
 
-    pts_2d = side_calibration.arr_pixel_coordinates(
+    pts_2d = side_calibration.pixel_coordinates(
         pts_3d,
         side_calibration._cam_width_image,
         side_calibration._cam_height_image,
@@ -48,7 +48,7 @@ def test_array_pixel_coordinates():
 
     pts_3d = numpy.array([[-322.20389648, 162.67521638, -4866.89129462]])
 
-    pts_2d = side_calibration.arr_pixel_coordinates(
+    pts_2d = side_calibration.pixel_coordinates(
         pts_3d,
         side_calibration._cam_width_image,
         side_calibration._cam_height_image,
