@@ -5,17 +5,4 @@ channels:
 
 dependencies:
   - python
-  - opencv
-  - networkx=2.3
-  - vtk
-  - ipyvolume
-  - pip:
-      - scikit-learn
-      - scikit-image
-      - scipy
-      - numba
-      - numpy
-      - cython
-      - matplotlib
-      - sphinx
-      - sphinx_rtd_theme
+  - openalea.phenomenal
