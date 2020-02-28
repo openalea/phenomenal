@@ -75,7 +75,7 @@ def test_array_camera_frame_local_point():
               [-322.20389648, 162.67521638, -4866.89129462],
               [-322.20389648, 162.67521638, -4866.89129462]]
 
-    result = camera_frame.arr_local_point(pts_3d)
+    result = camera_frame.local_point(pts_3d)
     result = numpy.round(result.astype(float), 5)
 
     for pt_3d in result:
@@ -83,7 +83,7 @@ def test_array_camera_frame_local_point():
 
     pts_3d = [[-322.20389648, 162.67521638, -4866.89129462]]
 
-    result = camera_frame.arr_local_point(pts_3d)
+    result = camera_frame.local_point(pts_3d)
     result = numpy.round(result.astype(float), 5)
 
     for pt_3d in result:

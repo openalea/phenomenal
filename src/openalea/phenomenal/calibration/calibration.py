@@ -203,7 +203,7 @@ class CalibrationCamera(object):
             else:
                 origin = x, y, z
 
-            return self.pixel_coordinates(fr_cam.arr_local_point(origin),
+            return self.pixel_coordinates(fr_cam.local_point(origin),
                                               self._cam_width_image,
                                               self._cam_height_image,
                                               self._cam_focal_length_x,
@@ -932,15 +932,13 @@ class Calibration(CalibrationCamera):
                                               math.radians(-alpha * angle_factor)) #alpha is positive, but phenoarch
                                               # rotation is clockwise
 
-                target_pts = list(map(lambda pt: fr_target.global_point(pt),
-                                      self._ref_targets_points_local_3d[i]))
+                target_pts = fr_target.global_point(self._ref_targets_points_local_3d[i])
 
-                pts = list(map(lambda pt: self.pixel_coordinates(
-                    fr_cam.local_point(pt),
+                pts = self.pixel_coordinates(fr_cam.local_point(target_pts),
                     self._cam_width_image,
                     self._cam_height_image,
                     cam_focal_length_x,
-                    cam_focal_length_y), target_pts))
+                    cam_focal_length_y)
 
                 err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
@@ -964,15 +962,17 @@ class Calibration(CalibrationCamera):
                                                   rot_x,
                                                   rot_y,
                                                   rot_z,
-                                                  math.radians(alpha * angle_factor))
-                    target_pts = list(map(lambda pt: fr_target.global_point(pt),
-                                          self._ref_targets_points_local_3d[j]))
-                    pts = list(map(lambda pt: camera.pixel_coordinates(
-                        fr_cam.local_point(pt),
-                        camera._cam_width_image,
-                        camera._cam_height_image,
-                        cam_focal_length_x,
-                        cam_focal_length_y), target_pts))
+                                                  math.radians(
+                                                      -alpha * angle_factor))  # alpha is positive, but phenoarch
+                    # rotation is clockwise
+
+                    target_pts = fr_target.global_point(self._ref_targets_points_local_3d[i])
+
+                    pts = self.pixel_coordinates(fr_cam.local_point(target_pts),
+                                                 self._cam_width_image,
+                                                 self._cam_height_image,
+                                                 cam_focal_length_x,
+                                                 cam_focal_length_y)
 
                     err += numpy.linalg.norm(
                         numpy.array(pts) - ref_pts, axis=1).sum()
