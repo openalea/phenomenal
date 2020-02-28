@@ -23,13 +23,37 @@ from .transformations import (concatenate_matrices, rotation_matrix)
 
 # ==============================================================================
 
-__all__ = ["CalibrationCamera",
+__all__ = ["cam_origin_axis",
+           "CalibrationCamera",
            "CalibrationCameraTop",
            "Calibration",
            "CalibrationCameraSideWith2TargetYXZ"]
 
 
 # ==============================================================================
+
+
+def cam_origin_axis(axes):
+    """ Defines cam_origin_axis transformation matrix given a
+    positioning of camera axes in the world frame
+
+    :Parameters:
+     - `axes` ([array,array,array]) - orientation of camera axes given as
+                   the coordinates of the local axis in the global frame"""
+    f = Frame(axes)
+    rot = numpy.identity(4)
+    rot[:3, :3] = f.rotation_to_global()
+    return rot
+
+
+def reduce_angle(angle):
+    """reduce an angle to the [-pi, pi] range"""
+    angle = numpy.array(angle)
+    modulo = 2 * numpy.pi
+    angle %= modulo
+    # force to [0, modulo] range
+    angle = (angle + modulo) % modulo
+    return angle - numpy.where(angle > modulo / 2., modulo, 0)
 
 
 class CalibrationCamera(object):
@@ -187,8 +211,8 @@ class CalibrationCamera(object):
         angle = math.radians(alpha * self._angle_factor)
 
         def projection(pts):
-            x = - pts[:, 0] * math.cos(angle) - pts[:, 1] * math.sin(angle)
-            y = - pts[:, 0] * math.sin(angle) + pts[:, 1] * math.cos(angle)
+            x = pts[:, 0] * math.cos(angle) - pts[:, 1] * math.sin(angle)
+            y = pts[:, 0] * math.sin(angle) + pts[:, 1] * math.cos(angle)
             z = pts[:, 2]
 
             origin = numpy.column_stack((x, y, z))
@@ -282,10 +306,12 @@ class CalibrationCameraTop(CalibrationCamera):
 
         self._ref_number = None
 
-        self._cam_origin_axis = numpy.array([[0., -1., 0., 0.],
-                                             [1., 0., 0., 0.],
-                                             [0., 0., 1., 0.],
-                                             [0., 0., 0., 1.]])
+        # camera frame axis coordinates expressed in world coordinates
+        axes = numpy.array([[1., 0., 0.],
+                            [0., -1., 0.],
+                            [0., 0., -1.]])
+
+        self._cam_origin_axis = cam_origin_axis(axes)
 
     def fit_function(self, x0):
         err = 0
@@ -444,10 +470,12 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
         self._cam_pos_z = 0.0
 
         self._cam_rot_y = 0.0
-        self._cam_origin_axis = numpy.array([[1., 0., 0., 0.],
-                                             [0., 0., -1., 0.],
-                                             [0., 1., 0., 0.],
-                                             [0., 0., 0., 1.]])
+        # camera frame axis coordinates expressed in world coordinates
+        axes = numpy.array([[1., 0., 0.],
+                            [0., 0., -1.],
+                            [0., 1., 0.]])
+
+        self._cam_origin_axis = cam_origin_axis(axes)
 
         self._target_1_pos_x = None
         self._target_1_pos_y = None
@@ -870,10 +898,11 @@ class Calibration(CalibrationCamera):
         # the position of the reference camera and the axis of rotation (z-axis) defines z=0 plane and x=0 plane
         self._cam_pos_x = 0.0
         self._cam_pos_z = 0.0
-        self._cam_origin_axis = numpy.array([[1., 0., 0., 0.],
-                                             [0., 0., -1., 0.],
-                                             [0., 1., 0., 0.],
-                                             [0., 0., 0., 1.]])
+        # camera frame axis coordinates expressed in world coordinates
+        axes = numpy.array([[1., 0., 0.],
+                            [0., 0., -1.],
+                            [0., 1., 0.]])
+        self._cam_origin_axis = cam_origin_axis(axes)
 
         self._verbose = False
         self._ref_targets_points_local_3d = None
@@ -889,10 +918,13 @@ class Calibration(CalibrationCamera):
         self._others = [CalibrationCamera() for i in range(nb_other_cameras)]
         # express  parameters of all cameras in the reference frame
         for camera in self._others:
-            camera._cam_origin_axis = numpy.array([[0., -1., 0., 0.],
-                                             [1., 0., 0., 0.],
-                                             [0., 0., 1., 0.],
-                                             [0., 0., 0., 1.]])
+            # camera frame axis coordinates expressed in world coordinates
+            axes = numpy.array([[1., 0., 0.],
+                                [0., -1., 0.],
+                                [0., 0., -1.]])
+
+            self._cam_origin_axis = cam_origin_axis(axes)
+
         self._others_targets_points_2d = None
 
     def __str__(self):
@@ -933,7 +965,8 @@ class Calibration(CalibrationCamera):
                                               rot_x,
                                               rot_y,
                                               rot_z,
-                                              math.radians(alpha * angle_factor))
+                                              math.radians(-alpha * angle_factor)) #alpha is positive, but phenoarch
+                                              # rotation is clockwise
 
                 target_pts = list(map(lambda pt: fr_target.global_point(pt),
                                       self._ref_targets_points_local_3d[i]))
@@ -992,9 +1025,9 @@ class Calibration(CalibrationCamera):
         min_err = float('inf')
         for i in range(number_of_repetition + 1):
 
-            cam_focal_length_x = numpy.random.uniform(1000.0, 10000.0)
-            cam_focal_length_y = numpy.random.uniform(1000.0, 10000.0)
-            cam_pos_y = - numpy.random.uniform(10000.0, 1000.0)
+            cam_focal_length_x = 5500 #numpy.random.uniform(1000.0, 10000.0)
+            cam_focal_length_y = 5500 #numpy.random.uniform(1000.0, 10000.0)
+            cam_pos_y = - 5500#numpy.random.uniform(10000.0, 1000.0)
 
             cam_rot_x = 0.0
             cam_rot_y = 0.0
@@ -1011,9 +1044,9 @@ class Calibration(CalibrationCamera):
                 parameters += [numpy.random.uniform(-1000.0, 1000.0),  # X Position
                                numpy.random.uniform(-1000.0, 1000.0),  # Y Position
                                numpy.random.uniform(-1000, 1000.0),  # Z Position
-                               0,  # X Rotation
+                               numpy.pi / 2,  # X Rotation
                                0,  # Y Rotation
-                               0]  # Z Rotation
+                              0]  # Z Rotation
 
             for i in range(self.nb_others):
                 parameters += [numpy.random.uniform(1000.0, 10000.0),  # focal length X
