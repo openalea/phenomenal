@@ -59,7 +59,7 @@ def test_image_frame():
     # test array call
     pts = numpy.array((w_origin, right, left, up, down))
     pix = numpy.array((i_origin, i_right, i_left, i_up, i_down))
-    pixels = CalibrationCamera.arr_pixel_coordinates(pts, w, h, fx, fy)
+    pixels = CalibrationCamera.pixel_coordinates(pts, w, h, fx, fy)
     numpy.testing.assert_allclose(pixels, pix)
 
 
@@ -112,7 +112,9 @@ def test_side_camera_frame():
     p = c.get_projection(0)
     pixels = p(pts)
     numpy.testing.assert_allclose(pixels, pix)
-
+    #test one point call
+    pixel = p(pts[0])
+    numpy.testing.assert_allclose(pixel, pix[0])
 
 def test_top_camera_frame():
     """top camera is along world z-axis (z+), pointing to world origin,

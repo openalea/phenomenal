@@ -36,7 +36,7 @@ def test_array_pixel_coordinates():
                           [-322.20389648, 162.67521638, -4866.89129462],
                           [-322.20389648, 162.67521638, -4866.89129462]])
 
-    pts_2d = side_calibration.arr_pixel_coordinates(
+    pts_2d = side_calibration.pixel_coordinates(
         pts_3d,
         side_calibration._cam_width_image,
         side_calibration._cam_height_image,
@@ -48,7 +48,7 @@ def test_array_pixel_coordinates():
 
     pts_3d = numpy.array([[-322.20389648, 162.67521638, -4866.89129462]])
 
-    pts_2d = side_calibration.arr_pixel_coordinates(
+    pts_2d = side_calibration.pixel_coordinates(
         pts_3d,
         side_calibration._cam_width_image,
         side_calibration._cam_height_image,
@@ -75,7 +75,7 @@ def test_array_camera_frame_local_point():
               [-322.20389648, 162.67521638, -4866.89129462],
               [-322.20389648, 162.67521638, -4866.89129462]]
 
-    result = camera_frame.arr_local_point(pts_3d)
+    result = camera_frame.local_point(pts_3d)
     result = numpy.round(result.astype(float), 5)
 
     for pt_3d in result:
@@ -83,7 +83,7 @@ def test_array_camera_frame_local_point():
 
     pts_3d = [[-322.20389648, 162.67521638, -4866.89129462]]
 
-    result = camera_frame.arr_local_point(pts_3d)
+    result = camera_frame.local_point(pts_3d)
     result = numpy.round(result.astype(float), 5)
 
     for pt_3d in result:
