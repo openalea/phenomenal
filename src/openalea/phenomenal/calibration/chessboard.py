@@ -51,13 +51,18 @@ class Chessboard(object):
         return s
 
     def get_corners_local_3d(self):
+        """ Chessboard local frame is defined by chessboard center, x axis along width (left >right),
+            Y-axis along height (bottom -> up) and z axis normal to chessboard plane
+            Chessboard corners are ordered line by line, from top left to bottom right"""
+
         square_size = self.square_size
         width, height = self.shape
 
         corners_local_3d = list()
-        for y in range(height):
+        origin = numpy.array([width * square_size / 2., height * square_size / 2., 0])
+        for y in reversed(range(height)):
             for x in range(width):
-                v = numpy.array([x * square_size, y * square_size, 0.0])
+                v = numpy.array([x * square_size, y * square_size, 0.0]) - origin
                 corners_local_3d.append(v)
 
         return corners_local_3d
