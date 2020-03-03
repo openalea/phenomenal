@@ -25,6 +25,7 @@ from .transformations import (concatenate_matrices, rotation_matrix)
 
 __all__ = ["cam_origin_axis",
            "CalibrationCamera",
+           "CalibrationTarget",
            "CalibrationCameraTop",
            "Calibration",
            "CalibrationCameraSideWith2TargetYXZ"]
@@ -57,6 +58,17 @@ def normalise_angle(angle):
 
 
 class CalibrationCamera(object):
+    """A class for calibration of Camera
+
+    The camera is a a perfect pinhole camera associated to a 3d camera frame allowing its positioning in space.
+
+     Camera and image frames are as depicted in
+            https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+
+    That is camera origin is image center, z-axis points toward the scene (camera optical axis), x+ is left-> right
+    along image width, y+ is up->down along image height.
+    Image frame origin is top-left, u is left->right along image width, v is up->down along image height
+    """
     def __init__(self):
         # Camera Parameters
         self._cam_width_image = None
@@ -66,11 +78,12 @@ class CalibrationCamera(object):
         self._cam_pos_x = None
         self._cam_pos_y = None
         self._cam_pos_z = None
+        #  rotations from base_frame to local camera frame
         self._cam_rot_x = None
         self._cam_rot_y = None
         self._cam_rot_z = None
         self._angle_factor = None
-        self._cam_origin_axis = None
+        self._cam_origin_axis = numpy.identity(4)   # Transformation matrix from base frame to global frame
 
     def __str__(self):
         out = ''
@@ -834,69 +847,130 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
         return c
 
 
-class TargetParameters(object):
-    def __init__(self):
+class CalibrationTarget(object):
+    """A class for target objects used for calibration
+
+    The local target frame origin is target center,right being left-> right along target width and y+ bottom->up
+            along target height
+    """
+    def __init__(self, label='target', base_frame=numpy.identity(3)):
+        self._label = label
         self._pos_x = None
         self._pos_y = None
         self._pos_z = None
         self._rot_x = None
         self._rot_y = None
         self._rot_z = None
+        self._origin_axis = cam_origin_axis(base_frame)
+
+    def set_vars(self, vars):
+        for key, value in vars.items():
+            setattr(self, key, value)
+
+    def to_json(self):
+        d = vars(self)
+        d['_origin_axis'] = self._origin_axis.reshape(
+            (16,)).tolist()
+
+    @staticmethod
+    def from_json(d):
+        ct = CalibrationTarget()
+        d['_origin_axis'] = numpy.array(
+                d['_origin_axis']).reshape((4, 4)).astype(
+                numpy.float32)
+        ct.set_vars(d)
+        return ct
+
+    @staticmethod
+    def target_frame(pos_x, pos_y, pos_z,
+                     rot_x, rot_y, rot_z,
+                     origin_axis, alpha):
+
+        origin = [
+            pos_x * math.cos(alpha) - pos_y * math.sin(alpha),
+            pos_x * math.sin(alpha) + pos_y * math.cos(alpha),
+            pos_z]
+
+        mat_rot_x = rotation_matrix(rot_x, x_axis)
+        mat_rot_y = rotation_matrix(rot_y, y_axis)
+        mat_rot_z = rotation_matrix(alpha + rot_z, z_axis)
+
+        rot = concatenate_matrices(origin_axis,
+                                   mat_rot_z, mat_rot_x, mat_rot_y)
+
+        return Frame(rot[:3, :3].T, origin)
+
+    def get_target_frame(self, alpha):
+        return self.target_frame(self._pos_x, self._pos_y, self._pos_z,
+                                 self._rot_x, self._rot_y, self._rot_z,
+                                 self._origin_axis, alpha)
 
     def __str__(self):
         out = ''
+        out += self._label + ': \n'
         out += '\tPosition X : ' + str(self._pos_x) + '\n'
         out += '\tPosition Y : ' + str(self._pos_y) + '\n'
         out += '\tPosition Z : ' + str(self._pos_z) + '\n\n'
         out += '\tRotation X : ' + str(self._rot_x) + '\n'
         out += '\tRotation Y : ' + str(self._rot_y) + '\n'
         out += '\tRotation Z : ' + str(self._rot_z) + '\n\n'
+        out += '\tBase frame transform : \n'
+        out += str(self._origin_axis) + '\n\n'
         return out
 
 
 class Calibration(CalibrationCamera):
+    """A class for calibration of multiview imaging systems (fixed cameras, rotating target)"""
 
-    def __init__(self, nb_targets=1, nb_cameras=1, cameras_origin_axis=((1., 0., 0.), (0., 0., -1.), (0., 1., 0.)),
-                 targets_origin_axis=((1., 0., 0.), (0., 0., 1.), (0., -1., 0.)), clockwise_rotation=True):
+    def __init__(self, nb_targets=1, nb_cameras=1, reference='camera',
+                 clockwise_rotation=True, start=None):
         """
-        A class for calibration of n-camera, n-turning targets, imaging systems
+       Instantiate a Calibration object
 
         Args:
             nb_targets: (int) number of targets
             nb_cameras: (int) number of cameras
-            cameras_origin_axis: [vec, vec, vec] camera origin axis coordinates expressed in world coordinates
-                                Camera origin axis define a base position for all camera, that will be used as
-                                the origin of camera rotations parameters. Default position is for an horizontal
-                                camera pointing as world y+.
-            targets_origin_axis: [vec, vec, vec] target origin axis coordinates expressed in world coordinates
-                                target origin axis define a base position for all targets (before turning), that will be
-                                 used as the origin of targets rotations parameters. Default is for an horizontal
-                                 target facing the camera origin.
+            reference: ('camera' or 'target') reference used to define world y-axis together with base frames for
+             expressing the rotations of camera and targets(see details)
             clockwise_rotation: (bool) : are targets rotating clockwise ? (default True)
 
         Details:
-            The global world frame is defined by a right handed xyz frame composed of the axis of target rotation
-            (z+ upward), x=0 and z=0 planes are defined by xyz position of a reference camera (y+ direction is from
-            camera toward z-axis).
+            Calibration allows the projection of world 3D points on 2D images, using calibration targets. Points of
+            the world are given in a world global frame, defined by the axis of rotation and a reference object (the
+            first camera or the first target).
+            The axis of rotation of the rotating system, oriented toward the sky, defines the world z-axis.
+            The altitude of the first camera defines the position of the world origin on z-axis.
+            If reference_object='camera' (default), the y-axis is given by camera position and world origin and y+
+              is directed is from camera toward z-axis
+            If reference_object='target' (useful alternative if the reference camera lies on the axis of rotation),
+              the y+ axis is given by the projection on a plane, perpendicular to the axis of rotation, of the y+ axis
+              of the local frame associated to the first target.
 
-            The (local) cameras and image frames are as depicted in
-            https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
-
-            that is :
-                - for camera frame: camera origin is image center, z-axis points toward the scene, x is left-> right
-                along image width, y is
-                    up->down along image height
-                - for image frame: origin is top-left, u is left->right along image width, v is up->down along image
-                height
-
-            The local target frame origin is target center,right being left-> right along target width and y+ bottom->up
-            along target height
+            Base frames offers convenient ways for expressing/checking the orientation angles of cameras and targets.
+            If reference_object='camera' (default), the base frame (rot_x = rot_y = rot_z = 0) for cameras correspond
+              to a 'vertical' camera (image plane parallel to xz plane) pointing at the axis of rotation (camera optical
+              axis aligned with y+), and the base frame for targets to a 'vertical' target facing the camera base frame
+              (x+_target = x+_world, y+_target = z+_world)
+            If reference_object='target', the base frame (rot_x = rot_y = rot_z = 0) for cameras correspond to a
+             'horizontal' camera (image plane parallel to world xy plane) pointing downward (camera optical axis
+              aligned with z-), and the base frame for targets to an 'horizontal' target  facing the camera base frame
+              (x+_target = x+_world, y+_target = y+_world)
         """
 
         CalibrationCamera.__init__(self)
 
-        self._cameras_origin_axis = cameras_origin_axis
-        self._targets_origin_axis = targets_origin_axis
+        target_base_frame = camera_base_frame = numpy.identity(3)
+
+        if reference == 'camera':
+            camera_base_frame = ((1., 0., 0.), (0., 0., -1.), (0., 1., 0.))
+            #target_base_frame = ((1., 0., 0.), (0., 0., 1.), (0., -1., 0.))
+        elif reference == 'target':
+            camera_base_frame = ((1., 0., 0.), (0., -1., 0.), (0., 0., -1.))
+        else:
+            raise ValueError('Unknown reference: ' + reference)
+
+        self._cam_origin_axis = cam_origin_axis(camera_base_frame)
+
         self.clockwise = clockwise_rotation
 
         self._verbose = False
@@ -910,7 +984,8 @@ class Calibration(CalibrationCamera):
         self._nb_corners = None
 
         self._nb_targets = nb_targets
-        self._targets_parameters = [TargetParameters() for i in range(nb_targets)]
+        label = 'target_'
+        self._targets_parameters = [CalibrationTarget(label + str(i), target_base_frame) for i in range(nb_targets)]
 
         # additional cameras (other than reference camera)
         self._nb_others = nb_cameras - 1
@@ -938,7 +1013,7 @@ class Calibration(CalibrationCamera):
         # reference camera parameters
         cam_pos_x = 0.0
         cam_pos_z = 0.0
-        cam_origin_axis_ = cam_origin_axis(self._cameras_origin_axis)
+        cam_origin_axis_ = self._cam_origin_axis
         cam_focal_length_x, cam_focal_length_y, \
         cam_pos_y, \
         cam_rot_x, cam_rot_y, cam_rot_z, \
@@ -956,8 +1031,9 @@ class Calibration(CalibrationCamera):
                 if self.clockwise:
                     alpha *= -1  # alpha labels of ref_pts dict are positive
 
-                fr_target = CalibrationCamera.target_frame(pos_x, pos_y, pos_z,
+                fr_target = CalibrationTarget.target_frame(pos_x, pos_y, pos_z,
                                                            rot_x, rot_y, rot_z,
+                                                           self._targets_parameters[i]._origin_axis,
                                                            numpy.radians(alpha))
 
                 target_pts = fr_target.global_point(self._targets_points_local_3d[i])
@@ -988,7 +1064,7 @@ class Calibration(CalibrationCamera):
                     if self.clockwise:
                         alpha *= -1  # alpha labels of ref_pts dict are positive
 
-                    fr_target = CalibrationCamera.target_frame(pos_x, pos_y, pos_z,
+                    fr_target = CalibrationTarget.target_frame(pos_x, pos_y, pos_z,
                                                                rot_x, rot_y, rot_z,
                                                                numpy.radians(alpha))
 
@@ -1282,7 +1358,7 @@ class Calibration(CalibrationCamera):
             c._targets_parameters = list()
             for target_param in save_class['targets_parameters']:
                 print(target_param)
-                tp = TargetParameters()
+                tp = CalibrationTarget()
                 tp._pos_x = target_param["_pos_x"]
                 tp._pos_y = target_param["_pos_y"]
                 tp._pos_z = target_param["_pos_z"]
