@@ -23,7 +23,7 @@ from .transformations import (concatenate_matrices, rotation_matrix)
 
 # ==============================================================================
 
-__all__ = ["cam_origin_axis",
+__all__ = ["origin_axis",
            "CalibrationCamera",
            "CalibrationTarget",
            "CalibrationCameraTop",
@@ -34,7 +34,7 @@ __all__ = ["cam_origin_axis",
 # ==============================================================================
 
 
-def cam_origin_axis(axes):
+def origin_axis(axes):
     """ Defines cam_origin_axis transformation matrix given a
     positioning of camera axes in the world frame
 
@@ -288,7 +288,7 @@ class CalibrationCameraTop(CalibrationCamera):
                             [0., -1., 0.],
                             [0., 0., -1.]])
 
-        self._cam_origin_axis = cam_origin_axis(axes)
+        self._cam_origin_axis = origin_axis(axes)
 
     def fit_function(self, x0):
         err = 0
@@ -452,7 +452,7 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
                             [0., 0., -1.],
                             [0., 1., 0.]])
 
-        self._cam_origin_axis = cam_origin_axis(axes)
+        self._cam_origin_axis = origin_axis(axes)
 
         self._target_1_pos_x = None
         self._target_1_pos_y = None
@@ -861,7 +861,7 @@ class CalibrationTarget(object):
         self._rot_x = None
         self._rot_y = None
         self._rot_z = None
-        self._origin_axis = cam_origin_axis(base_frame)
+        self._origin_axis = origin_axis(base_frame)
 
     def set_vars(self, vars):
         for key, value in vars.items():
@@ -895,8 +895,7 @@ class CalibrationTarget(object):
         mat_rot_y = rotation_matrix(rot_y, y_axis)
         mat_rot_z = rotation_matrix(alpha + rot_z, z_axis)
 
-        rot = concatenate_matrices(origin_axis,
-                                   mat_rot_z, mat_rot_x, mat_rot_y)
+        rot = concatenate_matrices(mat_rot_z, mat_rot_x, mat_rot_y, origin_axis)
 
         return Frame(rot[:3, :3].T, origin)
 
@@ -963,13 +962,13 @@ class Calibration(CalibrationCamera):
 
         if reference == 'camera':
             camera_base_frame = ((1., 0., 0.), (0., 0., -1.), (0., 1., 0.))
-            #target_base_frame = ((1., 0., 0.), (0., 0., 1.), (0., -1., 0.))
+            target_base_frame = ((1., 0., 0.), (0., 0., 1.), (0., -1., 0.))
         elif reference == 'target':
             camera_base_frame = ((1., 0., 0.), (0., -1., 0.), (0., 0., -1.))
         else:
             raise ValueError('Unknown reference: ' + reference)
 
-        self._cam_origin_axis = cam_origin_axis(camera_base_frame)
+        self._cam_origin_axis = origin_axis(camera_base_frame)
 
         self.clockwise = clockwise_rotation
 
@@ -1066,6 +1065,7 @@ class Calibration(CalibrationCamera):
 
                     fr_target = CalibrationTarget.target_frame(pos_x, pos_y, pos_z,
                                                                rot_x, rot_y, rot_z,
+                                                               self._targets_parameters[j]._origin_axis,
                                                                numpy.radians(alpha))
 
                     target_pts = fr_target.global_point(self._targets_points_local_3d[i])
@@ -1109,7 +1109,7 @@ class Calibration(CalibrationCamera):
                 parameters += [numpy.random.uniform(-1000.0, 1000.0),  # X Position
                                numpy.random.uniform(-1000.0, 1000.0),  # Y Position
                                numpy.random.uniform(-1000, 1000.0),  # Z Position
-                               numpy.pi / 2,  # X Rotation
+                               0,  # X Rotation
                                0,  # Y Rotation
                               0]  # Z Rotation
 

@@ -30,7 +30,7 @@ up->down along image height
 from __future__ import division, print_function
 import numpy
 
-from openalea.phenomenal.calibration import CalibrationCamera, cam_origin_axis
+from openalea.phenomenal.calibration import CalibrationCamera, origin_axis, CalibrationTarget
 
 
 def test_image_frame():
@@ -64,7 +64,7 @@ def test_image_frame():
 
 
 def test_side_camera_frame():
-    """side camera is along world y-axis (y-), pointing to world origin, x camera and x world being identical"""
+    """side camera is along world y-axis (on y-), pointing to world origin, x camera and x world being identical"""
 
     # camera frame axis coordinates expressed in world coordinates
     side_camera_axes = numpy.array([[1., 0., 0.],
@@ -107,7 +107,7 @@ def test_side_camera_frame():
 
     # test positioning using origin_axis
     c._cam_rot_x, c._cam_rot_y, c._cam_rot_z = 0, 0, 0
-    c._cam_origin_axis = cam_origin_axis(side_camera_axes).round()
+    c._cam_origin_axis = origin_axis(side_camera_axes).round()
 
     p = c.get_projection(0)
     pixels = p(pts)
@@ -115,6 +115,7 @@ def test_side_camera_frame():
     #test one point call
     pixel = p(pts[0])
     numpy.testing.assert_allclose(pixel, pix[0])
+
 
 def test_top_camera_frame():
     """top camera is along world z-axis (z+), pointing to world origin,
@@ -161,8 +162,49 @@ def test_top_camera_frame():
 
     # test positioning using origin_axis
     c._cam_rot_x, c._cam_rot_y, c._cam_rot_z = 0, 0, 0
-    c._cam_origin_axis = cam_origin_axis(top_camera_axes).round()
+    c._cam_origin_axis = origin_axis(top_camera_axes).round()
 
     p = c.get_projection(0)
     pixels = p(pts)
     numpy.testing.assert_allclose(pixels, pix)
+
+
+def test_target_frame():
+    # target axis coordinates expressed in world coordinates
+    target_axis = numpy.identity(3)
+
+    # test target axis frame
+    c = CalibrationTarget()
+    c._pos_x, c._pos_y, c._pos_z = 0, 0, 0
+    c._rot_x, c._rot_y, c._rot_z = 0, 0, 0
+
+    f = c.get_target_frame(0)
+    numpy.testing.assert_allclose(f._axes, target_axis, atol=1e-6)
+    f = c.get_target_frame(numpy.pi / 2)
+    expected = numpy.array(((0, 1, 0), (-1, 0, 0), (0, 0, 1)))
+    numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
+
+    # test positioning using rotations
+    c = CalibrationTarget()
+    c._pos_x, c._pos_y, c._pos_z = 0, 0, 0
+    c._rot_x, c._rot_y, c._rot_z = numpy.pi / 2, 0, 0
+
+    expected = numpy.array(((1, 0, 0), (0, 0, 1), (0, -1, 0)))
+    f = c.get_target_frame(0)
+    numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
+
+    f = c.get_target_frame(numpy.pi / 2)
+    expected = numpy.array(((0, 1, 0), (0, 0, 1), (1, 0, 0)))
+    numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
+
+    # test positioning using origin_axis
+    expected = numpy.array(((1, 0, 0), (0, 0, 1), (0, -1, 0)))
+    c = CalibrationTarget(base_frame=expected)
+    c._pos_x, c._pos_y, c._pos_z = 0, 0, 0
+    c._rot_x, c._rot_y, c._rot_z = 0, 0, 0
+    f = c.get_target_frame(0)
+    numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
+
+    f = c.get_target_frame(numpy.pi / 2)
+    expected = numpy.array(((0, 1, 0), (0, 0, 1), (1, 0, 0)))
+    numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
