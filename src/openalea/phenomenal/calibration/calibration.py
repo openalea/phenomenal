@@ -225,33 +225,15 @@ class CalibrationCamera(object):
 
         return projection
 
-    @staticmethod
-    def load(filename):
-        with open(filename, 'r') as input_file:
-            save_class = json.load(input_file)
+    def set_vars(self, vars):
+        for key, value in vars.items():
+            setattr(self, key, value)
 
-            c = CalibrationCamera()
-
-            c._cam_width_image = save_class['cam_width_image']
-            c._cam_height_image = save_class['cam_height_image']
-            c._cam_focal_length_x = save_class['cam_focal_length_x']
-            c._cam_focal_length_y = save_class['cam_focal_length_y']
-            c._cam_pos_x = save_class['cam_pos_x']
-            c._cam_pos_y = save_class['cam_pos_y']
-            c._cam_pos_z = save_class['cam_pos_z']
-            c._cam_rot_x = save_class['cam_rot_x']
-            c._cam_rot_y = save_class['cam_rot_y']
-            c._cam_rot_z = save_class['cam_rot_z']
-            c._angle_factor = save_class['angle_factor']
-            c._cam_origin_axis = numpy.array(
-                save_class['cam_origin_axis']).reshape((4, 4)).astype(
-                numpy.float32)
-
-        return c
-
-    def dump(self, filename):
-        save_class = dict()
-
+    def to_json(self):
+        # d = vars(self)
+        # d['_origin_axis'] = self._origin_axis.reshape(
+        #     (16,)).tolist()
+        save_class = {}
         save_class['cam_width_image'] = self._cam_width_image
         save_class['cam_height_image'] = self._cam_height_image
         save_class['cam_focal_length_x'] = self._cam_focal_length_x
@@ -265,7 +247,41 @@ class CalibrationCamera(object):
         save_class['angle_factor'] = self._angle_factor
         save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
             (16,)).tolist()
+        return save_class
 
+    @staticmethod
+    def from_json(save_class):
+        c = CalibrationCamera()
+        # d['_origin_axis'] = numpy.array(
+        #         d['_origin_axis']).reshape((4, 4)).astype(
+        #         numpy.float32)
+        # c.set_vars(d)
+        c._cam_width_image = save_class['cam_width_image']
+        c._cam_height_image = save_class['cam_height_image']
+        c._cam_focal_length_x = save_class['cam_focal_length_x']
+        c._cam_focal_length_y = save_class['cam_focal_length_y']
+        c._cam_pos_x = save_class['cam_pos_x']
+        c._cam_pos_y = save_class['cam_pos_y']
+        c._cam_pos_z = save_class['cam_pos_z']
+        c._cam_rot_x = save_class['cam_rot_x']
+        c._cam_rot_y = save_class['cam_rot_y']
+        c._cam_rot_z = save_class['cam_rot_z']
+        c._angle_factor = save_class['angle_factor']
+        c._cam_origin_axis = numpy.array(
+            save_class['cam_origin_axis']).reshape((4, 4)).astype(
+            numpy.float32)
+        return c
+
+    @staticmethod
+    def load(filename):
+        with open(filename, 'r') as input_file:
+            save_class = json.load(input_file)
+
+        c = CalibrationCamera.from_json(save_class)
+        return c
+
+    def dump(self, filename):
+        save_class = self.to_json()
         with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
@@ -872,6 +888,7 @@ class CalibrationTarget(object):
         d = vars(self)
         d['_origin_axis'] = self._origin_axis.reshape(
             (16,)).tolist()
+        return d
 
     @staticmethod
     def from_json(d):
@@ -987,10 +1004,11 @@ class CalibrationGuess(object):
             t._rot_z = rz
             self.targets.append(t)
 
+
 class Calibration(object):
     """A class for calibration of multiview imaging systems (fixed cameras, rotating target)"""
 
-    def __init__(self, nb_targets=1, nb_cameras=1, clockwise_rotation=True):
+    def __init__(self, frozen_reference = False, clockwise_rotation=True, verbose=False):
         """
        Instantiate a Calibration object
 
@@ -1024,87 +1042,86 @@ class Calibration(object):
               (x+_target = x+_world, y+_target = y+_world)
         """
 
-        self._verbose = False
+        self._verbose = verbose
         self.clockwise = clockwise_rotation
+        self.frozen_ref = frozen_reference
         # targets corner points coordinates expressed in targets local frame
-        self._targets_points_local_3d = None
+        self._targets_points = []
 
-        # coordinates of targets corner points on images for the reference camera
-        self._ref_targets_points_2d = None
+        self._nb_targets = 0
+        # label = 'target_'
+        self._targets = []
+        # self._ref_cam = CalibrationCamera()
+
+        # cameras
+        self._nb_cameras = 0
+        self._cameras = []
         # total number of target corners points
-        self._nb_corners = None
-
-        self._nb_targets = nb_targets
-        label = 'target_'
-        self._targets_parameters = [CalibrationTarget(label + str(i)) for i in range(nb_targets)]
-        self._ref_cam = CalibrationCamera()
-
-        # additional cameras (other than reference camera)
-        self._nb_others = nb_cameras - 1
-        self._others = [CalibrationCamera() for i in range(self._nb_others)]
-        self._others_targets_points_2d = None
-
-
+        self._nb_image_points = 0
+        self._image_points = []
 
     def __str__(self):
-        out = 'Reference Camera:\n'
+        out = 'Calibration:\n'
 
-        out += str(self._ref_cam)
+        for i, camera in enumerate(self._cameras):
+            out += 'Camera {}: \n'.format(i)
+            out += str(camera)
 
-        for i, target in enumerate(self._targets_parameters):
+        for i, target in enumerate(self._targets):
             out += 'Target {}: \n'.format(i)
             out += str(target)
-
-        for i, camera in enumerate(self._others):
-            out += 'Additional Camera {}: \n'.format(i)
-            out += str(camera)
 
         return out
 
     def fit_function(self, x0):
         err = 0
-
-        # reference camera parameters
-        cam_pos_x = 0.0
-        cam_pos_z = 0.0
+        offset = 0
         cam_origin_axis_ = numpy.identity(4)
-        cam_focal_length_x, cam_focal_length_y, \
-        cam_pos_y, \
-        cam_rot_x, cam_rot_y, cam_rot_z, \
-        angle_factor = x0[0:7]
+        angle_factor = self._cameras[0]._angle_factor
 
-        fr_cam = CalibrationCamera.camera_frame(
-            cam_pos_x, cam_pos_y, cam_pos_z,
-            cam_rot_x, cam_rot_y, cam_rot_z,
-            cam_origin_axis_)
+        if not self.frozen_ref:
+            # reference camera parameters
+            cam_pos_x = 0.0
+            cam_pos_z = 0.0
 
-        for i in range(self._nb_targets):
-            for alpha, ref_pts in self._ref_cam._ref_targets_points_2d[i].items():
-                pos_x, pos_y, pos_z, rot_x, rot_y, rot_z = x0[7 + i * 6: 13 + i * 6]
-                alpha *= angle_factor
-                if self.clockwise:
-                    alpha *= -1  # alpha labels of ref_pts dict are positive
+            cam_focal_length_x, cam_focal_length_y, \
+            cam_pos_y, \
+            cam_rot_x, cam_rot_y, cam_rot_z, \
+            angle_factor = x0[offset:7]
+            offset += 7
 
-                fr_target = CalibrationTarget.target_frame(pos_x, pos_y, pos_z,
-                                                           rot_x, rot_y, rot_z,
-                                                           self._targets_parameters[i]._origin_axis,
-                                                           numpy.radians(alpha))
+            fr_cam = CalibrationCamera.camera_frame(
+                cam_pos_x, cam_pos_y, cam_pos_z,
+                cam_rot_x, cam_rot_y, cam_rot_z,
+                cam_origin_axis_)
 
-                target_pts = fr_target.global_point(self._targets_points_local_3d[i])
+            for i in range(self._nb_targets):
+                for alpha, ref_pts in self._image_points[0][i].items():
+                    pos_x, pos_y, pos_z, rot_x, rot_y, rot_z = x0[offset + i * 6: offset + (i + 1) * 6]
+                    alpha *= angle_factor
+                    if self.clockwise:
+                        alpha *= -1  # alpha labels of ref_pts dict are positive
 
-                pts = CalibrationCamera.pixel_coordinates(fr_cam.local_point(target_pts),
-                    self._ref_cam._cam_width_image,
-                    self._ref_cam._cam_height_image,
-                    cam_focal_length_x,
-                    cam_focal_length_y)
+                    fr_target = CalibrationTarget.target_frame(pos_x, pos_y, pos_z,
+                                                               rot_x, rot_y, rot_z,
+                                                               self._targets[i]._origin_axis,
+                                                               numpy.radians(alpha))
 
-                err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
+                    target_pts = fr_target.global_point(self._targets_points[i])
 
-        offset = 7 + self._nb_targets * 6
-        for i, camera in enumerate(self._others):
+                    pts = CalibrationCamera.pixel_coordinates(fr_cam.local_point(target_pts),
+                        self._cameras[0]._cam_width_image,
+                        self._cameras[0]._cam_height_image,
+                        cam_focal_length_x,
+                        cam_focal_length_y)
+
+                    err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
+            offset += self._nb_targets * 6
+
+        for i, (camera, im_pts) in enumerate(zip(self._cameras[1:], self._image_points[1:])):
             cam_focal_length_x, cam_focal_length_y, \
             cam_pos_x, cam_pos_y, cam_pos_z, \
-            cam_rot_x, cam_rot_y, cam_rot_z = x0[offset + i * 8: offset + i * 8 + 8]
+            cam_rot_x, cam_rot_y, cam_rot_z = x0[offset + i * 8: offset + (i + 1) * 8]
 
             fr_cam = CalibrationCamera.camera_frame(
                 cam_pos_x, cam_pos_y, cam_pos_z,
@@ -1112,24 +1129,29 @@ class Calibration(object):
                 cam_origin_axis_)
 
             for j in range(self._nb_targets):
-                pos_x, pos_y, pos_z, rot_x, rot_y, rot_z = x0[7 + j * 6: 13 + j * 6]
-                for alpha, ref_pts in self._others_targets_points_2d[i][j].items():
+                if not self.frozen_ref:
+                    pos_x, pos_y, pos_z, rot_x, rot_y, rot_z = x0[7 + j * 6: 13 + j * 6]
+                else:
+                    t = vars(self._targets[j])
+                    pos_x, pos_y, pos_z, rot_x, rot_y, rot_z = [t[k] for k in ("_pos_x", "_pos_y", "_pos_z",
+                                                                               "_rot_x", "_rot_y", "_rot_z")]
+                for alpha, ref_pts in im_pts[j].items():
                     alpha *= angle_factor
                     if self.clockwise:
                         alpha *= -1  # alpha labels of ref_pts dict are positive
 
                     fr_target = CalibrationTarget.target_frame(pos_x, pos_y, pos_z,
                                                                rot_x, rot_y, rot_z,
-                                                               self._targets_parameters[j]._origin_axis,
+                                                               self._targets[j]._origin_axis,
                                                                numpy.radians(alpha))
 
-                    target_pts = fr_target.global_point(self._targets_points_local_3d[i])
+                    target_pts = fr_target.global_point(self._targets_points[j])
 
                     pts = CalibrationCamera.pixel_coordinates(fr_cam.local_point(target_pts),
-                                                 self._others[i]._cam_width_image,
-                                                 self._others[i]._cam_height_image,
-                                                 cam_focal_length_x,
-                                                 cam_focal_length_y)
+                                                              camera._cam_width_image,
+                                                              camera._cam_height_image,
+                                                              cam_focal_length_x,
+                                                              cam_focal_length_y)
 
                     err += numpy.linalg.norm(
                         numpy.array(pts) - ref_pts, axis=1).sum()
@@ -1154,21 +1176,23 @@ class Calibration(object):
             # cam_rot_z = self._start[0][1]
             #
             # angle_factor = 1.0
-            c = self._ref_cam
-            parameters = [c._cam_focal_length_x, c._cam_focal_length_y,
-                          c._cam_pos_y,
-                          c._cam_rot_x, c._cam_rot_y, c._cam_rot_z,
-                          c._angle_factor]
+            parameters = []
+            if not self.frozen_ref:
+                c = self._cameras[0]
+                parameters += [c._cam_focal_length_x, c._cam_focal_length_y,
+                              c._cam_pos_y,
+                              c._cam_rot_x, c._cam_rot_y, c._cam_rot_z,
+                              c._angle_factor]
 
-            for t in self._targets_parameters:
-                parameters += [t._pos_x, #numpy.random.uniform(-1000.0, 1000.0),  # X Position
-                               t._pos_y, #numpy.random.uniform(-1000.0, 1000.0),  # Y Position
-                               t._pos_z, #numpy.random.uniform(-1000, 1000.0),  # Z Position
-                               t._rot_x, #self._start[1][0],  # X Rotation
-                               t._rot_y, # {self._start[1][1],  # Y Rotation
-                               t._rot_z] #self._start[1][2]]  # Z Rotation
+                for t in self._targets:
+                    parameters += [t._pos_x, #numpy.random.uniform(-1000.0, 1000.0),  # X Position
+                                   t._pos_y, #numpy.random.uniform(-1000.0, 1000.0),  # Y Position
+                                   t._pos_z, #numpy.random.uniform(-1000, 1000.0),  # Z Position
+                                   t._rot_x, #self._start[1][0],  # X Rotation
+                                   t._rot_y, # {self._start[1][1],  # Y Rotation
+                                   t._rot_z] #self._start[1][2]]  # Z Rotation
 
-            for c in self._others:
+            for c in self._cameras[1:]:
                 parameters += [c._cam_focal_length_x, #numpy.random.uniform(1000.0, 10000.0),  # focal length X
                                c._cam_focal_length_y, #numpy.random.uniform(1000.0, 10000.0),  # focal length Y
                                c._cam_pos_x, #numpy.random.uniform(-200.0, 200.0),  # X Position
@@ -1191,7 +1215,7 @@ class Calibration(object):
             if self._verbose:
                 err = self.fit_function(parameters)
                 print('Result : ', parameters)
-                print('Err : ', err / self._nb_corners)
+                print('Err : ', err / self._nb_image_points)
 
         return best_parameters
 
@@ -1281,11 +1305,9 @@ class Calibration(object):
 
     def calibrate(self,
                   targets,
-                  size_image,
-                  other_cameras=[],
-                  start=None,
-                  number_of_repetition=3,
-                  verbose=False):
+                  target_points,
+                  cameras,
+                  image_points):
         """ Find physical parameters associated with a camera
         (i.e. distances and angles), using pictures of a rotating
         target.
@@ -1297,7 +1319,6 @@ class Calibration(object):
                         the coordinates of all intersections on
                         the target in the picture
         """
-        cameras, ptargets = start
         # target_base_frame = camera_base_frame = numpy.identity(3)
         # if use_base_frame:
         #     if reference == 'camera':
@@ -1310,56 +1331,48 @@ class Calibration(object):
 
         #self._cam_origin_axis = origin_axis(camera_base_frame)
 
+        self._targets_points = target_points
+        self._cameras = cameras
+        self._targets = targets
+        self._image_points = image_points
 
-        self._verbose = verbose
+        self._nb_cameras = len(cameras)
+        self._nb_targets = len(targets)
+        self._nb_image_points = 0
+        for cam_pts in image_points:
+            for im_pts in cam_pts:
+                self._nb_image_points += len(im_pts)
 
-        self._targets_points_local_3d = [target[1] for target in targets]
+        parameters = self.find_parameters(number_of_repetition=0)
 
-        self._ref_cam = cameras.pop()
-        self._others = cameras
-        self._targets_parameters = ptargets
+        offset = 0
+        angle_factor = self._cameras[0]._angle_factor
 
-        self._ref_cam._ref_targets_points_2d = [target[0] for target in targets]
+        if not self.frozen_ref:
+            # Reference Camera Parameters
+            camera = self._cameras[0]
+            camera._cam_focal_length_x = parameters[0]
+            camera._cam_focal_length_y = parameters[1]
+            camera._cam_pos_y = parameters[2]
+            camera._cam_rot_x = normalise_angle(parameters[3])
+            camera._cam_rot_y = normalise_angle(parameters[4])
+            camera._cam_rot_z = normalise_angle(parameters[5])
 
-        self._nb_corners = 0
-        for target in targets:
-            self._nb_corners += len(target[0])
+            camera._angle_factor = parameters[6]
 
-        self._others_targets_points_2d = []
-        for i,(image_size, targets_points_2d) in enumerate(other_cameras):
-            # self._others[i]
-            # camera._cam_width_image = image_size[0]
-            # camera._cam_height_image = image_size[1]
-            self._others_targets_points_2d.append(targets_points_2d)
-            for target in targets_points_2d:
-                self._nb_corners += len(target)
+            # Targets Parameters
+            for i, target_param in enumerate(self._targets):
+                target_param._pos_x = parameters[7 + i * 6]
+                target_param._pos_y = parameters[8 + i * 6]
+                target_param._pos_z = parameters[9 + i * 6]
+                target_param._rot_x = normalise_angle(parameters[10 + i * 6])
+                target_param._rot_y = normalise_angle(parameters[11 + i * 6])
+                target_param._rot_z = normalise_angle(parameters[12 + i * 6])
 
-
-
-        parameters = self.find_parameters(number_of_repetition)
-
-        # Reference Camera Parameters
-        self._ref_cam._cam_focal_length_x = parameters[0]
-        self._ref_cam._cam_focal_length_y = parameters[1]
-        self._ref_cam._cam_pos_y = parameters[2]
-        self._ref_cam._cam_rot_x = normalise_angle(parameters[3])
-        self._ref_cam._cam_rot_y = normalise_angle(parameters[4])
-        self._ref_cam._cam_rot_z = normalise_angle(parameters[5])
-
-        self._ref_cam._angle_factor = parameters[6]
-
-        # Targets Parameters
-        for i, target_param in enumerate(self._targets_parameters):
-            target_param._pos_x = parameters[7 + i * 6]
-            target_param._pos_y = parameters[8 + i * 6]
-            target_param._pos_z = parameters[9 + i * 6]
-            target_param._rot_x = normalise_angle(parameters[10 + i * 6])
-            target_param._rot_y = normalise_angle(parameters[11 + i * 6])
-            target_param._rot_z = normalise_angle(parameters[12 + i * 6])
+            offset = 7 + self._nb_targets * 6
 
         # other camera parameters
-        offset = 7 + self._nb_targets * 6
-        for i, camera in enumerate(self._others):
+        for i, camera in enumerate(self._cameras[1:]):
             camera._cam_focal_length_x = parameters[offset + i * 8]
             camera._cam_focal_length_y = parameters[offset + i * 8 + 1]
             camera._cam_pos_x = parameters[offset + i * 8 + 2]
@@ -1369,35 +1382,21 @@ class Calibration(object):
             camera._cam_rot_y = normalise_angle(parameters[offset + i * 8 + 6])
             camera._cam_rot_z = normalise_angle(parameters[offset + i * 8 + 7])
 
-            camera._angle_factor = parameters[6]
+            camera._angle_factor = angle_factor
 
         err = self.fit_function(parameters)
         if self._verbose:
             print('Result : ', parameters)
-            print('Err : ', err, ' -- ', err / self._nb_corners)
+            print('Err : ', err, ' -- ', err / self._nb_image_points)
 
         self._verbose = False
 
-        return err / self._nb_corners
+        return err / self._nb_image_points
 
     def dump(self, filename):
         save_class = dict()
-
-        save_class['cam_width_image'] = self._ref_cam_cam_width_image
-        save_class['cam_height_image'] = self._ref_cam._cam_height_image
-        save_class['cam_focal_length_x'] = self._ref_cam._cam_focal_length_x
-        save_class['cam_focal_length_y'] = self._ref_cam._cam_focal_length_y
-        save_class['cam_pos_x'] = self._ref_cam._cam_pos_x
-        save_class['cam_pos_y'] = self._ref_cam._cam_pos_y
-        save_class['cam_pos_z'] = self._ref_cam._cam_pos_z
-        save_class['cam_rot_x'] = self._ref_cam._cam_rot_x
-        save_class['cam_rot_y'] = self._ref_cam._cam_rot_y
-        save_class['cam_rot_z'] = self._ref_cam._cam_rot_z
-        save_class['angle_factor'] = self._ref_cam._angle_factor
-        save_class['cam_origin_axis'] = self._ref_cam._cam_origin_axis.reshape(
-            (16,)).tolist()
-
-        save_class['targets_parameters'] = [t.__dict__ for t in self._targets_parameters]
+        save_class['cameras_parameters'] = [camera.to_json() for camera in self._cameras]
+        save_class['targets_parameters'] = [t.to_json() for t in self._targets]
 
         with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
@@ -1410,37 +1409,12 @@ class Calibration(object):
         with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
 
-            c = Calibration(len(save_class['targets_parameters']))
-
-            c._cam_width_image = save_class['cam_width_image']
-            c._cam_height_image = save_class['cam_height_image']
-            c._cam_focal_length_x = save_class['cam_focal_length_x']
-            c._cam_focal_length_y = save_class['cam_focal_length_y']
-            c._cam_pos_x = save_class['cam_pos_x']
-            c._cam_pos_y = save_class['cam_pos_y']
-            c._cam_pos_z = save_class['cam_pos_z']
-            c._cam_rot_x = save_class['cam_rot_x']
-            c._cam_rot_y = save_class['cam_rot_y']
-            c._cam_rot_z = save_class['cam_rot_z']
-            c._angle_factor = save_class['angle_factor']
-            c._cam_origin_axis = numpy.array(
-                save_class['cam_origin_axis']).reshape((4, 4)).astype(
-                numpy.float32)
-
-            c._targets_parameters = list()
-            for target_param in save_class['targets_parameters']:
-                print(target_param)
-                tp = CalibrationTarget()
-                tp._pos_x = target_param["_pos_x"]
-                tp._pos_y = target_param["_pos_y"]
-                tp._pos_z = target_param["_pos_z"]
-                tp._rot_x = target_param["_rot_x"]
-                tp._rot_y = target_param["_rot_y"]
-                tp._rot_z = target_param["_rot_z"]
-                print(tp)
-                c._targets_parameters.append(tp)
-            print(c._targets_parameters)
-            return c
+        c = Calibration()
+        c._cameras = [CalibrationCamera.from_json(pars) for pars in save_class['cameras_parameters']]
+        c._targets = [CalibrationTarget.from_json(pars) for pars in save_class['targets_parameters']]
+        c._nb_cameras = len(c._cameras)
+        c._nb_targets = len(c._targets)
+        return c
 
 
 def find_position_3d_points(pt2d, calibrations):
