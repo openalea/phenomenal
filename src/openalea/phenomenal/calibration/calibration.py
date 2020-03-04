@@ -26,6 +26,7 @@ from .transformations import (concatenate_matrices, rotation_matrix)
 __all__ = ["origin_axis",
            "CalibrationCamera",
            "CalibrationTarget",
+           "CalibrationGuess",
            "CalibrationCameraTop",
            "Calibration",
            "CalibrationCameraSideWith2TargetYXZ"]
@@ -918,11 +919,78 @@ class CalibrationTarget(object):
         return out
 
 
-class Calibration(CalibrationCamera):
+class CalibrationGuess(object):
+    """Methods for guessing/setting configuration of a multiview system"""
+    def __init__(self, cameras, targets):
+        """
+
+        Args:
+            cameras:[(type, distance, image_size, resolution), ...] : a list of guessed parameters for cameras.
+            type controls rought camera orientation and position ('side' or 'top'), distance is the distance to the
+            axis of rotation (world unit), image size is a (width, heigth) tuple and resolution an estimate of the
+            camera resolution (pixel per world unit) near the axis of rotation
+            targets: [(type, distance, azimuth, inclination), ...]: a list of guessed parameters for targets.
+            type controls rought target orientation and position ('side' or 'top'), distance is the distance to the
+            axis of rotation (world unit), azimuth and inclination the rotation angle (deg)
+        """
+
+        self.cameras = []
+        self.targets = []
+
+        for ctype, distance, im_size, resolution in cameras:
+            c = CalibrationCamera()
+            w, h = im_size
+            f = resolution * distance
+            px, py, pz = 0, 0, 0
+            rx, ry, rz = 0, 0, 0
+            if ctype == 'side':
+                py -= distance
+                rx -= numpy.pi /2.
+            elif ctype == 'top':
+                pz += distance
+                rx += numpy.pi
+            c._cam_width_image = w
+            c._cam_height_image = h
+            c._cam_focal_length_x = f
+            c._cam_focal_length_y = f
+            c._cam_pos_x = px
+            c._cam_pos_y = py
+            c._cam_pos_z = pz
+            c._cam_rot_x = rx
+            c._cam_rot_y = ry
+            c._cam_rot_z = rz
+            c._angle_factor = 1
+            c._cam_origin_axis = numpy.identity(4)
+            self.cameras.append(c)
+
+        for ttype, distance, azimuth, inclination in targets:
+            t = CalibrationTarget()
+            px, py, pz = 0, 0, 0
+            rx, ry, rz = numpy.radians(- inclination), 0, 0
+            if ttype == 'side':
+                py -= distance
+                rx += numpy.pi / 2.
+            elif ttype == 'top':
+                pz += distance
+            azimuth = numpy.radians(azimuth)
+            px, py, pz = [
+                px * math.cos(azimuth) - py * math.sin(azimuth),
+                px * math.sin(azimuth) + py * math.cos(azimuth),
+                pz]
+            rz += azimuth
+
+            t._pos_x = px
+            t._pos_y = py
+            t._pos_z = pz
+            t._rot_x = rx
+            t._rot_y = ry
+            t._rot_z = rz
+            self.targets.append(t)
+
+class Calibration(object):
     """A class for calibration of multiview imaging systems (fixed cameras, rotating target)"""
 
-    def __init__(self, nb_targets=1, nb_cameras=1, reference='camera',
-                 clockwise_rotation=True, start=None):
+    def __init__(self, nb_targets=1, nb_cameras=1, clockwise_rotation=True):
         """
        Instantiate a Calibration object
 
@@ -956,24 +1024,8 @@ class Calibration(CalibrationCamera):
               (x+_target = x+_world, y+_target = y+_world)
         """
 
-        CalibrationCamera.__init__(self)
-
-        target_base_frame = camera_base_frame = numpy.identity(3)
-
-        if reference == 'camera':
-            camera_base_frame = ((1., 0., 0.), (0., 0., -1.), (0., 1., 0.))
-            target_base_frame = ((1., 0., 0.), (0., 0., 1.), (0., -1., 0.))
-        elif reference == 'target':
-            camera_base_frame = ((1., 0., 0.), (0., -1., 0.), (0., 0., -1.))
-        else:
-            raise ValueError('Unknown reference: ' + reference)
-
-        self._cam_origin_axis = origin_axis(camera_base_frame)
-
-        self.clockwise = clockwise_rotation
-
         self._verbose = False
-
+        self.clockwise = clockwise_rotation
         # targets corner points coordinates expressed in targets local frame
         self._targets_points_local_3d = None
 
@@ -984,17 +1036,20 @@ class Calibration(CalibrationCamera):
 
         self._nb_targets = nb_targets
         label = 'target_'
-        self._targets_parameters = [CalibrationTarget(label + str(i), target_base_frame) for i in range(nb_targets)]
+        self._targets_parameters = [CalibrationTarget(label + str(i)) for i in range(nb_targets)]
+        self._ref_cam = CalibrationCamera()
 
         # additional cameras (other than reference camera)
         self._nb_others = nb_cameras - 1
         self._others = [CalibrationCamera() for i in range(self._nb_others)]
         self._others_targets_points_2d = None
 
+
+
     def __str__(self):
         out = 'Reference Camera:\n'
 
-        out += CalibrationCamera.__str__(self)
+        out += str(self._ref_cam)
 
         for i, target in enumerate(self._targets_parameters):
             out += 'Target {}: \n'.format(i)
@@ -1012,7 +1067,7 @@ class Calibration(CalibrationCamera):
         # reference camera parameters
         cam_pos_x = 0.0
         cam_pos_z = 0.0
-        cam_origin_axis_ = self._cam_origin_axis
+        cam_origin_axis_ = numpy.identity(4)
         cam_focal_length_x, cam_focal_length_y, \
         cam_pos_y, \
         cam_rot_x, cam_rot_y, cam_rot_z, \
@@ -1024,7 +1079,7 @@ class Calibration(CalibrationCamera):
             cam_origin_axis_)
 
         for i in range(self._nb_targets):
-            for alpha, ref_pts in self._ref_targets_points_2d[i].items():
+            for alpha, ref_pts in self._ref_cam._ref_targets_points_2d[i].items():
                 pos_x, pos_y, pos_z, rot_x, rot_y, rot_z = x0[7 + i * 6: 13 + i * 6]
                 alpha *= angle_factor
                 if self.clockwise:
@@ -1038,8 +1093,8 @@ class Calibration(CalibrationCamera):
                 target_pts = fr_target.global_point(self._targets_points_local_3d[i])
 
                 pts = CalibrationCamera.pixel_coordinates(fr_cam.local_point(target_pts),
-                    self._cam_width_image,
-                    self._cam_height_image,
+                    self._ref_cam._cam_width_image,
+                    self._ref_cam._cam_height_image,
                     cam_focal_length_x,
                     cam_focal_length_y)
 
@@ -1070,7 +1125,7 @@ class Calibration(CalibrationCamera):
 
                     target_pts = fr_target.global_point(self._targets_points_local_3d[i])
 
-                    pts = self.pixel_coordinates(fr_cam.local_point(target_pts),
+                    pts = CalibrationCamera.pixel_coordinates(fr_cam.local_point(target_pts),
                                                  self._others[i]._cam_width_image,
                                                  self._others[i]._cam_height_image,
                                                  cam_focal_length_x,
@@ -1090,38 +1145,38 @@ class Calibration(CalibrationCamera):
         min_err = float('inf')
         for i in range(number_of_repetition + 1):
 
-            cam_focal_length_x = 5500 #numpy.random.uniform(1000.0, 10000.0)
-            cam_focal_length_y = 5500 #numpy.random.uniform(1000.0, 10000.0)
-            cam_pos_y = - 5500#numpy.random.uniform(10000.0, 1000.0)
+            # cam_focal_length_x = 5500 #numpy.random.uniform(1000.0, 10000.0)
+            # cam_focal_length_y = 5500 #numpy.random.uniform(1000.0, 10000.0)
+            # cam_pos_y = - 5500#numpy.random.uniform(10000.0, 1000.0)
+            #
+            # cam_rot_x = self._start[0][0]
+            # cam_rot_y = self._start[0][1]
+            # cam_rot_z = self._start[0][1]
+            #
+            # angle_factor = 1.0
+            c = self._ref_cam
+            parameters = [c._cam_focal_length_x, c._cam_focal_length_y,
+                          c._cam_pos_y,
+                          c._cam_rot_x, c._cam_rot_y, c._cam_rot_z,
+                          c._angle_factor]
 
-            cam_rot_x = 0.0
-            cam_rot_y = 0.0
-            cam_rot_z = 0.0
+            for t in self._targets_parameters:
+                parameters += [t._pos_x, #numpy.random.uniform(-1000.0, 1000.0),  # X Position
+                               t._pos_y, #numpy.random.uniform(-1000.0, 1000.0),  # Y Position
+                               t._pos_z, #numpy.random.uniform(-1000, 1000.0),  # Z Position
+                               t._rot_x, #self._start[1][0],  # X Rotation
+                               t._rot_y, # {self._start[1][1],  # Y Rotation
+                               t._rot_z] #self._start[1][2]]  # Z Rotation
 
-            angle_factor = 1.0
-
-            parameters = [cam_focal_length_x, cam_focal_length_y,
-                          cam_pos_y,
-                          cam_rot_x, cam_rot_y, cam_rot_z,
-                          angle_factor]
-
-            for i in range(self._nb_targets):
-                parameters += [numpy.random.uniform(-1000.0, 1000.0),  # X Position
-                               numpy.random.uniform(-1000.0, 1000.0),  # Y Position
-                               numpy.random.uniform(-1000, 1000.0),  # Z Position
-                               0,  # X Rotation
-                               0,  # Y Rotation
-                              0]  # Z Rotation
-
-            for i in range(self._nb_others):
-                parameters += [numpy.random.uniform(1000.0, 10000.0),  # focal length X
-                               numpy.random.uniform(1000.0, 10000.0),  # focal length Y
-                               numpy.random.uniform(-200.0, 200.0),  # X Position
-                               numpy.random.uniform(-200.0, 500.0),  # Y Position
-                               numpy.random.uniform(0, 5000.0),  # Z Position
-                               0,  # X Rotation
-                               0,  # Y Rotation
-                               0]  # Z Rotation
+            for c in self._others:
+                parameters += [c._cam_focal_length_x, #numpy.random.uniform(1000.0, 10000.0),  # focal length X
+                               c._cam_focal_length_y, #numpy.random.uniform(1000.0, 10000.0),  # focal length Y
+                               c._cam_pos_x, #numpy.random.uniform(-200.0, 200.0),  # X Position
+                               c._cam_pos_y, #numpy.random.uniform(-200.0, 500.0),  # Y Position
+                               c._cam_pos_z, #numpy.random.uniform(0, 5000.0),  # Z Position
+                               c._cam_rot_x,  # X Rotation
+                               c._cam_rot_y,  # Y Rotation
+                               c._cam_rot_z]  # Z Rotation
 
             parameters = scipy.optimize.minimize(
                 self.fit_function,
@@ -1228,6 +1283,7 @@ class Calibration(CalibrationCamera):
                   targets,
                   size_image,
                   other_cameras=[],
+                  start=None,
                   number_of_repetition=3,
                   verbose=False):
         """ Find physical parameters associated with a camera
@@ -1241,13 +1297,29 @@ class Calibration(CalibrationCamera):
                         the coordinates of all intersections on
                         the target in the picture
         """
+        cameras, ptargets = start
+        # target_base_frame = camera_base_frame = numpy.identity(3)
+        # if use_base_frame:
+        #     if reference == 'camera':
+        #         camera_base_frame = ((1., 0., 0.), (0., 0., -1.), (0., 1., 0.))
+        #         target_base_frame = ((1., 0., 0.), (0., 0., 1.), (0., -1., 0.))
+        #     elif reference == 'target':
+        #         camera_base_frame = ((1., 0., 0.), (0., -1., 0.), (0., 0., -1.))
+        #     else:
+        #         raise ValueError('Unknown reference: ' + reference)
+
+        #self._cam_origin_axis = origin_axis(camera_base_frame)
+
+
         self._verbose = verbose
 
         self._targets_points_local_3d = [target[1] for target in targets]
 
-        self._cam_width_image = size_image[0]
-        self._cam_height_image = size_image[1]
-        self._ref_targets_points_2d = [target[0] for target in targets]
+        self._ref_cam = cameras.pop()
+        self._others = cameras
+        self._targets_parameters = ptargets
+
+        self._ref_cam._ref_targets_points_2d = [target[0] for target in targets]
 
         self._nb_corners = 0
         for target in targets:
@@ -1255,9 +1327,9 @@ class Calibration(CalibrationCamera):
 
         self._others_targets_points_2d = []
         for i,(image_size, targets_points_2d) in enumerate(other_cameras):
-            camera = self._others[i]
-            camera._cam_width_image = image_size[0]
-            camera._cam_height_image = image_size[1]
+            # self._others[i]
+            # camera._cam_width_image = image_size[0]
+            # camera._cam_height_image = image_size[1]
             self._others_targets_points_2d.append(targets_points_2d)
             for target in targets_points_2d:
                 self._nb_corners += len(target)
@@ -1267,23 +1339,23 @@ class Calibration(CalibrationCamera):
         parameters = self.find_parameters(number_of_repetition)
 
         # Reference Camera Parameters
-        self._cam_focal_length_x = parameters[0]
-        self._cam_focal_length_y = parameters[1]
-        self._cam_pos_y = parameters[2]
-        self._cam_rot_x = parameters[3] % math.pi * 2.0
-        self._cam_rot_y = parameters[4] % math.pi * 2.0
-        self._cam_rot_z = parameters[5] % math.pi * 2.0
+        self._ref_cam._cam_focal_length_x = parameters[0]
+        self._ref_cam._cam_focal_length_y = parameters[1]
+        self._ref_cam._cam_pos_y = parameters[2]
+        self._ref_cam._cam_rot_x = normalise_angle(parameters[3])
+        self._ref_cam._cam_rot_y = normalise_angle(parameters[4])
+        self._ref_cam._cam_rot_z = normalise_angle(parameters[5])
 
-        self._angle_factor = parameters[6]
+        self._ref_cam._angle_factor = parameters[6]
 
         # Targets Parameters
         for i, target_param in enumerate(self._targets_parameters):
             target_param._pos_x = parameters[7 + i * 6]
             target_param._pos_y = parameters[8 + i * 6]
             target_param._pos_z = parameters[9 + i * 6]
-            target_param._rot_x = parameters[10 + i * 6] % math.pi * 2.0
-            target_param._rot_y = parameters[11 + i * 6] % math.pi * 2.0
-            target_param._rot_z = parameters[12 + i * 6] % math.pi * 2.0
+            target_param._rot_x = normalise_angle(parameters[10 + i * 6])
+            target_param._rot_y = normalise_angle(parameters[11 + i * 6])
+            target_param._rot_z = normalise_angle(parameters[12 + i * 6])
 
         # other camera parameters
         offset = 7 + self._nb_targets * 6
@@ -1293,9 +1365,9 @@ class Calibration(CalibrationCamera):
             camera._cam_pos_x = parameters[offset + i * 8 + 2]
             camera._cam_pos_y = parameters[offset + i * 8 + 3]
             camera._cam_pos_z = parameters[offset + i * 8 + 4]
-            camera._cam_rot_x = parameters[offset + i * 8 + 5] % math.pi * 2.0
-            camera._cam_rot_y = parameters[offset + i * 8 + 6] % math.pi * 2.0
-            camera._cam_rot_z = parameters[offset + i * 8 + 7] % math.pi * 2.0
+            camera._cam_rot_x = normalise_angle(parameters[offset + i * 8 + 5])
+            camera._cam_rot_y = normalise_angle(parameters[offset + i * 8 + 6])
+            camera._cam_rot_z = normalise_angle(parameters[offset + i * 8 + 7])
 
             camera._angle_factor = parameters[6]
 
@@ -1311,18 +1383,18 @@ class Calibration(CalibrationCamera):
     def dump(self, filename):
         save_class = dict()
 
-        save_class['cam_width_image'] = self._cam_width_image
-        save_class['cam_height_image'] = self._cam_height_image
-        save_class['cam_focal_length_x'] = self._cam_focal_length_x
-        save_class['cam_focal_length_y'] = self._cam_focal_length_y
-        save_class['cam_pos_x'] = self._cam_pos_x
-        save_class['cam_pos_y'] = self._cam_pos_y
-        save_class['cam_pos_z'] = self._cam_pos_z
-        save_class['cam_rot_x'] = self._cam_rot_x
-        save_class['cam_rot_y'] = self._cam_rot_y
-        save_class['cam_rot_z'] = self._cam_rot_z
-        save_class['angle_factor'] = self._angle_factor
-        save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
+        save_class['cam_width_image'] = self._ref_cam_cam_width_image
+        save_class['cam_height_image'] = self._ref_cam._cam_height_image
+        save_class['cam_focal_length_x'] = self._ref_cam._cam_focal_length_x
+        save_class['cam_focal_length_y'] = self._ref_cam._cam_focal_length_y
+        save_class['cam_pos_x'] = self._ref_cam._cam_pos_x
+        save_class['cam_pos_y'] = self._ref_cam._cam_pos_y
+        save_class['cam_pos_z'] = self._ref_cam._cam_pos_z
+        save_class['cam_rot_x'] = self._ref_cam._cam_rot_x
+        save_class['cam_rot_y'] = self._ref_cam._cam_rot_y
+        save_class['cam_rot_z'] = self._ref_cam._cam_rot_z
+        save_class['angle_factor'] = self._ref_cam._angle_factor
+        save_class['cam_origin_axis'] = self._ref_cam._cam_origin_axis.reshape(
             (16,)).tolist()
 
         save_class['targets_parameters'] = [t.__dict__ for t in self._targets_parameters]
