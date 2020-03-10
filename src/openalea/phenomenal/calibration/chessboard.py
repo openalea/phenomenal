@@ -37,13 +37,13 @@ class Target(object):
 
 class Chessboard(object):
 
-    def __init__(self, square_size=50, shape=(7, 7), facing_rotations=None):
+    def __init__(self, square_size=50, shape=(7, 7), facing_angles=None):
         """Instantiate a chessboard object
 
         Args:
             square_size: length (world units) of the side of an elemental square of the chessboard
             shape: (int, int) the number of square detected along chessboard width and height
-            facing_rotations (optional): a {camera_id: facing_rotation} dict indicating for what value
+            facing_angles (optional): a {camera_id: facing_angle} dict indicating for what value
             of the turntable rotation consign the chessboard is facing the camera.
 
         """
@@ -51,9 +51,9 @@ class Chessboard(object):
         self.shape = shape
         self.image_points = collections.defaultdict(dict)
         self.image_ids = dict()
-        self.facing_rotations = dict()
-        if facing_rotations is not None:
-            self.facing_rotations = facing_rotations
+        self.facing_angles = dict()
+        if facing_angles is not None:
+            self.facing_angles = facing_angles
 
 
     def __str__(self):
@@ -82,19 +82,21 @@ class Chessboard(object):
 
     def get_corners_2d(self, id_camera):
         corners_2d = dict()
-        for angle in self.image_points[id_camera]:
-            corners_2d[angle] = self.image_points[id_camera][angle][:, 0, :]
+        for rotation in self.image_points[id_camera]:
+            corners_2d[rotation] = self.image_points[id_camera][rotation][:, 0, :]
 
         return corners_2d
 
-    def check_order(self, image_points, rotation, facing_rotation):
+    def check_order(self, image_points, rotation, facing_angle):
         """
         order image points to match order of corner points (see details)
 
         Args:
             image_points: image points detected by openCV findChessboardCorners
-            rotation: the turntable rotation consign at image acquisition
-            facing_rotation: the turntable rotation consign that make the chessboard face
+            rotation: (int) rotation consign (positive, in degrees). The
+             rotation consign is the rounded angle by which the turntable
+             has turned before image acquisition
+            facing_angle: the turntable rotation consign that make the chessboard face
             the camera
 
         Returns:
@@ -107,10 +109,10 @@ class Chessboard(object):
             if chessboard upper side is pointing to the top of the image, but to the reversed
             expected order if chessboard upper side is pointing to the base of the image.
             We suppose that reversed order detection occurs for rotations +/- 90 deg far
-            from facing_rotation
+            from facing_angle
         """
 
-        flip_min = (facing_rotation + 90) % 360
+        flip_min = (facing_angle + 90) % 360
         flip_max = (flip_min + 90) % 360
 
         first_v = image_points[0, 0, 1]
@@ -166,9 +168,9 @@ class Chessboard(object):
                               cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
 
                 if check_order:
-                    if id_camera not in self.facing_rotations:
+                    if id_camera not in self.facing_angles:
                         raise ValueError('facing rotation should be specified for order checking')
-                    corners = self.check_order(corners, rotation, self.facing_rotations[id_camera])
+                    corners = self.check_order(corners, rotation, self.facing_angles[id_camera])
 
                 self.image_points[id_camera][rotation] = corners
 
@@ -193,8 +195,8 @@ class Chessboard(object):
         save_class['shape'] = self.shape
         save_class['image_points'] = image_points
 
-        if len(self.facing_rotations) > 0:
-            save_class['facing_rotations'] = self.facing_rotations
+        if len(self.facing_angles) > 0:
+            save_class['facing_angles'] = self.facing_angles
 
         if len(self.image_ids) > 0:
             save_class['image_ids'] = self.image_ids
@@ -221,11 +223,12 @@ class Chessboard(object):
             # Convert to numpy format
             for id_camera in image_points:
                 for rotation in image_points[id_camera]:
-                    chessboard.image_points[id_camera][rotation] = \
+                    rot = int(float(rotation))
+                    chessboard.image_points[id_camera][rot] = \
                         numpy.array(image_points[id_camera][rotation])
 
-            if 'facing_rotations' in save_class:
-                chessboard.facing_rotations = save_class['facing_rotations']
+            if 'facing_angles' in save_class:
+                chessboard.facing_angles = save_class['facing_angles']
 
             if 'image_ids' in save_class:
                 chessboard.image_ids = save_class['image_ids']
