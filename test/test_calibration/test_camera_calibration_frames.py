@@ -178,9 +178,9 @@ def test_target_frame():
     c._pos_x, c._pos_y, c._pos_z = 0, 0, 0
     c._rot_x, c._rot_y, c._rot_z = 0, 0, 0
 
-    f = c.get_target_frame(0)
+    f = c.get_target_frame()
     numpy.testing.assert_allclose(f._axes, target_axis, atol=1e-6)
-    f = c.get_target_frame(numpy.pi / 2)
+    f = c.get_target_frame()
     expected = numpy.array(((0, 1, 0), (-1, 0, 0), (0, 0, 1)))
     numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
 
@@ -190,21 +190,21 @@ def test_target_frame():
     c._rot_x, c._rot_y, c._rot_z = numpy.pi / 2, 0, 0
 
     expected = numpy.array(((1, 0, 0), (0, 0, 1), (0, -1, 0)))
-    f = c.get_target_frame(0)
+    f = c.get_target_frame()
     numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
 
-    f = c.get_target_frame(numpy.pi / 2)
+    f = c.get_target_frame()
     expected = numpy.array(((0, 1, 0), (0, 0, 1), (1, 0, 0)))
     numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
 
     # test positioning using origin_axis
     expected = numpy.array(((1, 0, 0), (0, 0, 1), (0, -1, 0)))
-    c = CalibrationTarget(base_frame=expected)
+    c = CalibrationTarget()
     c._pos_x, c._pos_y, c._pos_z = 0, 0, 0
     c._rot_x, c._rot_y, c._rot_z = 0, 0, 0
-    f = c.get_target_frame(0)
+    f = c.get_target_frame()
     numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
 
-    f = c.get_target_frame(numpy.pi / 2)
+    f = c.get_target_frame()
     expected = numpy.array(((0, 1, 0), (0, 0, 1), (1, 0, 0)))
     numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
