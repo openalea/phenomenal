@@ -44,7 +44,8 @@ class Chessboard(object):
             square_size: length (world units) of the side of an elemental square of the chessboard
             shape: (int, int) the number of square detected along chessboard width and height
             facing_angles (optional): a {camera_id: facing_angle} dict indicating for what value
-            of the turntable rotation consign the chessboard is facing the camera.
+            of the turntable rotation consign the chessboard is facing the camera with topleft corner on topleft
+            side of the image.
 
         """
         self.square_size = square_size
