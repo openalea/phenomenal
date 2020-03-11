@@ -662,7 +662,8 @@ class Calibration(object):
             nb_pars[2] = nbp_target * self._nb_targets
         if self.fit_cameras:
             nb_pars[3] = nbp_camera * (self._nb_cameras - 1) # minus reference camera
-        turntable, ref_cam, targets, cameras = [list(islice(iter(x0), n)) for n in nb_pars]
+        xx0 = iter(x0)
+        turntable, ref_cam, targets, cameras = [list(islice(xx0, n)) for n in nb_pars]
         # further group per target and per camera
         targetss = []
         for i in range(0, len(targets), nbp_target):
@@ -741,8 +742,7 @@ class Calibration(object):
 
         return err
 
-    def find_parameters(self):
-
+    def start_parameters(self):
         parameters = []
         if self.fit_angle_factor:
             parameters.append(self.angle_factor)
@@ -773,10 +773,15 @@ class Calibration(object):
                                c._cam_rot_x,
                                c._cam_rot_y,
                                c._cam_rot_z]
+        return parameters
 
+
+    def find_parameters(self):
+
+        start = self.start_parameters()
         parameters = scipy.optimize.minimize(
             self.fit_function,
-            parameters,
+            start,
             method='BFGS').x
 
         err = self.fit_function(parameters)
@@ -798,6 +803,23 @@ class Calibration(object):
         fr_target = self._targets[i_target].get_target_frame()
         return fr_target.global_point(self._targets_points[i_target])
 
+    def setup_calibration(self,
+                          targets,
+                          target_points,
+                          cameras,
+                          image_points):
+        self._targets_points = target_points
+        self._cameras = cameras
+        self._targets = targets
+        self._image_points = image_points
+
+        self._nb_cameras = len(cameras)
+        self._nb_targets = len(targets)
+        self._nb_image_points = 0
+        for cam_pts in image_points:
+            for im_pts in cam_pts:
+                self._nb_image_points += len(im_pts)
+
     def calibrate(self,
                   targets,
                   target_points,
@@ -816,18 +838,7 @@ class Calibration(object):
         Returns:
 
         """
-        self._targets_points = target_points
-        self._cameras = cameras
-        self._targets = targets
-        self._image_points = image_points
-
-        self._nb_cameras = len(cameras)
-        self._nb_targets = len(targets)
-        self._nb_image_points = 0
-        for cam_pts in image_points:
-            for im_pts in cam_pts:
-                self._nb_image_points += len(im_pts)
-
+        self.setup_calibration(targets, target_points, cameras, image_points)
         parameters = self.find_parameters()
         turntable, ref_cam, target_pars, camera_pars = self.split_parameters(parameters)
 
