@@ -67,8 +67,8 @@ class CalibrationCamera(object):
      Camera and image frames are as depicted in
             https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
 
-    That is camera origin is image center, z-axis points toward the scene (camera optical axis), x+ is left-> right
-    along image width, y+ is up->down along image height.
+    That is camera frame origin is image center, z-axis points toward the scene (camera optical axis),
+    x+ is left-> right along image width, y+ is up->down along image height.
     Image frame origin is top-left, u is left->right along image width, v is up->down along image height
     """
     def __init__(self):
@@ -536,67 +536,71 @@ def guess_from_chess(chess):
 
 
 class Calibration(object):
-    """A class for calibration of multiview imaging systems (fixed cameras, rotating target)"""
+    """A class for calibration of multi-views imaging systems (fixed cameras, rotating targets)"""
 
-    def __init__(self, reference_camera='side', angle_factor=1, clockwise_rotation=True,
-                 fit_angle_factor = True, fit_reference_camera = True, fit_targets = True, fit_cameras = True,
-                 verbose=False):
-        """
-       Instantiate a Calibration object
+    def __init__(self, angle_factor=1, targets=None, cameras=None, target_points=None, image_points=None,
+                 reference_camera='side', clockwise_rotation=True):
+        """Instantiate a Calibration object with calibration data
 
         Args:
-            nb_targets: (int) number of targets
-            nb_cameras: (int) number of cameras
-            reference_camera: ('camera' or 'target') reference used to define world y-axis together with base frames for
-             expressing the rotations of camera and targets(see details)
-            clockwise_rotation: (bool) : are targets rotating clockwise ? (default True)
-            : Absolute value of the angle of rotation of the turntable at the time of
-             image acquisition
-        Details:
-            Calibration allows the projection of world 3D points on 2D images, using calibration targets. Points of
-            the world are given in a world global frame, defined by the axis of rotation and a reference object (the
-            first camera or the first target).
-            The axis of rotation of the rotating system, oriented toward the sky, defines the world z-axis.
-            The altitude of the first camera defines the position of the world origin on z-axis.
-            If reference_object='camera' (default), the y-axis is given by camera position and world origin and y+
-              is directed is from camera toward z-axis
-            If reference_object='target' (useful alternative if the reference camera lies on the axis of rotation),
-              the y+ axis is given by the projection on a plane, perpendicular to the axis of rotation, of the y+ axis
-              of the local frame associated to the first target.
+            angle_factor: start value for angle_factor. angle_factor is a float multiplier of rotation consign
+                to obtain actual rotation angle (default value: 1)
+            targets: a {target_id : CalibrationTarget,...} dict of targets to be used as starting guess for target frames
+            cameras: a {camera_id: CalibrationCamera,...} dict of cameras to be used as starting guess for cameras
+            target_points: a {target_id: [(x, y, z), ...], ...} dict of coordinates of target corner points, expressed
+                in target corner point frame (chessboard frame)
+            image_points: a {camera_id: {target_id : {rotation : [(u,v),...], ...}, ...,} dict of dict of dict of
+                pixel coordinates of target corner points  projected on camera images at a given rotation consign. The
+                rotation consign is the rounded angle (degrees) by which the turntable has turned before image acquisition
+            reference_camera (str): camera_id of the camera to be used as reference for world frame (see details)
+            clockwise_rotation (bool): are targets rotating clockwise ? (default True)
 
-            Base frames offers convenient ways for expressing/checking the orientation angles of cameras and targets.
-            If reference_object='camera' (default), the base frame (rot_x = rot_y = rot_z = 0) for cameras correspond
-              to a 'vertical' camera (image plane parallel to xz plane) pointing at the axis of rotation (camera optical
-              axis aligned with y+), and the base frame for targets to a 'vertical' target facing the camera base frame
-              (x+_target = x+_world, y+_target = z+_world)
-            If reference_object='target', the base frame (rot_x = rot_y = rot_z = 0) for cameras correspond to a
-             'horizontal' camera (image plane parallel to world xy plane) pointing downward (camera optical axis
-              aligned with z-), and the base frame for targets to an 'horizontal' target  facing the camera base frame
-              (x+_target = x+_world, y+_target = y+_world)
+        Details:
+            Calibration allows finding position and parameters of cameras and targets and compute the pixel coordinates
+            any 3D point of world.
+            The world 3D coordinates are expressed in world global frame, defined by the axis of rotation and a the
+            position of a reference camera.
+            The axis of rotation of the rotating system, oriented toward the sky, defines the world z-axis.
+            The altitude of the reference camera defines the altitude of the world origin, and the reference camera
+            z+-axis (camera optical axis) defines world Y+ axis
         """
 
-        self._verbose = verbose
-        self.clockwise = clockwise_rotation
         self.angle_factor = angle_factor
-        self.fit_angle_factor = fit_angle_factor
-        self.fit_reference_camera = fit_reference_camera
-        self.fit_targets = fit_targets
-        self.fit_cameras = fit_cameras
-        self.reference_camera = reference_camera
-        # targets corner points coordinates expressed in targets local frame
-        self._targets_points = {}
-
-        self._nb_targets = 0
-        # label = 'target_'
         self._targets = {}
-        # self._ref_cam = CalibrationCamera()
-
-        # cameras
-        self._nb_cameras = 0
         self._cameras = {}
-        # total number of target corners points
-        self._nb_image_points = 0
         self._image_points = {}
+        self._targets_points = {}
+        self._nb_targets = 0
+        self._nb_cameras = 0
+        self._nb_image_points = 0
+
+        self.setup_calibration(targets, target_points, cameras, image_points)
+        self.clockwise = clockwise_rotation
+        self.reference_camera = reference_camera
+
+        self.fit_angle_factor = True
+        self.fit_reference_camera = True
+        self.fit_targets = True
+        self.fit_cameras = True
+        self.verbose = False
+
+    def setup_calibration(self, targets=None, target_points=None, cameras=None, image_points=None):
+        if targets is not None:
+            self._targets = targets
+        if target_points is not None:
+            self._targets_points = target_points
+        if cameras is not None:
+            self._cameras = cameras
+        if image_points is not None:
+            self._image_points = image_points
+
+        self._nb_cameras = len(self._cameras)
+        self._nb_targets = len(self._targets)
+        self._nb_image_points = 0
+        for cam_pts in self._image_points.values():
+            for im_pts_t in cam_pts.values():
+                for im_pts in im_pts_t.values():
+                    self._nb_image_points += len(im_pts)
 
     def __str__(self):
         out = 'Calibration:\n'
@@ -745,7 +749,7 @@ class Calibration(object):
                     err += numpy.linalg.norm(
                         numpy.array(pts) - ref_pts, axis=1).sum()
 
-        if self._verbose:
+        if self.verbose:
             print(err)
 
         return err
@@ -761,25 +765,15 @@ class Calibration(object):
                            c._cam_rot_x, c._cam_rot_y, c._cam_rot_z]
         if self.fit_targets:
             for id_target,t in self._targets.items():
-                parameters += [t._pos_x,
-                               t._pos_y,
-                               t._pos_z,
-                               t._rot_x,
-                               t._rot_y,
-                               t._rot_z]
+                parameters += [t._pos_x, t._pos_y, t._pos_z,
+                               t._rot_x, t._rot_y, t._rot_z]
         if self.fit_cameras:
             for id_camera, c in self._cameras.items():
                 if id_camera is not self.reference_camera:
-                    parameters += [c._cam_focal_length_x,
-                                   c._cam_focal_length_y,
-                                   c._cam_pos_x,
-                                   c._cam_pos_y,
-                                   c._cam_pos_z,
-                                   c._cam_rot_x,
-                                   c._cam_rot_y,
-                                   c._cam_rot_z]
+                    parameters += [c._cam_focal_length_x, c._cam_focal_length_y,
+                                   c._cam_pos_x, c._cam_pos_y, c._cam_pos_z,
+                                   c._cam_rot_x, c._cam_rot_y, c._cam_rot_z]
         return parameters
-
 
     def find_parameters(self):
 
@@ -791,15 +785,19 @@ class Calibration(object):
 
         err = self.fit_function(parameters)
 
-        if self._verbose:
+        if self.verbose:
             print('Result : ', parameters)
             print('Err : ', err / self._nb_image_points)
 
         return parameters
 
     def calibration_error(self):
-        p = self.get_parameters()
-        return self.fit_function(p) / self._nb_image_points
+        if self._nb_image_points > 0:
+            p = self.get_parameters()
+            return self.fit_function(p) / self._nb_image_points
+        else:
+            raise ValueError('Calibration corner points (target_points and image points) are required to compute '
+                             'calibration error')
 
     def get_target_projected(self, id_camera, id_target, rotation):
 
@@ -812,51 +810,32 @@ class Calibration(object):
         fr_target = self._targets[id_target].get_target_frame()
         return fr_target.global_point(self._targets_points[id_target])
 
-    def setup_calibrate(self,
-                        targets=None,
-                        target_points=None,
-                        cameras=None,
-                        image_points=None):
-        if targets is not None:
-            self._targets = targets
-        if target_points is not None:
-            self._targets_points = target_points
-        if cameras is not None:
-            self._cameras = cameras
-        if image_points is not None:
-            self._image_points = image_points
-
-        self._nb_cameras = len(self._cameras)
-        self._nb_targets = len(self._targets)
-        self._nb_image_points = 0
-        for cam_pts in self._image_points.values():
-            for im_pts_t in cam_pts.values():
-                for im_pts in im_pts_t.values():
-                    self._nb_image_points += len(im_pts)
-
-    def calibrate(self,
-                  targets=None,
-                  target_points=None,
-                  cameras=None,
-                  image_points=None):
-        """ Optimise the cameras and targets parameters to minimise the distance between
+    def calibrate(self, fit_angle_factor=True, fit_reference_camera=True, fit_targets=True, fit_cameras=True,
+                  verbose=True):
+        """Optimise the cameras and targets parameters to minimise the distance between
        observed image points and projections on images of target points
 
         Args:
-            targets: A list of CalibrationTarget objects to be used as start guess for targets
-            target_points: A list of coordinates of target corner points, expressed in local
-             target frame
-            cameras: A list of CalibrationCamera objects, to be used as start guess for cameras
-            image_points: {id_camera #ICI#)
+            fit_angle_factor: should angle_factor be fitted ? (default True)
+            fit_reference_camera: should reference camera parameters be fitted ? (default True)
+            fit_targets: should target frame parameters be fitted ? (default True)
+            fit_cameras: should other than reference camera parameters be fitted ? (default True)
+            verbose: should total error be printed during optimisation (default True)
 
         Returns:
-
+            the mean calibration reprojection error (pixels)
         """
-        self.setup_calibrate(targets, target_points, cameras, image_points)
+        self.fit_angle_factor = fit_angle_factor
+        self.fit_reference_camera = fit_reference_camera
+        self.fit_targets = fit_targets
+        self.fit_cameras = fit_cameras
+        self.verbose = verbose
+
         parameters = self.find_parameters()
+
         turntable, ref_cam, target_pars, camera_pars = self.split_parameters(parameters)
 
-        if len(turntable) >0:
+        if len(turntable) > 0:
             self.angle_factor = turntable[0]
 
         if len(ref_cam) > 0:
