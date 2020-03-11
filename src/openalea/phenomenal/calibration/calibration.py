@@ -584,11 +584,11 @@ class Calibration(object):
         self.fit_cameras = fit_cameras
         self.reference_camera = reference_camera
         # targets corner points coordinates expressed in targets local frame
-        self._targets_points = []
+        self._targets_points = {}
 
         self._nb_targets = 0
         # label = 'target_'
-        self._targets = []
+        self._targets = {}
         # self._ref_cam = CalibrationCamera()
 
         # cameras
@@ -608,8 +608,8 @@ class Calibration(object):
             out += ': \n'
             out += str(camera)
 
-        for i, target in enumerate(self._targets):
-            out += 'Target {}: \n'.format(i)
+        for id_target, target in self._targets.items():
+            out += 'Target {}: \n'.format(id_target)
             out += str(target)
 
         return out
@@ -705,7 +705,7 @@ class Calibration(object):
                 pos_x, pos_y, pos_z, rot_x, rot_y, rot_z = target
                 target_frames.append(CalibrationTarget.target_frame(pos_x, pos_y, pos_z, rot_x, rot_y, rot_z))
         else:
-            for target in self._targets:
+            for target in self._targets.values():
                 target_frames.append(target.get_target_frame())
 
         camera_frames = []
@@ -727,9 +727,12 @@ class Calibration(object):
             im_pts_cam += [self._image_points[self.reference_camera]]
         cams += [self._cameras[k] for k in self._cameras if k is not self.reference_camera]
         im_pts_cam += [self._image_points[k] for k in self._cameras if k is not self.reference_camera]
+        # target_points in the right order
+        target_points = [self._targets_points[k] for k in self._targets]
 
         for fr_cam, focals, camera, im_pts_c in zip(camera_frames, camera_focals, cams, im_pts_cam):
-            for fr_target, t_pts, im_pts in zip(target_frames, self._targets_points, im_pts_c):
+            im_pts_t = [im_pts_c[k] for k in self._targets]
+            for fr_target, t_pts, im_pts in zip(target_frames, target_points, im_pts_t):
                 for rotation, ref_pts in im_pts.items():
                     fr_table = Calibration.turntable_frame(rotation, angle_factor, self.clockwise)
                     target_pts = fr_table.global_point(fr_target.global_point(t_pts))
@@ -757,7 +760,7 @@ class Calibration(object):
                            c._cam_pos_y,
                            c._cam_rot_x, c._cam_rot_y, c._cam_rot_z]
         if self.fit_targets:
-            for t in self._targets:
+            for id_target,t in self._targets.items():
                 parameters += [t._pos_x,
                                t._pos_y,
                                t._pos_z,
@@ -798,16 +801,16 @@ class Calibration(object):
         p = self.get_parameters()
         return self.fit_function(p) / self._nb_image_points
 
-    def get_target_projected(self, i_camera, i_target, rotation):
+    def get_target_projected(self, id_camera, id_target, rotation):
 
-        proj = self.get_projection(i_camera, rotation)
-        target_pts = self.get_target_points(i_target)
+        proj = self.get_projection(id_camera, rotation)
+        target_pts = self.get_target_points(id_target)
 
         return proj(target_pts)
 
-    def get_target_points(self, i_target):
-        fr_target = self._targets[i_target].get_target_frame()
-        return fr_target.global_point(self._targets_points[i_target])
+    def get_target_points(self, id_target):
+        fr_target = self._targets[id_target].get_target_frame()
+        return fr_target.global_point(self._targets_points[id_target])
 
     def setup_calibrate(self,
                         targets=None,
@@ -827,7 +830,7 @@ class Calibration(object):
         self._nb_targets = len(self._targets)
         self._nb_image_points = 0
         for cam_pts in self._image_points.values():
-            for im_pts_t in cam_pts:
+            for im_pts_t in cam_pts.values():
                 for im_pts in im_pts_t.values():
                     self._nb_image_points += len(im_pts)
 
@@ -870,7 +873,7 @@ class Calibration(object):
         if len(target_pars) > 0:
             labels = ['_pos_x', '_pos_y', '_pos_z',
                       '_rot_x', '_rot_y', '_rot_z']
-            for target, target_param in zip(self._targets, target_pars):
+            for target, target_param in zip(self._targets.values(), target_pars):
                 d = dict(zip(labels, target_param))
                 for k in d:
                     if k.startswith('_rot'):
@@ -899,7 +902,7 @@ class Calibration(object):
         save_class['clockwise'] = self.clockwise
         save_class['reference_camera'] = self.reference_camera
         save_class['cameras_parameters'] = {id_camera: camera.to_json() for id_camera,camera in self._cameras.items()}
-        save_class['targets_parameters'] = [t.to_json() for t in self._targets]
+        save_class['targets_parameters'] = {id_target: t.to_json() for id_target, t in self._targets.items()}
 
         with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
@@ -914,7 +917,7 @@ class Calibration(object):
 
         c = Calibration()
         c._cameras = {id_camera: CalibrationCamera.from_json(pars) for id_camera, pars in save_class['cameras_parameters'].items()}
-        c._targets = [CalibrationTarget.from_json(pars) for pars in save_class['targets_parameters']]
+        c._targets = {id_target: CalibrationTarget.from_json(pars) for id_target, pars in save_class['targets_parameters'].items()}
         c._nb_cameras = len(c._cameras)
         c._nb_targets = len(c._targets)
         c.angle_factor = save_class['angle_factor']
