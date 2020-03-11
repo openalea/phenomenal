@@ -677,6 +677,22 @@ class Calibration(object):
     def fit_function(self, x0):
 
         turntable, ref_cam, targets, cameras = self.split_parameters(x0)
+
+        # merge ref_cam to cameras
+        first_cam = 0
+        if len(ref_cam) > 0:
+            cam_pos_x = 0
+            cam_pos_z = 0
+            cam_focal_length_x, cam_focal_length_y, \
+            cam_pos_y, \
+            cam_rot_x, cam_rot_y, cam_rot_z = ref_cam
+            ref_cam = [cam_focal_length_x, cam_focal_length_y,
+                       cam_pos_x, cam_pos_y, cam_pos_z,
+                       cam_rot_x, cam_rot_y, cam_rot_z]
+            cameras.insert(0, ref_cam)
+        else:
+            first_cam = 1
+
         # build frames
         angle_factor = self.angle_factor
         if len(turntable) > 0:
@@ -693,21 +709,6 @@ class Calibration(object):
 
         camera_frames = []
         camera_focals = []
-        if len(ref_cam) > 0:
-            cam_pos_z = 0.0
-            cam_focal_length_x, cam_focal_length_y, \
-            cam_pos_y, \
-            cam_rot_x, cam_rot_y = ref_cam[0:5]
-            if self.reference == 'camera':
-                cam_pos_x = 0.0
-                cam_rot_z = ref_cam[5]
-            else:
-                cam_rot_z = 0.0
-                cam_pos_x = ref_cam[5]
-            camera_frames.append(CalibrationCamera.camera_frame(cam_pos_x, cam_pos_y, cam_pos_z,
-                                                                cam_rot_x, cam_rot_y, cam_rot_z))
-            camera_focals.append([cam_focal_length_x, cam_focal_length_y])
-
         for camera in cameras:
             cam_focal_length_x, cam_focal_length_y, \
             cam_pos_x, cam_pos_y, cam_pos_z, \
@@ -717,11 +718,8 @@ class Calibration(object):
             camera_focals.append([cam_focal_length_x, cam_focal_length_y])
 
         err = 0
-        first = 0
-        if not self.fit_reference_camera:
-            first = 1
         cpars = zip(camera_frames, camera_focals,
-                    self._cameras[first:], self._image_points[first:])
+                    self._cameras[first_cam:], self._image_points[first_cam:])
 
         for fr_cam, focals, camera, im_pts_c in cpars:
             for fr_target, im_pts in zip(target_frames, im_pts_c):
@@ -742,7 +740,7 @@ class Calibration(object):
 
         return err
 
-    def start_parameters(self):
+    def get_parameters(self):
         parameters = []
         if self.fit_angle_factor:
             parameters.append(self.angle_factor)
@@ -750,11 +748,7 @@ class Calibration(object):
             c = self._cameras[0]
             parameters += [c._cam_focal_length_x, c._cam_focal_length_y,
                            c._cam_pos_y,
-                           c._cam_rot_x, c._cam_rot_y]
-            if self.reference == 'camera':
-                parameters += [c._cam_rot_z]
-            else:
-                parameters += [c._cam_pos_x]
+                           c._cam_rot_x, c._cam_rot_y, c._cam_rot_z]
         if self.fit_targets:
             for t in self._targets:
                 parameters += [t._pos_x,
@@ -778,7 +772,7 @@ class Calibration(object):
 
     def find_parameters(self):
 
-        start = self.start_parameters()
+        start = self.get_parameters()
         parameters = scipy.optimize.minimize(
             self.fit_function,
             start,
@@ -792,6 +786,10 @@ class Calibration(object):
 
         return parameters
 
+    def calibration_error(self):
+        p = self.get_parameters()
+        return self.fit_function(p) / self._nb_image_points
+
     def get_target_projected(self, i_camera, i_target, rotation):
 
         proj = self.get_projection(i_camera, rotation)
@@ -803,28 +801,32 @@ class Calibration(object):
         fr_target = self._targets[i_target].get_target_frame()
         return fr_target.global_point(self._targets_points[i_target])
 
-    def setup_calibration(self,
-                          targets,
-                          target_points,
-                          cameras,
-                          image_points):
-        self._targets_points = target_points
-        self._cameras = cameras
-        self._targets = targets
-        self._image_points = image_points
+    def setup_calibrate(self,
+                        targets=None,
+                        target_points=None,
+                        cameras=None,
+                        image_points=None):
+        if targets is not None:
+            self._targets = targets
+        if target_points is not None:
+            self._targets_points = target_points
+        if cameras is not None:
+            self._cameras = cameras
+        if image_points is not None:
+            self._image_points = image_points
 
-        self._nb_cameras = len(cameras)
-        self._nb_targets = len(targets)
+        self._nb_cameras = len(self._cameras)
+        self._nb_targets = len(self._targets)
         self._nb_image_points = 0
-        for cam_pts in image_points:
+        for cam_pts in self._image_points:
             for im_pts in cam_pts:
                 self._nb_image_points += len(im_pts)
 
     def calibrate(self,
-                  targets,
-                  target_points,
-                  cameras,
-                  image_points):
+                  targets=None,
+                  target_points=None,
+                  cameras=None,
+                  image_points=None):
         """ Optimise the cameras and targets parameters to minimise the distance between
        observed image points and projections on images of target points
 
@@ -838,7 +840,7 @@ class Calibration(object):
         Returns:
 
         """
-        self.setup_calibration(targets, target_points, cameras, image_points)
+        self.setup_calibrate(targets, target_points, cameras, image_points)
         parameters = self.find_parameters()
         turntable, ref_cam, target_pars, camera_pars = self.split_parameters(parameters)
 
@@ -849,11 +851,7 @@ class Calibration(object):
             camera = self._cameras[0]
             labels = ['_cam_focal_length_x', '_cam_focal_length_y',
                       '_cam_pos_y',
-                      '_cam_rot_x', '_cam_rot_y']
-            if self.reference == 'camera':
-                labels.append('_cam_rot_z')
-            else:
-                labels.append('_cam_pos_x')
+                      '_cam_rot_x', '_cam_rot_y', '_cam_rot_z']
             d = dict(zip(labels, ref_cam))
             for k in d:
                 if k.startswith('_cam_rot'):
@@ -882,11 +880,6 @@ class Calibration(object):
                 camera.set_vars(d)
 
         err = self.fit_function(parameters)
-        if self._verbose:
-            print('Result : ', parameters)
-            print('Err : ', err, ' -- ', err / self._nb_image_points)
-
-        self._verbose = False
 
         return err / self._nb_image_points
 
