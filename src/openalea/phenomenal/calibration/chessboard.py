@@ -15,7 +15,7 @@ import json
 import collections
 # ==============================================================================
 
-__all__ = ["Target", "Chessboard"]
+__all__ = ["Target", "Chessboard", "Chessboards"]
 
 # ==============================================================================
 
@@ -43,7 +43,7 @@ class Chessboard(object):
         Args:
             square_size: length (world units) of the side of an elemental square of the chessboard
             shape: (int, int) the number of square detected along chessboard width and height
-            facing_angles (optional): a {camera_id: facing_angle} dict indicating for what value
+            facing_angles: a {camera_id: facing_angle} dict indicating for what value
             of the turntable rotation consign the chessboard is facing the camera with topleft corner on topleft
             side of the image.
 
@@ -53,6 +53,7 @@ class Chessboard(object):
         self.image_points = collections.defaultdict(dict)
         self.image_ids = dict()
         self.facing_angles = dict()
+        self.image_sizes = dict()
         if facing_angles is not None:
             self.facing_angles = facing_angles
 
@@ -83,12 +84,14 @@ class Chessboard(object):
 
     def get_corners_2d(self, id_camera):
         corners_2d = dict()
-        for rotation in self.image_points[id_camera]:
-            corners_2d[rotation] = self.image_points[id_camera][rotation][:, 0, :]
+        if id_camera in self.image_points:
+            for rotation in self.image_points[id_camera]:
+                corners_2d[rotation] = self.image_points[id_camera][rotation][:, 0, :]
 
         return corners_2d
 
-    def check_order(self, image_points, rotation, facing_angle):
+    @staticmethod
+    def order_image_points(image_points, rotation, facing_angle):
         """
         order image points to match order of corner points (see details)
 
@@ -128,6 +131,14 @@ class Chessboard(object):
             return numpy.array([p for p in reversed(image_points.tolist())])
         else:
             return image_points
+
+    def check_order(self):
+        """Re-order detected image points using facing angles"""
+        for id_camera in self.image_points:
+            for rotation in self.image_points[id_camera]:
+                facing = self.facing_angles[id_camera]
+                self.image_points[id_camera][rotation] = self.order_image_points(self.image_points[id_camera][rotation],
+                                                                                 rotation, facing)
 
     def detect_corners(self, id_camera, rotation, image, check_order=True, image_id=None):
         """ Detection of pixel coordinates of chessboard corner points
@@ -171,7 +182,7 @@ class Chessboard(object):
                 if check_order:
                     if id_camera not in self.facing_angles:
                         raise ValueError('facing rotation should be specified for order checking')
-                    corners = self.check_order(corners, rotation, self.facing_angles[id_camera])
+                    corners = self.order_image_points(corners, rotation, self.facing_angles[id_camera])
 
                 self.image_points[id_camera][rotation] = corners
 
@@ -182,6 +193,35 @@ class Chessboard(object):
             self.image_ids[rotation] = image_id
 
         return found
+
+    def image_resolutions(self):
+
+        def _dist(pix1, pix2):
+            x1, y1 = pix1
+            x2, y2 = pix2
+            return numpy.sqrt((x2-x1)**2 +(y2 -y1)**2)
+
+        def pixel_area(a, w):
+            topleft = a[0]
+            topright = a[:w, :][-1]
+            bottomleft = a[-w, :]
+            bottomright = a[-1]
+            top = _dist(topleft, topright)
+            bottom = _dist(bottomleft, bottomright)
+            left = _dist(topleft, bottomleft)
+            right = _dist(topright, bottomright)
+            return numpy.mean([top, bottom]) * numpy.mean([left, right])
+
+        width, height = self.shape
+        area = width * height * self.square_size**2
+
+        resolutions = {}
+        for id_camera in self.image_points:
+            pts = self.get_corners_2d(id_camera)[self.facing_angles[id_camera]]
+            pix_area = pixel_area(pts, width)
+            resolutions[id_camera] = numpy.sqrt(pix_area / area)
+
+        return resolutions
 
     def dump(self, filename):
         # Convert to json format
@@ -201,6 +241,9 @@ class Chessboard(object):
 
         if len(self.image_ids) > 0:
             save_class['image_ids'] = self.image_ids
+
+        if len(self.image_sizes) > 0:
+            save_class['image_sizes'] = self.image_sizes
 
         with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
@@ -234,4 +277,57 @@ class Chessboard(object):
             if 'image_ids' in save_class:
                 chessboard.image_ids = save_class['image_ids']
 
+            if 'image_sizes' in save_class:
+                chessboard.image_sizes = save_class['image_sizes']
+
         return chessboard
+
+
+class Chessboards(object):
+    """A class for handling a collection of Chessboards objects imaged in the same system"""
+
+    def __init__(self, chessboards):
+        """
+
+        Args:
+            chessboards: a {chessboard_id: Chessboard, ...} dict
+        """
+        self.chessboards = chessboards
+
+    @staticmethod
+    def load(filenames):
+        """
+
+        Args:
+            filenames: a {chessboard_id: chessboard_filename, ...} dict
+
+        Returns:
+
+        """
+        chessboards = {k: Chessboard.load(v) for k, v in filenames.items()}
+        return Chessboards(chessboards)
+
+    def image_sizes(self):
+        image_sizes = {}
+        for chess in self.chessboards.values():
+            image_sizes.update(chess.image_sizes)
+        return image_sizes
+
+    def cameras(self):
+        return self.image_sizes().keys()
+
+    def image_resolutions(self):
+        image_resolutions = {cid: [] for cid in self.cameras()}
+        for chess in self.chessboards.values():
+            for cid, res in chess.image_resolutions().items():
+                image_resolutions[cid].append(res)
+        return {cid: numpy.mean(res) for cid, res in image_resolutions.items()}
+
+    def facings(self):
+        return {k: v.facing_angles for k, v in self.chessboards.items()}
+
+    def image_points(self):
+        return {camera: {k: v.get_corners_2d(camera) for k, v in self.chessboards.items()} for camera in self.cameras()}
+
+    def target_points(self):
+        return {k: v.get_corners_local_3d() for k, v in self.chessboards.items()}
