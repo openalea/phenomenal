@@ -48,7 +48,7 @@ def normalise_angle(angle):
 class CalibrationFrame(object):
     """A class for objects with local frames used for calibration
 
-    The object local frame is a translated / rotated transform of the world frame around world axis.
+    The object local frame is a translated / rotated transform of the world frame around (fixed) world axis.
     """
     def __init__(self):
         self._pos_x = None
@@ -97,9 +97,13 @@ class CalibrationFrame(object):
         mat_rot_y = rotation_matrix(rot_y, y_axis)
         mat_rot_z = rotation_matrix(rot_z, z_axis)
 
-        rot = concatenate_matrices(mat_rot_x, mat_rot_y, mat_rot_z)
+        fr_x = Frame(mat_rot_x[:3, :3].T)
+        fr_y = Frame(mat_rot_y[:3, :3].T)
+        fr_z = Frame(mat_rot_z[:3, :3].T)
 
-        return Frame(rot[:3, :3].T, origin)
+        axes = fr_z.global_point(fr_y.global_point(fr_x.global_point((x_axis, y_axis, z_axis))))
+
+        return Frame(axes, origin)
 
     def get_frame(self):
         return self.frame(self._pos_x, self._pos_y, self._pos_z, self._rot_x, self._rot_y, self._rot_z)
@@ -202,6 +206,15 @@ class CalibrationCamera(CalibrationFrame):
             return numpy.column_stack((u, v))
         else:
             return u, v
+
+    def get_projection(self):
+        fr_cam = self.get_frame()
+        pixel_coords = self.get_pixel_coordinates()
+
+        def projection(pts):
+            return pixel_coords(fr_cam.local_point(pts))
+
+        return projection
 
     @staticmethod
     def from_json(save_class):
@@ -373,8 +386,8 @@ class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
 class CalibrationSetup(object):
     """A class for helping the setup of a multi-view imaging systems to be calibrated"""
 
-    def __init__(self, cameras, targets, image_resolutions, image_sizes, facings,
-                 reference_camera, reference_target, clockwise_rotation=True):
+    def __init__(self, cameras=None, targets=None, image_resolutions=None, image_sizes=None, facings=None,
+                 clockwise_rotation=True):
         """ Intantiate a CalibrationSetup for positioning cameras and targets of a multiview acquisition system
 
         Args:
@@ -391,37 +404,54 @@ class CalibrationSetup(object):
             facings : a {target_id: {camera_id: angle, ...}, ...} dict of dict giving the rotation consigns
                 (degree, positive) for which a chessboard is facing a camera (ie with with topleft corner closest to
                  topleft side of the image).
-            reference_camera (str): the camera_id of the camera to be used to define world frame (cf Calibration)
-            reference_target (str): the target_id of the target to be used to position cameras
             clockwise_rotation (bool): are targets rotating clockwise ? (default True)
 
         """
 
-        self.cameras = {}
-        self.targets = {}
+        self.cameras = cameras
+        self.targets = targets
+        self.image_resolutions = image_resolutions
+        self.image_sizes = image_sizes
+        self.facings = facings
         self.clockwise = clockwise_rotation
-        self.reference_target_facing = facings[reference_target][reference_camera]
         self.world_origin = 0
+        self.reference_target_facing = 0
 
+    def setup_calibration(self, reference_camera, reference_target):
+        """ Setup the cameras and targets
+
+        Args:
+            reference_camera (str): the camera_id of the camera to be used to define world frame (cf Calibration)
+            reference_target (str): the target_id of the target to be used to position cameras
+
+        Returns:
+            targets and cameras
+
+        """
+        cams, targs = {}, {}
+
+        self.reference_target_facing = self.facings[reference_target][reference_camera]
         # determine setup world origin
-        distance, inclination = cameras[reference_camera]
+        distance, inclination = self.cameras[reference_camera]
         ref_cam = self.setup_camera(inclination=inclination, facing=self.reference_target_facing, distance=distance)
         self.world_origin = ref_cam._pos_z
 
         # build targets
-        for id_target, target in targets.items():
+        for id_target, target in self.targets.items():
             distance, inclination = target
-            facing = facings[id_target][reference_camera]
-            self.targets[id_target] = self.setup_target(inclination=inclination, facing=facing, distance=distance)
+            facing = self.facings[id_target][reference_camera]
+            targs[id_target] = self.setup_target(inclination=inclination, facing=facing, distance=distance)
 
         # build cameras
-        for id_camera, camera in cameras.items():
+        for id_camera, camera in self.cameras.items():
             distance, inclination = camera
-            facing = facings[reference_target][id_camera]
-            image_size = image_sizes[id_camera]
-            resolution = image_resolutions[id_camera]
-            self.cameras[id_camera] = self.setup_camera(image_size=image_size, resolution=resolution,
+            facing = self.facings[reference_target][id_camera]
+            image_size = self.image_sizes[id_camera]
+            resolution = self.image_resolutions[id_camera]
+            cams[id_camera] = self.setup_camera(image_size=image_size, resolution=resolution,
                                                         inclination=inclination, facing=facing, distance=distance)
+
+        return cams, targs
 
     def alpha(self, rotation):
         angle = numpy.radians(rotation)
