@@ -30,7 +30,7 @@ up->down along image height
 from __future__ import division, print_function
 import numpy
 
-from openalea.phenomenal.calibration import CalibrationCamera, cam_origin_axis
+from openalea.phenomenal.calibration import CalibrationCamera, CalibrationFrame
 
 
 def test_image_frame():
@@ -64,7 +64,7 @@ def test_image_frame():
 
 
 def test_side_camera_frame():
-    """side camera is along world y-axis (y-), pointing to world origin, x camera and x world being identical"""
+    """side camera is along world y-axis (on y-), pointing to world origin, x camera and x world being identical"""
 
     # camera frame axis coordinates expressed in world coordinates
     side_camera_axes = numpy.array([[1., 0., 0.],
@@ -74,13 +74,11 @@ def test_side_camera_frame():
     # test camera axis frame
     c = CalibrationCamera()
     fx = 1
-    c._cam_width_image, c._cam_height_image, c._cam_focal_length_x, c._cam_focal_length_y = 10, 10, fx, fx
-    c._cam_pos_x, c._cam_pos_y, c._cam_pos_z = 0, -2 * fx, 0  # side camera defines z=0 and x=0 planes
-    c._cam_rot_x, c._cam_rot_y, c._cam_rot_z = -numpy.pi / 2, 0, 0  # make z camera axis points toward world origin
-    c._cam_origin_axis = numpy.identity(4)  # no transform
-    c._angle_factor = 1  # perfect rotation of world
+    c._width_image, c._height_image, c._focal_length_x, c._focal_length_y = 10, 10, fx, fx
+    c._pos_x, c._pos_y, c._pos_z = 0, -2 * fx, 0  # side camera defines z=0 and x=0 planes
+    c._rot_x, c._rot_y, c._rot_z = -numpy.pi / 2, 0, 0  # make z camera axis points toward world origin
 
-    f = c.get_camera_frame()
+    f = c.get_frame()
     numpy.testing.assert_allclose(f._axes, side_camera_axes, atol=1e-6)
 
     # Test projections of corner points in world coordinate system
@@ -93,28 +91,22 @@ def test_side_camera_frame():
     up = [0, 0, 2 * fx]
     down = [0, 0, -2 * fx]
     # Expectations in image frame
-    i_origin = numpy.array([c._cam_width_image / 2, c._cam_height_image / 2])
+    i_origin = numpy.array([c._width_image / 2, c._height_image / 2])
     i_right = i_origin + [1, 0]
     i_left = i_origin - [1, 0]
     i_up = i_origin - [0, 1]
     i_down = i_origin + [0, 1]
 
-    p = c.get_projection(0)
+    p = c.get_projection()
     pts = numpy.array((w_origin, right, left, up, down))
     pix = numpy.array((i_origin, i_right, i_left, i_up, i_down))
     pixels = p(pts)
     numpy.testing.assert_allclose(pixels, pix)
 
-    # test positioning using origin_axis
-    c._cam_rot_x, c._cam_rot_y, c._cam_rot_z = 0, 0, 0
-    c._cam_origin_axis = cam_origin_axis(side_camera_axes).round()
-
-    p = c.get_projection(0)
-    pixels = p(pts)
-    numpy.testing.assert_allclose(pixels, pix)
     #test one point call
     pixel = p(pts[0])
     numpy.testing.assert_allclose(pixel, pix[0])
+
 
 def test_top_camera_frame():
     """top camera is along world z-axis (z+), pointing to world origin,
@@ -128,13 +120,11 @@ def test_top_camera_frame():
     # test camera axis frame
     c = CalibrationCamera()
     fx = 1
-    c._cam_width_image, c._cam_height_image, c._cam_focal_length_x, c._cam_focal_length_y = 10, 10, fx, fx
-    c._cam_pos_x, c._cam_pos_y, c._cam_pos_z = 0, 0, 2 * fx  # top camera is on z+
-    c._cam_rot_x, c._cam_rot_y, c._cam_rot_z = -numpy.pi, 0, 0  # make z camera axis points toward world origin
-    c._cam_origin_axis = numpy.identity(4)  # no transform
-    c._angle_factor = 1  # no rotation of world
+    c._width_image, c._height_image, c._focal_length_x, c._focal_length_y = 10, 10, fx, fx
+    c._pos_x, c._pos_y, c._pos_z = 0, 0, 2 * fx  # top camera is on z+
+    c._rot_x, c._rot_y, c._rot_z = -numpy.pi, 0, 0  # make z camera axis points toward world origin
 
-    f = c.get_camera_frame()
+    f = c.get_frame()
     numpy.testing.assert_allclose(f._axes, top_camera_axes, atol=1e-6)
 
     # Test projections of corner points in world coordinate system
@@ -147,22 +137,51 @@ def test_top_camera_frame():
     back = [0, 2 * fx, 0]
     front = [0, -2 * fx, 0]
     # Expectations in image frame
-    i_origin = numpy.array([c._cam_width_image / 2, c._cam_height_image / 2])
+    i_origin = numpy.array([c._width_image / 2, c._height_image / 2])
     i_right = i_origin + [1, 0]
     i_left = i_origin - [1, 0]
     i_back = i_origin - [0, 1]
     i_front = i_origin + [0, 1]
 
-    p = c.get_projection(0)
+    p = c.get_projection()
     pts = numpy.array((w_origin, right, left, back, front))
     pix = numpy.array((i_origin, i_right, i_left, i_back, i_front))
     pixels = p(pts)
     numpy.testing.assert_allclose(pixels, pix)
 
-    # test positioning using origin_axis
-    c._cam_rot_x, c._cam_rot_y, c._cam_rot_z = 0, 0, 0
-    c._cam_origin_axis = cam_origin_axis(top_camera_axes).round()
 
-    p = c.get_projection(0)
-    pixels = p(pts)
-    numpy.testing.assert_allclose(pixels, pix)
+def test_target_frame():
+    # target axis coordinates expressed in world coordinates
+    target_axis = numpy.identity(3)
+
+    # test target axis frame
+    c = CalibrationFrame()
+    c._pos_x, c._pos_y, c._pos_z = 0, 0, 0
+    c._rot_x, c._rot_y, c._rot_z = 0, 0, 0
+    f = c.get_frame()
+    numpy.testing.assert_allclose(f._axes, target_axis, atol=1e-6)
+
+
+    # test positioning using rotations
+    c = CalibrationFrame()
+
+    c._pos_x, c._pos_y, c._pos_z = 0, 0, 0
+    c._rot_x, c._rot_y, c._rot_z = numpy.pi / 2, 0, 0
+    expected = numpy.array(((1, 0, 0), (0, 0, 1), (0, -1, 0)))
+    f = c.get_frame()
+    numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
+
+    c._rot_x, c._rot_y, c._rot_z = 0, numpy.pi / 2, 0
+    expected = numpy.array(((0, 0, -1), (0, 1, 0), (1, 0, 0)))
+    f = c.get_frame()
+    numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
+
+    c._rot_x, c._rot_y, c._rot_z = 0, 0, numpy.pi / 2
+    expected = numpy.array(((0, 1, 0), (-1, 0, 0), (0, 0, 1)))
+    f = c.get_frame()
+    numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)
+
+    c._rot_x, c._rot_y, c._rot_z = numpy.pi / 2, 0, numpy.pi / 2
+    expected = numpy.array(((0, 1, 0), (0, 0, 1), (1, 0, 0)))
+    f = c.get_frame()
+    numpy.testing.assert_allclose(f._axes, expected, atol=1e-6)

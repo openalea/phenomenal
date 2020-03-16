@@ -62,7 +62,7 @@ def test_array_pixel_coordinates():
 def test_array_camera_frame_local_point():
     plant_number = 1
     side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
-    camera_frame = side_calibration.get_camera_frame()
+    camera_frame = side_calibration.get_frame()
 
     pt_3d = (-322.20389648, 162.67521638, -4866.89129462)
     result = camera_frame.local_point(pt_3d)
