@@ -27,9 +27,8 @@ from .transformations import (concatenate_matrices, rotation_matrix)
 __all__ = ["CalibrationCamera",
            "CalibrationFrame",
            "CalibrationSetup",
-           "CalibrationCameraTop",
            "Calibration",
-           "CalibrationCameraSideWith2TargetYXZ"]
+           "load_old_calibration"]
 
 
 # ==============================================================================
@@ -107,6 +106,13 @@ class CalibrationFrame(object):
 
     def get_frame(self):
         return self.frame(self._pos_x, self._pos_y, self._pos_z, self._rot_x, self._rot_y, self._rot_z)
+
+    def get_extrinsic(self):
+        extrinsic = numpy.identity(4)
+        fr = self.get_frame()
+        extrinsic[:3, :3] = fr.rotation_to_local()
+        extrinsic[:3, 3] = fr.local_point((0, 0, 0))
+        return extrinsic[:3, ]
 
     def __str__(self):
         out = ''
@@ -216,6 +222,17 @@ class CalibrationCamera(CalibrationFrame):
 
         return projection
 
+    def get_intrinsic(self):
+        intrinsic = numpy.identity(3)
+        fx = self._focal_length_x
+        fy = self._focal_length_y
+        cx = self._width_image / 2.
+        cy = self._height_image / 2.
+        di = numpy.diag_indices(2)
+        intrinsic[:2, 2] = (cx, cy)
+        intrinsic[di] = (fx, fy)
+        return intrinsic
+
     @staticmethod
     def from_json(save_class):
         c = CalibrationCamera()
@@ -227,159 +244,6 @@ class CalibrationCamera(CalibrationFrame):
         with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
         c = CalibrationCamera.from_json(save_class)
-        return c
-
-
-class CalibrationCameraTop(CalibrationCamera):
-    def __init__(self):
-        CalibrationCamera.__init__(self)
-        self._verbose = False
-
-        self._ref_target_points_local_3d = None
-        self._ref_target_points_2d = None
-        self._ref_target_points_3d = None
-
-        self._ref_number = None
-
-        # camera frame axis coordinates expressed in world coordinates
-        axes = numpy.array([[1., 0., 0.],
-                            [0., -1., 0.],
-                            [0., 0., -1.]])
-
-        self._cam_origin_axis = origin_axis(axes)
-
-    @staticmethod
-    def load(filename):
-        with open(filename, 'r') as input_file:
-            save_class = json.load(input_file)
-
-            c = CalibrationCameraTop()
-
-            c._width_image = save_class['cam_width_image']
-            c._height_image = save_class['cam_height_image']
-            c._focal_length_x = save_class['cam_focal_length_x']
-            c._focal_length_y = save_class['cam_focal_length_y']
-            c._pos_x = save_class['cam_pos_x']
-            c._pos_y = save_class['cam_pos_y']
-            c._pos_z = save_class['cam_pos_z']
-            c._rot_x = save_class['cam_rot_x']
-            c._rot_y = save_class['cam_rot_y']
-            c._rot_z = save_class['cam_rot_z']
-            c._angle_factor = save_class['angle_factor']
-            c._cam_origin_axis = numpy.array(
-                save_class['cam_origin_axis']).reshape((4, 4)).astype(
-                numpy.float32)
-
-        return c
-
-class CalibrationCameraSideWith2TargetYXZ(CalibrationCamera):
-    def __init__(self):
-        CalibrationCamera.__init__(self)
-        self._verbose = False
-        self._ref_target_1_points_local_3d = None
-        self._ref_target_2_points_local_3d = None
-        self._ref_number = None
-        self._ref_target_1_points_2d = None
-        self._ref_target_2_points_2d = None
-
-        self._cam_pos_z = 0.0
-
-        self._cam_rot_y = 0.0
-        # camera frame axis coordinates expressed in world coordinates
-        axes = numpy.array([[1., 0., 0.],
-                            [0., 0., -1.],
-                            [0., 1., 0.]])
-
-        self._cam_origin_axis = origin_axis(axes)
-
-        self._target_1_pos_x = None
-        self._target_1_pos_y = None
-        self._target_1_pos_z = None
-        self._target_1_rot_x = None
-        self._target_1_rot_y = None
-        self._target_1_rot_z = None
-
-        self._target_2_pos_x = None
-        self._target_2_pos_y = None
-        self._target_2_pos_z = None
-        self._target_2_rot_x = None
-        self._target_2_rot_y = None
-        self._target_2_rot_z = None
-
-    def __str__(self):
-        out = ''
-        out += CalibrationCamera.__str__(self)
-
-        out += 'Target 1: \n'
-        out += '\tPosition X : ' + str(self._target_1_pos_x) + '\n'
-        out += '\tPosition Y : ' + str(self._target_1_pos_y) + '\n'
-        out += '\tPosition Z : ' + str(self._target_1_pos_z) + '\n\n'
-        out += '\tRotation X : ' + str(self._target_1_rot_x) + '\n'
-        out += '\tRotation Y : ' + str(self._target_1_rot_y) + '\n'
-        out += '\tRotation Z : ' + str(self._target_1_rot_z) + '\n\n'
-
-        out += 'Target 2: \n'
-        out += '\tPosition X : ' + str(self._target_2_pos_x) + '\n'
-        out += '\tPosition Y : ' + str(self._target_2_pos_y) + '\n'
-        out += '\tPosition Z : ' + str(self._target_2_pos_z) + '\n\n'
-        out += '\tRotation X : ' + str(self._target_2_rot_x) + '\n'
-        out += '\tRotation Y : ' + str(self._target_2_rot_y) + '\n'
-        out += '\tRotation Z : ' + str(self._target_2_rot_z) + '\n\n'
-
-        return out
-
-    @staticmethod
-    def load(filename):
-        with open(filename, 'r') as input_file:
-            save_class = json.load(input_file)
-
-            c = CalibrationCameraSideWith2TargetYXZ()
-
-            c._width_image = save_class['cam_width_image']
-            c._height_image = save_class['cam_height_image']
-            c._focal_length_x = save_class['cam_focal_length_x']
-            c._focal_length_y = save_class['cam_focal_length_y']
-            c._pos_x = save_class['cam_pos_x']
-            c._pos_y = save_class['cam_pos_y']
-            c._cam_pos_z = save_class['cam_pos_z']
-            c._rot_x = save_class['cam_rot_x']
-            c._cam_rot_y = save_class['cam_rot_y']
-            c._rot_z = save_class['cam_rot_z']
-            c._angle_factor = save_class['angle_factor']
-            c._cam_origin_axis = numpy.array(
-                save_class['cam_origin_axis']).reshape((4, 4)).astype(
-                numpy.float32)
-
-            if 'targets_parameters' not in save_class:
-                c._target_1_pos_x = save_class['target_1_pos_x']
-                c._target_1_pos_y = save_class['target_1_pos_y']
-                c._target_1_pos_z = save_class['target_1_pos_z']
-                c._target_1_rot_x = save_class['target_1_rot_x']
-                c._target_1_rot_y = save_class['target_1_rot_y']
-                c._target_1_rot_z = save_class['target_1_rot_z']
-
-                c._target_2_pos_x = save_class['target_2_pos_x']
-                c._target_2_pos_y = save_class['target_2_pos_y']
-                c._target_2_pos_z = save_class['target_2_pos_z']
-                c._target_2_rot_x = save_class['target_2_rot_x']
-                c._target_2_rot_y = save_class['target_2_rot_y']
-                c._target_2_rot_z = save_class['target_2_rot_z']
-            else:
-                t1, t2 = save_class['targets_parameters']
-                c._target_1_pos_x = t1['_pos_x']
-                c._target_1_pos_y = t1['_pos_y']
-                c._target_1_pos_z = t1['_pos_z']
-                c._target_1_rot_x = t1['_rot_x']
-                c._target_1_rot_y = t1['_rot_y']
-                c._target_1_rot_z = t1['_rot_z']
-
-                c._target_2_pos_x = t2['_pos_x']
-                c._target_2_pos_y = t2['_pos_y']
-                c._target_2_pos_z = t2['_pos_z']
-                c._target_2_rot_x = t2['_rot_x']
-                c._target_2_rot_y = t2['_rot_y']
-                c._target_2_rot_z = t2['_rot_z']
-
         return c
 
 
@@ -887,14 +751,74 @@ class Calibration(object):
             save_class = json.load(input_file)
 
         c = Calibration()
-        c._cameras = {id_camera: CalibrationCamera.from_json(pars) for id_camera, pars in save_class['cameras_parameters'].items()}
-        c._targets = {id_target: CalibrationFrame.from_json(pars) for id_target, pars in save_class['targets_parameters'].items()}
+        c._cameras = {id_camera: CalibrationCamera.from_json(pars)
+                      for id_camera, pars in save_class['cameras_parameters'].items()}
+        c._targets = {id_target: CalibrationFrame.from_json(pars)
+                      for id_target, pars in save_class['targets_parameters'].items()}
         c._nb_cameras = len(c._cameras)
         c._nb_targets = len(c._targets)
         c.angle_factor = save_class['angle_factor']
         c.clockwise = save_class['clockwise']
         c.reference_camera = save_class['reference_camera']
         return c
+
+
+def load_old_calibration(side_file, top_file=None, chess_origin=(4 * 47, 3 * 47)):
+    """Reader for old calibration
+
+    Only a partly equivalent fit is provided (re-run calibrate will be necessary to optimise the parameters
+    """
+    cameras = {}
+    targets = {}
+    angle_factor = 1
+    with open(side_file, 'r') as input_file:
+        save_class = json.load(input_file)
+        c = CalibrationCamera()
+        c._width_image = save_class['cam_width_image']
+        c._height_image = save_class['cam_height_image']
+        c._focal_length_x = save_class['cam_focal_length_x']
+        c._focal_length_y = save_class['cam_focal_length_y']
+        c._pos_x = - save_class['cam_pos_x']
+        c._pos_y = save_class['cam_pos_y']
+        c._pos_z = save_class['cam_pos_z']
+        # origin matrix for side cameras corresponds to -pi/2 rot around x axis
+        rx = save_class['cam_rot_x'] - numpy.pi / 2.
+        ry = save_class['cam_rot_y']
+        rz = save_class['cam_rot_z']
+        c._rot_x, c._rot_y, c._rot_z = normalise_angle(rx), normalise_angle(ry), normalise_angle(rz)
+        cameras['side'] = c
+        angle_factor = save_class['angle_factor']
+
+        for tn in ('target_1', 'target_2'):
+            t = CalibrationFrame()
+            t._pos_x = -save_class[tn + '_pos_x'] - chess_origin[0]
+            t._pos_y = save_class[tn + '_pos_y'] - chess_origin[1]
+            t._pos_z = save_class[tn + '_pos_z']
+            # change of definition for rot
+            t._rot_x = normalise_angle(save_class[tn + '_rot_x'] - save_class[tn + '_rot_y'])
+            t._rot_y = 0
+            t._rot_z = - normalise_angle(save_class[tn + '_rot_z'])
+            targets[tn] = t
+
+    if top_file is not None:
+        with open(top_file, 'r') as input_file:
+            save_class = json.load(input_file)
+            c = CalibrationCamera()
+            c._width_image = save_class['cam_width_image']
+            c._height_image = save_class['cam_height_image']
+            c._focal_length_x = save_class['cam_focal_length_x']
+            c._focal_length_y = save_class['cam_focal_length_y']
+            c._pos_x = - save_class['cam_pos_x']
+            c._pos_y = save_class['cam_pos_y']
+            c._pos_z = save_class['cam_pos_z']
+            # origin matrix for top camera corresponds to pi rot around x axis and rot_z
+            rx = save_class['cam_rot_x'] + numpy.pi
+            ry = save_class['cam_rot_y']
+            rz = save_class['cam_rot_z'] + numpy.pi / 2.
+            c._rot_x, c._rot_y, c._rot_z = normalise_angle(rx), normalise_angle(ry), normalise_angle(rz)
+            cameras['top'] = c
+
+    return Calibration(angle_factor=angle_factor, cameras=cameras, targets=targets)
 
 
 def find_position_3d_points(pt2d, calibrations):
