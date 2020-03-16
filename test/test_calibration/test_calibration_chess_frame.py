@@ -97,13 +97,7 @@ def test_frame():
     print(c._cam_pos_x, c._cam_pos_y, c._cam_pos_z)
     print(c._cam_rot_x, c._cam_rot_y, c._cam_rot_z)
 
-    fr_cam = c.camera_frame(c._cam_pos_x,
-                            c._cam_pos_y,
-                            c._cam_pos_z,
-                            c._cam_rot_x,
-                            c._cam_rot_y,
-                            c._cam_rot_z,
-                            c._cam_origin_axis)
+    fr_cam = c.frame(c._cam_pos_x, c._cam_pos_y, c._cam_pos_z, c._cam_rot_x, c._cam_rot_y, c._cam_rot_z)
 
     # print fr_cam.global_point((0, 0, 0))
     # print fr_cam.global_point((-50, 0, -2500))
