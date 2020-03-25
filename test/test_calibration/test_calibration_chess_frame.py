@@ -13,6 +13,7 @@ from __future__ import division, print_function
 
 import math
 import numpy
+import os
 
 import openalea.phenomenal.calibration as phm_calib
 import openalea.phenomenal.data as phm_data
@@ -91,8 +92,11 @@ def test_chess_frame():
 
 
 def test_frame():
-    plant_number = 1
-    c = phm_data.calibrations(plant_number=plant_number)["side"]
+
+    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "../data/plant_1")
+
+    c = phm_data.calibrations(dir_path)["side"]
 
     print(c._cam_pos_x, c._cam_pos_y, c._cam_pos_z)
     print(c._cam_rot_x, c._cam_rot_y, c._cam_rot_z)

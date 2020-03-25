@@ -12,14 +12,16 @@
 from __future__ import division, print_function
 
 import numpy
+import os
 
 import openalea.phenomenal.data as phm_data
 # ==============================================================================
 
 
 def test_array_pixel_coordinates():
-    plant_number = 1
-    side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
+    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "../data/plant_1")
+    side_calibration = phm_data.calibrations(dir_path)["side"]
 
     pt3d = (-322.20389648, 162.67521638, -4866.89129462)
     pt_2d = side_calibration.pixel_coordinates(
@@ -60,8 +62,10 @@ def test_array_pixel_coordinates():
 
 
 def test_array_camera_frame_local_point():
-    plant_number = 1
-    side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
+
+    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "../data/plant_1")
+    side_calibration = phm_data.calibrations(dir_path)["side"]
     camera_frame = side_calibration.get_frame()
 
     pt_3d = (-322.20389648, 162.67521638, -4866.89129462)
@@ -92,8 +96,10 @@ def test_array_camera_frame_local_point():
 
 def test_projection():
     angle = 0
-    plant_number = 1
-    side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
+    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "../data/plant_1")
+
+    side_calibration = phm_data.calibrations(dir_path)["side"]
     projection = side_calibration.get_projection(angle)
 
     pts_3d = numpy.array([[-472, -472, 200],

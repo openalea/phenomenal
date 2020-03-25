@@ -12,6 +12,7 @@
 from __future__ import division, print_function
 
 import numpy
+import os
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.calibration as phm_calib
@@ -51,11 +52,12 @@ def test_chessboard_2():
 
 
 def test_chessboard_3():
-    plant_number = 1
 
     chess = phm_calib.Chessboard(50, (8, 6))
 
-    images = phm_data.chessboard_images(plant_number=plant_number)[0]
+    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "../data/plant_1")
+    images = phm_data.chessboard_images(dir_path)[0]
     found = chess.detect_corners("side", 42, images['side'][42])
 
     if found:

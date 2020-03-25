@@ -6,46 +6,39 @@ source:
   path: ..
 
 build:
-  features:
-    - vc9               [win and py27]
-    - vc14              [win and py36]
-  track_features:
-    - vc9               [win and py27]
-    - vc14              [win and py36]
   number: 0
   preserve_egg_dir: True
   string: phenomenal
   script:
-    - python setup.py install --single-version-externally-managed --record record.txt
+    - {{ PYTHON }} setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
+
   build:
+    - {{ compiler('c') }}
+    - {{ compiler("cxx") }}
+    
+
+  host:
     - python
     - setuptools
-    - cython
-    - vs2008_runtime    [win and py27]
-    - vs2015_runtime    [win and py36]
-    - libgcc-ng [linux]
-    - pywin32 [win]
+    - cython    
     - numpy
+    - scipy
 
   run:
     - python
     - numpy
-    - numba
-    - cython
     - scipy
     - scikit-image
     - scikit-learn
-    - networkx=2.3
+    - networkx<=2.3
     - opencv [win or linux]
     - opencv!=4.1.2 [osx]
     - matplotlib
     - vtk
     - pywin32 [win]
-    - nose
-    - coverage
-    - sphinx
+
 test:
   imports:
     - openalea.phenomenal
@@ -60,6 +53,7 @@ test:
   requires:
     - pytest
   source_files:
+    - test/data/**
     - test/test_calibration/**
     - test/test_image/**
     - test/test_mesh/**
