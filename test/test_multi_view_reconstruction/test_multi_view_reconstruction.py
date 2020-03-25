@@ -99,7 +99,7 @@ def test_get_bounding_box_voxel_projected_2():
     plant_number = 1
     angle = 0
     calibrations = phm_data.calibrations(plant_1_dir)
-    projection = calibrations["side"].get_projection(angle)
+    projection = calibrations.get_projection("side", angle)
 
     voxels_position = numpy.array([[0, 0, 0],
                                    [0, 0, 0],
@@ -122,7 +122,7 @@ def test_split_and_projection():
     plant_number = 1
     angle = 0
     calibrations = phm_data.calibrations(plant_1_dir)
-    projection = calibrations["side"].get_projection(angle)
+    projection = calibrations.get_projection("side", angle)
 
     voxels_position = numpy.array([[0, 0, 0]])
     voxels_size = 64
@@ -171,7 +171,7 @@ def get_image_views_cube_projected(with_ref=False):
     shape_image = (2454, 2056)
     image_views = list()
     for angle in range(0, 360, 30):
-        projection = calibrations["side"].get_projection(angle)
+        projection = calibrations.get_projection("side", angle)
 
         img = phm_mvr.project_voxel_centers_on_image(voxels_position,
                                                      voxels_size,
@@ -201,7 +201,7 @@ def test_reconstruction_3d_1():
     image_views = list()
     for id_camera in bin_images:
         for angle in bin_images[id_camera]:
-            projection = calibrations[id_camera].get_projection(angle)
+            projection = calibrations.get_projection(id_camera, angle)
             iv = phm_obj.ImageView(bin_images[id_camera][angle],
                                    projection,
                                    inclusive=False,
