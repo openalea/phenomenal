@@ -19,9 +19,9 @@ import pkg_resources
 import pathlib
 
 
-from ..mesh import read_ply_to_vertices_faces
-from ..calibration import (Chessboard, CalibrationCamera)
-from ..object import VoxelGrid
+from openalea.phenomenal.mesh import read_ply_to_vertices_faces
+from openalea.phenomenal.calibration import (Chessboard, load_old_calibration)
+from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
 
 
@@ -161,14 +161,13 @@ def calibrations(name_dir):
     :return: dict[id_camera] of camera calibration object
     """
 
-    data_directory = os.path.join(name_dir, 'calibration/')
+    data_directory = os.path.join(name_dir, 'calibration')
 
-    calibration = dict()
+    fn = dict()
     for id_camera in ["side", "top"]:
-        calibration[id_camera] = CalibrationCamera.load(
-            os.path.join(data_directory,
-                         "calibration_camera_{}.json".format(id_camera)))
-
+        fn[id_camera] = os.path.join(data_directory,
+                         "calibration_camera_{}.json".format(id_camera))
+    calibration = load_old_calibration(fn['side'], fn['top'])
     return calibration
 
 
