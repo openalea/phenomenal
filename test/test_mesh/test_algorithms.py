@@ -11,6 +11,8 @@
 # ==============================================================================
 from __future__ import division, print_function
 
+import os
+
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.mesh as phm_mesh
@@ -49,7 +51,12 @@ def test_meshing():
 
     plant_number = 1
     voxels_size = 16
-    voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
+
+    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "../data")
+    print(dir_path)
+    voxel_grid = phm_data.voxel_grid(dir_path,
+                                     plant_number=plant_number,
                                      voxels_size=voxels_size)
 
     image_3d = voxel_grid.to_image_3d()
@@ -71,9 +78,25 @@ def test_meshing():
 
 
 def test_format():
-    vertices, faces, color = phm_data.synthetic_plant(plant_number=1)
+
+    vertices = [[0, 0, 0],
+                [1, 1, 1],
+                [2, 2, 2]]
+
+    faces = [[0, 1, 2]]
+
+    filename = "test.ply"
+
+    phm_mesh.write_vertices_faces_to_ply_file(filename,
+                                              vertices,
+                                              faces)
+
+    vertices, faces, color = phm_mesh.read_ply_to_vertices_faces(filename)
+
+    os.remove(filename)
 
     print(type(color))
+
 
 if __name__ == "__main__":
     for func_name in dir():

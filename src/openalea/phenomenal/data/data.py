@@ -16,6 +16,8 @@ import glob
 import os
 import collections
 import pkg_resources
+import pathlib
+
 
 from ..mesh import read_ply_to_vertices_faces
 from ..calibration import (Chessboard, CalibrationCamera)
@@ -23,13 +25,12 @@ from ..object import VoxelGrid
 # ==============================================================================
 
 
-def _path_images(plant_number=1, dtype="bin"):
+def _path_images(name_dir, dtype="bin"):
     """ According to the plant number return a dict[id_camera][angle] containing
     filename of file.
 
     Parameters
     ----------
-    plant_number : int
 
     dtype :  "bin" or "raw" or "chessboard"
 
@@ -38,65 +39,59 @@ def _path_images(plant_number=1, dtype="bin"):
     d : dict of dict of string
         dict[id_camera][angle] = filename
     """
-    data_directory = pkg_resources.resource_filename(
-        'openalea.phenomenal', 'data/plant_{}/{}/'.format(
-            plant_number, dtype))
+    data_directory = os.path.join(name_dir, '{}/'.format(dtype))
 
     d = collections.defaultdict(dict)
     for id_camera in ["side", "top"]:
-        filenames = glob.glob(os.path.join(data_directory, id_camera, '*.png'))
+        filenames = glob.glob(os.path.join(data_directory, id_camera, '*'))
         for filename in filenames:
-            angle = int(os.path.basename(filename).split('.png')[0])
+            angle = int(pathlib.Path(filename).stem)
             d[id_camera][angle] = filename
 
     return d
 
 
-def path_bin_images(plant_number=1):
+def path_bin_images(name_dir):
     """ According to the plant number return a dict[id_camera][angle] containing
     filename of the binary image.
 
-    Parameters
-    ----------
-    plant_number : int
-        Number of the plant desired
     Returns
     -------
     d : dict of dict of string
         dict[id_camera][angle] = filename
     """
-    return _path_images(plant_number=plant_number, dtype="bin")
+    return _path_images(name_dir, dtype="bin")
 
 
-def path_raw_images(plant_number=1):
+def path_raw_images(name_dir):
     """
     According to the plant number return a dict[id_camera][angle] containing
     filename of the raw image.
-    :param plant_number: number of the plant desired (int)
+
     :return: dict[id_camera][angle] of filename
     """
-    return _path_images(plant_number=plant_number, dtype="raw")
+    return _path_images(name_dir, dtype="raw")
 
 
-def path_chessboard_images(plant_number=1):
+def path_chessboard_images(name_dir):
     """
     According to the plant number return a dict[id_camera][angle] containing
     filename of the raw image.
-    :param plant_number: number of the plant desired (int)
+
     :return: dict[id_camera][angle] of filename
     """
-    return _path_images(plant_number=plant_number, dtype="chessboard")
+    return _path_images(name_dir, dtype="chessboard")
 
 
-def raw_images(plant_number=1):
+def raw_images(name_dir):
     """
     According to the plant number return a dict[id_camera][angle] of
     numpy array of the loader raw image.
-    :param plant_number: number of the plant desired (int)
+
     :return: dict[id_camera][angle] of loaded RGB image
     """
 
-    d = path_raw_images(plant_number)
+    d = path_raw_images(name_dir)
     for id_camera in d:
         for angle in d[id_camera]:
              img = cv2.imread(d[id_camera][angle], cv2.IMREAD_COLOR)
@@ -104,16 +99,16 @@ def raw_images(plant_number=1):
     return d
 
 
-def bin_images(plant_number=1):
+def bin_images(name_dir):
     """
     According to the plant number return a dict[id_camera][angle] of
     numpy array of the loader binary image.
     A binary image is a numpy array of uint8 type.
-    :param plant_number: number of the plant desired (int)
+
     :return: dict[id_camera][angle] of loaded grayscale image
     """
 
-    d = path_bin_images(plant_number)
+    d = path_bin_images(name_dir)
     for id_camera in d:
         for angle in d[id_camera]:
             d[id_camera][angle] = cv2.imread(d[id_camera][angle],
@@ -121,16 +116,16 @@ def bin_images(plant_number=1):
     return d
 
 
-def chessboard_images(plant_number=1):
+def chessboard_images(name_dir):
     """
     According to the plant number return a dict[id_camera][angle] of
     numpy array of the loader binary image.
     A binary image is a numpy array of uint8 type.
-    :param plant_number: number of the plant desired (int)
+
     :return: dict[id_camera][angle] of loaded grayscale image
     """
 
-    d = path_chessboard_images(plant_number)
+    d = path_chessboard_images(name_dir)
     for id_camera in d:
         for angle in d[id_camera]:
             img = cv2.imread(d[id_camera][angle], cv2.IMREAD_COLOR)
@@ -140,16 +135,14 @@ def chessboard_images(plant_number=1):
 # ==============================================================================
 
 
-def chessboards(plant_number=1):
+def chessboards(name_dir):
     """
-    According to the plant number return a dict[id_camera] of camera
+    According to name_dir return a dict[id_camera] of camera
     calibration object
-    :param plant_number: number of the plant desired (int)
+
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = pkg_resources.resource_filename(
-        'openalea.phenomenal', 'data/plant_{}/chessboard/points/'.format(
-            plant_number))
+    data_directory = os.path.join(name_dir, 'chessboard/points/')
 
     chessboards = list()
     for id_chessboard in [1, 2]:
@@ -160,17 +153,15 @@ def chessboards(plant_number=1):
     return chessboards
 
 
-def calibrations(plant_number=1):
+def calibrations(name_dir):
     """
-    According to the plant number return a dict[id_camera] of camera
+    According to name_dir return a dict[id_camera] of camera
     calibration object
 
-    :param plant_number: number of the plant desired (int)
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = pkg_resources.resource_filename(
-        'openalea.phenomenal', 'data/plant_{}/calibration/'.format(
-            plant_number))
+
+    data_directory = os.path.join(name_dir, 'calibration/')
 
     calibration = dict()
     for id_camera in ["side", "top"]:
@@ -181,7 +172,7 @@ def calibrations(plant_number=1):
     return calibration
 
 
-def voxel_grid(plant_number=1, voxels_size=4):
+def voxel_grid(name_dir, plant_number=1, voxels_size=4):
     """
     According to the plant number and the voxel size desired return the
     voxel_grid of the plant.
@@ -190,12 +181,10 @@ def voxel_grid(plant_number=1, voxels_size=4):
     :param voxels_size: diameter of each voxel in mm (int)
     :return: voxel_grid object
     """
-
-    filename = pkg_resources.resource_filename(
-        'openalea.phenomenal', 'data/plant_{}/voxels/{}.npz'.format(
-            plant_number, voxels_size))
-
-    vg = VoxelGrid.read(filename)
+    vg = VoxelGrid.read(
+        os.path.join(name_dir,
+                     'plant_{}/voxels/{}.npz'.format(plant_number,
+                                                     voxels_size)))
 
     return vg
 
@@ -226,14 +215,14 @@ def tutorial_data_binarization_mask():
 # ==============================================================================
 
 
-def synthetic_plant(plant_number=1, registration_point=(0, 0, 750)):
-    """ According to the plant number return the mesh plant and skeleton of the
+def synthetic_plant(name_dir, registration_point=(0, 0, 750)):
+    """ According to name_dir return the mesh plant and skeleton of the
      synthetic plant.
 
     Parameters
     ----------
-    plant_number : int, optional
-        Number of the plant desired
+    name_dir : str
+        Name of the synthetic plant directory
 
     registration_point: 3-tuple, optional
         Position of the pot in the scene
@@ -242,9 +231,7 @@ def synthetic_plant(plant_number=1, registration_point=(0, 0, 750)):
         out : vertices, faces, meta_data
 
     """
-    filename = pkg_resources.resource_filename(
-        'openalea.phenomenal',
-        'data/synthetic_plant_{}/synthetic_plant.ply'.format(plant_number))
+    filename = os.path.join(name_dir, 'synthetic_plant.ply')
 
     vertices, faces, color = read_ply_to_vertices_faces(filename)
     vertices = numpy.array(vertices) * 10 - numpy.array([registration_point])
@@ -257,10 +244,11 @@ def synthetic_plant(plant_number=1, registration_point=(0, 0, 750)):
 # ==============================================================================
 
 
-def mesh_mccormik_plant(plant_number=1):
-    filename = pkg_resources.resource_filename(
-        'openalea.phenomenal',
-        'data/mccormick_plant_{}/segmentedMesh.ply'.format(plant_number))
+def mesh_mccormik_plant(name_dir):
+    """ According to name_dir return the mesh of plant from the McCormik paper
+    """
+
+    filename = os.path.join(name_dir, 'segmentedMesh.ply')
 
     vertices, faces, colors = read_ply_to_vertices_faces(filename)
 

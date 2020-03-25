@@ -11,16 +11,19 @@
 # ==============================================================================
 from __future__ import division, print_function
 
-import math
-import numpy
+import os
 
 import openalea.phenomenal.calibration as phm_calib
+
 import openalea.phenomenal.data as phm_data
 # ==============================================================================
 
-
 def test_calibration_working():
-    chessboards = phm_data.chessboards(1)
+
+    name_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "../data/plant_1")
+
+    chessboards = phm_data.chessboards(name_dir)
 
 if __name__ == "__main__":
     for func_name in dir():
