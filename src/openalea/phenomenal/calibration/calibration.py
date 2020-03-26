@@ -18,6 +18,7 @@ import math
 import numpy
 import scipy.optimize
 from itertools import islice
+from copy import deepcopy
 
 from .frame import (Frame, x_axis, y_axis, z_axis)
 from .transformations import (concatenate_matrices, rotation_matrix)
@@ -315,7 +316,7 @@ class CalibrationSetup(object):
             cams[id_camera] = self.setup_camera(image_size=image_size, resolution=resolution,
                                                         inclination=inclination, facing=facing, distance=distance)
 
-        return cams, targs
+        return cams, targs, reference_camera, self.clockwise
 
     def alpha(self, rotation):
         angle = numpy.radians(rotation)
@@ -435,7 +436,7 @@ class Calibration(object):
         self._nb_cameras = 0
         self._nb_image_points = 0
 
-        self.setup_calibration(targets, target_points, cameras, image_points)
+        self.set_values(targets, target_points, cameras, image_points)
         self.clockwise = clockwise_rotation
         self.reference_camera = reference_camera
 
@@ -445,13 +446,13 @@ class Calibration(object):
         self.fit_cameras = True
         self.verbose = False
 
-    def setup_calibration(self, targets=None, target_points=None, cameras=None, image_points=None):
+    def set_values(self, targets=None, target_points=None, cameras=None, image_points=None):
         if targets is not None:
-            self._targets = targets
+            self._targets = deepcopy(targets)
         if target_points is not None:
             self._targets_points = target_points
         if cameras is not None:
-            self._cameras = cameras
+            self._cameras = deepcopy(cameras)
         if image_points is not None:
             self._image_points = image_points
 
@@ -464,7 +465,10 @@ class Calibration(object):
                     self._nb_image_points += len(im_pts)
 
     def __str__(self):
-        out = 'Calibration:\n'
+        out = 'Calibration:\n\n'
+
+        out += 'Angle factor : ' + str(self.angle_factor) + '\n'
+        out += 'Clockwise rotation : ' + str(self.clockwise) + '\n\n'
 
         for id_camera, camera in self._cameras.items():
             out += 'Camera {}'.format(id_camera)
@@ -818,7 +822,7 @@ def load_old_calibration(side_file, top_file=None, chess_origin=(4 * 47, 3 * 47)
             c._rot_x, c._rot_y, c._rot_z = normalise_angle(rx), normalise_angle(ry), normalise_angle(rz)
             cameras['top'] = c
 
-    return Calibration(angle_factor=angle_factor, cameras=cameras, targets=targets)
+    return Calibration(angle_factor=angle_factor, cameras=cameras, targets=targets, clockwise_rotation=True)
 
 
 def find_position_3d_points(pt2d, calibrations):
