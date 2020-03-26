@@ -44,7 +44,7 @@ class Chessboard(object):
             square_size: length (world units) of the side of an elemental square of the chessboard
             shape: (int, int) the number of square detected along chessboard width and height
             facing_angles: a {camera_id: facing_angle} dict indicating for what value
-            of the turntable rotation consign the chessboard is facing the camera with topleft corner on topleft
+            of the turntable rotation consign the chessboard is facing the camera with topleft corner closest to topleft
             side of the image.
 
         """
@@ -91,7 +91,7 @@ class Chessboard(object):
         return corners_2d
 
     @staticmethod
-    def order_image_points(image_points, rotation, facing_angle):
+    def order_image_points(image_points, rotation, facing_angle, clockwise_rotation=True):
         """
         order image points to match order of corner points (see details)
 
@@ -102,6 +102,7 @@ class Chessboard(object):
              has turned before image acquisition
             facing_angle: the turntable rotation consign that make the chessboard face
             the camera
+            clockwise_rotation (bool): are targets rotating clockwise ? (default True)
 
         Returns:
             image_points, in the expected order
@@ -116,19 +117,21 @@ class Chessboard(object):
             from facing_angle
         """
 
-        flip_min = (facing_angle + 90) % 360
-        flip_max = (flip_min + 90) % 360
+        m = 1
+        if not clockwise_rotation:
+            m = -1
+        flip_start = ((facing_angle + m * 90) % 360 + 360) % 360
+        flip_end = ((flip_start + m * 180) % 360 + 360) % 360
 
-        first_v = image_points[0, 0, 1]
-        last_v = image_points[-1, 0, 1]
+        du = image_points[1, 0, 0] - image_points[0, 0, 0]
 
-        if flip_max > flip_min:
-            reverse = rotation >= flip_min and rotation < flip_max and last_v > first_v
+        if flip_end > flip_start:
+            reverse = flip_end > rotation >= flip_start and du > 0
         else:
-            reverse = (rotation >= flip_min or rotation < flip_max) and last_v > first_v
+            reverse = (rotation >= flip_start or rotation < flip_end) and du > 0
 
         if reverse:
-            return numpy.array([p for p in reversed(image_points.tolist())])
+            return image_points[::-1]
         else:
             return image_points
 
@@ -215,11 +218,14 @@ class Chessboard(object):
         width, height = self.shape
         area = width * height * self.square_size**2
 
-        resolutions = {}
-        for id_camera in self.image_points:
-            pts = self.get_corners_2d(id_camera)[self.facing_angles[id_camera]]
-            pix_area = pixel_area(pts, width)
-            resolutions[id_camera] = numpy.sqrt(pix_area / area)
+        resolutions = {cid: [] for cid in self.image_points}
+        for id_camera, cam_pts in self.image_points.items():
+            for rotation in cam_pts:
+                pts = self.get_corners_2d(id_camera)[rotation]
+                pix_area = pixel_area(pts, width)
+                resolutions[id_camera].append(numpy.sqrt(pix_area / area))
+
+        resolutions = {cid: numpy.mean(res) for cid, res in resolutions.items()}
 
         return resolutions
 
