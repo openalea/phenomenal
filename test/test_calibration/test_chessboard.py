@@ -56,7 +56,7 @@ def test_chessboard_3():
     chess = phm_calib.Chessboard(50, (8, 6))
 
     images = phm_data.chessboard_images(plant_number=plant_number)[0]
-    found = chess.detect_corners("side", 42, images['side'][42])
+    found = chess.detect_corners("side", 42, images['side'][42], check_order=False)
 
     if found:
         corners = chess.get_corners_2d("side")[42]

@@ -17,9 +17,10 @@ import os
 import collections
 import pkg_resources
 
-from ..mesh import read_ply_to_vertices_faces
-from ..calibration import (Chessboard, CalibrationCamera)
-from ..object import VoxelGrid
+
+from openalea.phenomenal.mesh import read_ply_to_vertices_faces
+from openalea.phenomenal.calibration import (Chessboard, Calibration)
+from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
 
 
@@ -162,23 +163,14 @@ def chessboards(plant_number=1):
 
 def calibrations(plant_number=1):
     """
-    According to the plant number return a dict[id_camera] of camera
+    According to name_dir return a camera
     calibration object
 
-    :param plant_number: number of the plant desired (int)
-    :return: dict[id_camera] of camera calibration object
     """
-    data_directory = pkg_resources.resource_filename(
-        'openalea.phenomenal', 'data/plant_{}/calibration/'.format(
-            plant_number))
 
-    calibration = dict()
-    for id_camera in ["side", "top"]:
-        calibration[id_camera] = CalibrationCamera.load(
-            os.path.join(data_directory,
-                         "calibration_camera_{}.json".format(id_camera)))
+    file_name = os.path.join(name_dir, 'calibration', 'calibration_cameras.json')
+    return Calibration.load(file_name)
 
-    return calibration
 
 
 def voxel_grid(plant_number=1, voxels_size=4):
