@@ -118,18 +118,30 @@ class Chessboard(object):
             from facing_angle
         """
 
-        m = 1
+        # Rotations to make the target reach a cardinal position on the image (by definition, target is south for
+        # facing angle)
+        sw = (facing_angle + 45) % 360
+        nw = (facing_angle + 135) % 360
+        ne = (facing_angle + 225) % 360
+        se = (facing_angle + 315) % 360
         if not clockwise_rotation:
-            m = -1
-        flip_start = ((facing_angle + m * 90) % 360 + 360) % 360
-        flip_end = ((flip_start + m * 180) % 360 + 360) % 360
+            se = (facing_angle + 45) % 360
+            ne = (facing_angle + 135) % 360
+            nw = (facing_angle + 225) % 360
+            sw = (facing_angle + 315) % 360
+
+        boundaries = numpy.sort([sw, nw, ne, se])
+        quadrants = ['south', 'west', 'north', 'east']
+        quadrants = [quadrants[i] for i in numpy.argsort([sw, nw, ne, se])]
+        quad = quadrants[numpy.searchsorted(boundaries, rotation) % 4]
 
         du = image_points[1, 0, 0] - image_points[0, 0, 0]
+        dv = image_points[1, 0, 1] - image_points[0, 0, 1]
 
-        if flip_end > flip_start:
-            reverse = flip_end > rotation >= flip_start and du > 0
-        else:
-            reverse = (rotation >= flip_start or rotation < flip_end) and du > 0
+        reverse = False
+        if (quad == "south" and du < 0) or (quad == "west" and dv < 0) \
+                or (quad == "north" and du > 0) or (quad == "east" and dv > 0):
+            reverse = True
 
         if reverse:
             return image_points[::-1]
