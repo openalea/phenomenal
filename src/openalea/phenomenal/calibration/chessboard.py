@@ -13,6 +13,7 @@ import cv2
 import numpy
 import json
 import collections
+import os
 # ==============================================================================
 
 __all__ = ["Target", "Chessboard", "Chessboards"]
@@ -51,7 +52,7 @@ class Chessboard(object):
         self.square_size = square_size
         self.shape = shape
         self.image_points = collections.defaultdict(dict)
-        self.image_ids = dict()
+        self.image_ids = collections.defaultdict(dict)
         self.facing_angles = dict()
         self.image_sizes = dict()
         if facing_angles is not None:
@@ -168,6 +169,13 @@ class Chessboard(object):
         if len(image.shape) == 3:
             image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
+        if id_camera not in self.image_sizes:
+            h, w = image.shape[:2]
+            self.image_sizes[id_camera] = (w, h)
+
+        if image_id is not None:
+            self.image_ids[id_camera][rotation] = image_id
+
         try:
 
             found, corners = cv2.findChessboardCorners(
@@ -191,9 +199,6 @@ class Chessboard(object):
 
         except cv2.error:
             return False
-
-        if image_id is not None:
-            self.image_ids[rotation] = image_id
 
         return found
 
@@ -257,6 +262,21 @@ class Chessboard(object):
                       indent=4,
                       separators=(',', ': '))
 
+    def get_image(self, id_camera, rotation, data_dir, show_corners=False):
+        rgb = None
+        if id_camera in self.image_ids:
+            if rotation in self.image_ids[id_camera]:
+                path = os.path.join(data_dir, self.image_ids[id_camera][rotation])
+                bgr = cv2.imread(path, cv2.IMREAD_COLOR)
+                if show_corners:
+                    found = rotation in self.image_points[id_camera]
+                    if found:
+                        corners = self.image_points[id_camera][rotation]
+                        bgr = cv2.drawChessboardCorners(bgr, tuple(self.shape), corners, found)
+                rgb = bgr[:, :, ::-1]
+        return rgb
+
+
     @staticmethod
     def load(filename):
 
@@ -274,14 +294,19 @@ class Chessboard(object):
             for id_camera in image_points:
                 for rotation in image_points[id_camera]:
                     rot = int(float(rotation))
+                    # restore dtype of opencv func
                     chessboard.image_points[id_camera][rot] = \
-                        numpy.array(image_points[id_camera][rotation])
+                        numpy.array(image_points[id_camera][rotation]).astype(numpy.float32)
 
             if 'facing_angles' in save_class:
                 chessboard.facing_angles = save_class['facing_angles']
 
             if 'image_ids' in save_class:
-                chessboard.image_ids = save_class['image_ids']
+                image_ids = save_class['image_ids']
+                for id_camera in image_ids:
+                    for rotation in image_ids[id_camera]:
+                        rot = int(float(rotation))
+                        chessboard.image_ids[id_camera][rot] = image_ids[id_camera][rotation]
 
             if 'image_sizes' in save_class:
                 chessboard.image_sizes = save_class['image_sizes']
@@ -337,3 +362,6 @@ class Chessboards(object):
 
     def target_points(self):
         return {k: v.get_corners_local_3d() for k, v in self.chessboards.items()}
+
+    def get_image(self, target, id_camera, rotation, data_dir, show_corners=False):
+        return self.chessboards[target].get_image(id_camera, rotation, data_dir, show_corners)
