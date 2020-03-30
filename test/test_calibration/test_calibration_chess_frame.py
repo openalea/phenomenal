@@ -96,7 +96,13 @@ def test_frame():
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             "../data/plant_1")
 
-    c = phm_data.calibrations(dir_path)._cameras["side"]
+    fr_cam = c.camera_frame(c._cam_pos_x,
+                            c._cam_pos_y,
+                            c._cam_pos_z,
+                            c._cam_rot_x,
+                            c._cam_rot_y,
+                            c._cam_rot_z,
+                            c._cam_origin_axis)
 
     print(c._pos_x, c._pos_y, c._pos_z)
     print(c._rot_x, c._rot_y, c._rot_z)

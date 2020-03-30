@@ -20,7 +20,7 @@ import pathlib
 
 
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
-from openalea.phenomenal.calibration import (Chessboard, Chessboards, Calibration, CalibrationSetup)
+from openalea.phenomenal.calibration import (Chessboard, Calibration, OldCalibrationCamera)
 from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
 
@@ -196,11 +196,26 @@ def calibrations(name_dir):
 
     """
 
+    calibration = dict()
+    for id_camera in ["side", "top"]:
+        calibration[id_camera] = OldCalibrationCamera.load(
+            os.path.join(data_directory,
+                         "calibration_camera_{}.json".format(id_camera)))
+
+
+def new_calibrations(name_dir):
+    """
+    According to name_dir return a camera
+    calibration object
+
+    """
+
     file_name = os.path.join(name_dir, 'calibration', 'calibration_cameras.json')
     return Calibration.load(file_name)
 
 
-def voxel_grid(name_dir, plant_number=1, voxels_size=4):
+
+def voxel_grid(plant_number=1, voxels_size=4):
     """
     According to the plant number and the voxel size desired return the
     voxel_grid of the plant.

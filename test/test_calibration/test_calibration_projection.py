@@ -66,7 +66,7 @@ def test_array_camera_frame_local_point():
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             "../data/plant_1")
     side_calibration = phm_data.calibrations(dir_path)._cameras["side"]
-    camera_frame = side_calibration.get_frame()
+    camera_frame = side_calibration.get_camera_frame()
 
     pt_3d = (-322.20389648, 162.67521638, -4866.89129462)
     result = camera_frame.local_point(pt_3d)
