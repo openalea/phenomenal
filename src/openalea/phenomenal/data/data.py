@@ -19,7 +19,7 @@ import pkg_resources
 
 
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
-from openalea.phenomenal.calibration import (Chessboard, Calibration)
+from openalea.phenomenal.calibration import (Chessboard, Calibration, OldCalibrationCamera)
 from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
 
@@ -162,6 +162,26 @@ def chessboards(plant_number=1):
 
 
 def calibrations(plant_number=1):
+    """
+    According to the plant number return a dict[id_camera] of camera
+    calibration object
+
+    :param plant_number: number of the plant desired (int)
+    :return: dict[id_camera] of camera calibration object
+    """
+    data_directory = pkg_resources.resource_filename(
+        'openalea.phenomenal', 'data/plant_{}/calibration/'.format(
+            plant_number))
+
+    calibration = dict()
+    for id_camera in ["side", "top"]:
+        calibration[id_camera] = OldCalibrationCamera.load(
+            os.path.join(data_directory,
+                         "calibration_camera_{}.json".format(id_camera)))
+
+    return calibration
+
+def new_calibrations(name_dir):
     """
     According to name_dir return a camera
     calibration object
