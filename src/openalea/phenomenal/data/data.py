@@ -194,7 +194,10 @@ def calibrations(name_dir):
     According to name_dir return a camera
     calibration object
 
+    :return: dict[id_camera] of camera calibration object
     """
+
+    data_directory = os.path.join(name_dir, 'calibration/')
 
     calibration = dict()
     for id_camera in ["side", "top"]:
