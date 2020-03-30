@@ -205,6 +205,7 @@ def calibrations(name_dir):
             os.path.join(data_directory,
                          "calibration_camera_{}.json".format(id_camera)))
 
+    return calibration
 
 def new_calibrations(name_dir):
     """
