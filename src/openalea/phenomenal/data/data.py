@@ -191,7 +191,7 @@ def do_calibration(name_dir):
 
 def calibrations(name_dir):
     """
-    According to name_dir return a camera
+    According to name_dir return a dict[id_camera] of camera
     calibration object
 
     :return: dict[id_camera] of camera calibration object
@@ -218,7 +218,7 @@ def new_calibrations(name_dir):
 
 
 
-def voxel_grid(plant_number=1, voxels_size=4):
+def voxel_grid(name_dir, plant_number=1, voxels_size=4):
     """
     According to the plant number and the voxel size desired return the
     voxel_grid of the plant.
