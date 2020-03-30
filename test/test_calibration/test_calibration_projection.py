@@ -19,15 +19,15 @@ import openalea.phenomenal.data as phm_data
 
 def test_array_pixel_coordinates():
     plant_number = 1
-    side_calibration = phm_data.calibrations(plant_number=plant_number)._cameras["side"]
+    side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
 
     pt3d = (-322.20389648, 162.67521638, -4866.89129462)
     pt_2d = side_calibration.pixel_coordinates(
         pt3d,
-        side_calibration._width_image,
-        side_calibration._height_image,
-        side_calibration._focal_length_x,
-        side_calibration._focal_length_y)
+        side_calibration._cam_width_image,
+        side_calibration._cam_height_image,
+        side_calibration._cam_focal_length_x,
+        side_calibration._cam_focal_length_y)
 
     assert pt_2d == (1337.425449561858, 1070.86217103428)
 
@@ -38,10 +38,10 @@ def test_array_pixel_coordinates():
 
     pts_2d = side_calibration.pixel_coordinates(
         pts_3d,
-        side_calibration._width_image,
-        side_calibration._height_image,
-        side_calibration._focal_length_x,
-        side_calibration._focal_length_y)
+        side_calibration._cam_width_image,
+        side_calibration._cam_height_image,
+        side_calibration._cam_focal_length_x,
+        side_calibration._cam_focal_length_y)
 
     for pt_2d in pts_2d:
         assert tuple(pt_2d) == (1337.425449561858, 1070.86217103428)
@@ -50,10 +50,10 @@ def test_array_pixel_coordinates():
 
     pts_2d = side_calibration.pixel_coordinates(
         pts_3d,
-        side_calibration._width_image,
-        side_calibration._height_image,
-        side_calibration._focal_length_x,
-        side_calibration._focal_length_y)
+        side_calibration._cam_width_image,
+        side_calibration._cam_height_image,
+        side_calibration._cam_focal_length_x,
+        side_calibration._cam_focal_length_y)
 
     for pt_2d in pts_2d:
         assert tuple(pt_2d) == (1337.425449561858, 1070.86217103428)
@@ -61,8 +61,8 @@ def test_array_pixel_coordinates():
 
 def test_array_camera_frame_local_point():
     plant_number = 1
-    side_calibration = phm_data.calibrations(plant_number=plant_number)._cameras["side"]
-    camera_frame = side_calibration.get_frame()
+    side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
+    camera_frame = side_calibration.get_camera_frame()
 
     pt_3d = (-322.20389648, 162.67521638, -4866.89129462)
     result = camera_frame.local_point(pt_3d)
@@ -93,8 +93,8 @@ def test_array_camera_frame_local_point():
 def test_projection():
     angle = 0
     plant_number = 1
-    side_calibration = phm_data.calibrations(plant_number=plant_number)
-    projection = side_calibration.get_projection('side', angle)
+    side_calibration = phm_data.calibrations(plant_number=plant_number)["side"]
+    projection = side_calibration.get_projection(angle)
 
     pts_3d = numpy.array([[-472, -472, 200],
                           [-472, -472, 200],

@@ -92,26 +92,31 @@ def test_chess_frame():
 
 def test_frame():
     plant_number = 1
-    c = phm_data.calibrations(plant_number=plant_number)._cameras["side"]
+    c = phm_data.calibrations(plant_number=plant_number)["side"]
 
+    print(c._cam_pos_x, c._cam_pos_y, c._cam_pos_z)
+    print(c._cam_rot_x, c._cam_rot_y, c._cam_rot_z)
 
-    print(c._pos_x, c._pos_y, c._pos_z)
-    print(c._rot_x, c._rot_y, c._rot_z)
-
-    fr_cam = c.frame(c._pos_x, c._pos_y, c._pos_z, c._rot_x, c._rot_y, c._rot_z)
+    fr_cam = c.camera_frame(c._cam_pos_x,
+                            c._cam_pos_y,
+                            c._cam_pos_z,
+                            c._cam_rot_x,
+                            c._cam_rot_y,
+                            c._cam_rot_z,
+                            c._cam_origin_axis)
 
     # print fr_cam.global_point((0, 0, 0))
     # print fr_cam.global_point((-50, 0, -2500))
     print(fr_cam.global_point((-100, 0, -5000)))
     print(fr_cam.local_point((0, 0, 0)))
-    print(c._focal_length_x, c._focal_length_y)
-    print(c._width_image / 2.0, c._height_image / 2.0)
+    print(c._cam_focal_length_x, c._cam_focal_length_y)
+    print(c._cam_width_image / 2.0, c._cam_height_image / 2.0)
 
     pt2d = c.pixel_coordinates(fr_cam.local_point((0, 0, 0)),
-                               c._width_image,
-                               c._height_image,
-                               c._focal_length_x,
-                               c._focal_length_y)
+                               c._cam_width_image,
+                               c._cam_height_image,
+                               c._cam_focal_length_x,
+                               c._cam_focal_length_y)
 
     print(pt2d)
     # print fr_cam.local_point((5000, 100, 0))
