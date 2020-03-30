@@ -41,7 +41,7 @@ def test_running():
 
     image_projection = list()
     for angle in [0, 120, 270]:
-        projection = calibrations.get_projection("side", angle)
+        projection = calibrations["side"].get_projection(angle)
         image_projection.append((bin_images["side"][angle], projection))
 
     voxel_skeleton = phm_seg.segment_reduction(
