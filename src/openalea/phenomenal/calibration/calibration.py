@@ -18,6 +18,7 @@ import math
 import numpy
 import scipy.optimize
 from itertools import islice
+from copy import deepcopy
 
 from .frame import (Frame, x_axis, y_axis, z_axis)
 from .transformations import (concatenate_matrices, rotation_matrix)
@@ -28,6 +29,7 @@ __all__ = ["CalibrationCamera",
            "CalibrationFrame",
            "CalibrationSetup",
            "Calibration",
+           "OldCalibrationCamera",
            "load_old_calibration"]
 
 
@@ -243,6 +245,8 @@ class CalibrationCamera(CalibrationFrame):
     def load(filename):
         with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
+        if 'cam_pos_x' in save_class:
+            raise ValueError('Old style calibration should now  be loaded with OldCalibrationCamera.load method')
         c = CalibrationCamera.from_json(save_class)
         return c
 
@@ -315,7 +319,7 @@ class CalibrationSetup(object):
             cams[id_camera] = self.setup_camera(image_size=image_size, resolution=resolution,
                                                         inclination=inclination, facing=facing, distance=distance)
 
-        return cams, targs
+        return cams, targs, reference_camera, self.clockwise
 
     def alpha(self, rotation):
         angle = numpy.radians(rotation)
@@ -435,7 +439,7 @@ class Calibration(object):
         self._nb_cameras = 0
         self._nb_image_points = 0
 
-        self.setup_calibration(targets, target_points, cameras, image_points)
+        self.set_values(targets, target_points, cameras, image_points)
         self.clockwise = clockwise_rotation
         self.reference_camera = reference_camera
 
@@ -445,13 +449,13 @@ class Calibration(object):
         self.fit_cameras = True
         self.verbose = False
 
-    def setup_calibration(self, targets=None, target_points=None, cameras=None, image_points=None):
+    def set_values(self, targets=None, target_points=None, cameras=None, image_points=None):
         if targets is not None:
-            self._targets = targets
+            self._targets = deepcopy(targets)
         if target_points is not None:
             self._targets_points = target_points
         if cameras is not None:
-            self._cameras = cameras
+            self._cameras = deepcopy(cameras)
         if image_points is not None:
             self._image_points = image_points
 
@@ -464,7 +468,10 @@ class Calibration(object):
                     self._nb_image_points += len(im_pts)
 
     def __str__(self):
-        out = 'Calibration:\n'
+        out = 'Calibration:\n\n'
+
+        out += 'Angle factor : ' + str(self.angle_factor) + '\n'
+        out += 'Clockwise rotation : ' + str(self.clockwise) + '\n\n'
 
         for id_camera, camera in self._cameras.items():
             out += 'Camera {}'.format(id_camera)
@@ -818,7 +825,7 @@ def load_old_calibration(side_file, top_file=None, chess_origin=(4 * 47, 3 * 47)
             c._rot_x, c._rot_y, c._rot_z = normalise_angle(rx), normalise_angle(ry), normalise_angle(rz)
             cameras['top'] = c
 
-    return Calibration(angle_factor=angle_factor, cameras=cameras, targets=targets)
+    return Calibration(angle_factor=angle_factor, cameras=cameras, targets=targets, clockwise_rotation=True)
 
 
 def find_position_3d_points(pt2d, calibrations):
@@ -941,3 +948,234 @@ def find_position_3d_points_soil(pts, calibrations, verbose=False):
                     parameters[1], parameters[2], parameters[3])
 
     return parameters, sf
+
+
+class OldCalibrationCamera(object):
+    """A class for using camera calibrated with older version of phenomenal (< 1.7.1)"""
+    def __init__(self):
+        # Camera Parameters
+        self._cam_width_image = None
+        self._cam_height_image = None
+        self._cam_focal_length_x = None
+        self._cam_focal_length_y = None
+        self._cam_pos_x = None
+        self._cam_pos_y = None
+        self._cam_pos_z = None
+        self._cam_rot_x = None
+        self._cam_rot_y = None
+        self._cam_rot_z = None
+        self._angle_factor = None
+        self._cam_origin_axis = None
+
+    def __str__(self):
+        out = ''
+        out += 'Camera Parameters : \n'
+        out += '\tFocal length X : ' + str(self._cam_focal_length_x) + '\n'
+        out += '\tFocal length Y : ' + str(self._cam_focal_length_y) + '\n'
+        out += '\tOptical Center X : ' + str(self._cam_width_image / 2.0) + '\n'
+        out += '\tOptical Center Y : ' + str(self._cam_height_image / 2.0)
+        out += '\n\n'
+
+        out += '\tPosition X : ' + str(self._cam_pos_x) + '\n'
+        out += '\tPosition Y : ' + str(self._cam_pos_y) + '\n'
+        out += '\tPosition Z : ' + str(self._cam_pos_z) + '\n\n'
+
+        out += '\tRotation X : ' + str(self._cam_rot_x) + '\n'
+        out += '\tRotation Y : ' + str(self._cam_rot_y) + '\n'
+        out += '\tRotation Z : ' + str(self._cam_rot_z) + '\n'
+
+        out += '\t Angle Factor : ' + str(self._angle_factor) + '\n'
+
+        out += '\tOrigin rotation position : \n'
+        out += str(self._cam_origin_axis) + '\n\n'
+
+        return out
+
+    @staticmethod
+    def pixel_coordinates(point_3d,
+                          width_image, height_image,
+                          focal_length_x, focal_length_y):
+        """ Compute image coordinates of a 3d point
+
+        Args:
+         - point (float, float, float): a point in space
+                    expressed in camera frame coordinates
+
+        return:
+         - (int, int): coordinate of point in image in pix
+        """
+        pt = numpy.array(point_3d)
+        x, y, z = pt.T
+
+        u = x / z * focal_length_x + width_image / 2.0
+        v = y / z * focal_length_y + height_image / 2.0
+
+        if len(pt.shape) > 1:
+            return numpy.column_stack((u, v))
+        else:
+            return u, v
+
+
+    @staticmethod
+    def pixel_coordinates_2(point_3d, cx, cy, fx, fy):
+        """ Compute image coordinates of a 3d point
+
+        Args:
+         - point (float, float, float): a point in space
+                    expressed in camera frame coordinates
+
+        return:
+         - (int, int): coordinate of point in image in pix
+        """
+        # if point[2] < 1:
+        #     raise UserWarning("point too close to the camera")
+
+        u = point_3d[0] / point_3d[2] * fx + cx
+        v = point_3d[1] / point_3d[2] * fy + cy
+
+        return u, v
+
+    @staticmethod
+    def target_frame(pos_x, pos_y, pos_z,
+                     rot_x, rot_y, rot_z,
+                     alpha):
+
+        origin = [
+            pos_x * math.cos(alpha) - pos_y * math.sin(alpha),
+            pos_x * math.sin(alpha) + pos_y * math.cos(alpha),
+            pos_z]
+
+        mat_rot_x = rotation_matrix(rot_x, x_axis)
+        mat_rot_y = rotation_matrix(rot_y, y_axis)
+        mat_rot_z = rotation_matrix(alpha + rot_z, z_axis)
+
+        rot = concatenate_matrices(mat_rot_z, mat_rot_x, mat_rot_y)
+
+        return Frame(rot[:3, :3].T, origin)
+
+    @staticmethod
+    def camera_frame(pos_x, pos_y, pos_z,
+                     rot_x, rot_y, rot_z,
+                     origin_axis):
+
+        origin = (pos_x, pos_y, pos_z)
+
+        mat_rot_x = rotation_matrix(rot_x, x_axis)
+        mat_rot_y = rotation_matrix(rot_y, y_axis)
+        mat_rot_z = rotation_matrix(rot_z, z_axis)
+
+        rot = concatenate_matrices(origin_axis,
+                                   mat_rot_x, mat_rot_y, mat_rot_z)
+
+        return Frame(rot[:3, :3].T, origin)
+
+    def get_camera_frame(self):
+        return self.camera_frame(
+            self._cam_pos_x, self._cam_pos_y, self._cam_pos_z,
+            self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
+            self._cam_origin_axis)
+
+    def get_projection(self, alpha):
+
+        fr_cam = self.get_camera_frame()
+
+        angle = math.radians(alpha * self._angle_factor)
+
+        def projection(pts):
+            pts = numpy.array(pts)
+            x = - pts[:, 0] * math.cos(angle) - pts[:, 1] * math.sin(angle)
+            y = - pts[:, 0] * math.sin(angle) + pts[:, 1] * math.cos(angle)
+            z = pts[:, 2]
+
+            origin = numpy.column_stack((x, y, z))
+
+            return self.pixel_coordinates(fr_cam.local_point(origin),
+                                              self._cam_width_image,
+                                              self._cam_height_image,
+                                              self._cam_focal_length_x,
+                                              self._cam_focal_length_y)
+
+        return projection
+
+    def get_projection2(self, alpha):
+        fr_cam = self.camera_frame(
+            self._cam_pos_x, self._cam_pos_y, self._cam_pos_z,
+            self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
+            self._cam_origin_axis)
+
+        angle = math.radians(alpha * self._angle_factor)
+
+        def projection(pt):
+            # -pt[0] = x <=> For inverse X axis orientation
+            origin = [pt[0] * math.cos(angle) - pt[1] * math.sin(angle),
+                      pt[0] * math.sin(angle) + pt[1] * math.cos(angle),
+                      pt[2]]
+
+            return self.pixel_coordinates(fr_cam.local_point(origin),
+                                          self._cam_width_image,
+                                          self._cam_height_image,
+                                          self._cam_focal_length_x,
+                                          self._cam_focal_length_y)
+
+        return projection
+
+    @staticmethod
+    def load(filename):
+        with open(filename, 'r') as input_file:
+            save_class = json.load(input_file)
+
+        c = OldCalibrationCamera()
+        c._cam_width_image = save_class['cam_width_image']
+        c._cam_height_image = save_class['cam_height_image']
+        c._cam_focal_length_x = save_class['cam_focal_length_x']
+        c._cam_focal_length_y = save_class['cam_focal_length_y']
+        c._cam_pos_x = save_class['cam_pos_x']
+        c._cam_pos_y = save_class['cam_pos_y']
+        c._cam_pos_z = save_class['cam_pos_z']
+        c._cam_rot_x = save_class['cam_rot_x']
+        c._cam_rot_y = save_class['cam_rot_y']
+        c._cam_rot_z = save_class['cam_rot_z']
+        c._angle_factor = save_class['angle_factor']
+        c._cam_origin_axis = numpy.array(
+            save_class['cam_origin_axis']).reshape((4, 4)).astype(
+            numpy.float32)
+        if 'target_1_pos_x' in save_class:
+            c._target_1_pos_x = save_class['target_1_pos_x']
+            c._target_1_pos_y = save_class['target_1_pos_y']
+            c._target_1_pos_z = save_class['target_1_pos_z']
+            c._target_1_rot_x = save_class['target_1_rot_x']
+            c._target_1_rot_y = save_class['target_1_rot_y']
+            c._target_1_rot_z = save_class['target_1_rot_z']
+        if 'target_2_pos_x' in save_class:
+            c._target_2_pos_x = save_class['target_2_pos_x']
+            c._target_2_pos_y = save_class['target_2_pos_y']
+            c._target_2_pos_z = save_class['target_2_pos_z']
+            c._target_2_rot_x = save_class['target_2_rot_x']
+            c._target_2_rot_y = save_class['target_2_rot_y']
+            c._target_2_rot_z = save_class['target_2_rot_z']
+
+
+        return c
+
+    def dump(self, filename):
+        save_class = dict()
+
+        save_class['cam_width_image'] = self._cam_width_image
+        save_class['cam_height_image'] = self._cam_height_image
+        save_class['cam_focal_length_x'] = self._cam_focal_length_x
+        save_class['cam_focal_length_y'] = self._cam_focal_length_y
+        save_class['cam_pos_x'] = self._cam_pos_x
+        save_class['cam_pos_y'] = self._cam_pos_y
+        save_class['cam_pos_z'] = self._cam_pos_z
+        save_class['cam_rot_x'] = self._cam_rot_x
+        save_class['cam_rot_y'] = self._cam_rot_y
+        save_class['cam_rot_z'] = self._cam_rot_z
+        save_class['angle_factor'] = self._angle_factor
+        save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
+            (16, )).tolist()
+
+        with open(filename, 'w') as output_file:
+            json.dump(save_class, output_file,
+                      sort_keys=True,
+                      indent=4,
+                      separators=(',', ': '))

@@ -30,7 +30,7 @@ def test_chessboard_1():
 def test_chessboard_2():
     chess = phm_calib.Chessboard(50, (8, 6))
 
-    result = chess.get_corners_local_3d()
+    result = chess.get_corners_local_3d(old_style=True)
 
     assert numpy.array_equal(result[8 * 0 + 0], [0., 0., 0.])
     assert numpy.array_equal(result[8 * 0 + 1], [50., 0., 0.])

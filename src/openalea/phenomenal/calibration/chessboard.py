@@ -13,6 +13,7 @@ import cv2
 import numpy
 import json
 import collections
+import os
 # ==============================================================================
 
 __all__ = ["Target", "Chessboard", "Chessboards"]
@@ -51,7 +52,7 @@ class Chessboard(object):
         self.square_size = square_size
         self.shape = shape
         self.image_points = collections.defaultdict(dict)
-        self.image_ids = dict()
+        self.image_ids = collections.defaultdict(dict)
         self.facing_angles = dict()
         self.image_sizes = dict()
         if facing_angles is not None:
@@ -65,20 +66,29 @@ class Chessboard(object):
 
         return s
 
-    def get_corners_local_3d(self):
+    def get_corners_local_3d(self, old_style=False):
         """ Chessboard local frame is defined by chessboard center, x axis along width (left >right),
             Y-axis along height (bottom -> up) and z axis normal to chessboard plane
-            Chessboard corners are returned ordered line by line, from top left to bottom right"""
+            Chessboard corners are returned ordered line by line, from top left to bottom right
+
+            old_order returns in the expected order / origin for oldcalibration (phenomenal < 1.7.1)
+            """
 
         square_size = self.square_size
         width, height = self.shape
 
         corners_local_3d = list()
-        origin = numpy.array([width * square_size / 2., height * square_size / 2., 0])
-        for y in reversed(range(height)):
-            for x in range(width):
-                v = numpy.array([x * square_size, y * square_size, 0.0]) - origin
-                corners_local_3d.append(v)
+        if old_style:
+            for y in range(height):
+                for x in range(width):
+                    v = numpy.array([x * square_size, y * square_size, 0.0])
+                    corners_local_3d.append(v)
+        else:
+            origin = numpy.array([width * square_size / 2., height * square_size / 2., 0])
+            for y in reversed(range(height)):
+                for x in range(width):
+                    v = numpy.array([x * square_size, y * square_size, 0.0]) - origin
+                    corners_local_3d.append(v)
 
         return corners_local_3d
 
@@ -117,18 +127,30 @@ class Chessboard(object):
             from facing_angle
         """
 
-        m = 1
+        # Rotations to make the target reach a cardinal position on the image (by definition, target is south for
+        # facing angle)
+        sw = (facing_angle + 45) % 360
+        nw = (facing_angle + 135) % 360
+        ne = (facing_angle + 225) % 360
+        se = (facing_angle + 315) % 360
         if not clockwise_rotation:
-            m = -1
-        flip_start = ((facing_angle + m * 90) % 360 + 360) % 360
-        flip_end = ((flip_start + m * 180) % 360 + 360) % 360
+            se = (facing_angle + 45) % 360
+            ne = (facing_angle + 135) % 360
+            nw = (facing_angle + 225) % 360
+            sw = (facing_angle + 315) % 360
+
+        boundaries = numpy.sort([sw, nw, ne, se])
+        quadrants = ['south', 'west', 'north', 'east']
+        quadrants = [quadrants[i] for i in numpy.argsort([sw, nw, ne, se])]
+        quad = quadrants[numpy.searchsorted(boundaries, rotation) % 4]
 
         du = image_points[1, 0, 0] - image_points[0, 0, 0]
+        dv = image_points[1, 0, 1] - image_points[0, 0, 1]
 
-        if flip_end > flip_start:
-            reverse = flip_end > rotation >= flip_start and du > 0
-        else:
-            reverse = (rotation >= flip_start or rotation < flip_end) and du > 0
+        reverse = False
+        if (quad == "south" and du < 0) or (quad == "west" and dv < 0) \
+                or (quad == "north" and du > 0) or (quad == "east" and dv > 0):
+            reverse = True
 
         if reverse:
             return image_points[::-1]
@@ -168,6 +190,13 @@ class Chessboard(object):
         if len(image.shape) == 3:
             image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
+        if id_camera not in self.image_sizes:
+            h, w = image.shape[:2]
+            self.image_sizes[id_camera] = (w, h)
+
+        if image_id is not None:
+            self.image_ids[id_camera][rotation] = image_id
+
         try:
 
             found, corners = cv2.findChessboardCorners(
@@ -191,9 +220,6 @@ class Chessboard(object):
 
         except cv2.error:
             return False
-
-        if image_id is not None:
-            self.image_ids[rotation] = image_id
 
         return found
 
@@ -257,6 +283,21 @@ class Chessboard(object):
                       indent=4,
                       separators=(',', ': '))
 
+    def get_image(self, id_camera, rotation, data_dir, show_corners=False):
+        rgb = None
+        if id_camera in self.image_ids:
+            if rotation in self.image_ids[id_camera]:
+                path = os.path.join(data_dir, self.image_ids[id_camera][rotation])
+                bgr = cv2.imread(path, cv2.IMREAD_COLOR)
+                if show_corners:
+                    found = rotation in self.image_points[id_camera]
+                    if found:
+                        corners = self.image_points[id_camera][rotation]
+                        bgr = cv2.drawChessboardCorners(bgr, tuple(self.shape), corners, found)
+                rgb = bgr[:, :, ::-1]
+        return rgb
+
+
     @staticmethod
     def load(filename):
 
@@ -274,14 +315,19 @@ class Chessboard(object):
             for id_camera in image_points:
                 for rotation in image_points[id_camera]:
                     rot = int(float(rotation))
+                    # restore dtype of opencv func
                     chessboard.image_points[id_camera][rot] = \
-                        numpy.array(image_points[id_camera][rotation])
+                        numpy.array(image_points[id_camera][rotation]).astype(numpy.float32)
 
             if 'facing_angles' in save_class:
                 chessboard.facing_angles = save_class['facing_angles']
 
             if 'image_ids' in save_class:
-                chessboard.image_ids = save_class['image_ids']
+                image_ids = save_class['image_ids']
+                for id_camera in image_ids:
+                    for rotation in image_ids[id_camera]:
+                        rot = int(float(rotation))
+                        chessboard.image_ids[id_camera][rot] = image_ids[id_camera][rotation]
 
             if 'image_sizes' in save_class:
                 chessboard.image_sizes = save_class['image_sizes']
@@ -337,3 +383,6 @@ class Chessboards(object):
 
     def target_points(self):
         return {k: v.get_corners_local_3d() for k, v in self.chessboards.items()}
+
+    def get_image(self, target, id_camera, rotation, data_dir, show_corners=False):
+        return self.chessboards[target].get_image(id_camera, rotation, data_dir, show_corners)
