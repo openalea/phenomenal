@@ -1075,6 +1075,12 @@ class OldCalibrationCamera(object):
             self._cam_rot_x, self._cam_rot_y, self._cam_rot_z,
             self._cam_origin_axis)
 
+    def get_pixel_coordinates(self):
+        def pixel_coords(pts):
+            return self.pixel_coordinates(pts, self._cam_width_image, self._cam_height_image,
+                                          self._cam_focal_length_x, self._cam_focal_length_y)
+        return pixel_coords
+
     def get_projection(self, alpha):
 
         fr_cam = self.get_camera_frame()
