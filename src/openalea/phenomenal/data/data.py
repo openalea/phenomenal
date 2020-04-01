@@ -20,7 +20,8 @@ import pathlib
 
 
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
-from openalea.phenomenal.calibration import (Chessboard, Calibration, OldCalibrationCamera)
+from openalea.phenomenal.calibration import (Chessboard, Chessboards, Calibration, CalibrationSetup,
+                                             OldCalibrationCamera)
 from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
 
@@ -175,12 +176,12 @@ def do_calibration(name_dir):
     facings = chess_targets.facings()
     target_points = chess_targets.target_points()
     image_points = chess_targets.image_points()
-
-    cams = {'side': (5500, 90), 'top': (2500, 0)}
-    targs = {'target_1': (100, 45), 'target_2': (100, 45)}
-    start = CalibrationSetup(cams, targs, image_resolutions, image_sizes, facings,
+    # distance and inclination of objects
+    cameras_guess = {'side': (5500, 90), 'top': (2500, 0)}
+    targets_guess = {'target_1': (100, 45), 'target_2': (100, 45)}
+    setup = CalibrationSetup(cameras_guess, targets_guess, image_resolutions, image_sizes, facings,
                              clockwise_rotation=True)
-    cameras, targets = start.setup_calibration(reference_camera='side', reference_target='target_1')
+    cameras, targets = setup.setup_calibration(reference_camera='side', reference_target='target_1')
     calibration = Calibration(targets=targets, cameras=cameras,
                               target_points=target_points, image_points=image_points,
                               reference_camera='side', clockwise_rotation=True)
