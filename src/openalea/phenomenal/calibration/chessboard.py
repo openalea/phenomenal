@@ -21,6 +21,41 @@ __all__ = ["Target", "Chessboard", "Chessboards"]
 # ==============================================================================
 
 
+def compass_position(rotation, south_rotation, clockwise=True, intercardinal=False):
+    """Find the cardinal position of a rotated object
+
+    Args:
+        rotation: the (positive) rotation angle
+        south: the (positive) rotation angle that position the object the southest
+        clockwise : is the object rotating clockwise ? (default True)
+        intercardinal : should the intercardinal position be returned ?
+
+    Returns:
+        (str) the cardinal position (one of 'North', 'South', 'East' or 'West') of the object, or if intercadinal = True
+        the intercardinal position (one of 'NorthEast', 'SouthEast', 'SouthWest' or 'NorthWest')
+    """
+
+    if intercardinal:
+        quadrants = ['SouthWest', 'NorthWest', 'NorthEast', 'SouthEast']
+        if not clockwise:
+            quadrants = ['SouthEast', 'NorthEast', 'NorthWest', 'SouthWest']
+    else:
+        quadrants = ['South', 'West', 'North', 'East']
+        if not clockwise:
+            quadrants = ['South', 'East', 'North', 'West']
+
+    # boundary angles for the different quadrants
+    first_bound = 45
+    if intercardinal:
+        first_bound = 90
+    boundaries = [(south_rotation + first_bound + 90 * i) % 360 for i in range(4)]
+
+    sorter = numpy.argsort(boundaries)
+    quadrants = [quadrants[i] for i in sorter]
+
+    return quadrants[numpy.searchsorted(boundaries, rotation, sorter=sorter) % len(quadrants)]
+
+
 class Target(object):
 
     def __init__(self):
@@ -100,8 +135,7 @@ class Chessboard(object):
 
         return corners_2d
 
-    @staticmethod
-    def order_image_points(image_points, rotation, facing_angle, clockwise_rotation=True):
+    def order_image_points(self, image_points, rotation, facing_angle, clockwise_rotation=True, check_only=False):
         """
         order image points to match order of corner points (see details)
 
@@ -113,6 +147,8 @@ class Chessboard(object):
             facing_angle: the turntable rotation consign that make the chessboard face
             the camera
             clockwise_rotation (bool): are targets rotating clockwise ? (default True)
+            check_only (bool): if True, do not return ordered points, but  a bool indicating whether input points
+                were already ordered or not.
 
         Returns:
             image_points, in the expected order
@@ -127,43 +163,43 @@ class Chessboard(object):
             from facing_angle
         """
 
-        # Rotations to make the target reach a cardinal position on the image (by definition, target is south for
-        # facing angle)
-        sw = (facing_angle + 45) % 360
-        nw = (facing_angle + 135) % 360
-        ne = (facing_angle + 225) % 360
-        se = (facing_angle + 315) % 360
-        if not clockwise_rotation:
-            se = (facing_angle + 45) % 360
-            ne = (facing_angle + 135) % 360
-            nw = (facing_angle + 225) % 360
-            sw = (facing_angle + 315) % 360
+        width, _ = self.shape
+        # du, dv between fist and last point of first line
+        du = image_points[width - 1, 0, 0] - image_points[0, 0, 0]
+        dv = image_points[width - 1, 0, 1] - image_points[0, 0, 1]
+        cpos = compass_position(rotation, south_rotation=facing_angle, clockwise=clockwise_rotation,
+                                intercardinal=True)
 
-        boundaries = numpy.sort([sw, nw, ne, se])
-        quadrants = ['south', 'west', 'north', 'east']
-        quadrants = [quadrants[i] for i in numpy.argsort([sw, nw, ne, se])]
-        quad = quadrants[numpy.searchsorted(boundaries, rotation) % 4]
-
-        du = image_points[1, 0, 0] - image_points[0, 0, 0]
-        dv = image_points[1, 0, 1] - image_points[0, 0, 1]
-
-        reverse = False
-        if (quad == "south" and du < 0) or (quad == "west" and dv < 0) \
-                or (quad == "north" and du > 0) or (quad == "east" and dv > 0):
-            reverse = True
-
-        if reverse:
-            return image_points[::-1]
+        ordered = True
+        if abs(du) > abs(dv):
+            # target is horizontal on image, use north/ south criteria
+            if (cpos.startswith('South') and du < 0) or (cpos.startswith('North') and du > 0):
+                ordered = False
         else:
-            return image_points
+            # target is vertical, use east / west criteria
+            if (cpos.endswith('West') and dv < 0) or (cpos.endswith('East') and dv > 0):
+                ordered = False
 
-    def check_order(self):
+        if check_only:
+            return ordered
+
+        if ordered:
+            return image_points
+        else:
+            return image_points[::-1]
+
+    def check_order(self, check_only=False):
         """Re-order detected image points using facing angles"""
         for id_camera in self.image_points:
             for rotation in self.image_points[id_camera]:
                 facing = self.facing_angles[id_camera]
-                self.image_points[id_camera][rotation] = self.order_image_points(self.image_points[id_camera][rotation],
-                                                                                 rotation, facing)
+                ordered = self.order_image_points(self.image_points[id_camera][rotation],
+                                              rotation, facing, check_only=check_only)
+                if check_only:
+                    if not ordered:
+                        print('{}, angle {}: image points are not ordered'.format(id_camera, rotation))
+                else:
+                    self.image_points[id_camera][rotation] = ordered
 
     def detect_corners(self, id_camera, rotation, image, check_order=True, image_id=None):
         """ Detection of pixel coordinates of chessboard corner points
