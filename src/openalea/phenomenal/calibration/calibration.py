@@ -30,7 +30,7 @@ __all__ = ["CalibrationCamera",
            "CalibrationSetup",
            "Calibration",
            "OldCalibrationCamera",
-           "load_old_calibration"]
+           "OldCalibration"]
 
 
 # ==============================================================================
@@ -658,10 +658,29 @@ class Calibration(object):
 
         return parameters
 
-    def calibration_error(self):
+    def calibration_error(self, all_pars=False):
         if self._nb_image_points > 0:
+            before = {}
+            if all_pars:
+                before['fit_angle_factor'] = self.fit_angle_factor
+                before['fit_reference_camera'] = self.fit_reference_camera
+                before['fit_targets'] = self.fit_targets
+                before['fit_cameras'] = self.fit_cameras
+                self.fit_angle_factor = True
+                self.fit_reference_camera = True
+                self.fit_targets = True
+                self.fit_cameras = True
+
             p = self.get_parameters()
-            return self.fit_function(p) / self._nb_image_points
+            err = self.fit_function(p)
+
+            if all_pars:
+                self.fit_angle_factor = before['fit_angle_factor']
+                self.fit_reference_camera = before['fit_reference_camera']
+                self.fit_targets = before['fit_targets']
+                self.fit_cameras = before['fit_cameras']
+
+            return err, err / self._nb_image_points
         else:
             raise ValueError('Calibration corner points (target_points and image points) are required to compute '
                              'calibration error')
@@ -770,62 +789,6 @@ class Calibration(object):
         return c
 
 
-def load_old_calibration(side_file, top_file=None, chess_origin=(4 * 47, 3 * 47)):
-    """Reader for old calibration
-
-    Only a partly equivalent fit is provided (re-run calibrate will be necessary to optimise the parameters
-    """
-    cameras = {}
-    targets = {}
-    angle_factor = 1
-    with open(side_file, 'r') as input_file:
-        save_class = json.load(input_file)
-        c = CalibrationCamera()
-        c._width_image = save_class['cam_width_image']
-        c._height_image = save_class['cam_height_image']
-        c._focal_length_x = save_class['cam_focal_length_x']
-        c._focal_length_y = save_class['cam_focal_length_y']
-        c._pos_x = - save_class['cam_pos_x']
-        c._pos_y = save_class['cam_pos_y']
-        c._pos_z = save_class['cam_pos_z']
-        # origin matrix for side cameras corresponds to -pi/2 rot around x axis
-        rx = save_class['cam_rot_x'] - numpy.pi / 2.
-        ry = save_class['cam_rot_y']
-        rz = save_class['cam_rot_z']
-        c._rot_x, c._rot_y, c._rot_z = normalise_angle(rx), normalise_angle(ry), normalise_angle(rz)
-        cameras['side'] = c
-        angle_factor = save_class['angle_factor']
-
-        for tn in ('target_1', 'target_2'):
-            t = CalibrationFrame()
-            t._pos_x = -save_class[tn + '_pos_x'] - chess_origin[0]
-            t._pos_y = save_class[tn + '_pos_y'] - chess_origin[1]
-            t._pos_z = save_class[tn + '_pos_z']
-            # change of definition for rot
-            t._rot_x = normalise_angle(save_class[tn + '_rot_x'] - save_class[tn + '_rot_y'])
-            t._rot_y = 0
-            t._rot_z = - normalise_angle(save_class[tn + '_rot_z'])
-            targets[tn] = t
-
-    if top_file is not None:
-        with open(top_file, 'r') as input_file:
-            save_class = json.load(input_file)
-            c = CalibrationCamera()
-            c._width_image = save_class['cam_width_image']
-            c._height_image = save_class['cam_height_image']
-            c._focal_length_x = save_class['cam_focal_length_x']
-            c._focal_length_y = save_class['cam_focal_length_y']
-            c._pos_x = - save_class['cam_pos_x']
-            c._pos_y = save_class['cam_pos_y']
-            c._pos_z = save_class['cam_pos_z']
-            # origin matrix for top camera corresponds to pi rot around x axis and rot_z
-            rx = save_class['cam_rot_x'] + numpy.pi
-            ry = save_class['cam_rot_y']
-            rz = save_class['cam_rot_z'] + numpy.pi / 2.
-            c._rot_x, c._rot_y, c._rot_z = normalise_angle(rx), normalise_angle(ry), normalise_angle(rz)
-            cameras['top'] = c
-
-    return Calibration(angle_factor=angle_factor, cameras=cameras, targets=targets, clockwise_rotation=True)
 
 
 def find_position_3d_points(pt2d, calibrations):
@@ -1160,28 +1123,98 @@ class OldCalibrationCamera(object):
             c._target_2_rot_y = save_class['target_2_rot_y']
             c._target_2_rot_z = save_class['target_2_rot_z']
 
-
         return c
 
-    def dump(self, filename):
-        save_class = dict()
 
-        save_class['cam_width_image'] = self._cam_width_image
-        save_class['cam_height_image'] = self._cam_height_image
-        save_class['cam_focal_length_x'] = self._cam_focal_length_x
-        save_class['cam_focal_length_y'] = self._cam_focal_length_y
-        save_class['cam_pos_x'] = self._cam_pos_x
-        save_class['cam_pos_y'] = self._cam_pos_y
-        save_class['cam_pos_z'] = self._cam_pos_z
-        save_class['cam_rot_x'] = self._cam_rot_x
-        save_class['cam_rot_y'] = self._cam_rot_y
-        save_class['cam_rot_z'] = self._cam_rot_z
-        save_class['angle_factor'] = self._angle_factor
-        save_class['cam_origin_axis'] = self._cam_origin_axis.reshape(
-            (16, )).tolist()
+class OldCalibration(object):
+    """A class for loding, inspecting and convert old Calibration to new Calibration"""
 
-        with open(filename, 'w') as output_file:
-            json.dump(save_class, output_file,
-                      sort_keys=True,
-                      indent=4,
-                      separators=(',', ': '))
+    def __init__(self, cameras, targets):
+        """ Instantiate an OldCalibration instance
+
+        Args:
+            cameras: a {id_camera: OldCalibrationCamera, ...} dict of calibrated cameras objects (see
+            OldCameraCalibration class)
+            chessboards: a {id_target: Chessboard, ...} dict of Chessboard objects (see Chessboard class in
+            chessboard.py)
+        """
+        self.cameras = cameras
+        self.targets = targets
+
+    def calibration_error(self):
+        """error (pixels) between detected target image points and reprojection of 3D target points"""
+
+        image_points = {camera: {k: v.get_corners_2d(camera) for k, v in self.targets.items()} for camera in
+                        self.cameras}
+        target_points = {k: v.get_corners_local_3d(old_style=True) for k, v in self.targets.items()}
+
+        err = 0
+        nb_pts = 0
+        target_parameters = vars(self.cameras['side'])
+        for camera in image_points:
+            for target in image_points[camera]:
+                for angle in image_points[camera][target]:
+                    cam = self.cameras[camera]
+                    pars = [target_parameters['_' + target + '_' + x] for x in ('pos_x', 'pos_y', 'pos_z',
+                                                                                'rot_x', 'rot_y', 'rot_z')]
+                    pars += [numpy.radians(cam._angle_factor * angle)]
+                    fr_target = cam.target_frame(*pars)
+                    fr_cam = cam.get_camera_frame()
+                    pix_coord = cam.get_pixel_coordinates()
+                    pts_ref = image_points[camera][target][angle]
+                    pts = pix_coord(fr_cam.local_point(fr_target.global_point(target_points[target])))
+                    nb_pts += len(pts)
+                    err += numpy.linalg.norm(pts - pts_ref, axis=1).sum()
+
+        return err, float(err) / nb_pts
+
+    def guess_new_calibration(self):
+        """Instantiate a Calibration object using fitted parameters
+
+        Returns:
+            An (unfitted) Calibration object
+        """
+        cameras = {}
+        targets = {}
+        #
+        angle_factor = self.cameras['side']._angle_factor
+        tpars = vars(self.cameras['side'])
+        for tn, target in self.targets.items():
+            w, h = target.shape
+            size = target.square_size
+            chess_origin = ((w / 2.) * size, (h / 2.) * size)
+
+            t = CalibrationFrame()
+            t._pos_x = -tpars['_' + tn + '_pos_x'] - chess_origin[0]
+            t._pos_y = tpars['_' + tn + '_pos_y'] - chess_origin[1]
+            t._pos_z = tpars['_' + tn + '_pos_z']
+            # change of definition for rot
+            t._rot_x = normalise_angle(tpars['_' + tn + '_rot_x'] - tpars['_' + tn + '_rot_y'])
+            t._rot_y = 0
+            t._rot_z = - normalise_angle(tpars['_' + tn + '_rot_z'])
+            targets[tn] = t
+
+        for cn, camera in self.cameras.items():
+            c = CalibrationCamera()
+            c._width_image = camera._cam_width_image
+            c._height_image = camera._cam_height_image
+            c._focal_length_x = camera._cam_focal_length_x
+            c._focal_length_y = camera._cam_focal_length_y
+            c._pos_x = - camera._cam_pos_x
+            c._pos_y = camera._cam_pos_y
+            c._pos_z = camera._cam_pos_z
+            if cn == 'side':
+                # origin matrix for side cameras corresponds to -pi/2 rot around x axis
+                rx = camera._cam_rot_x - numpy.pi / 2.
+                ry = camera._cam_rot_y
+                rz = camera._cam_rot_z
+            else:
+                rx = camera._cam_rot_x + numpy.pi
+                ry = camera._cam_rot_y
+                rz = camera._cam_rot_z + numpy.pi / 2.
+            c._rot_x, c._rot_y, c._rot_z = normalise_angle(rx), normalise_angle(ry), normalise_angle(rz)
+            cameras[cn] = c
+
+        return Calibration(angle_factor=angle_factor, cameras=cameras, targets=targets,
+                           clockwise_rotation=True, reference_camera='side')
+
