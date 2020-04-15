@@ -757,12 +757,199 @@ class Calibration(object):
 
         return err / self._nb_image_points
 
+    def find_points(self, image_points, start=None, niter=100):
+        """ Find 3D world coordinates of points from paired image coordinates on multiple cameras
+
+        Args:
+            image_points: a {camera_id: [(u1,v1),...], ...} dict of list of pixel coordinates of remarkable points
+            taken on several images
+            start (optional): a array-like list of 3D points guesses
+            niter: (int) the number of iteration of the basin-hopping optimisation algorithm
+
+        Returns:
+            An array of 3D coordinates of points
+
+        """
+
+        image_points = {k: numpy.array(v) for k, v in image_points.items()}
+        if start is None:
+            start = numpy.array([(0, 0, 0)] * len(image_points.values()[0]))
+
+        def fit_function(x0):
+            err = 0
+            pts = numpy.array(x0).reshape((int(len(x0) / 3), 3))
+            for id_camera in image_points:
+                im_pts = image_points[id_camera]
+                proj = self.get_projection(id_camera, 0)
+                pix = proj(pts)
+                err += numpy.linalg.norm(pix - im_pts, axis=1).sum()
+            print(err)
+            return err
+
+        parameters = scipy.optimize.minimize(
+            fit_function,
+            start,
+            method='BFGS').x
+        print("Err : ", fit_function(parameters))
+
+        return parameters.reshape((int(len(parameters) / 3), 3))
+
+    def find_camera(self, image_points, target_points, image_size, fixed_parameters=None, guess=None,  niter=10):
+        """ Find camera parameters from clicked image points of known 3D target points
+
+        Args:
+            image_points: an array-like list of image coordinates of remarkable points
+            target_points: an array-like list of 3D coordinates of remarkable points
+            image_size: (width, height) tuple describing image dimension (pixels)
+            fixed_parameters: a {parameter_name: value} dict of fixed (unfitted) camera parameters. Valid parameters
+             names are '_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z', '_focal_length_x', '_focal_length_y'
+            guess : a guessed Calibration camera
+            niter: (int) the number of iteration of the basin-hopping optimisation algorithm
+
+        Returns:
+            A calibrated CalibrationCamera
+        """
+
+        image_points = numpy.array(image_points)
+        target_points = numpy.array(target_points)
+
+        if fixed_parameters is None:
+            fixed_parameters = {}
+        w, h = image_size
+        fixed_parameters.update({'_width_image': w, '_height_image': h})
+
+        pars = ('_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z', '_width_image', '_height_image',
+                '_focal_length_x', '_focal_length_y')
+        free_pars = [p for p in pars if p not in fixed_parameters]
+        nfree_pars = len(free_pars)
+
+        if guess is None:
+            start = numpy.zeros(nfree_pars)
+        else:
+            d = vars(guess)
+            start = [d[p] for p in free_pars]
+
+        def split_parameters(x0):
+            pars = dict(zip(free_pars, x0[:nfree_pars]))
+            pars.update(fixed_parameters)
+            return pars
+
+        def fit_function(x0):
+            pars = split_parameters(x0)
+            camera = CalibrationCamera()
+            camera.set_vars(pars)
+            proj = camera.get_projection()
+            pix = proj(target_points)
+            err = numpy.linalg.norm(pix - image_points, axis=1).sum()
+            print(err)
+            return err
+
+        parameters = scipy.optimize.minimize(
+            fit_function,
+            start,
+            method='BFGS').x
+
+        pars = split_parameters(parameters)
+        for p in ('_rot_x', '_rot_y', '_rot_z'):
+            pars[p] = normalise_angle(pars[p])
+        camera = CalibrationCamera()
+        camera.set_vars(pars)
+
+        return camera
+
+    def find_frame(self, image_points, fixed_parameters=None, fixed_frame_points=None, fixed_coords=None):
+        """ Find Frame parameters and 3D local (frame based) coordinates of points from paired image coordinates
+
+        Args:
+            image_points: a {camera_id: [(u1,v1),...], ...} dict of list of pixel coordinates of frame points
+            fixed_parameters: a {parameter_name: value} dict of fixed (unfitted) frame parameters. Valid parameters
+             names are '_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z'
+            fixed_frame_points: an array-like list of 3D points coordinates, expressed in the local frame coordinate
+            system. If None (default), frame points are fitted from image_points coordinates.
+            fixed_coords: a {axis: value} dict specifying fixed local coordinates of points, if any. Valid
+             keys are 'x', 'y', or 'z'
+
+        Returns:
+            A calibrated CalibrationFrame and a list of 3D coordinates of points, expressed in the frame
+             coordinate system
+
+        """
+
+        if fixed_parameters is None:
+            fixed_parameters = {}
+
+        if fixed_coords is None:
+            fixed_coords = {}
+
+        image_points = {k: numpy.array(v) for k, v in image_points.items()}
+        n_pts = len(image_points.values()[0])
+
+        for c in fixed_coords:
+            fixed_coords[c] = [fixed_coords[c]] * n_pts
+
+        # free frame parameters
+        pars = ('_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z')
+        free_pars = [p for p in pars if p not in fixed_parameters]
+        nfree_pars = len(free_pars)
+
+        # free points
+        nfree_pts = n_pts
+        if fixed_frame_points is not None:
+            nfree_pts -= len(fixed_frame_points) / 3
+
+        # free point coordinates
+        coords = ('x', 'y', 'z')
+        free_coords = [c for c in coords if c not in fixed_coords]
+        nfree_coords = len(free_coords)
+
+        def split_parameters(x0):
+            pars = dict(zip(free_pars, x0[:nfree_pars]))
+            pars.update(fixed_parameters)
+
+            pts = numpy.array(x0[nfree_pars:]).reshape((nfree_pts, nfree_coords))
+            coords = dict(zip(free_coords, zip(*pts)))
+            coords.update(fixed_coords)
+            fpts = zip(coords['x'], coords['y'], coords['z'])
+
+            return pars, fpts
+
+        def fit_function(x0):
+            pars, fpts = split_parameters(x0)
+            cframe = CalibrationFrame()
+            cframe.set_vars(pars)
+            fr = cframe.get_frame()
+            pts = fr.global_point(fpts)
+
+            err = 0
+            for id_camera in image_points:
+                im_pts = image_points[id_camera]
+                proj = self.get_projection(id_camera, 0)
+                pix = proj(pts)
+                err += numpy.linalg.norm(pix - im_pts, axis=1).sum()
+            print(err)
+
+            return err
+
+        start = numpy.zeros(nfree_pars + nfree_pts * nfree_coords)
+        parameters = scipy.optimize.minimize(
+            fit_function,
+            start,
+            method='BFGS').x
+
+        pars, fpts = split_parameters(parameters)
+        for p in ('_rot_x', '_rot_y', '_rot_z'):
+            pars[p] = normalise_angle(pars[p])
+        cframe = CalibrationFrame()
+        cframe.set_vars(pars)
+
+        return cframe, fpts
+
     def dump(self, filename):
         save_class = dict()
         save_class['angle_factor'] = self.angle_factor
         save_class['clockwise'] = self.clockwise
         save_class['reference_camera'] = self.reference_camera
-        save_class['cameras_parameters'] = {id_camera: camera.to_json() for id_camera,camera in self._cameras.items()}
+        save_class['cameras_parameters'] = {id_camera: camera.to_json() for id_camera, camera in self._cameras.items()}
         save_class['targets_parameters'] = {id_target: t.to_json() for id_target, t in self._targets.items()}
 
         with open(filename, 'w') as output_file:
@@ -772,10 +959,7 @@ class Calibration(object):
                       separators=(',', ': '))
 
     @staticmethod
-    def load(filename):
-        with open(filename, 'r') as input_file:
-            save_class = json.load(input_file)
-
+    def from_dict(save_class):
         c = Calibration()
         c._cameras = {id_camera: CalibrationCamera.from_json(pars)
                       for id_camera, pars in save_class['cameras_parameters'].items()}
@@ -788,129 +972,11 @@ class Calibration(object):
         c.reference_camera = save_class['reference_camera']
         return c
 
-
-
-
-def find_position_3d_points(pt2d, calibrations):
-    def fit_function(x0):
-
-        sum_err = 0
-        vec_err = list()
-        for id_camera in pt2d:
-            for angle in pt2d[id_camera]:
-                if id_camera in calibrations:
-                    calib = calibrations[id_camera]
-                    fr_cam = calib.frame(calib._pos_x, calib._pos_y, calib._pos_z, calib._rot_x,
-                                         calib._rot_y, calib._rot_z)
-
-                    pos_x, pos_y, pos_z = x0
-                    alpha = math.radians(angle * calib._angle_factor)
-
-                    origin = [pos_x * math.cos(alpha) - pos_y * math.sin(alpha),
-                              pos_x * math.sin(alpha) + pos_y * math.cos(alpha),
-                              pos_z]
-
-                    pt = calibrations[id_camera].pixel_coordinates(
-                        fr_cam.local_point(origin),
-                        calib._width_image,
-                        calib._height_image,
-                        calib._focal_length_x,
-                        calib._focal_length_y)
-
-                    err = numpy.linalg.norm(
-                        numpy.array(pt) - pt2d[id_camera][angle]).sum()
-
-                    # vec_err.append(err)
-                    sum_err += err
-
-        # return vec_err
-        return sum_err
-
-    parameters = [0.0] * 3
-    parameters = scipy.optimize.basinhopping(fit_function, parameters).x
-
-    print("Err : ", fit_function(parameters))
-    return parameters
-
-
-def find_position_3d_points_soil(pts, calibrations, verbose=False):
-    def soil_frame(pos_x, pos_y, pos_z,
-                   rot_x, rot_y, rot_z):
-
-        origin = (pos_x, pos_y, pos_z)
-
-        mat_rot_x = rotation_matrix(rot_x, x_axis)
-        mat_rot_y = rotation_matrix(rot_y, y_axis)
-        mat_rot_z = rotation_matrix(rot_z, z_axis)
-
-        rot = concatenate_matrices(mat_rot_x, mat_rot_y, mat_rot_z)
-
-        return Frame(rot[:3, :3].T, origin)
-
-    def err_projection(x0, verbose=False):
-        err = 0
-
-        sf = soil_frame(0, 0, x0[0],
-                        x0[1], x0[2], x0[3])
-
-        for i in range(len(pts)):
-            pt2d = pts[i]
-            for id_camera in pt2d:
-                for angle in pt2d[id_camera]:
-                    if id_camera in calibrations:
-                        calib = calibrations[id_camera]
-                        fr_cam = calib.frame(calib._pos_x, calib._pos_y, calib._pos_z,
-                                             calib._rot_x, calib._rot_y, calib._rot_z)
-
-                        pos_x, pos_y, pos_z = sf.global_point(
-                            (x0[4 + i * 2], x0[5 + i * 2], 0))
-                        alpha = math.radians(angle * calib._angle_factor)
-
-                        origin = [pos_x * math.cos(alpha) - pos_y * math.sin(alpha),
-                                  pos_x * math.sin(alpha) + pos_y * math.cos(alpha),
-                                  pos_z]
-
-                        pt = calib.pixel_coordinates(
-                            fr_cam.local_point(origin),
-                            calib._width_image,
-                            calib._height_image,
-                            calib._focal_length_x,
-                            calib._focal_length_y)
-
-                        err += numpy.linalg.norm(
-                            numpy.array(pt) - pt2d[id_camera][angle]).sum()
-
-                        if verbose:
-                            print("ID CAMERA & ANGLE", id_camera, angle)
-                            print('PT 3D : ', pos_x, pos_y, pos_z)
-                            print("Projection image 2D", pt)
-                            print("Ref image 2D", pt2d[id_camera][angle])
-                            print("Distance :", numpy.linalg.norm(
-                                numpy.array(pt - pt2d[id_camera][angle]).sum()))
-                            print("\n\n")
-
-        print(err)
-        return err
-
-    def fit_function(x0):
-        return err_projection(x0)
-
-    parameters = [0, 0, 0, 0]
-    parameters += [0] * 2 * len(pts)
-
-    parameters = scipy.optimize.basinhopping(
-        fit_function, parameters, niter=10).x
-
-    for i in [1, 2, 3]:
-        parameters[i] %= math.pi * 2.0
-
-    if verbose:
-        print("Err : ", err_projection(parameters, verbose=True))
-
-    sf = soil_frame(0, 0, parameters[0],
-                    parameters[1], parameters[2], parameters[3])
-
-    return parameters, sf
+    @staticmethod
+    def load(filename):
+        with open(filename, 'r') as input_file:
+            save_class = json.load(input_file)
+        return Calibration.from_dict(save_class)
 
 
 class OldCalibrationCamera(object):
@@ -1127,7 +1193,7 @@ class OldCalibrationCamera(object):
 
 
 class OldCalibration(object):
-    """A class for loding, inspecting and convert old Calibration to new Calibration"""
+    """A class for loading, inspecting and convert old Calibration to new Calibration"""
 
     def __init__(self, cameras, targets):
         """ Instantiate an OldCalibration instance
@@ -1217,4 +1283,26 @@ class OldCalibration(object):
 
         return Calibration(angle_factor=angle_factor, cameras=cameras, targets=targets,
                            clockwise_rotation=True, reference_camera='side')
+
+
+# deprecated functions used in old calibration scripts (see equivalents in Calibration methods)
+
+def find_position_3d_points(pt2d, calibration):
+    """ Find the coordinates of one point clicked on several image
+
+    Args:
+        pt2d: a {id_camera:{angle:(x, y),...},...} dict of pixel coordinates
+        calibration: a calibrated Calibration object
+
+    Returns:
+
+    """
+    image_points = {id_cam: [pt2d[0]] for id_cam in pt2d}
+    return calibration.find_points(image_points)
+
+
+
+def find_position_3d_points_soil(im_pts, calibration):
+    image_points = {id_cam: [im_pts[0]] for id_cam in im_pts}
+    return calibration.find_frame(image_points, fixed_parameters={'_pos_x': 0, '_pos_y': 0}, fixed_coords={'z': 0})
 
