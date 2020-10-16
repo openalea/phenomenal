@@ -274,30 +274,19 @@ def compute_all_shorted_path(graph, voxels_size, neighbor_size=45):
     all_shorted_path_to_stem_base : dict
         List of all the shorted path of the graph from the base
     """
-    # ==========================================================================
-    # Get the high points in the matrix and the supposed base plant points
-    x_stem, y_stem, z_stem = find_base_stem_position(
-        graph.nodes(),
-        voxels_size,
-        neighbor_size=neighbor_size)
-
-    # ==========================================================================
-    # Compute the shorted path
-
-    all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
-        graph, (x_stem, y_stem, z_stem), weight="weight")
+   
 
     return all_shorted_path_to_stem_base
 
 
 def skeletonize(voxel_grid,
                 graph,
+                src_node,
                 subgraph=None,
                 voxels_position_remain=None,
                 mode="plane",
                 plane_width=None,
-                ball_radius=None,
-                neighbor_size=45):
+                ball_radius=None):
     """ Compute phenomenal skeletonization on the voxel_grid based on the graph.
 
     Parameters
@@ -306,8 +295,10 @@ def skeletonize(voxel_grid,
 
     graph : networkx.Graph
 
+    src_node : 
+
     subgraph: networkx.graph, optional
-        If not None, perfom the computation of the shorted paths on the
+        If provide, perfom the computation of the shorted paths on the
         subgraph and remove voxels
 
     mode : str, optional
@@ -336,8 +327,12 @@ def skeletonize(voxel_grid,
         subgraph = graph
 
     voxels_size = voxel_grid.voxels_size
-    all_shorted_path_to_stem_base = compute_all_shorted_path(
-        subgraph, voxels_size, neighbor_size=neighbor_size)
+
+    # ==========================================================================
+    # Compute the shorted path
+
+    all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
+        graph, src_node, weight="weight")
 
     # ==========================================================================
     if voxels_position_remain is None:

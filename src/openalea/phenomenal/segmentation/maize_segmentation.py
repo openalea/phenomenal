@@ -85,7 +85,7 @@ def get_highest_segment(segments):
     return highest_voxel_segment
 
 
-def maize_segmentation(voxel_skeleton, graph):
+def maize_segmentation(voxel_skeleton, graph, stem_segment=None, stem_strategy="highest"):
     """ Labeling segments in voxel_skeleton into 4 label.
     The label are "stem", "growing leaf", "mature_leaf", "unknown".
     Parameters
@@ -102,10 +102,17 @@ def maize_segmentation(voxel_skeleton, graph):
     # Select the more highest segment on the skeleton
     voxels_size = voxel_skeleton.voxels_size
 
-    highest_voxel_segment = get_highest_segment(voxel_skeleton.segments)
+    if stem_segment is None:
+        if stem_strategy == "highest":
+            highest_voxel_segment = get_highest_segment(voxel_skeleton.segments)
+        elif stem_strategy == "longest":
+            highest_voxel_segment = max(voxel_skeleton.segments, key=lambda e: len(e.polyline))
+        stem_segment_voxel = highest_voxel_segment.voxels_position
+        stem_segment_path = highest_voxel_segment.polyline
+    else:
+        stem_segment_voxel = stem_segment.voxels_position
+        stem_segment_path = stem_segment.polyline
 
-    stem_segment_voxel = highest_voxel_segment.voxels_position
-    stem_segment_path = highest_voxel_segment.polyline
 
     # ==========================================================================
     # Compute Stem detection
