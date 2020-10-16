@@ -139,10 +139,9 @@ class VoxelGrid(object):
 
         xxx = world_coordinate[0] + xx * voxels_size
         yyy = world_coordinate[1] + yy * voxels_size
-
         zzz = world_coordinate[2] + zz * voxels_size
+
         voxels_position = numpy.column_stack((xxx, yyy, zzz))
-        # voxels_position = zip()
 
         return VoxelGrid(voxels_position, voxels_size)
 
@@ -225,13 +224,8 @@ class VoxelGrid(object):
         voxels_position = list()
         with open(filename, 'r') as f:
             for line in f:
-                point_3d = re.findall(r'[-0-9.]+', line)
-
-                x = float(point_3d[0])
-                y = float(point_3d[1])
-                z = float(point_3d[2])
-
-                voxels_position.append((x, y, z))
+                values = [float(v) for v in line.split()[:3]]
+                voxels_position.append(tuple(values))
         f.close()
 
         return VoxelGrid(voxels_position, voxels_size)
