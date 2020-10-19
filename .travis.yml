@@ -21,6 +21,10 @@ install:
   - source install.sh
   - conda config --add channels conda-forge
   - conda info
+  - conda install -y numpy --force-reinstall
+  - conda install -y numpy-base --force-reinstall
+  - conda install -y scipy --force-reinstall
+
 
 before_script:
   - source before_script.sh
