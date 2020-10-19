@@ -4,8 +4,6 @@ os:
   - linux
   - osx
 
-osx_image: xcode11.2
-
 sudo: required
 
 services:
@@ -21,9 +19,6 @@ install:
   - source install.sh
   - conda config --add channels conda-forge
   - conda info
-  - conda install -c conda-forge -y numpy --force-reinstall
-  - conda install -c conda-forge -y numpy-base --force-reinstall
-  - conda install -c conda-forge -y scipy --force-reinstall
 
 
 before_script:
