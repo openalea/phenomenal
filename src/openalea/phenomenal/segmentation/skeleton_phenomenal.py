@@ -287,15 +287,15 @@ def skeletonize(voxel_grid,
                 mode="plane",
                 plane_width=None,
                 ball_radius=None):
-    """ Compute phenomenal skeletonization on the voxel_grid based on the graph.
+    """ Compute phenomenal skeletonization on the voxel_grid based on the graph and src_node.
 
     Parameters
     ----------
-    voxel_grid : VoxelGrid
+    voxel_grid : Voxel grid of the 3D representation to skeletonize
 
-    graph : networkx.Graph
+    graph : networkx.Graph of 8-neigborhood connection
 
-    src_node : 
+    src_node : Node source of the graph, where each shortest path will be ended.
 
     subgraph: networkx.graph, optional
         If provide, perfom the computation of the shorted paths on the
