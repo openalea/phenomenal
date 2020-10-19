@@ -17,11 +17,12 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler("cxx") }}
+    - python
 
   host:
     - python
     - setuptools
-    - cython    
+    - cython
     - numpy
     - scipy
 
