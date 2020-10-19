@@ -91,7 +91,16 @@ def maize_segmentation(voxel_skeleton, graph, stem_segment=None, stem_strategy="
     Parameters
     ----------
     voxel_skeleton : openalea.phenomenal.object.VoxelSkeleton
+
     graph : networkx.Graph
+
+    stem_segment : If None, stem_segment is computed according stem_strategy.
+    stem_segment is VoxelSegment object depict the polyline where the plant stem is included. 
+
+    stem_strategy : "highest" or "longest". 
+    Select, according the stem_strategy, the more "highest" 
+    path (along z axis) or the "longest" path which theorically 
+    include the plant stem
 
     Returns
     -------
