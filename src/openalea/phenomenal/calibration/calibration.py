@@ -731,7 +731,7 @@ class Calibration(object):
         if len(ref_cam) > 0:
             camera = self._cameras[self.reference_camera]
             labels = f_labels + ['_pos_y'] + rot_labels
-            d = dict(zip(labels, ref_cam))
+            d = dict(list(zip(labels, ref_cam)))
             for k in rot_labels:
                     d[k] = normalise_angle(d[k])
             camera.set_vars(d)
@@ -739,7 +739,7 @@ class Calibration(object):
         if len(target_pars) > 0:
             labels = pos_labels + rot_labels
             for target, target_param in zip(self._targets.values(), target_pars):
-                d = dict(zip(labels, target_param))
+                d = dict(list(zip(labels, target_param)))
                 for k in rot_labels:
                     d[k] = normalise_angle(d[k])
                 target.set_vars(d)
@@ -748,7 +748,7 @@ class Calibration(object):
             cams = [self._cameras[k] for k in self._cameras if k is not self.reference_camera]
             for camera, camera_param in zip(cams, camera_pars):
                 labels = f_labels + pos_labels + rot_labels
-                d = dict(zip(labels, camera_param))
+                d = dict(list(zip(labels, camera_param)))
                 for k in rot_labels:
                     d[k] = normalise_angle(d[k])
                 camera.set_vars(d)
@@ -830,7 +830,7 @@ class Calibration(object):
             start = [d[p] for p in free_pars]
 
         def split_parameters(x0):
-            pars = dict(zip(free_pars, x0[:nfree_pars]))
+            pars = dict(list(zip(free_pars, x0[:nfree_pars])))
             pars.update(fixed_parameters)
             return pars
 
@@ -882,7 +882,7 @@ class Calibration(object):
             fixed_coords = {}
 
         image_points = {k: numpy.array(v) for k, v in image_points.items()}
-        n_pts = len(image_points.values()[0])
+        n_pts = len(list(image_points.values())[0])
 
         for c in fixed_coords:
             fixed_coords[c] = [fixed_coords[c]] * n_pts
@@ -903,13 +903,13 @@ class Calibration(object):
         nfree_coords = len(free_coords)
 
         def split_parameters(x0):
-            pars = dict(zip(free_pars, x0[:nfree_pars]))
+            pars = dict(list(zip(free_pars, x0[:nfree_pars])))
             pars.update(fixed_parameters)
 
             pts = numpy.array(x0[nfree_pars:]).reshape((nfree_pts, nfree_coords))
-            coords = dict(zip(free_coords, zip(*pts)))
+            coords = dict(list(zip(free_coords, zip(*pts))))
             coords.update(fixed_coords)
-            fpts = zip(coords['x'], coords['y'], coords['z'])
+            fpts = list(zip(coords['x'], coords['y'], coords['z']))
 
             return pars, fpts
 
