@@ -214,7 +214,7 @@ class VoxelGrid(object):
                 filename))):
             os.makedirs(os.path.dirname(filename))
 
-        f = open(filename, 'wb')
+        f = open(filename, 'w')
         for x, y, z in self.voxels_position:
             f.write("%f %f %f \n" % (x, y, z))
         f.close()
@@ -242,7 +242,7 @@ class VoxelGrid(object):
                 filename))):
             os.makedirs(os.path.dirname(filename))
 
-        with open(filename, 'wb') as f:
+        with open(filename, 'w') as f:
             c = csv.writer(f)
 
             c.writerow(['x_coord', 'y_coord', 'z_coord', 'voxel_size'])
@@ -252,7 +252,7 @@ class VoxelGrid(object):
 
     @staticmethod
     def read_from_csv(filename):
-        with open(filename, 'rb') as f:
+        with open(filename, 'r') as f:
             reader = csv.reader(f)
 
             next(reader)
