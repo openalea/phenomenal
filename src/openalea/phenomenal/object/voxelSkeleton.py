@@ -10,6 +10,9 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy
+import os
+import gzip
+import json
 
 from .voxelGrid import VoxelGrid
 # ==============================================================================
@@ -39,3 +42,29 @@ class VoxelSkeleton(object):
 
     def to_voxel_grid(self):
         return VoxelGrid(self.voxels_position(), self.voxels_size)
+
+
+
+    def write_to_json_gz(self, filename):
+
+        if (os.path.dirname(filename) and not os.path.exists(
+                os.path.dirname(filename))):
+            os.makedirs(os.path.dirname(filename))
+
+        with gzip.open(filename, 'wb') as f:
+
+            data = dict()
+            data['segments'] = list()
+            data['voxels_size'] = self.voxels_size
+
+            for seg in self.segments:
+
+                dseg = dict()
+                dseg['closest_nodes'] = seg.closest_nodes
+                dseg['voxels_position'] = seg.voxels_position
+                dseg['polyline'] = seg.polyline
+
+                data['segments'].append(dseg)
+
+            f.write(json.dumps(data).encode('utf-8'))
+
