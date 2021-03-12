@@ -10,8 +10,12 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy
+import os
+import gzip
+import json
 
 from .voxelGrid import VoxelGrid
+from .voxelSegment import VoxelSegment
 # ==============================================================================
 
 
@@ -39,3 +43,42 @@ class VoxelSkeleton(object):
 
     def to_voxel_grid(self):
         return VoxelGrid(self.voxels_position(), self.voxels_size)
+
+    def write_to_json_gz(self, filename):
+
+        if (os.path.dirname(filename) and not os.path.exists(
+                os.path.dirname(filename))):
+            os.makedirs(os.path.dirname(filename))
+
+        with gzip.open(filename, 'wb') as f:
+
+            data = dict()
+            data['segments'] = list()
+            data['voxels_size'] = self.voxels_size
+
+            for seg in self.segments:
+                dseg = dict()
+                dseg['voxels_position'] = list(seg.voxels_position)
+                dseg['polyline'] = seg.polyline
+                dseg['closest_nodes'] = [list(nodes) for nodes in seg.closest_nodes]
+                data['segments'].append(dseg)
+
+            f.write(json.dumps(data).encode('utf-8'))
+
+    @staticmethod
+    def read_from_json_gz(filename):
+
+        with gzip.open(filename, 'rb') as f:
+            data = json.loads(f.read().decode('utf-8'))
+
+            segs = []
+
+            for dseg in data['segments']:
+                polyline = list(map(tuple, dseg['polyline']))
+                voxels_position = set(list(map(tuple, dseg['voxels_position'])))
+                closest_nodes = [set(list(map(tuple, nodes))) for nodes in dseg['closest_nodes']]
+                segs.append(VoxelSegment(polyline, voxels_position, closest_nodes))
+
+            sk = VoxelSkeleton(segs, data['voxels_size'])
+
+        return sk

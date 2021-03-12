@@ -19,6 +19,18 @@ from .image3D import Image3D
 # ==============================================================================
 
 
+class NumpyEncoder(json.JSONEncoder):
+    """ Special json encoder for numpy types """
+    def default(self, obj):
+        if isinstance(obj, numpy.integer):
+            return int(obj)
+        elif isinstance(obj, numpy.floating):
+            return float(obj)
+        elif isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
 class VoxelGrid(object):
 
     def __init__(self, voxels_position, voxels_size):
@@ -195,16 +207,17 @@ class VoxelGrid(object):
 
             data = dict()
             data['voxels_size'] = self.voxels_size
-            data['voxels_position'] = list(map(tuple, self.voxels_position))
+            vp = list(map(tuple, self.voxels_position))
+            data['voxels_position'] = json.dumps(vp, cls=NumpyEncoder)
             json.dump(data, f)
 
     @staticmethod
     def read_from_json(filename):
 
-        with open(filename, 'rb') as f:
+        with open(filename, 'r') as f:
             data = json.load(f)
             voxels_size = data['voxels_size']
-            voxels_position = data['voxels_position']
+            voxels_position = json.loads(data['voxels_position'])
 
             return VoxelGrid(voxels_position, voxels_size)
 
@@ -214,7 +227,7 @@ class VoxelGrid(object):
                 filename))):
             os.makedirs(os.path.dirname(filename))
 
-        f = open(filename, 'wb')
+        f = open(filename, 'w')
         for x, y, z in self.voxels_position:
             f.write("%f %f %f \n" % (x, y, z))
         f.close()
@@ -242,7 +255,7 @@ class VoxelGrid(object):
                 filename))):
             os.makedirs(os.path.dirname(filename))
 
-        with open(filename, 'wb') as f:
+        with open(filename, 'w', newline='') as f:
             c = csv.writer(f)
 
             c.writerow(['x_coord', 'y_coord', 'z_coord', 'voxel_size'])
@@ -252,7 +265,7 @@ class VoxelGrid(object):
 
     @staticmethod
     def read_from_csv(filename):
-        with open(filename, 'rb') as f:
+        with open(filename, 'r', newline='') as f:
             reader = csv.reader(f)
 
             next(reader)
