@@ -45,7 +45,7 @@ extentions = [
 
 setup(
     name="openalea.phenomenal",
-    version="1.7.0b0",
+    version="1.7.1",
     description="",
     long_description="",
 
