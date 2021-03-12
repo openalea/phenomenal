@@ -57,16 +57,10 @@ class VoxelSkeleton(object):
             data['voxels_size'] = self.voxels_size
 
             for seg in self.segments:
-
                 dseg = dict()
-                node_sets = seg.closest_nodes
                 dseg['voxels_position'] = list(seg.voxels_position)
                 dseg['polyline'] = seg.polyline
-                dseg['closest_nodes'] = list()
-
-                for node_set in node_sets:
-                    dseg['closest_nodes'].append(list(node_set))
-
+                dseg['closest_nodes'] = [list(nodes) for nodes in seg.closest_nodes]
                 data['segments'].append(dseg)
 
             f.write(json.dumps(data).encode('utf-8'))
@@ -77,20 +71,13 @@ class VoxelSkeleton(object):
         with gzip.open(filename, 'rb') as f:
             data = json.loads(f.read().decode('utf-8'))
 
-            segs = list()
+            segs = []
 
             for dseg in data['segments']:
-
-                node_sets = list()
-                node_lists = dseg['closest_nodes']
-
-                for node_list in node_lists:
-
-                    node_sets.append(set(list(map(tuple, node_list))))
-
                 polyline = list(map(tuple, dseg['polyline']))
                 voxels_position = set(list(map(tuple, dseg['voxels_position'])))
-                segs.append(VoxelSegment(polyline, voxels_position, node_sets))
+                closest_nodes = [set(list(map(tuple, nodes))) for nodes in dseg['closest_nodes']]
+                segs.append(VoxelSegment(polyline, voxels_position, closest_nodes))
 
             sk = VoxelSkeleton(segs, data['voxels_size'])
 
