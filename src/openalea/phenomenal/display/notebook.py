@@ -10,7 +10,7 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy
-import ipyvolume
+import ipyvolume.pylab as ipyvolume
 
 from ._order_color_map import order_color_map
 # ==============================================================================
@@ -18,12 +18,35 @@ from ._order_color_map import order_color_map
 
 def plot_voxel(voxels_position, marker="box", color="green", size=2.0):
     if len(voxels_position) > 0:
-        x, y, z = (voxels_position[:, 0],
-                   voxels_position[:, 1],
-                   voxels_position[:, 2])
+        x, y, z = (voxels_position[:, 0].astype(float),
+                   voxels_position[:, 1].astype(float),
+                   voxels_position[:, 2].astype(float))
 
         ipyvolume.scatter(x, y, z, size=size, marker=marker, color=color)
 
+def show_point_cloud(xyz_positions,
+                     color='green',
+                     size=2,
+                     width=500,
+                     height=500):
+
+    ipyvolume.figure(width=width, height=height, controls=True, lighting=True)
+    plot_voxel(xyz_positions, size=size, color=color)
+
+    x_min = xyz_positions[:, 0].min()
+    x_max = xyz_positions[:, 0].max()
+    y_min = xyz_positions[:, 1].min()
+    y_max = xyz_positions[:, 1].max()
+    z_min = xyz_positions[:, 2].min()
+    z_max = xyz_positions[:, 2].max()
+
+    xyz_max = max(x_max - x_min, y_max - y_min, z_max - z_min)
+
+    ipyvolume.xlim(x_min, x_min + xyz_max)
+    ipyvolume.ylim(y_min, y_min + xyz_max)
+    ipyvolume.zlim(z_min, z_min + xyz_max)
+    ipyvolume.view(0, 90)
+    ipyvolume.show()
 
 def show_voxel_grid(voxel_grid,
                     color='green',
@@ -42,6 +65,7 @@ def show_voxel_grid(voxel_grid,
     z_max = voxel_grid.voxels_position[:, 2].max()
 
     xyz_max = max(x_max - x_min, y_max - y_min, z_max - z_min)
+
     ipyvolume.xlim(x_min, x_min + xyz_max)
     ipyvolume.ylim(y_min, y_min + xyz_max)
     ipyvolume.zlim(z_min, z_min + xyz_max)
