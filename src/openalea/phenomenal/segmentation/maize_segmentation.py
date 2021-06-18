@@ -86,34 +86,21 @@ def get_highest_segment(segments):
     return highest_voxel_segment
 
 
-def get_highest_central_segment(segments, k=3):
+def detect_stem_tip(voxel_skeleton, graph):
 
-    if len(segments) < 6:
+    voxels_size = voxel_skeleton.voxels_size
+    highest_voxel_segment = get_highest_segment(voxel_skeleton.segments)
 
-        highest_voxel_segment = get_highest_segment(segments)
+    stem_segment_voxel = highest_voxel_segment.voxels_position
+    stem_segment_path = highest_voxel_segment.polyline
 
-    else:
+    _, _, _, stem_top = stem_detection(
+        stem_segment_voxel, stem_segment_path, voxels_size, graph, z_stem=None)
 
-        # find k segments with highest z
-        z_list = [numpy.max(numpy.array(segment.polyline)[-1, 2]) for segment in segments]
-        i_highest = numpy.array(z_list).argsort()[-k:]
-        highest_segments = [segments[i] for i in i_highest]
-
-        # find most central segment in highest_segments
-        d_min = float("+inf")
-        for segment in highest_segments:
-            x1, y1 = segment.polyline[0][:2]
-            x2, y2 = segment.polyline[-1][:2]
-            d = numpy.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-
-            if d < d_min:
-                d_min = d
-                highest_voxel_segment = segment
-
-    return highest_voxel_segment
+    return sum([x[2] for x in stem_top]) / len([x[2] for x in stem_top])
 
 
-def maize_segmentation(voxel_skeleton, graph, z_stem=None, central=False):
+def maize_segmentation(voxel_skeleton, graph, z_stem=None):
     """ Labeling segments in voxel_skeleton into 4 label.
     The label are "stem", "growing leaf", "mature_leaf", "unknown".
     Parameters
@@ -126,14 +113,11 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, central=False):
     vms : VoxelSegmentation
     """
 
-    # ==========================================================================
-    # Select the more highest segment on the skeleton
     voxels_size = voxel_skeleton.voxels_size
 
-    if central:
-        highest_voxel_segment = get_highest_central_segment(voxel_skeleton.segments)
-    else:
-        highest_voxel_segment = get_highest_segment(voxel_skeleton.segments)
+    # ==========================================================================
+    # Select the more highest segment on the skeleton
+    highest_voxel_segment = get_highest_segment(voxel_skeleton.segments)
 
     stem_segment_voxel = highest_voxel_segment.voxels_position
     stem_segment_path = highest_voxel_segment.polyline
