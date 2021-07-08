@@ -127,8 +127,6 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None):
     stem_voxel, not_stem_voxel, stem_path, stem_top = stem_detection(
         stem_segment_voxel, stem_segment_path, voxels_size, graph, z_stem=z_stem)
 
-    #return stem_detection(stem_segment_voxel, stem_segment_path, voxels_size, graph)
-
     # ==========================================================================
     # Remove stem voxels from segment voxels
     vs_to_remove = list()
