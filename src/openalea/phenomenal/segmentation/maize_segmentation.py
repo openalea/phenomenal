@@ -62,34 +62,46 @@ def _merge(graph, voxels, remaining_voxels, percentage=50):
 # ==============================================================================
 
 
-def get_highest_segment(segments):
+def get_highest_segment(segments, n_candidates=3):
     """ Return the segments with the highest polyline point according to z axis
 
     Parameters
     ----------
     segments : list
         list of VoxelSegment
+    n_candidates : number of highest polylines pre-selected for the selection of the final highest polyline
     Returns
     -------
     highest_voxel_segment : VoxelSegment
     """
 
-    z_max = float("-inf")
-    highest_voxel_segment = None
-    for segment in segments:
-        z = numpy.max(numpy.array(segment.polyline)[-1, 2])
+    # sort segments by descending height
+    segments.sort(key=lambda x: numpy.max(numpy.array(x.polyline)[-1, 2]), reverse=True)
 
-        if z > z_max:
-            z_max = z
+    candidates = segments[:n_candidates]
+
+    # save the segment with the lowest polyline tortuosity (arc-chord ratio)
+    tortuosity_min = float("+inf")
+    highest_voxel_segment = None
+    for segment in candidates:
+
+        pl = numpy.array(segment.polyline)
+        pl_length = numpy.sum([numpy.linalg.norm(pl[k] - pl[k + 1]) for k in range(len(pl) - 1)])
+        tortuosity = pl_length / numpy.linalg.norm(pl[0] - pl[-1])
+
+        print(tortuosity)
+
+        if tortuosity < tortuosity_min:
+            tortuosity_min = tortuosity
             highest_voxel_segment = segment
 
     return highest_voxel_segment
 
 
-def detect_stem_tip(voxel_skeleton, graph):
+def detect_stem_tip(voxel_skeleton, graph, n_candidates):
 
     voxels_size = voxel_skeleton.voxels_size
-    highest_voxel_segment = get_highest_segment(voxel_skeleton.segments)
+    highest_voxel_segment = get_highest_segment(voxel_skeleton.segments, n_candidates=n_candidates)
 
     stem_segment_voxel = highest_voxel_segment.voxels_position
     stem_segment_path = highest_voxel_segment.polyline
@@ -100,7 +112,7 @@ def detect_stem_tip(voxel_skeleton, graph):
     return sum([x[2] for x in stem_top]) / len([x[2] for x in stem_top])
 
 
-def maize_segmentation(voxel_skeleton, graph, z_stem=None):
+def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1):
     """ Labeling segments in voxel_skeleton into 4 label.
     The label are "stem", "growing leaf", "mature_leaf", "unknown".
     Parameters
@@ -117,7 +129,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None):
 
     # ==========================================================================
     # Select the more highest segment on the skeleton
-    highest_voxel_segment = get_highest_segment(voxel_skeleton.segments)
+    highest_voxel_segment = get_highest_segment(voxel_skeleton.segments, n_candidates=n_candidates)
 
     stem_segment_voxel = highest_voxel_segment.voxels_position
     stem_segment_path = highest_voxel_segment.polyline
