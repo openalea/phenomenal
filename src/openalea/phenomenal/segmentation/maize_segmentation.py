@@ -62,7 +62,7 @@ def _merge(graph, voxels, remaining_voxels, percentage=50):
 # ==============================================================================
 
 
-def get_highest_segment(segments, n_candidates=3):
+def get_highest_segment(segments, n_candidates=1):
     """ Return the segments with the highest polyline point according to z axis
 
     Parameters
@@ -88,8 +88,6 @@ def get_highest_segment(segments, n_candidates=3):
         pl = numpy.array(segment.polyline)
         pl_length = numpy.sum([numpy.linalg.norm(pl[k] - pl[k + 1]) for k in range(len(pl) - 1)])
         tortuosity = pl_length / numpy.linalg.norm(pl[0] - pl[-1])
-
-        print(tortuosity)
 
         if tortuosity < tortuosity_min:
             tortuosity_min = tortuosity
