@@ -151,6 +151,7 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
 
     arr_stem_centred_path_min_peak = numpy.array(
         stem_centred_path_min_peak).transpose()
+    arr_stem_centred_path_min_peak = numpy.unique(arr_stem_centred_path_min_peak, axis=1) # remove redundancies
     tck, u = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=1)
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
 
