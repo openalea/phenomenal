@@ -558,7 +558,7 @@ def reconstruction_3d(image_views,
 
         voxels = split_voxels_in_eight(stage.consistent)
 
-        print(voxels.size)
+        #print(voxels.size)
 
         if voxels.size < 512:
             stage = kept_visible_voxel(
