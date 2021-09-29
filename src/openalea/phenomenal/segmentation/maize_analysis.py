@@ -187,7 +187,8 @@ def voxel_base_height(vo, polyline, min_distance=30):
     vxs2 = numpy.array(vxs2)
 
     if vxs2.size == 0:
-        height = vo.info['pm_position_base']
+        if 'pm_position_base' in vo.info:
+            height = vo.info['pm_position_base']
     else:
         height = vxs2[numpy.argsort(vxs2[:, 2])][0]
 
