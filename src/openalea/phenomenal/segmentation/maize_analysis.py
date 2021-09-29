@@ -187,8 +187,7 @@ def voxel_base_height(vo, polyline, min_distance=30):
     vxs2 = numpy.array(vxs2)
 
     if vxs2.size == 0:
-        if 'pm_position_base' in vo.info:
-            height = vo.info['pm_position_base']
+        height = vo.info['pm_position_base']
     else:
         height = vxs2[numpy.argsort(vxs2[:, 2])][0]
 
@@ -387,10 +386,11 @@ def maize_analysis(maize_segmented):
     # ==========================================================================
 
     mature_leafs = list()
+    stem_polyline = numpy.array(list(maize_segmented.get_stem().get_highest_polyline().polyline))
     for vo_mature_leaf in maize_segmented.get_mature_leafs():
 
-        stem_polyline = numpy.array(list(maize_segmented.get_stem().get_highest_polyline().polyline))
-        vo_mature_leaf.info['pm_z_base_voxel'] = voxel_base_height(vo_mature_leaf, stem_polyline)[2]
+        if 'pm_z_base' in vo_mature_leaf.info:
+            vo_mature_leaf.info['pm_z_base_voxel'] = voxel_base_height(vo_mature_leaf, stem_polyline)[2]
 
         vo_mature_leaf = maize_mature_leaf_analysis(
             vo_mature_leaf, voxels_size, vo_stem.info['pm_vector_mean'])
