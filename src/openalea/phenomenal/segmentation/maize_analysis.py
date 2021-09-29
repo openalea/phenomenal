@@ -389,11 +389,11 @@ def maize_analysis(maize_segmented):
     stem_polyline = numpy.array(list(maize_segmented.get_stem().get_highest_polyline().polyline))
     for vo_mature_leaf in maize_segmented.get_mature_leafs():
 
-        if 'pm_z_base' in vo_mature_leaf.info:
-            vo_mature_leaf.info['pm_z_base_voxel'] = voxel_base_height(vo_mature_leaf, stem_polyline)[2]
-
         vo_mature_leaf = maize_mature_leaf_analysis(
             vo_mature_leaf, voxels_size, vo_stem.info['pm_vector_mean'])
+
+        if 'pm_z_base' in vo_mature_leaf.info:
+            vo_mature_leaf.info['pm_z_base_voxel'] = voxel_base_height(vo_mature_leaf, stem_polyline)[2]
 
         if vo_mature_leaf is None:
             continue
