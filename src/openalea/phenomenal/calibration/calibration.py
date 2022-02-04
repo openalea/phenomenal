@@ -256,7 +256,7 @@ class CalibrationSetup(object):
 
     def __init__(self, cameras=None, targets=None, image_resolutions=None, image_sizes=None, facings=None,
                  clockwise_rotation=True):
-        """ Intantiate a CalibrationSetup for positioning cameras and targets of a multiview acquisition system
+        """ Instantiate a CalibrationSetup for positioning cameras and targets of a multiview acquisition system
 
         Args:
             cameras:{camera_id: (distance, inclination), ...}: a dict of parameters for positioning cameras in the
@@ -404,7 +404,7 @@ class Calibration(object):
     """A class for calibration of multi-views imaging systems (fixed cameras, rotating targets)"""
 
     def __init__(self, angle_factor=1, targets=None, cameras=None, target_points=None, image_points=None,
-                 reference_camera='side', clockwise_rotation=True):
+                 reference_camera='side', clockwise_rotation=True, calibration_statistics=None):
         """Instantiate a Calibration object with calibration data
 
         Args:
@@ -419,6 +419,7 @@ class Calibration(object):
                 rotation consign is the rounded angle (degrees) by which the turntable has turned before image acquisition
             reference_camera (str): camera_id of the camera to be used as reference for world frame (see details)
             clockwise_rotation (bool): are targets rotating clockwise ? (default True)
+            calibration_statistics (dict): statitistics of current calibration
 
         Details:
             Calibration allows finding position and parameters of cameras and targets and compute the pixel coordinates
@@ -448,6 +449,8 @@ class Calibration(object):
         self.fit_targets = True
         self.fit_cameras = True
         self.verbose = False
+
+        self.calibration_statistics = calibration_statistics
 
     def set_values(self, targets=None, target_points=None, cameras=None, image_points=None):
         if targets is not None:
@@ -685,6 +688,26 @@ class Calibration(object):
             raise ValueError('Calibration corner points (target_points and image points) are required to compute '
                              'calibration error')
 
+    def _calibration_statistics(self):
+        stats = {}
+        if self._nb_image_points > 0:
+            _, error = self.calibration_error(all_pars=True)
+            stats['mean_error'] = error
+            stats['total_points'] = self._nb_image_points
+        for id_camera, camera in self._cameras.items():
+            d_origin = numpy.sqrt(camera._pos_x ** 2 + camera._pos_y ** 2 + camera._pos_z ** 2)
+            focal = numpy.mean([camera._focal_length_x,
+                                camera._focal_length_y])
+            pixel_size = d_origin / focal
+            calibration_images = {}
+            if self._nb_image_points > 0:
+                for target in self._image_points[id_camera]:
+                    calibration_images[target] = len(self._image_points[id_camera][target])
+            stats[id_camera] = {'distance to origin': d_origin,
+                                'pixel_size': pixel_size,
+                                'target_images': calibration_images}
+        return stats
+
     def get_target_projected(self, id_camera, id_target, rotation):
 
         proj = self.get_projection(id_camera, rotation)
@@ -754,6 +777,7 @@ class Calibration(object):
                 camera.set_vars(d)
 
         err = self.fit_function(parameters)
+        self.calibration_statistics = self._calibration_statistics()
 
         return err / self._nb_image_points
 
@@ -952,6 +976,9 @@ class Calibration(object):
         save_class['cameras_parameters'] = {id_camera: camera.to_json() for id_camera, camera in self._cameras.items()}
         save_class['targets_parameters'] = {id_target: t.to_json() for id_target, t in self._targets.items()}
 
+        if self.calibration_statistics is not None:
+            save_class['calibration_statistics'] = self.calibration_statistics
+
         with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
@@ -970,6 +997,8 @@ class Calibration(object):
         c.angle_factor = save_class['angle_factor']
         c.clockwise = save_class['clockwise']
         c.reference_camera = save_class['reference_camera']
+        if 'calibration_statistics' in save_class:
+            c.calibration_statistics = save_class['calibration_statistics']
         return c
 
     @staticmethod
