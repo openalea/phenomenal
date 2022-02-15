@@ -968,6 +968,73 @@ class Calibration(object):
 
         return cframe, fpts
 
+    def find_frame_from_vectors(self, image_vectors, world_vectors, fixed_parameters=None):
+        """ Find Frame parameters from magnitude and orientation of known vectors / projected vectors pairs
+
+        Args:
+            image_vectors: a {camera_id: [(magnitude, orientation),...], ...} dict of list of projeted vectors in image frame.
+                           Orientation is the angle between image width direction and projected vector, positive counterclockwise
+            world_vectors : a [(magnitude, elevation, azimuth),...] list of vectors in world frame
+            fixed_parameters: a {parameter_name: value} dict of fixed (unfitted) frame parameters. Valid parameters
+             names are '_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z'
+
+
+        Returns:
+            A CalibrationFrame
+
+        """
+
+        if fixed_parameters is None:
+            fixed_parameters = {}
+
+        # u = x, v = -y if angle are counterclockwise
+        image_points = {k: numpy.array([(m * numpy.cos(t), -m * numpy.sin(t)) for m, t in v]) for k, v in image_vectors.items()}
+
+        fpts = numpy.array(
+            [(m * numpy.cos(el) * numpy.cos(az), m * numpy.cos(el) * numpy.sin(az),m * numpy.sin(el)) for m, el, az in
+             world_vectors])
+
+        # free frame parameters
+        pars = ('_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z')
+        free_pars = [p for p in pars if p not in fixed_parameters]
+        nfree_pars = len(free_pars)
+
+        def split_parameters(x0):
+            pars = dict(list(zip(free_pars, x0)))
+            pars.update(fixed_parameters)
+            return pars
+
+        def fit_function(x0):
+            pars = split_parameters(x0)
+            cframe = CalibrationFrame()
+            cframe.set_vars(pars)
+            fr = cframe.get_frame()
+            pts = fr.global_point(fpts)
+
+            err = 0
+            for id_camera in image_points:
+                proj = self.get_projection(id_camera, 0)
+                im_pts = proj(fr.global_point((0, 0, 0))) + image_points[id_camera]
+                pix = proj(pts)
+                err += numpy.linalg.norm(pix - im_pts, axis=1).sum()
+            print(err)
+
+            return err
+
+        start = numpy.zeros(nfree_pars)
+        parameters = scipy.optimize.minimize(
+            fit_function,
+            start,
+            method='BFGS').x
+
+        pars = split_parameters(parameters)
+        for p in ('_rot_x', '_rot_y', '_rot_z'):
+            pars[p] = normalise_angle(pars[p])
+        cframe = CalibrationFrame()
+        cframe.set_vars(pars)
+
+        return cframe
+
     def dump(self, filename):
         save_class = dict()
         save_class['angle_factor'] = self.angle_factor
