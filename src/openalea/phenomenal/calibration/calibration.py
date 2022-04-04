@@ -250,6 +250,22 @@ class CalibrationCamera(CalibrationFrame):
         c = CalibrationCamera.from_json(save_class)
         return c
 
+class CalibrationLayout(object):
+    """Helper for defining the calibration layout for a rotating multiview acquisition system"""
+
+    def __init__(self, reference_camera = None, cameras=None, targets=None, clockwise_rotation=True):
+        """
+
+        Args:
+            reference_camera:  a (distance, inclination) tuple defining the reference camera. The camera is positioned
+                relative to a camera placed on the axis of rotation (world Z+) at an arbitrary position defining world origin  and pointing downward. Distance
+                isInclination
+                is the angle (degree, positive) needed to position the
+            cameras:
+            targets:
+            clockwise_rotation:
+        """
+        pass
 
 class CalibrationSetup(object):
     """A class for helping the setup of a multi-view imaging systems to be calibrated"""
