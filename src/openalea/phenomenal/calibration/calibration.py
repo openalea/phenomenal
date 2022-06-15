@@ -921,7 +921,7 @@ class Calibration(object):
         if fixed_coords is None:
             fixed_coords = {}
 
-        image_points = {k: numpy.array(v) for k, v in image_points.items()}
+        image_points = {k: numpy.array(v) if v is not None else v for k, v in image_points.items()}
         n_pts = len(list(image_points.values())[0])
 
         for c in fixed_coords:
@@ -932,10 +932,13 @@ class Calibration(object):
         free_pars = [p for p in pars if p not in fixed_parameters]
         nfree_pars = len(free_pars)
 
-        # free points
+        # free (unknown) points
         nfree_pts = n_pts
         if fixed_frame_points is not None:
-            nfree_pts -= len(fixed_frame_points) / 3
+            nfree_pts -= len(fixed_frame_points)
+            fixed_frame_points = [numpy.array(v) for v in fixed_frame_points]
+        else:
+            fixed_frame_points = []
 
         # free point coordinates
         coords = ('x', 'y', 'z')
@@ -946,10 +949,12 @@ class Calibration(object):
             pars = dict(list(zip(free_pars, x0[:nfree_pars])))
             pars.update(fixed_parameters)
 
-            pts = numpy.array(x0[nfree_pars:]).reshape((nfree_pts, nfree_coords))
-            coords = dict(list(zip(free_coords, zip(*pts))))
-            coords.update(fixed_coords)
-            fpts = list(zip(coords['x'], coords['y'], coords['z']))
+            fpts = fixed_frame_points
+            if nfree_pts > 0:
+                pts = numpy.array(x0[nfree_pars:]).reshape((nfree_pts, nfree_coords))
+                coords = dict(list(zip(free_coords, zip(*pts))))
+                coords.update(fixed_coords)
+                fpts += list(zip(coords['x'], coords['y'], coords['z']))
 
             return pars, fpts
 
@@ -962,9 +967,10 @@ class Calibration(object):
 
             err = 0
             for id_camera in image_points:
-                im_pts = image_points[id_camera]
+                im_pts = [p for p in image_points[id_camera] if p is not None]
+                world_pts = [p for p, im_p in zip(pts, image_points[id_camera]) if im_p is not None ]
                 proj = self.get_projection(id_camera, 0)
-                pix = proj(pts)
+                pix = proj(world_pts)
                 err += numpy.linalg.norm(pix - im_pts, axis=1).sum()
             print(err)
 
