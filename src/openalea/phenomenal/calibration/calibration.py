@@ -420,7 +420,7 @@ class Calibration(object):
     """A class for calibration of multi-views imaging systems (fixed cameras, rotating targets)"""
 
     def __init__(self, angle_factor=1, targets=None, cameras=None, target_points=None, image_points=None,
-                 reference_camera='side', clockwise_rotation=True, calibration_statistics=None):
+                 reference_camera='side', clockwise_rotation=True, calibration_statistics=None, user_frames=None):
         """Instantiate a Calibration object with calibration data
 
         Args:
@@ -436,6 +436,8 @@ class Calibration(object):
             reference_camera (str): camera_id of the camera to be used as reference for world frame (see details)
             clockwise_rotation (bool): are targets rotating clockwise ? (default True)
             calibration_statistics (dict): statitistics of current calibration
+            user_frames (dict): a {frame_name: CalibrationFrame, ...} dict of user-defined frames positioned in global world
+            frame specifying alternative coordinates systems
 
         Details:
             Calibration allows finding position and parameters of cameras and targets and compute the pixel coordinates
@@ -467,6 +469,7 @@ class Calibration(object):
         self.verbose = False
 
         self.calibration_statistics = calibration_statistics
+        self.user_frames = user_frames
 
     def set_values(self, targets=None, target_points=None, cameras=None, image_points=None):
         if targets is not None:
@@ -1074,6 +1077,9 @@ class Calibration(object):
         if self.calibration_statistics is not None:
             save_class['calibration_statistics'] = self.calibration_statistics
 
+        if self.user_frames is not None:
+            save_class['user_frames'] = {id_frame: frame.to_json() for id_frame, frame in self.user_frames.items()}
+
         with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
                       sort_keys=True,
@@ -1094,6 +1100,9 @@ class Calibration(object):
         c.reference_camera = save_class['reference_camera']
         if 'calibration_statistics' in save_class:
             c.calibration_statistics = save_class['calibration_statistics']
+        if 'user_frames' in save_class:
+            c.user_frames = {id_frame: CalibrationFrame.from_json(pars)
+                             for id_frame, pars in save_class['user_frames'].items()}
         return c
 
     @staticmethod
