@@ -897,7 +897,7 @@ class Calibration(object):
 
         return camera
 
-    def find_frame(self, image_points, fixed_parameters=None, fixed_frame_points=None, fixed_coords=None):
+    def find_frame(self, image_points, fixed_parameters=None, fixed_frame_points=None, fixed_coords=None, start=None):
         """ Find Frame parameters and 3D local (frame based) coordinates of points from paired image coordinates
 
         Args:
@@ -932,6 +932,7 @@ class Calibration(object):
         free_pars = [p for p in pars if p not in fixed_parameters]
         nfree_pars = len(free_pars)
 
+
         # free (unknown) points
         nfree_pts = n_pts
         if fixed_frame_points is not None:
@@ -944,6 +945,11 @@ class Calibration(object):
         coords = ('x', 'y', 'z')
         free_coords = [c for c in coords if c not in fixed_coords]
         nfree_coords = len(free_coords)
+
+        if start is None:
+            start = numpy.zeros(nfree_pars + nfree_pts * nfree_coords)
+        else:
+            start = [start[p] for p in free_pars] + numpy.zeros(nfree_pts * nfree_coords).tolist()
 
         def split_parameters(x0):
             pars = dict(list(zip(free_pars, x0[:nfree_pars])))
@@ -976,7 +982,7 @@ class Calibration(object):
 
             return err
 
-        start = numpy.zeros(nfree_pars + nfree_pts * nfree_coords)
+
         parameters = scipy.optimize.minimize(
             fit_function,
             start,
