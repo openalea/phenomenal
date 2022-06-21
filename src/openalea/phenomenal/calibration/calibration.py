@@ -477,7 +477,10 @@ class Calibration(object):
         self.verbose = False
 
         self.calibration_statistics = calibration_statistics
-        self.frames = frames
+        if frames is not None:
+            self.frames = frames
+        else:
+            self.frames = {}
 
     def set_values(self, targets=None, target_points=None, cameras=None, image_points=None):
         if targets is not None:
@@ -1102,7 +1105,7 @@ class Calibration(object):
         if self.calibration_statistics is not None:
             save_class['calibration_statistics'] = self.calibration_statistics
 
-        if self.frames is not None:
+        if len(self.frames) > 0:
             save_class['frames'] = {id_frame: frame.to_json() for id_frame, frame in self.frames.items()}
 
         with open(filename, 'w') as output_file:
