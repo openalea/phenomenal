@@ -13,6 +13,7 @@ where a target is rotating instead of a plant in the image acquisition system.
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
+import warnings
 import json
 import math
 import numpy
@@ -224,6 +225,9 @@ class CalibrationCamera(CalibrationFrame):
 
         return projection
 
+    def image_shape(self):
+        return self._height_image, self._width_image
+
     def get_intrinsic(self):
         intrinsic = numpy.identity(3)
         fx = self._focal_length_x
@@ -250,13 +254,29 @@ class CalibrationCamera(CalibrationFrame):
         c = CalibrationCamera.from_json(save_class)
         return c
 
+class CalibrationLayout(object):
+    """Helper for defining the calibration layout for a rotating multiview acquisition system"""
+
+    def __init__(self, reference_camera = None, cameras=None, targets=None, clockwise_rotation=True):
+        """
+
+        Args:
+            reference_camera:  a (distance, inclination) tuple defining the reference camera. The camera is positioned
+                relative to a camera placed on the axis of rotation (world Z+) at an arbitrary position defining world origin  and pointing downward. Distance
+                isInclination
+                is the angle (degree, positive) needed to position the
+            cameras:
+            targets:
+            clockwise_rotation:
+        """
+        pass
 
 class CalibrationSetup(object):
     """A class for helping the setup of a multi-view imaging systems to be calibrated"""
 
     def __init__(self, cameras=None, targets=None, image_resolutions=None, image_sizes=None, facings=None,
                  clockwise_rotation=True):
-        """ Intantiate a CalibrationSetup for positioning cameras and targets of a multiview acquisition system
+        """ Instantiate a CalibrationSetup for positioning cameras and targets of a multiview acquisition system
 
         Args:
             cameras:{camera_id: (distance, inclination), ...}: a dict of parameters for positioning cameras in the
@@ -404,30 +424,37 @@ class Calibration(object):
     """A class for calibration of multi-views imaging systems (fixed cameras, rotating targets)"""
 
     def __init__(self, angle_factor=1, targets=None, cameras=None, target_points=None, image_points=None,
-                 reference_camera='side', clockwise_rotation=True):
+                 reference_camera='side', clockwise_rotation=True, calibration_statistics=None, frames=None):
         """Instantiate a Calibration object with calibration data
 
         Args:
             angle_factor: start value for angle_factor. angle_factor is a float multiplier of rotation consign
                 to obtain actual rotation angle (default value: 1)
-            targets: a {target_id : CalibrationFrame,...} dict of targets to be used as starting guess for target frames
-            cameras: a {camera_id: CalibrationCamera,...} dict of cameras to be used as starting guess for cameras
+            targets: a {target_id : CalibrationFrame,...} dict of targets to be used as starting guess for target frames,
+                positioned using transformations of the base configuration of the imaging system (see CalibrationLayout)
+            cameras: a {camera_id: CalibrationCamera,...} dict of cameras to be used as starting guess for cameras,
+                positioned using transformations of the base configuration of the imaging system (see CalibrationLayout)
             target_points: a {target_id: [(x, y, z), ...], ...} dict of coordinates of target corner points, expressed
-                in target corner point frame (chessboard frame)
+                in target local frame
             image_points: a {camera_id: {target_id : {rotation : [(u,v),...], ...}, ...,} dict of dict of dict of
                 pixel coordinates of target corner points  projected on camera images at a given rotation consign. The
                 rotation consign is the rounded angle (degrees) by which the turntable has turned before image acquisition
-            reference_camera (str): camera_id of the camera to be used as reference for world frame (see details)
+            reference_camera (str): camera_id of the camera to be used to define world native frame (see details)
             clockwise_rotation (bool): are targets rotating clockwise ? (default True)
+            calibration_statistics (dict): statitistics of current calibration
+            frames (dict): a {frame_name: CalibrationFrame, ...} dict of user-defined frames positioned in world
+            native frame specifying alternative coordinates systems
 
         Details:
-            Calibration allows finding position and parameters of cameras and targets and compute the pixel coordinates
-            any 3D point of world.
-            The world 3D coordinates are expressed in world global frame, defined by the axis of rotation and a the
-            position of a reference camera.
-            The axis of rotation of the rotating system, oriented toward the sky, defines the world z-axis.
-            The altitude of the reference camera defines the altitude of the world origin, and the reference camera
-            z+-axis (camera optical axis) defines world Y+ axis
+            Calibration allows finding position and parameters of cameras and targets and compute the projection
+            functions of cameras from different use-defined frames
+            The world 3D coordinates are natively expressed in the frame defined by the axis of rotation and a reference
+            camera as follow:
+                - The axis of rotation of the rotating system, oriented toward the sky, defines the world  Z+.
+                - The altitude of the reference camera defines Z=0.
+                - The vertical plane around Z+ intercepting the reference camera, oriented from the camera to the axe of
+                rotation, defines world Y+ axis
+            The world coordinates can be redefined by further positioning user-defined frames in this native frame.
         """
 
         self.angle_factor = angle_factor
@@ -448,6 +475,12 @@ class Calibration(object):
         self.fit_targets = True
         self.fit_cameras = True
         self.verbose = False
+
+        self.calibration_statistics = calibration_statistics
+        if frames is not None:
+            self.frames = frames
+        else:
+            self.frames = {}
 
     def set_values(self, targets=None, target_points=None, cameras=None, image_points=None):
         if targets is not None:
@@ -488,7 +521,7 @@ class Calibration(object):
 
     @staticmethod
     def turntable_frame(rotation, angle_factor=1, clockwise=True):
-        """ Frame attached to turntable. This correspond to world frame rotated.
+        """ Frame attached to turntable. This correspond to a rotation of the world native frame.
 
         Args:
             rotation: the rotation consign of the turning table
@@ -510,19 +543,36 @@ class Calibration(object):
     def get_turntable_frame(self, rotation):
         return self.turntable_frame(rotation, self.angle_factor, self.clockwise)
 
-    def get_projection(self, id_camera, rotation):
+    def get_frame(self, frame='native'):
+
+        if frame == 'native':
+            return Frame()
+        elif frame in self.frames:
+            return self.frames[frame].get_frame()
+        else:
+            warnings.warn('frame: ' + frame + ' not defined, falling back to native world frame')
+            return Frame()
+
+    def get_projection(self, id_camera, rotation, world_frame='native'):
 
         camera = self._cameras[id_camera]
         fr_cam = camera.get_frame()
         fr_table = self.get_turntable_frame(rotation)
+        fr_world = self.get_frame(world_frame)
+
         pixel_coords = camera.get_pixel_coordinates()
 
         def projection(pts):
+            # native points
+            npts = fr_world.global_point(pts)
             # rotated pts
-            rotated = fr_table.global_point(pts)
+            rotated = fr_table.global_point(npts)
             return pixel_coords(fr_cam.local_point(rotated))
 
         return projection
+
+    def get_image_shape(self, id_camera):
+        return self._cameras[id_camera].image_shape()
 
     def split_parameters(self, x0):
         # decompose x0 into angle_factor, reference camera, targets and cameras list of parameters
@@ -685,6 +735,26 @@ class Calibration(object):
             raise ValueError('Calibration corner points (target_points and image points) are required to compute '
                              'calibration error')
 
+    def _calibration_statistics(self):
+        stats = {}
+        if self._nb_image_points > 0:
+            _, error = self.calibration_error(all_pars=True)
+            stats['mean_error'] = error
+            stats['total_points'] = self._nb_image_points
+        for id_camera, camera in self._cameras.items():
+            d_origin = numpy.sqrt(camera._pos_x ** 2 + camera._pos_y ** 2 + camera._pos_z ** 2)
+            focal = numpy.mean([camera._focal_length_x,
+                                camera._focal_length_y])
+            pixel_size = d_origin / focal
+            calibration_images = {}
+            if self._nb_image_points > 0:
+                for target in self._image_points[id_camera]:
+                    calibration_images[target] = len(self._image_points[id_camera][target])
+            stats[id_camera] = {'distance to origin': d_origin,
+                                'pixel_size': pixel_size,
+                                'target_images': calibration_images}
+        return stats
+
     def get_target_projected(self, id_camera, id_target, rotation):
 
         proj = self.get_projection(id_camera, rotation)
@@ -754,11 +824,12 @@ class Calibration(object):
                 camera.set_vars(d)
 
         err = self.fit_function(parameters)
+        self.calibration_statistics = self._calibration_statistics()
 
         return err / self._nb_image_points
 
     def find_points(self, image_points, start=None, niter=100):
-        """ Find 3D world coordinates of points from paired image coordinates on multiple cameras
+        """ Find native 3D world coordinates of points from paired image coordinates on multiple cameras
 
         Args:
             image_points: a {camera_id: [(u1,v1),...], ...} dict of list of pixel coordinates of remarkable points
@@ -857,7 +928,7 @@ class Calibration(object):
 
         return camera
 
-    def find_frame(self, image_points, fixed_parameters=None, fixed_frame_points=None, fixed_coords=None):
+    def find_frame(self, image_points, fixed_parameters=None, fixed_frame_points=None, fixed_coords=None, start=None):
         """ Find Frame parameters and 3D local (frame based) coordinates of points from paired image coordinates
 
         Args:
@@ -881,7 +952,7 @@ class Calibration(object):
         if fixed_coords is None:
             fixed_coords = {}
 
-        image_points = {k: numpy.array(v) for k, v in image_points.items()}
+        image_points = {k: numpy.array(v) if v is not None else v for k, v in image_points.items()}
         n_pts = len(list(image_points.values())[0])
 
         for c in fixed_coords:
@@ -892,24 +963,35 @@ class Calibration(object):
         free_pars = [p for p in pars if p not in fixed_parameters]
         nfree_pars = len(free_pars)
 
-        # free points
+
+        # free (unknown) points
         nfree_pts = n_pts
         if fixed_frame_points is not None:
-            nfree_pts -= len(fixed_frame_points) / 3
+            nfree_pts -= len(fixed_frame_points)
+            fixed_frame_points = [numpy.array(v) for v in fixed_frame_points]
+        else:
+            fixed_frame_points = []
 
         # free point coordinates
         coords = ('x', 'y', 'z')
         free_coords = [c for c in coords if c not in fixed_coords]
         nfree_coords = len(free_coords)
 
+        if start is None:
+            start = numpy.zeros(nfree_pars + nfree_pts * nfree_coords)
+        else:
+            start = [start[p] for p in free_pars] + numpy.zeros(nfree_pts * nfree_coords).tolist()
+
         def split_parameters(x0):
             pars = dict(list(zip(free_pars, x0[:nfree_pars])))
             pars.update(fixed_parameters)
 
-            pts = numpy.array(x0[nfree_pars:]).reshape((nfree_pts, nfree_coords))
-            coords = dict(list(zip(free_coords, zip(*pts))))
-            coords.update(fixed_coords)
-            fpts = list(zip(coords['x'], coords['y'], coords['z']))
+            fpts = fixed_frame_points
+            if nfree_pts > 0:
+                pts = numpy.array(x0[nfree_pars:]).reshape((nfree_pts, nfree_coords))
+                coords = dict(list(zip(free_coords, zip(*pts))))
+                coords.update(fixed_coords)
+                fpts += list(zip(coords['x'], coords['y'], coords['z']))
 
             return pars, fpts
 
@@ -922,15 +1004,16 @@ class Calibration(object):
 
             err = 0
             for id_camera in image_points:
-                im_pts = image_points[id_camera]
+                im_pts = [p for p in image_points[id_camera] if p is not None]
+                world_pts = [p for p, im_p in zip(pts, image_points[id_camera]) if im_p is not None ]
                 proj = self.get_projection(id_camera, 0)
-                pix = proj(pts)
+                pix = proj(world_pts)
                 err += numpy.linalg.norm(pix - im_pts, axis=1).sum()
             print(err)
 
             return err
 
-        start = numpy.zeros(nfree_pars + nfree_pts * nfree_coords)
+
         parameters = scipy.optimize.minimize(
             fit_function,
             start,
@@ -944,6 +1027,73 @@ class Calibration(object):
 
         return cframe, fpts
 
+    def find_frame_from_vectors(self, image_vectors, world_vectors, fixed_parameters=None):
+        """ Find Frame parameters from magnitude and orientation of known vectors / projected vectors pairs
+
+        Args:
+            image_vectors: a {camera_id: [(magnitude, orientation),...], ...} dict of list of projeted vectors in image frame.
+                           Orientation is the angle between image width direction and projected vector, positive counterclockwise
+            world_vectors : a [(magnitude, elevation, azimuth),...] list of vectors in world frame
+            fixed_parameters: a {parameter_name: value} dict of fixed (unfitted) frame parameters. Valid parameters
+             names are '_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z'
+
+
+        Returns:
+            A CalibrationFrame
+
+        """
+
+        if fixed_parameters is None:
+            fixed_parameters = {}
+
+        # u = x, v = -y if angle are counterclockwise
+        image_points = {k: numpy.array([(m * numpy.cos(t), -m * numpy.sin(t)) for m, t in v]) for k, v in image_vectors.items()}
+
+        fpts = numpy.array(
+            [(m * numpy.cos(el) * numpy.cos(az), m * numpy.cos(el) * numpy.sin(az),m * numpy.sin(el)) for m, el, az in
+             world_vectors])
+
+        # free frame parameters
+        pars = ('_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z')
+        free_pars = [p for p in pars if p not in fixed_parameters]
+        nfree_pars = len(free_pars)
+
+        def split_parameters(x0):
+            pars = dict(list(zip(free_pars, x0)))
+            pars.update(fixed_parameters)
+            return pars
+
+        def fit_function(x0):
+            pars = split_parameters(x0)
+            cframe = CalibrationFrame()
+            cframe.set_vars(pars)
+            fr = cframe.get_frame()
+            pts = fr.global_point(fpts)
+
+            err = 0
+            for id_camera in image_points:
+                proj = self.get_projection(id_camera, 0)
+                im_pts = proj(fr.global_point((0, 0, 0))) + image_points[id_camera]
+                pix = proj(pts)
+                err += numpy.linalg.norm(pix - im_pts, axis=1).sum()
+            print(err)
+
+            return err
+
+        start = numpy.zeros(nfree_pars)
+        parameters = scipy.optimize.minimize(
+            fit_function,
+            start,
+            method='BFGS').x
+
+        pars = split_parameters(parameters)
+        for p in ('_rot_x', '_rot_y', '_rot_z'):
+            pars[p] = normalise_angle(pars[p])
+        cframe = CalibrationFrame()
+        cframe.set_vars(pars)
+
+        return cframe
+
     def dump(self, filename):
         save_class = dict()
         save_class['angle_factor'] = self.angle_factor
@@ -951,6 +1101,12 @@ class Calibration(object):
         save_class['reference_camera'] = self.reference_camera
         save_class['cameras_parameters'] = {id_camera: camera.to_json() for id_camera, camera in self._cameras.items()}
         save_class['targets_parameters'] = {id_target: t.to_json() for id_target, t in self._targets.items()}
+
+        if self.calibration_statistics is not None:
+            save_class['calibration_statistics'] = self.calibration_statistics
+
+        if len(self.frames) > 0:
+            save_class['frames'] = {id_frame: frame.to_json() for id_frame, frame in self.frames.items()}
 
         with open(filename, 'w') as output_file:
             json.dump(save_class, output_file,
@@ -970,6 +1126,11 @@ class Calibration(object):
         c.angle_factor = save_class['angle_factor']
         c.clockwise = save_class['clockwise']
         c.reference_camera = save_class['reference_camera']
+        if 'calibration_statistics' in save_class:
+            c.calibration_statistics = save_class['calibration_statistics']
+        if 'frames' in save_class:
+            c.frames = {id_frame: CalibrationFrame.from_json(pars)
+                             for id_frame, pars in save_class['frames'].items()}
         return c
 
     @staticmethod
