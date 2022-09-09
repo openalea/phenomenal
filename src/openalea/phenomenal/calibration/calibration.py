@@ -75,6 +75,12 @@ class CalibrationFrame(object):
         return cf
 
     @staticmethod
+    def from_tuple(pars):
+        cf = CalibrationFrame()
+        cf._pos_x, cf._pos_y, cf._pos_z, cf._rot_x, cf._rot_y, cf._rot_z = pars
+        return cf
+
+    @staticmethod
     def load(filename):
         with open(filename, 'r') as input_file:
             save_class = json.load(input_file)
@@ -756,7 +762,6 @@ class Calibration(object):
         return stats
 
     def get_target_projected(self, id_camera, id_target, rotation):
-
         proj = self.get_projection(id_camera, rotation)
         target_pts = self.get_target_points(id_target)
 
