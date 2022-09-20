@@ -441,7 +441,7 @@ class Calibration(object):
             cameras: a {camera_id: CalibrationCamera,...} dict of cameras to be used as starting guess for cameras,
                 positioned using transformations of the base configuration of the imaging system (see CalibrationLayout)
             target_points: a {target_id: [(x, y, z), ...], ...} dict of coordinates of target corner points, expressed
-                in target local frame
+                in target local frame or native world frame if target_id == 'world'
             image_points: a {camera_id: {target_id : {rotation : [(u,v),...], ...}, ...,} dict of dict of dict of
                 pixel coordinates of target corner points  projected on camera images at a given rotation consign. The
                 rotation consign is the rounded angle (degrees) by which the turntable has turned before image acquisition
@@ -628,6 +628,8 @@ class Calibration(object):
             angle_factor = turntable[0]
 
         target_frames = []
+        if 'world' in self._targets_points:
+            target_frames += [self.get_frame('native')]
         if len(targets) > 0:
             for target in targets:
                 pos_x, pos_y, pos_z, rot_x, rot_y, rot_z = target
@@ -653,13 +655,18 @@ class Calibration(object):
         if len(ref_cam) > 0:
             cams += [self._cameras[self.reference_camera]]
             im_pts_cam += [self._image_points[self.reference_camera]]
-        cams += [self._cameras[k] for k in self._cameras if k is not self.reference_camera]
-        im_pts_cam += [self._image_points[k] for k in self._cameras if k is not self.reference_camera]
+        cams += [self._cameras[k] for k in self._cameras if k != self.reference_camera]
+        im_pts_cam += [self._image_points[k] for k in self._cameras if k != self.reference_camera]
         # target_points in the right order
-        target_points = [self._targets_points[k] for k in self._targets]
+        target_points = self._targets_points.get('world', [])
+        if len(target_points) > 0:
+            target_points = [target_points] # target_points is a list of list of points
+        target_points += [self._targets_points[k] for k in self._targets]
 
         for fr_cam, focals, camera, im_pts_c in zip(camera_frames, camera_focals, cams, im_pts_cam):
-            im_pts_t = [im_pts_c[k] for k in self._targets]
+            _targets = ['world'] if 'world' in self._targets_points else []
+            _targets += [k for k in self._targets]
+            im_pts_t = [im_pts_c[k] for k in _targets]
             for fr_target, t_pts, im_pts in zip(target_frames, target_points, im_pts_t):
                 for rotation, ref_pts in im_pts.items():
                     fr_table = Calibration.turntable_frame(rotation, angle_factor, self.clockwise)
@@ -692,7 +699,7 @@ class Calibration(object):
                                t._rot_x, t._rot_y, t._rot_z]
         if self.fit_cameras:
             for id_camera, c in self._cameras.items():
-                if id_camera is not self.reference_camera:
+                if id_camera != self.reference_camera:
                     parameters += [c._focal_length_x, c._focal_length_y,
                                    c._pos_x, c._pos_y, c._pos_z,
                                    c._rot_x, c._rot_y, c._rot_z]
@@ -768,7 +775,10 @@ class Calibration(object):
         return proj(target_pts)
 
     def get_target_points(self, id_target):
-        fr_target = self._targets[id_target].get_frame()
+        if id_target == 'world':
+            fr_target = self.get_frame('native')
+        else:
+            fr_target = self._targets[id_target].get_frame()
         return fr_target.global_point(self._targets_points[id_target])
 
     def calibrate(self, fit_angle_factor=True, fit_reference_camera=True, fit_targets=True, fit_cameras=True,
@@ -820,7 +830,7 @@ class Calibration(object):
                 target.set_vars(d)
 
         if len(camera_pars) > 0:
-            cams = [self._cameras[k] for k in self._cameras if k is not self.reference_camera]
+            cams = [self._cameras[k] for k in self._cameras if k != self.reference_camera]
             for camera, camera_param in zip(cams, camera_pars):
                 labels = f_labels + pos_labels + rot_labels
                 d = dict(list(zip(labels, camera_param)))
@@ -849,7 +859,7 @@ class Calibration(object):
 
         image_points = {k: numpy.array(v) for k, v in image_points.items()}
         if start is None:
-            start = numpy.array([(0, 0, 0)] * len(image_points.values()[0]))
+            start = numpy.array([(0, 0, 0)] * len(list(image_points.values())[0]))
 
         def fit_function(x0):
             err = 0
