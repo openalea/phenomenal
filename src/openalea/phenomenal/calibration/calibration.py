@@ -485,6 +485,7 @@ class Calibration(object):
         self.reference_camera = reference_camera
 
         self.fit_angle_factor = True
+        self.fit_aspect_ratio = True
         self.fit_reference_camera = True
         self.fit_targets = True
         self.fit_cameras = True
@@ -592,12 +593,12 @@ class Calibration(object):
         # decompose x0 into angle_factor, reference camera, targets and cameras list of parameters
         # number of parameters per above mentioned items
         nbp_target = 6
-        nbp_camera = 8
+        nbp_camera = 8 if self.fit_aspect_ratio else 7
         nb_pars = [0, 0, 0, 0]
         if self.fit_angle_factor:
             nb_pars[0] = 1
         if self.fit_reference_camera:
-            nb_pars[1] = 6
+            nb_pars[1] = 6 if self.fit_aspect_ratio else 5
         if self.fit_targets:
             nb_pars[2] = nbp_target * self._nb_targets
         if self.fit_cameras:
@@ -622,12 +623,20 @@ class Calibration(object):
         if len(ref_cam) > 0:
             _pos_x = 0
             _pos_z = 0
-            _focal_length_x, _aspect_ratio, \
-            _pos_y, \
-            _rot_x, _rot_y, _rot_z = ref_cam
-            ref_cam = [_focal_length_x, _aspect_ratio,
-                       _pos_x, _pos_y, _pos_z,
-                       _rot_x, _rot_y, _rot_z]
+            if self.fit_aspect_ratio:
+                _focal_length_x, _aspect_ratio, \
+                _pos_y, \
+                _rot_x, _rot_y, _rot_z = ref_cam
+                ref_cam = [_focal_length_x, _aspect_ratio,
+                           _pos_x, _pos_y, _pos_z,
+                           _rot_x, _rot_y, _rot_z]
+            else:
+                _focal_length_x, \
+                _pos_y, \
+                _rot_x, _rot_y, _rot_z = ref_cam
+                ref_cam = [_focal_length_x,
+                           _pos_x, _pos_y, _pos_z,
+                           _rot_x, _rot_y, _rot_z]
             cameras.insert(0, ref_cam)
 
         # build frames
@@ -649,9 +658,15 @@ class Calibration(object):
         camera_frames = []
         camera_focals = []
         for camera in cameras:
-            _focal_length_x, _aspect_ratio, \
-            _pos_x, _pos_y, _pos_z, \
-            _rot_x, _rot_y, _rot_z = camera
+            if self.fit_aspect_ratio:
+                _focal_length_x, _aspect_ratio, \
+                _pos_x, _pos_y, _pos_z, \
+                _rot_x, _rot_y, _rot_z = camera
+            else:
+                _aspect_ratio = 1
+                _focal_length_x, \
+                _pos_x, _pos_y, _pos_z, \
+                _rot_x, _rot_y, _rot_z = camera
             camera_frames.append(CalibrationCamera.frame(_pos_x, _pos_y, _pos_z,
                                                          _rot_x, _rot_y, _rot_z))
             camera_focals.append([_focal_length_x, _aspect_ratio])
@@ -698,9 +713,10 @@ class Calibration(object):
             parameters.append(self.angle_factor)
         if self.fit_reference_camera:
             c = self._cameras[self.reference_camera]
-            parameters += [c._focal_length_x, c._aspect_ratio,
-                           c._pos_y,
-                           c._rot_x, c._rot_y, c._rot_z]
+            parameters += [c._focal_length_x]
+            if self.fit_aspect_ratio:
+                parameters += [c._aspect_ratio]
+            parameters += [c._pos_y, c._rot_x, c._rot_y, c._rot_z]
         if self.fit_targets:
             for id_target,t in self._targets.items():
                 parameters += [t._pos_x, t._pos_y, t._pos_z,
@@ -708,8 +724,10 @@ class Calibration(object):
         if self.fit_cameras:
             for id_camera, c in self._cameras.items():
                 if id_camera != self.reference_camera:
-                    parameters += [c._focal_length_x, c._aspect_ratio,
-                                   c._pos_x, c._pos_y, c._pos_z,
+                    parameters += [c._focal_length_x]
+                    if self.fit_aspect_ratio:
+                        parameters += [c._aspect_ratio]
+                    parameters += [c._pos_x, c._pos_y, c._pos_z,
                                    c._rot_x, c._rot_y, c._rot_z]
         return parameters
 
@@ -734,10 +752,12 @@ class Calibration(object):
             before = {}
             if all_pars:
                 before['fit_angle_factor'] = self.fit_angle_factor
+                before['fit_aspect_ratio'] = self.fit_aspect_ratio
                 before['fit_reference_camera'] = self.fit_reference_camera
                 before['fit_targets'] = self.fit_targets
                 before['fit_cameras'] = self.fit_cameras
                 self.fit_angle_factor = True
+                self.fit_aspect_ratio = True
                 self.fit_reference_camera = True
                 self.fit_targets = True
                 self.fit_cameras = True
@@ -747,6 +767,7 @@ class Calibration(object):
 
             if all_pars:
                 self.fit_angle_factor = before['fit_angle_factor']
+                self.fit_aspect_ratio = before['fit_aspect_ratio']
                 self.fit_reference_camera = before['fit_reference_camera']
                 self.fit_targets = before['fit_targets']
                 self.fit_cameras = before['fit_cameras']
@@ -788,7 +809,7 @@ class Calibration(object):
             fr_target = self._targets[id_target].get_frame()
         return fr_target.global_point(self._targets_points[id_target])
 
-    def calibrate(self, fit_angle_factor=True, fit_reference_camera=True, fit_targets=True, fit_cameras=True,
+    def calibrate(self, fit_angle_factor=True, fit_aspect_ratio=True, fit_reference_camera=True, fit_targets=True, fit_cameras=True,
                   verbose=True):
         """Optimise the cameras and targets parameters to minimise the distance between
        observed image points and projections on images of target points
@@ -804,6 +825,7 @@ class Calibration(object):
             the mean calibration reprojection error (pixels)
         """
         self.fit_angle_factor = fit_angle_factor
+        self.fit_aspect_ratio = fit_aspect_ratio
         self.fit_reference_camera = fit_reference_camera
         self.fit_targets = fit_targets
         self.fit_cameras = fit_cameras
@@ -815,7 +837,9 @@ class Calibration(object):
 
         pos_labels = ['_pos_x', '_pos_y', '_pos_z']
         rot_labels = ['_rot_x', '_rot_y', '_rot_z']
-        f_labels = ['_focal_length_x', '_aspect_ratio']
+        f_labels = ['_focal_length_x']
+        if self.fit_aspect_ratio:
+            f_labels += ['_aspect_ratio']
 
         if len(turntable) > 0:
             self.angle_factor = turntable[0]
@@ -896,7 +920,7 @@ class Calibration(object):
             image_size: (width, height) tuple describing image dimension (pixels). Alternatively the name of an existing
                 camera with the same shape. If None, the shape of the reference camera is used
             fixed_parameters: a {parameter_name: value} dict of fixed (unfitted) camera parameters. Valid parameters
-             names are '_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z', '_focal_length_x', '_focal_length_y'
+             names are '_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z', '_focal_length_x', '_aspect_ratio'
             guess : a guessed Calibration camera
             niter: (int) the number of iteration of the basin-hopping optimisation algorithm
 
