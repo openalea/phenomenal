@@ -153,12 +153,13 @@ class CalibrationCamera(CalibrationFrame):
         self._width_image = None
         self._height_image = None
         self._focal_length_x = None
-        self._focal_length_y = None
+        self._aspect_ratio = None
 
     def __str__(self):
         out = ''
-        out += '\tFocal length X : ' + str(self._focal_length_x) + '\n'
-        out += '\tFocal length Y : ' + str(self._focal_length_y) + '\n'
+        fmm = numpy.round(self._focal_length_x / max(self._width_image, self._height_image) * 36)
+        out += '\tFocal length X : ' + str(self._focal_length_x) + ' (' + str(fmm) + 'mm)\n'
+        out += '\tPixel aspect ratio : ' + str(self._aspect_ratio) + '\n'
         if self._width_image is not None:
             out += '\tOptical Center X : ' + str(self._width_image / 2.0) + '\n'
             out += '\tOptical Center Y : ' + str(self._height_image / 2.0)
@@ -173,7 +174,7 @@ class CalibrationCamera(CalibrationFrame):
     @staticmethod
     def pixel_coordinates(point_3d,
                           width_image, height_image,
-                          focal_length_x, focal_length_y):
+                          focal_length_x, aspect_ratio):
         """ Compute image coordinates of a 3d point positioned in camera frame
 
         Args:
@@ -185,6 +186,7 @@ class CalibrationCamera(CalibrationFrame):
         """
         pt = numpy.array(point_3d)
         x, y, z = pt.T
+        focal_length_y = aspect_ratio * focal_length_x
 
         u = x / z * focal_length_x + width_image / 2.0
         v = y / z * focal_length_y + height_image / 2.0
@@ -197,11 +199,11 @@ class CalibrationCamera(CalibrationFrame):
     def get_pixel_coordinates(self):
         def pixel_coords(pts):
             return self.pixel_coordinates(pts, self._width_image, self._height_image,
-                                          self._focal_length_x, self._focal_length_y)
+                                          self._focal_length_x, self._aspect_ratio)
         return pixel_coords
 
     @staticmethod
-    def pixel_coordinates_2(point_3d, cx, cy, fx, fy):
+    def pixel_coordinates_2(point_3d, cx, cy, fx, a):
         """ Compute image coordinates of a 3d point
 
         Args:
@@ -213,6 +215,7 @@ class CalibrationCamera(CalibrationFrame):
         """
         pt = numpy.array(point_3d)
         x, y, z = pt.T
+        fy = a * fx
 
         u = x / z * fx + cx
         v = y / z * fy + cy
@@ -237,7 +240,7 @@ class CalibrationCamera(CalibrationFrame):
     def get_intrinsic(self):
         intrinsic = numpy.identity(3)
         fx = self._focal_length_x
-        fy = self._focal_length_y
+        fy = self._focal_length_x * self._aspect_ratio
         cx = self._width_image / 2.
         cy = self._height_image / 2.
         di = numpy.diag_indices(2)
@@ -248,6 +251,9 @@ class CalibrationCamera(CalibrationFrame):
     @staticmethod
     def from_json(save_class):
         c = CalibrationCamera()
+        if '_focal_length_y' in save_class:
+            fy = save_class.pop('_focal_length_y')
+            save_class['_aspect_ratio'] = fy / save_class['_focal_length_x']
         c.set_vars(save_class)
         return c
 
@@ -420,7 +426,8 @@ class CalibrationSetup(object):
 
         c = CalibrationCamera()
         c._width_image, c._height_image = w, h
-        c._focal_length_x, c._focal_length_y = f, f
+        c._focal_length_x = f
+        c._aspect_ratio = 1
         c._pos_x, c._pos_y, c._pos_z = px, py, pz
         c._rot_x, c._rot_y, c._rot_z = normalise_angle(rx),  normalise_angle(ry), normalise_angle(rz)
 
@@ -615,10 +622,10 @@ class Calibration(object):
         if len(ref_cam) > 0:
             _pos_x = 0
             _pos_z = 0
-            _focal_length_x, _focal_length_y, \
+            _focal_length_x, _aspect_ratio, \
             _pos_y, \
             _rot_x, _rot_y, _rot_z = ref_cam
-            ref_cam = [_focal_length_x, _focal_length_y,
+            ref_cam = [_focal_length_x, _aspect_ratio,
                        _pos_x, _pos_y, _pos_z,
                        _rot_x, _rot_y, _rot_z]
             cameras.insert(0, ref_cam)
@@ -642,12 +649,12 @@ class Calibration(object):
         camera_frames = []
         camera_focals = []
         for camera in cameras:
-            _focal_length_x, _focal_length_y, \
+            _focal_length_x, _aspect_ratio, \
             _pos_x, _pos_y, _pos_z, \
             _rot_x, _rot_y, _rot_z = camera
             camera_frames.append(CalibrationCamera.frame(_pos_x, _pos_y, _pos_z,
                                                          _rot_x, _rot_y, _rot_z))
-            camera_focals.append([_focal_length_x, _focal_length_y])
+            camera_focals.append([_focal_length_x, _aspect_ratio])
 
         err = 0
         # cameras and image_points in the right order
@@ -672,12 +679,12 @@ class Calibration(object):
                 for rotation, ref_pts in im_pts.items():
                     fr_table = Calibration.turntable_frame(rotation, angle_factor, self.clockwise)
                     target_pts = fr_table.global_point(fr_target.global_point(t_pts))
-                    _focal_length_x, _focal_length_y = focals
+                    _focal_length_x, _aspect_ratio = focals
                     pts = CalibrationCamera.pixel_coordinates(fr_cam.local_point(target_pts),
                                                               camera._width_image,
                                                               camera._height_image,
                                                               _focal_length_x,
-                                                              _focal_length_y)
+                                                              _aspect_ratio)
                     err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self.verbose:
@@ -691,7 +698,7 @@ class Calibration(object):
             parameters.append(self.angle_factor)
         if self.fit_reference_camera:
             c = self._cameras[self.reference_camera]
-            parameters += [c._focal_length_x, c._focal_length_y,
+            parameters += [c._focal_length_x, c._aspect_ratio,
                            c._pos_y,
                            c._rot_x, c._rot_y, c._rot_z]
         if self.fit_targets:
@@ -701,7 +708,7 @@ class Calibration(object):
         if self.fit_cameras:
             for id_camera, c in self._cameras.items():
                 if id_camera != self.reference_camera:
-                    parameters += [c._focal_length_x, c._focal_length_y,
+                    parameters += [c._focal_length_x, c._aspect_ratio,
                                    c._pos_x, c._pos_y, c._pos_z,
                                    c._rot_x, c._rot_y, c._rot_z]
         return parameters
@@ -757,8 +764,7 @@ class Calibration(object):
             stats['total_points'] = self._nb_image_points
         for id_camera, camera in self._cameras.items():
             d_origin = numpy.sqrt(camera._pos_x ** 2 + camera._pos_y ** 2 + camera._pos_z ** 2)
-            focal = numpy.mean([camera._focal_length_x,
-                                camera._focal_length_y])
+            focal = camera._focal_length_x * (1 + camera._aspect_ratio) / 2
             pixel_size = d_origin / focal
             calibration_images = {}
             if self._nb_image_points > 0:
@@ -809,7 +815,7 @@ class Calibration(object):
 
         pos_labels = ['_pos_x', '_pos_y', '_pos_z']
         rot_labels = ['_rot_x', '_rot_y', '_rot_z']
-        f_labels = ['_focal_length_x', '_focal_length_y']
+        f_labels = ['_focal_length_x', '_aspect_ratio']
 
         if len(turntable) > 0:
             self.angle_factor = turntable[0]
@@ -914,7 +920,7 @@ class Calibration(object):
         fixed_parameters.update({'_width_image': w, '_height_image': h})
 
         pars = ('_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z', '_width_image', '_height_image',
-                '_focal_length_x', '_focal_length_y')
+                '_focal_length_x', '_aspect_ratio')
         free_pars = [p for p in pars if p not in fixed_parameters]
         nfree_pars = len(free_pars)
 
