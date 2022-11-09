@@ -615,7 +615,7 @@ class Calibration(object):
 
         return turntable, ref_cam, targetss, camerass
 
-    def fit_function(self, x0):
+    def fit_errors(self, x0):
 
         turntable, ref_cam, targets, cameras = self.split_parameters(x0)
 
@@ -671,26 +671,29 @@ class Calibration(object):
                                                          _rot_x, _rot_y, _rot_z))
             camera_focals.append([_focal_length_x, _aspect_ratio])
 
-        err = 0
+        err = {}
         # cameras and image_points in the right order
         cams = []
         im_pts_cam = []
+        labels = []
         if len(ref_cam) > 0:
             cams += [self._cameras[self.reference_camera]]
             im_pts_cam += [self._image_points[self.reference_camera]]
+            labels += [self.reference_camera]
         cams += [self._cameras[k] for k in self._cameras if k != self.reference_camera]
         im_pts_cam += [self._image_points[k] for k in self._cameras if k != self.reference_camera]
+        labels += [k for k in self._cameras if k != self.reference_camera]
         # target_points in the right order
         target_points = self._targets_points.get('world', [])
         if len(target_points) > 0:
             target_points = [target_points] # target_points is a list of list of points
         target_points += [self._targets_points[k] for k in self._targets]
 
-        for fr_cam, focals, camera, im_pts_c in zip(camera_frames, camera_focals, cams, im_pts_cam):
+        for fr_cam, focals, camera, im_pts_c, lab in zip(camera_frames, camera_focals, cams, im_pts_cam, labels):
             _targets = ['world'] if 'world' in self._targets_points else []
             _targets += [k for k in self._targets]
             im_pts_t = [im_pts_c[k] for k in _targets]
-            for fr_target, t_pts, im_pts in zip(target_frames, target_points, im_pts_t):
+            for fr_target, t_pts, im_pts,t_name in zip(target_frames, target_points, im_pts_t, _targets):
                 for rotation, ref_pts in im_pts.items():
                     fr_table = Calibration.turntable_frame(rotation, angle_factor, self.clockwise)
                     target_pts = fr_table.global_point(fr_target.global_point(t_pts))
@@ -700,12 +703,16 @@ class Calibration(object):
                                                               camera._height_image,
                                                               _focal_length_x,
                                                               _aspect_ratio)
-                    err += numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
+                    err['_'.join([lab, t_name, str(rotation)])]=numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self.verbose:
             print(err)
 
         return err
+
+    def fit_function(self, x0):
+        err = self.fit_errors(x0)
+        return sum(err.values())
 
     def get_parameters(self):
         parameters = []
