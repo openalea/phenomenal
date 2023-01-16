@@ -391,12 +391,12 @@ def maize_analysis(maize_segmented):
 
         vo_mature_leaf = maize_mature_leaf_analysis(
             vo_mature_leaf, voxels_size, vo_stem.info['pm_vector_mean'])
+        
+        if vo_mature_leaf is None:
+            continue
 
         if 'pm_z_base' in vo_mature_leaf.info:
             vo_mature_leaf.info['pm_z_base_voxel'] = voxel_base_height(vo_mature_leaf, stem_polyline)[2]
-
-        if vo_mature_leaf is None:
-            continue
 
         mature_leafs.append((vo_mature_leaf, vo_mature_leaf.info["pm_z_base"]))
     mature_leafs.sort(key=lambda x: x[1])
