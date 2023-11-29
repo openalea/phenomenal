@@ -20,13 +20,16 @@ import numpy
 import scipy.optimize
 from itertools import islice
 from copy import deepcopy
+from collections import defaultdict
 
 from .frame import (Frame, x_axis, y_axis, z_axis)
 from .transformations import (concatenate_matrices, rotation_matrix)
+from .chessboard import (Chessboard)
 
 # ==============================================================================
 
-__all__ = ["CalibrationCamera",
+__all__ = ["Calibrator",
+           "CalibrationCamera",
            "CalibrationFrame",
            "CalibrationSetup",
            "Calibration",
@@ -267,22 +270,106 @@ class CalibrationCamera(CalibrationFrame):
         return c
 
 
-class CalibrationLayout(object):
-    """Helper for defining the calibration layout for a rotating multiview acquisition system"""
+class Calibrator(object):
+    """Main class for generating a calibration of a rotating multiview acquisition system"""
 
-    def __init__(self, reference_camera = None, cameras=None, targets=None, clockwise_rotation=True):
+    def __init__(self, south_camera, cameras=None, targets=None, chessboards=None,
+                 clockwise_rotation=True, world_unit='mm'):
         """
+        Setup a Calibrator object with a calibration layout
 
         Args:
-            reference_camera:  a (distance, inclination) tuple defining the reference camera. The camera is positioned
-                relative to a camera placed on the axis of rotation (world Z+) at an arbitrary position defining world origin  and pointing downward. Distance
-                isInclination
-                is the angle (degree, positive) needed to position the
-            cameras:
-            targets:
-            clockwise_rotation:
+            south_camera:  a (camera_id, inclination, distance) tuple defining the approximative position of the south camera,
+                that will define world frame during and after calibration (see details bellow). The south camera can be
+                anywhere in the upward hemisphere, except on the axis of rotation. It lies on an inclined axe intercepting
+                south camera optical center, at a specified distance of the axis of rotation along this axe.
+                camera_id is a string referencing the camera, inclination is the (approximative) angle (degree, positive)
+                between the axis of rotation and the axe bearing the camera, and distance is the (approximative) distance
+                 to the axis of rotation along this axe (in world units).
+            cameras: a {camera_id: (inclination, distance, rotation_to_south), ... } dict of 3-tuples specifying the
+                approximative position of cameras (other than south camera). camera_id is a string referencing the camera,
+                inclination is the (approximative) angle (degree, positive) between the axis of rotation and the axe bearing
+                the camera, distance is the (approximative) distance to the axis of rotation along this axe (in world
+                units), and rotation_to_south is the (approximative) rotation angle (degrees, positive in the direction
+                 of rotation of the turntable) that align the camera to south.
+            targets: a {target_id: (inclination, rotation_to_south), ...} dict of 2-tuples specifying the
+                approximative position of calibration targets. target_id is a string referencing the target, inclination
+                is the angle (degree, positive) between axis of rotation and target normal, and rotation_to_south is the
+                (approximative) rotation angle (degrees, positive in the direction of rotation of the turntable that
+                align the target normal toward south.
+            chessboards: a {target_id: (between_corners, corners_h, corners_v), ...} dict of tuples describing the layout
+                of chessboards corner points (intersections of cheesboard squares) associated to a target. target_id is
+                a string referencing the target, between_corners is the distance (in world unit) between two corner
+                points, corners_h is the number of corners in the horizontal direction, corners_v in the number of
+                corners in the vertical direction.
+            clockwise_rotation: (bool): is the turntable rotating clockwise ? (default True)
+            world_unit (str): a label describing world units
+
+        Details:
+            The world 3D coordinates are expressed in a 'native' frame defined by the axis of rotation and the south
+            camera as follow:
+                - The axis of rotation of the rotating system, oriented toward the sky, defines the world  Z+.
+                - The altitude of the south camera defines Z=0.
+                - The horizontal line passing through the axis of rotation and intercepting the optical center of the
+                  south camera is world Y-axis, Y+ being oriented from south camera to the axis of rotation
+            The world coordinates can be redefined by positioning user-defined frames in this native frame after
+            calibration.
         """
-        pass
+        if cameras is None:
+            cameras = {}
+        if targets is None:
+            targets = {}
+        if chessboards is None:
+            chessboards = {}
+        self.layout = dict(south_camera=south_camera, cameras=cameras, targets=targets, chessboards=chessboards)
+        self.clockwise = clockwise_rotation
+        self.world_unit = world_unit
+
+        self.image_points = {target_id:defaultdict(dict) for target_id in targets}
+        self.image_resolutions = defaultdict(list)
+        self.image_sizes = defaultdict(dict)
+        self.image_paths = {target_id:defaultdict(dict) for target_id in targets}
+
+        self._facings = {target_id: {south_camera[0]: targets[target_id][1]} for target_id in targets}
+        for c in cameras:
+            south = cameras[c][2]
+            for t in targets:
+                self._facings[t].update({c: targets[t][1] - south})
+
+    def detect_corners(self, image_paths, imread):
+        """ Detection of pixel coordinates of chessboard corner points
+
+        Args:
+            image_paths: a {target_id : {camera_id : {rotation_angle : path, ...},...},...} nested dict of image paths
+                pointing to the image of target 'target_id' taken by camera 'camera_id' after a rotation of 'rotation_angle'
+                degrees of the turntable
+            imread: a method for reading images from image paths
+        """
+        for target_id in image_paths:
+            if target_id not in self.layout['chessboards']:
+                raise ValueError('chessboard for ' + target_id + ' not found in instance layout, please check instance')
+            between_corners, corners_h, corners_v = self.layout['chessboards'][target_id]
+            chessboard = Chessboard(square_size=between_corners, shape=(corners_h, corners_v),
+                                facing_angles=self._facings[target_id])
+            for camera_id in image_paths[target_id]:
+                for rotation, path in image_paths[target_id][camera_id].items():
+                    image = imread(path)
+                    found = chessboard.detect_corners(camera_id, rotation, image, check_order=True, image_id=path)
+                    print("Target {} Camera {} Angle {} - Chessboard corners {}".format(target_id, camera_id,
+                                                                                        str(rotation),
+                                                                                        "found" if found else "not found"))
+                    if found:
+                        self.image_paths[target_id][camera_id][rotation] = path
+                        self.image_points[target_id][camera_id][rotation] = chessboard.image_points[camera_id][rotation]
+            self.image_sizes.update(chessboard.image_sizes)
+            for c,res in chessboard.image_resolutions().items():
+                self.image_resolutions[c].append(res)
+        for c, values in self.image_resolutions.items():
+            self.image_resolutions[c] = numpy.mean(values)
+
+
+
+
 
 class CalibrationSetup(object):
     """A class for helping the setup of a multi-view imaging systems to be calibrated"""
@@ -306,6 +393,7 @@ class CalibrationSetup(object):
                 (degree, positive) for which a chessboard is facing a camera (ie with with topleft corner closest to
                  topleft side of the image).
             clockwise_rotation (bool): are targets rotating clockwise ? (default True)
+
 
         """
 
