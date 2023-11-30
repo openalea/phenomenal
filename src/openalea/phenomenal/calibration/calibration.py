@@ -367,9 +367,34 @@ class Calibrator(object):
         for c, values in self.image_resolutions.items():
             self.image_resolutions[c] = numpy.mean(values)
 
+    def calibrate(self):
+        cameras = {camera_id: (distance, inclination) for camera_id, (inclination, distance, rotation_to_south) in
+                   self.layout['cameras'].items()}
+        south_camera_id, inclination, distance = self.layout['south_camera']
+        cameras.update({south_camera_id: (distance, inclination)})
+        targets = {target_id: (0, inclination) for target_id, (inclination, rotation_to_south) in
+                   self.layout['targets'].items()}
+        setup = CalibrationSetup(cameras, targets, self.image_resolutions, self.image_sizes, self._facings,
+                             self.clockwise)
+        reference_target = next(iter(self._facings))
+        cameras, targets, reference_camera, clockwise = setup.setup_calibration(reference_camera=south_camera_id,
+                                                                                reference_target=reference_target)
+        target_points = {}
+        image_points = defaultdict(dict)
+        for target_id,(between_corners, corners_h, corners_v) in self.layout['chessboards'].items():
+            if target_id in self.image_points:
+                chessboard = Chessboard(square_size=between_corners, shape=(corners_h, corners_v),
+                                    facing_angles=self._facings[target_id])
+                chessboard.image_points = self.image_points[target_id]
+                target_points[target_id] = chessboard.get_corners_local_3d()
+                for camera_id in self.image_points[target_id]:
+                    image_points[camera_id][target_id] = chessboard.get_corners_2d(camera_id)
 
-
-
+        calibration = Calibration(targets=targets, cameras=cameras,
+                                  target_points=target_points, image_points=image_points,
+                                  reference_camera=reference_camera, clockwise_rotation=clockwise)
+        calibration.calibrate()
+        return calibration
 
 class CalibrationSetup(object):
     """A class for helping the setup of a multi-view imaging systems to be calibrated"""
@@ -794,7 +819,7 @@ class Calibration(object):
                     err['_'.join([lab, t_name, str(rotation)])]=numpy.linalg.norm(numpy.array(pts) - ref_pts, axis=1).sum()
 
         if self.verbose:
-            print(err)
+            print(sum(err.values()))
 
         return err
 
