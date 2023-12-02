@@ -49,6 +49,11 @@ def normalise_angle(angle):
     angle = (angle + modulo) % modulo
     return angle - numpy.where(angle > modulo / 2., modulo, 0)
 
+def angle3(v1, v2):
+    """acute angle between 2 3d vectors"""
+    x = numpy.dot(v1, v2) / (numpy.linalg.norm(v1) * numpy.linalg.norm(v2))
+    angle = numpy.arccos(numpy.clip(x, -1, 1))
+    return numpy.degrees(angle)
 
 class CalibrationFrame(object):
     """A class for objects with local frames used for calibration
@@ -271,7 +276,7 @@ class CalibrationCamera(CalibrationFrame):
 
 
 class Calibrator(object):
-    """Class offering end to end calibration methods for rotating multiview acquisition system"""
+    """Class for end to end calibration of rotating multiview acquisition system"""
 
     def __init__(self, south_camera, cameras=None, targets=None, chessboards=None,
                  clockwise_rotation=True, world_unit='mm'):
@@ -320,15 +325,16 @@ class Calibrator(object):
         if chessboards is None:
             chessboards = {}
         south_camera_id, south_inclination, south_distance = south_camera
-        self.layout = dict(south_camera={south_camera_id: dict(inclination=south_inclination,
-                                                               distance=south_distance,
-                                                               rotation_to_south=0)
-                                         },
-                           cameras={camera_id: dict(inclination=inclination,
-                                                    distance=distance,
-                                                    rotation_to_south=rotation_to_south)
-                                    for camera_id, (inclination, distance, rotation_to_south) in cameras.items()
-                                    },
+        cameras = {camera_id: dict(inclination=inclination,
+                                   distance=distance,
+                                   rotation_to_south=rotation_to_south)
+                   for camera_id, (inclination, distance, rotation_to_south) in cameras.items()
+                   }
+        cameras.update({south_camera_id: dict(inclination=south_inclination,
+                                                    distance=south_distance,
+                                                    rotation_to_south=0)})
+        self.layout = dict(south_camera=south_camera_id,
+                           cameras=cameras,
                            targets={target_id: dict(inclination=inclination,
                                                     rotation_to_south=rotation_to_south)
                                     for target_id, (inclination, rotation_to_south) in targets.items()
@@ -347,13 +353,18 @@ class Calibrator(object):
         self.image_sizes = defaultdict(dict)
         self.image_paths = {target_id:defaultdict(dict) for target_id in targets}
 
-        self._facings = {target_id: {south_camera_id: target['rotation_to_south']}
-                         for target_id, target in self.layout['targets'].items()}
+        self._facings = defaultdict(dict)
         for camera_id, camera in self.layout['cameras'].items():
             for target_id, target in self.layout['targets'].items():
                 self._facings[target_id].update({camera_id: target['rotation_to_south'] - camera['rotation_to_south']})
 
-    def detect_corners(self, image_paths, imread):
+    def alpha(self, rotation):
+        angle = numpy.radians(rotation)
+        if self.clockwise:
+            angle *= -1
+        return angle
+
+    def detect_corners(self, image_paths, imread, cameras=None, max_angle=65):
         """ Detection of pixel coordinates of chessboard corner points
 
         Args:
@@ -362,18 +373,39 @@ class Calibrator(object):
                 degrees of the turntable
             imread: a method for reading images from image paths
         """
-        for target_id in image_paths:
-            c = self.layout['chessboards'][target_id]
+        if cameras is None:
+            cameras = list(image_paths)
+        if not isinstance(cameras, list):
+            cameras = [cameras]
+        for target_id, c in self.layout['chessboards'].items():
             chessboard = Chessboard(square_size=c['between_corners'],
                                     shape=(c['corners_h'], c['corners_v']),
                                     facing_angles=self._facings[target_id])
-            for camera_id in image_paths[target_id]:
-                for rotation, path in image_paths[target_id][camera_id].items():
-                    image = imread(path)
-                    found = chessboard.detect_corners(camera_id, rotation, image, check_order=True, image_id=path)
-                    print("Target {} Camera {} Angle {} - Chessboard corners {}".format(target_id, camera_id,
+            for camera_id in cameras:
+                for rotation, path in image_paths[camera_id].items():
+                    px, py, pz = 0, 0, 0
+                    rx, ry, rz = 0, 0, 0
+                    rx += numpy.radians(self.layout['targets'][target_id]['inclination'])
+                    rz += self.alpha(rotation - self.layout['targets'][target_id]['rotation_to_south'])
+                    fr_target = CalibrationFrame.frame(px, py, pz, rx, ry, rz)
+                    #
+                    px, py, pz = 0, 0, 0
+                    rx, ry, rz = numpy.pi, 0, 0
+                    rx += numpy.radians(self.layout['cameras'][camera_id]['inclination'])
+                    rz += self.alpha(self.layout['cameras'][camera_id]['rotation_to_south'])
+                    fr_camera = CalibrationFrame.frame(px, py, pz, rx, ry, rz)
+                    angle = angle3(fr_target.global_vec((0,0,1)), fr_camera.global_vec((0,0,-1)))
+                    found = False
+                    if angle > max_angle:
+                        print("Target {} Camera {} Angle {} - Skipped (angle {} > max_angle)".format(target_id, camera_id,
                                                                                         str(rotation),
-                                                                                        "found" if found else "not found"))
+                                                                                        str(angle)))
+                    else:
+                        image = imread(path)
+                        found = chessboard.detect_corners(camera_id, rotation, image, check_order=True, image_id=path)
+                        print("Target {} Camera {} Angle {} - Chessboard corners {}".format(target_id, camera_id,
+                                                                                            str(rotation),
+                                                                                            "found" if found else "not found"))
                     if found:
                         self.image_paths[target_id][camera_id][rotation] = path
                         self.image_points[target_id][camera_id][rotation] = chessboard.image_points[camera_id][rotation]
@@ -387,15 +419,12 @@ class Calibrator(object):
         """Compute calibration"""
         cameras = {camera_id: (d['distance'], d['inclination'])
                    for camera_id, d in self.layout['cameras'].items()}
-        south_camera = {camera_id: (d['distance'], d['inclination'])
-                        for camera_id, d in self.layout['south_camera'].items()}
-        cameras.update(south_camera)
         targets = {target_id: (0, d['inclination'])
                    for target_id, d in self.layout['targets'].items()}
         setup = CalibrationSetup(cameras, targets, self.image_resolutions, self.image_sizes, self._facings,
                                  self.clockwise)
         reference_target = next(iter(self._facings))
-        reference_camera = next(iter(self.layout['south_camera']))
+        reference_camera = self.layout['south_camera']
         cameras, targets, reference_camera, clockwise = setup.setup_calibration(reference_camera=reference_camera,
                                                                                 reference_target=reference_target)
         target_points = {}
