@@ -18,6 +18,8 @@ import json
 import math
 import numpy
 import scipy.optimize
+import cv2
+import os
 from itertools import islice
 from copy import deepcopy
 from collections import defaultdict
@@ -279,7 +281,7 @@ class Calibrator(object):
     """Class for end to end calibration of rotating multiview acquisition system"""
 
     def __init__(self, south_camera, cameras=None, targets=None, chessboards=None,
-                 clockwise_rotation=True, world_unit='mm'):
+                 image_paths=None, clockwise_rotation=True, world_unit='mm', data_dir='.'):
         """
         Setup Calibrator with the calibration layout
 
@@ -306,15 +308,19 @@ class Calibrator(object):
                 a string referencing the target, between_corners is the distance (in world unit) between two corner
                 points, corners_h is the number of corners in the horizontal direction, corners_v in the number of
                 corners in the vertical direction.
+            image_paths: a {camera_id : {rotation_angle : path, ...},...} nested dict of image paths
+                pointing to the image camera 'camera_id' after a rotation of 'rotation_angle'
+                degrees of the turntable. Path are relative to data_dir or absolute paths if data_dir is None
             clockwise_rotation: (bool): is the turntable rotating clockwise ? (default True)
             world_unit (str): a label describing world units
+            data_dir: the absolute path of the directory containing images
 
         Details:
             The world 3D coordinates are expressed in a 'native' frame defined by the axis of rotation and the south
             camera as follow:
                 - The axis of rotation of the rotating system, oriented toward the sky, defines the world  Z+.
                 - The altitude of the south camera defines world origin (Z=0).
-                - the oriented segment from south camera optical center to world origin defines Y+.
+                - the axis originating at south camera optical center and passing at world origin defines Y+.
             The world coordinates can be redefined by positioning user-defined frames in this native frame after
             calibration (see eg. 'add_target_frame' or 'add_pot_frame' methods)
         """
@@ -345,18 +351,25 @@ class Calibrator(object):
                                         for target_id, (between_corners, corners_h, corners_v) in chessboards.items()
                                         }
                            )
+        self.image_paths = image_paths
         self.clockwise = clockwise_rotation
         self.world_unit = world_unit
+        self.data_dir = data_dir
 
-        self.image_points = {target_id:defaultdict(dict) for target_id in targets}
+        self.image_points = {target_id: defaultdict(dict) for target_id in targets}
         self.image_resolutions = defaultdict(list)
         self.image_sizes = defaultdict(dict)
-        self.image_paths = {target_id:defaultdict(dict) for target_id in targets}
 
         self._facings = defaultdict(dict)
         for camera_id, camera in self.layout['cameras'].items():
             for target_id, target in self.layout['targets'].items():
                 self._facings[target_id].update({camera_id: target['rotation_to_south'] - camera['rotation_to_south']})
+
+    def abspath(self, path):
+        if self.data_dir is None:
+            return path
+        else:
+            return os.path.join(self.data_dir, path)
 
     def alpha(self, rotation):
         angle = numpy.radians(rotation)
@@ -364,53 +377,100 @@ class Calibrator(object):
             angle *= -1
         return angle
 
-    def detect_corners(self, image_paths, imread, cameras=None, max_angle=65):
+    def aiming_angle(self, camera_id, target_id, rotation):
+        """The angle between camera Z- (opposite camera look-at axis) and target Z+ for a given rotation"""
+        px, py, pz = 0, 0, 0
+        rx, ry, rz = 0, 0, 0
+        rx += numpy.radians(self.layout['targets'][target_id]['inclination'])
+        rz += self.alpha(rotation - self.layout['targets'][target_id]['rotation_to_south'])
+        fr_target = CalibrationFrame.frame(px, py, pz, rx, ry, rz)
+        #
+        px, py, pz = 0, 0, 0
+        rx, ry, rz = numpy.pi, 0, 0
+        rx += numpy.radians(self.layout['cameras'][camera_id]['inclination'])
+        rz += self.alpha(self.layout['cameras'][camera_id]['rotation_to_south'])
+        fr_camera = CalibrationFrame.frame(px, py, pz, rx, ry, rz)
+        return angle3(fr_target.global_vec((0, 0, 1)), fr_camera.global_vec((0, 0, -1)))
+
+    def quadrant_mask(self, quadrant, image):
+        mask = numpy.empty_like(image)
+        h, w = mask.shape
+        if quadrant == 'North':
+            mask[:h//2, :] = 255
+        elif quadrant == "South":
+            mask[h // 2:, :] = 255
+        elif quadrant == 'West':
+            mask[:, :w//2] = 255
+        elif quadrant == 'East':
+            mask[:, w//2:] = 255
+        else:
+            raise ValueError('Unimplemented quadrant: ' + quadrant)
+        return mask
+
+    def roi_mask(self, roi, image):
+        mask = numpy.empty_like(image)
+        return mask
+
+    def detect_corners(self, cameras=None, masks=None, maximal_aiming_angle=65, data_dir=None):
         """ Detection of pixel coordinates of chessboard corner points
 
         Args:
-            image_paths: a {target_id : {camera_id : {rotation_angle : path, ...},...},...} nested dict of image paths
-                pointing to the image of target 'target_id' taken by camera 'camera_id' after a rotation of 'rotation_angle'
-                degrees of the turntable
-            imread: a method for reading images from image paths
+            cameras: a string or a list of elements specifying on which images should the detection be done. Element
+                     can either be a camera_id string or a (camera_id, list_of_angles) tuple specifying which angle to
+                     consider. If no angle are provided, all angles are considered. If cameras is None (default), all
+                     images are used
+            masks: a {target_id: {camera_id: {rotation: mask,...},..},...} nested dict specifying if a mask should be
+                    applied to the image before detection. mask can either be a string specifying the image quadrant
+                    ('North', 'South', 'East' or 'West') containing the target, a list of image coordinates (u,v) specifying
+                    the Region of Interest containing the target.
+            maximal_aiming_angle: images with a target that form an angle superior to this value are skipped
+            data_dir: the direca method for reading images from image paths
         """
+
+        consider = {}
         if cameras is None:
-            cameras = list(image_paths)
-        if not isinstance(cameras, list):
-            cameras = [cameras]
+            consider = {k: list(v) for k, v in self.image_paths.items()}
+        else:
+            for item in cameras:
+                if isinstance(item, str):
+                    camera_id = item
+                    rotation_list = list(self.image_paths[camera_id])
+                else:
+                    camera_id, rotation_list = item
+                consider[camera_id] = rotation_list
+
         for target_id, c in self.layout['chessboards'].items():
             chessboard = Chessboard(square_size=c['between_corners'],
                                     shape=(c['corners_h'], c['corners_v']),
                                     facing_angles=self._facings[target_id])
-            for camera_id in cameras:
-                for rotation, path in image_paths[camera_id].items():
-                    px, py, pz = 0, 0, 0
-                    rx, ry, rz = 0, 0, 0
-                    rx += numpy.radians(self.layout['targets'][target_id]['inclination'])
-                    rz += self.alpha(rotation - self.layout['targets'][target_id]['rotation_to_south'])
-                    fr_target = CalibrationFrame.frame(px, py, pz, rx, ry, rz)
-                    #
-                    px, py, pz = 0, 0, 0
-                    rx, ry, rz = numpy.pi, 0, 0
-                    rx += numpy.radians(self.layout['cameras'][camera_id]['inclination'])
-                    rz += self.alpha(self.layout['cameras'][camera_id]['rotation_to_south'])
-                    fr_camera = CalibrationFrame.frame(px, py, pz, rx, ry, rz)
-                    angle = angle3(fr_target.global_vec((0,0,1)), fr_camera.global_vec((0,0,-1)))
+            for camera_id, rotation_list in consider.items():
+                for rotation in rotation_list:
+                    path = self.image_paths[camera_id][rotation]
                     found = False
-                    if angle > max_angle:
-                        print("Target {} Camera {} Angle {} - Skipped (angle {} > max_angle)".format(target_id, camera_id,
+                    aiming_angle = self.aiming_angle(camera_id, target_id, rotation)
+                    if aiming_angle > maximal_aiming_angle:
+                        print("Target {} Camera {} Angle {} - Skipped (angle {} > maximal_aiming_angle)".format(target_id, camera_id,
                                                                                         str(rotation),
-                                                                                        str(angle)))
+                                                                                        str(aiming_angle)))
                     else:
-                        image = imread(path)
+                        image = cv2.imread(self.abspath(path), cv2.IMREAD_GRAYSCALE)
+                        if target_id in masks:
+                            if camera_id in masks[target_id]:
+                                if rotation in masks[target_id][camera_id]:
+                                    mask = masks[target_id][camera_id][rotation]
+                                    if isinstance(mask, str):
+                                        mask = self.quadrant_mask(mask, image)
+                                    else:
+                                        mask = self.roi_mask(mask, image)
+                                    image = numpy.bitwise_and(image, mask)
                         found = chessboard.detect_corners(camera_id, rotation, image, check_order=True, image_id=path)
                         print("Target {} Camera {} Angle {} - Chessboard corners {}".format(target_id, camera_id,
                                                                                             str(rotation),
                                                                                             "found" if found else "not found"))
                     if found:
-                        self.image_paths[target_id][camera_id][rotation] = path
                         self.image_points[target_id][camera_id][rotation] = chessboard.image_points[camera_id][rotation]
             self.image_sizes.update(chessboard.image_sizes)
-            for c,res in chessboard.image_resolutions().items():
+            for c, res in chessboard.image_resolutions().items():
                 self.image_resolutions[c].append(res)
         for c, values in self.image_resolutions.items():
             self.image_resolutions[c] = numpy.mean(values)
@@ -442,7 +502,11 @@ class Calibrator(object):
         calibration = Calibration(targets=targets, cameras=cameras,
                                   target_points=target_points, image_points=image_points,
                                   reference_camera=reference_camera, clockwise_rotation=clockwise)
-        calibration.calibrate()
+        # Three steps calibration yield better results than direct calibration
+        calibration.calibrate(fit_cameras=False)
+        if len(cameras) > 1:
+            calibration.calibrate(fit_angle_factor=False, fit_reference_camera=False, fit_targets=False)
+            calibration.calibrate()
         return calibration
 
     def save_image_points(self, paths):
@@ -458,7 +522,7 @@ class Calibrator(object):
                                     facing_angles=self._facings[target_id])
             chessboard.image_points = self.image_points[target_id]
             chessboard.image_sizes = self.image_sizes
-            chessboard.image_ids = self.image_paths[target_id]
+            chessboard.image_ids = self.image_paths
             chessboard.dump(path)
 
     def load_image_points(self, paths):
@@ -470,12 +534,12 @@ class Calibrator(object):
         for target_id, path in paths.items():
             chessboard = Chessboard.load(path)
             self.image_points[target_id] = chessboard.image_points
-            self.image_paths[target_id] = chessboard.image_ids
+            self.image_paths = chessboard.image_ids
             self.image_sizes.update(chessboard.image_sizes)
             for c,res in chessboard.image_resolutions().items():
                 self.image_resolutions[c].append(res)
-            for c, values in self.image_resolutions.items():
-                self.image_resolutions[c] = numpy.mean(values)
+        for c, values in self.image_resolutions.items():
+            self.image_resolutions[c] = numpy.mean(values)
 
 class CalibrationSetup(object):
     """A class for helping the setup of a multi-view imaging systems to be calibrated"""
@@ -1002,6 +1066,27 @@ class Calibration(object):
         target_pts = self.get_target_points(id_target)
 
         return proj(target_pts)
+
+    def target_mask(self, id_camera, id_target, rotation, border=2):
+        """Get image coordinate of a mask arround the target
+
+            Args:
+                border : the size of the border (in square_size units)
+        """
+        pts = self.get_target_projected(id_camera, id_target, rotation)
+        stats = self._calibration_statistics()
+        targ = self._targets[id_target]
+        bs = targ.square_size * border / stats[id_camera]['pixel_size']
+        proj = self.get_projection(id_camera, rotation)
+        pts = self._targets[id_target]
+        u, v = zip(*pts)
+        h,w = self._cameras[id_camera].image_shape()
+        umin, vmin, umax, vmax = (numpy.clip(min(u) - bs, 1, w),
+                                  numpy.clip(min(v) - bs, 1, h),
+                                  numpy.clip(max(u) + bs, 1, w),
+                                  numpy.clip(max(v) + bs, 1, h))
+        return [(umin,vmin), (umax, vmin), (umax, vmax), (umin, vmax)]
+
 
     def get_target_points(self, id_target):
         if id_target == 'world':
