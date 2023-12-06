@@ -281,7 +281,7 @@ class Calibrator(object):
     """Class for end to end calibration of rotating multiview acquisition system"""
 
     def __init__(self, south_camera, cameras=None, targets=None, chessboards=None,
-                 image_paths=None, clockwise_rotation=True, world_unit='mm', data_dir='.'):
+                 image_paths=None, clockwise_rotation=True, world_unit='mm', data_dir='.', calibration_dir='./Calibration'):
         """
         Setup Calibrator with the calibration layout
 
@@ -313,7 +313,8 @@ class Calibrator(object):
                 degrees of the turntable. Path are relative to data_dir or absolute paths if data_dir is None
             clockwise_rotation: (bool): is the turntable rotating clockwise ? (default True)
             world_unit (str): a label describing world units
-            data_dir: the absolute path of the directory containing images
+            data_dir: the path of the directory containing images
+            calibration_dir: the path of the directory to be used for calibration outputs
 
         Details:
             The world 3D coordinates are expressed in a 'native' frame defined by the axis of rotation and the south
@@ -355,9 +356,10 @@ class Calibrator(object):
         self.clockwise = clockwise_rotation
         self.world_unit = world_unit
         self.data_dir = data_dir
+        self.calibration_dir = calibration_dir
 
         self.image_points = {target_id: defaultdict(dict) for target_id in targets}
-        self.image_resolutions = defaultdict(list)
+        self.image_resolutions = defaultdict(dict)
         self.image_sizes = defaultdict(dict)
 
         self._facings = defaultdict(dict)
@@ -393,6 +395,8 @@ class Calibrator(object):
         return angle3(fr_target.global_vec((0, 0, 1)), fr_camera.global_vec((0, 0, -1)))
 
     def quadrant_mask(self, quadrant, image):
+        if len(image.shape) == 3:
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         mask = numpy.empty_like(image)
         h, w = mask.shape
         if quadrant == 'North':
@@ -411,7 +415,7 @@ class Calibrator(object):
         mask = numpy.empty_like(image)
         return mask
 
-    def detect_corners(self, cameras=None, masks=None, maximal_aiming_angle=65, data_dir=None):
+    def detect_corners(self, cameras=None, masks=None, maximal_aiming_angle=65):
         """ Detection of pixel coordinates of chessboard corner points
 
         Args:
@@ -419,17 +423,18 @@ class Calibrator(object):
                      can either be a camera_id string or a (camera_id, list_of_angles) tuple specifying which angle to
                      consider. If no angle are provided, all angles are considered. If cameras is None (default), all
                      images are used
-            masks: a {target_id: {camera_id: {rotation: mask,...},..},...} nested dict specifying if a mask should be
-                    applied to the image before detection. mask can either be a string specifying the image quadrant
+            masks: a {target_id : [(camera_id, rotation, mask),...],...} dict of list of tuples specifying if a mask should
+                    be applied to the image before detection. mask can either be a string specifying the image quadrant
                     ('North', 'South', 'East' or 'West') containing the target, a list of image coordinates (u,v) specifying
                     the Region of Interest containing the target.
             maximal_aiming_angle: images with a target that form an angle superior to this value are skipped
-            data_dir: the direca method for reading images from image paths
         """
 
         consider = {}
         if cameras is None:
             consider = {k: list(v) for k, v in self.image_paths.items()}
+        elif isinstance(cameras, str):
+            consider = {cameras: list(self.image_paths[cameras])}
         else:
             for item in cameras:
                 if isinstance(item, str):
@@ -438,6 +443,13 @@ class Calibrator(object):
                 else:
                     camera_id, rotation_list = item
                 consider[camera_id] = rotation_list
+
+        mask_dict = {}
+        if masks is not None:
+            mask_dict = {tid: defaultdict(dict) for tid in masks}
+            for tid, list_items in masks.items():
+                for cid, rot, mask in list_items:
+                    mask_dict[tid][cid][rot] = mask
 
         for target_id, c in self.layout['chessboards'].items():
             chessboard = Chessboard(square_size=c['between_corners'],
@@ -454,10 +466,10 @@ class Calibrator(object):
                                                                                         str(aiming_angle)))
                     else:
                         image = cv2.imread(self.abspath(path), cv2.IMREAD_GRAYSCALE)
-                        if target_id in masks:
-                            if camera_id in masks[target_id]:
-                                if rotation in masks[target_id][camera_id]:
-                                    mask = masks[target_id][camera_id][rotation]
+                        if target_id in mask_dict:
+                            if camera_id in mask_dict[target_id]:
+                                if rotation in mask_dict[target_id][camera_id]:
+                                    mask = mask_dict[target_id][camera_id][rotation]
                                     if isinstance(mask, str):
                                         mask = self.quadrant_mask(mask, image)
                                     else:
@@ -471,9 +483,8 @@ class Calibrator(object):
                         self.image_points[target_id][camera_id][rotation] = chessboard.image_points[camera_id][rotation]
             self.image_sizes.update(chessboard.image_sizes)
             for c, res in chessboard.image_resolutions().items():
-                self.image_resolutions[c].append(res)
-        for c, values in self.image_resolutions.items():
-            self.image_resolutions[c] = numpy.mean(values)
+                self.image_resolutions[c][target_id] = res
+
 
     def calibrate(self):
         """Compute calibration"""
@@ -481,7 +492,8 @@ class Calibrator(object):
                    for camera_id, d in self.layout['cameras'].items()}
         targets = {target_id: (0, d['inclination'])
                    for target_id, d in self.layout['targets'].items()}
-        setup = CalibrationSetup(cameras, targets, self.image_resolutions, self.image_sizes, self._facings,
+        resolutions = {k:numpy.mean(list(v.values())) for k, v in self.image_resolutions.items()}
+        setup = CalibrationSetup(cameras, targets, resolutions, self.image_sizes, self._facings,
                                  self.clockwise)
         reference_target = next(iter(self._facings))
         reference_camera = self.layout['south_camera']
@@ -509,37 +521,76 @@ class Calibrator(object):
             calibration.calibrate()
         return calibration
 
-    def save_image_points(self, paths):
-        """save image points in files specified by paths
+    def check_dir(self, path):
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
 
-        Args:
-            paths: a {target_id: path, ...} dict
+    def check_target_masks(self, masks, resize=0.25):
+        outdir = os.path.join(self.calibration_dir, 'check_target_masks')
+        for target_id, list_items in masks.items():
+            for camera_id, rotation, mask in list_items:
+                target_image = cv2.imread(self.abspath(self.image_paths[camera_id][rotation]))
+                path = os.path.join(outdir, '_'.join([target_id, camera_id, str(rotation)]) + '.jpg')
+                if isinstance(mask, str):
+                    mask = self.quadrant_mask(mask, target_image)
+                else:
+                    mask = self.roi_mask(mask, target_image)
+                masked = cv2.bitwise_and(target_image, target_image, mask=mask)
+                shape = [int(i * resize) for i in target_image.shape[:2]]
+                resized = cv2.resize(masked, shape, interpolation=cv2.INTER_AREA)
+                self.check_dir(path)
+                cv2.imwrite(path, resized)
+
+    def check_image_points(self, resize=0.25):
+        outdir = os.path.join(self.calibration_dir, 'check_image_points')
+        for target_id in self.image_points:
+            c = self.layout['chessboards'][target_id]
+            chessboard_shape = (c['corners_h'], c['corners_v'])
+            for camera_id in self.image_points[target_id]:
+                for rotation, img_pts in self.image_points[target_id][camera_id].items():
+                    image_path = self.image_paths[camera_id][rotation]
+                    img = cv2.imread(self.abspath(self.image_paths[camera_id][rotation]))
+                    img = cv2.drawChessboardCorners(img, chessboard_shape, img_pts, True)
+                    shape = [int(i * resize) for i in img.shape[:2]]
+                    resized = cv2.resize(img, shape, interpolation=cv2.INTER_AREA)
+                    path = os.path.join(outdir, '_'.join([target_id, camera_id, str(rotation)]) + '.jpg')
+                    self.check_dir(path)
+                    cv2.imwrite(path, resized)
+
+    def save_image_points(self, prefix=None):
+        """save image points to calibration dir
         """
-        for target_id, path in paths.items():
+        for target_id, image_points in self.image_points.items():
             c = self.layout['chessboards'][target_id]
             chessboard = Chessboard(square_size=c['between_corners'],
                                     shape=(c['corners_h'], c['corners_v']),
                                     facing_angles=self._facings[target_id])
-            chessboard.image_points = self.image_points[target_id]
+            chessboard.image_points = image_points
             chessboard.image_sizes = self.image_sizes
+            #TODO filter non useed ids
             chessboard.image_ids = self.image_paths
+            if prefix is None:
+                items = []
+            else:
+                items = [prefix]
+            items += ['image_points', target_id]
+            path = os.path.join(self.calibration_dir, '_'.join(items) + '.json')
+            self.check_dir(path)
             chessboard.dump(path)
 
-    def load_image_points(self, paths):
-        """load image points from paths
-
-        Args:
-            paths: a {target_id: path, ...} dict
+    def load_image_points(self):
+        """load image points
         """
-        for target_id, path in paths.items():
+        for target_id in self.layout['chessboards']:
+            items = ['image_points', target_id]
+            path = os.path.join(self.calibration_dir, '_'.join(items) + '.json')
             chessboard = Chessboard.load(path)
             self.image_points[target_id] = chessboard.image_points
             self.image_paths = chessboard.image_ids
             self.image_sizes.update(chessboard.image_sizes)
-            for c,res in chessboard.image_resolutions().items():
-                self.image_resolutions[c].append(res)
-        for c, values in self.image_resolutions.items():
-            self.image_resolutions[c] = numpy.mean(values)
+            for c, res in chessboard.image_resolutions().items():
+                self.image_resolutions[c][target_id] = res
 
 class CalibrationSetup(object):
     """A class for helping the setup of a multi-view imaging systems to be calibrated"""
