@@ -521,6 +521,31 @@ class Calibrator(object):
             calibration.calibrate()
         return calibration
 
+    def target_frame(self, calibration):
+        """Add a new world frame in calibration, similar to native frame, but whose origin is at the mean height of
+        targets centers"""
+        z_moy = numpy.mean([fr._pos_z for fr in calibration._targets.values()])
+        return CalibrationFrame.from_tuple((0, 0, z_moy, 0, 0, 0))
+
+    def pot_frame(self, v_pot, rail_orientation, calibration, dl=2000):
+        """Add a new world frame to calibration based orientation (x-axis) chosen from top and
+            origin chosen on side image"""
+        p = calibration.get_projection('side', 0, 'native')
+        pt = calibration.get_projection('top', 0, 'native')
+        origin = (0, 0, 0)
+        u, v = p(origin)
+        du, dv = numpy.diff(p([origin, (0, 0, -dl)]), axis=0)[0]
+        ut, vt = pt(origin)
+        dut, dvt = numpy.diff(pt([origin, (0, 0, -dl)]), axis=0)[0]
+        utp, vtp = ut + dut / dv * (v_pot - v), vt + dvt / dv * (v_pot - v)
+        alpha_p = numpy.radians(rail_orientation)
+        frame_points = [origin, (0, 'y', 0)]
+        image_points = {'side': [(u + du / dv * (v_pot - v), v_pot), None],
+                        'top': [None, (utp + numpy.cos(alpha_p) * dl, vtp - numpy.sin(alpha_p) * dl)]}
+        pot_frame, _ = calibration.find_frame(image_points, frame_points,
+                                              fixed_parameters={'_pos_x': 0, '_pos_y':0, '_rot_x':0, '_rot_y':0},
+                                              start={'_pos_z': 0, '_rot_z': -numpy.pi / 2})
+        return pot_frame
     def check_dir(self, path):
         dirname = os.path.dirname(path)
         if not os.path.exists(dirname):
@@ -557,6 +582,23 @@ class Calibrator(object):
                     path = os.path.join(outdir, '_'.join([target_id, camera_id, str(rotation)]) + '.jpg')
                     self.check_dir(path)
                     cv2.imwrite(path, resized)
+
+    def check_target_frame(self, calibration, resize=0.25, l=100):
+        outdir = os.path.join(self.calibration_dir, 'check_target_frame')
+        if 'target' not in calibration.frames:
+            calibration.frames['target'] = self.target_frame(calibration)
+        for camera_id, rot_dict in self.image_paths.items():
+            for rotation, path in rot_dict.items():
+                img = cv2.imread(self.abspath(path))
+                frame_lines = calibration.frame_lines(camera_id, rotation, frame='target', l=l)
+                for origin, end, col, w in frame_lines:
+                    cv2.line(img, origin, end, col, w)
+                shape = [int(i * resize) for i in img.shape[:2]]
+                resized = cv2.resize(img, shape, interpolation=cv2.INTER_AREA)
+                path = os.path.join(outdir, '_'.join([camera_id, str(rotation)]) + '.jpg')
+                self.check_dir(path)
+                cv2.imwrite(path, resized)
+
 
     def save_image_points(self, prefix=None):
         """save image points to calibration dir
