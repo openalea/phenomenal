@@ -74,7 +74,7 @@ def test_side_camera_frame():
     # test camera axis frame
     c = CalibrationCamera()
     fx = 1
-    c._width_image, c._height_image, c._focal_length_x, c._focal_length_y = 10, 10, fx, fx
+    c._width_image, c._height_image, c._focal_length_x, c._aspect_ratio = 10, 10, fx, 1
     c._pos_x, c._pos_y, c._pos_z = 0, -2 * fx, 0  # side camera defines z=0 and x=0 planes
     c._rot_x, c._rot_y, c._rot_z = -numpy.pi / 2, 0, 0  # make z camera axis points toward world origin
 
@@ -120,7 +120,7 @@ def test_top_camera_frame():
     # test camera axis frame
     c = CalibrationCamera()
     fx = 1
-    c._width_image, c._height_image, c._focal_length_x, c._focal_length_y = 10, 10, fx, fx
+    c._width_image, c._height_image, c._focal_length_x, c._aspect_ratio = 10, 10, fx, 1
     c._pos_x, c._pos_y, c._pos_z = 0, 0, 2 * fx  # top camera is on z+
     c._rot_x, c._rot_y, c._rot_z = -numpy.pi, 0, 0  # make z camera axis points toward world origin
 
