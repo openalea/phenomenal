@@ -137,6 +137,7 @@ def intercept_points_from_src_point_with_plane_equation(
     :param distance_from_src_point:
     :return: return the intercepted points
     """
+
     res = abs(points[:, 0] * plane_equation[0] +
               points[:, 1] * plane_equation[1] +
               points[:, 2] * plane_equation[2] -
