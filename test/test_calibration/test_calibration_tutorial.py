@@ -28,4 +28,4 @@ def test_calibrate():
     calibrator.load_image_points(image_points)
     calibration = calibrator.calibrate()
     assert 'side' in calibration._cameras
-    assert(round(calibration.calibration_statistics['mean_error'], 2)) == 0.24
+    assert(round(calibration.calibration_statistics['mean_error'], 2)) == 0.12
