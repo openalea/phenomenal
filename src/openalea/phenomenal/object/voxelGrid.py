@@ -249,34 +249,49 @@ class VoxelGrid(object):
 
         return VoxelGrid(voxels_position, voxels_size)
 
-    def write_to_csv(self, filename):
+    def write_to_csv(self, filename, header=None):
 
         if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
                 filename))):
             os.makedirs(os.path.dirname(filename))
+        if header is None:
+            header = {}
+        header.update({'voxels_size': self.voxels_size})
 
         with open(filename, 'w', newline='') as f:
             c = csv.writer(f)
-
-            c.writerow(['x_coord', 'y_coord', 'z_coord', 'voxel_size'])
+            for k, v in header.items():
+                c.writerow(['# ' + k + ': ' + str(v)])
+            c.writerow(['x_coord', 'y_coord', 'z_coord'])
 
             for x, y, z in self.voxels_position:
-                c.writerow([x, y, z, self.voxels_size])
+                c.writerow([x, y, z])
 
     @staticmethod
-    def read_from_csv(filename):
+    def read_from_csv(filename, read_header=False):
+        voxels_position = list()
+        header = {}
+
         with open(filename, 'r', newline='') as f:
             reader = csv.reader(f)
+            for row in reader:
+                if row[0].split('#')[0].strip():
+                    break
+                else:
+                    k, v = row[0].split('#')[1].strip().split(':')
+                    header[k.strip()] = v.strip()
 
-            next(reader)
-            x, y, z, vs = next(reader)
-
-            voxels_size = float(vs)
-
-            voxels_position = list()
-            voxels_position.append((float(x), float(y), float(z)))
-
-            for x, y, z, vs in reader:
+            if 'voxels_size' in header:
+                voxels_size = float(header['voxels_size'])
+                for x, y, z in reader:
+                    voxels_position.append((float(x), float(y), float(z)))
+            else:
+                x, y, z, vs = next(reader)
+                voxels_size = float(vs)
                 voxels_position.append((float(x), float(y), float(z)))
-
-            return VoxelGrid(voxels_position, voxels_size)
+                for x, y, z, _ in reader:
+                    voxels_position.append((float(x), float(y), float(z)))
+            if read_header:
+                return VoxelGrid(voxels_position, voxels_size), header
+            else:
+                return VoxelGrid(voxels_position, voxels_size)
