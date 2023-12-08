@@ -19,11 +19,16 @@ import pkg_resources
 import pathlib
 
 
-from ..mesh import read_ply_to_vertices_faces
-from ..calibration import (Chessboard, CalibrationCamera)
-from ..object import VoxelGrid
+from openalea.phenomenal.mesh import read_ply_to_vertices_faces
+from openalea.phenomenal.calibration import (Chessboard, Chessboards, Calibration, CalibrationSetup,
+                                             OldCalibrationCamera)
+from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
 
+datadir = os.path.dirname(__file__).split('src')[0]
+
+def data_dir(name_dir, dtype='bin'):
+    return os.path.join(datadir, 'examples', name_dir, '{}/'.format(dtype))
 
 def _path_images(name_dir, dtype="bin"):
     """ According to the plant number return a dict[id_camera][angle] containing
@@ -39,7 +44,7 @@ def _path_images(name_dir, dtype="bin"):
     d : dict of dict of string
         dict[id_camera][angle] = filename
     """
-    data_directory = os.path.join(name_dir, '{}/'.format(dtype))
+    data_directory = os.path.join(datadir, 'examples', name_dir, '{}/'.format(dtype))
 
     d = collections.defaultdict(dict)
     for id_camera in ["side", "top"]:
@@ -116,6 +121,7 @@ def bin_images(name_dir):
     return d
 
 
+
 def chessboard_images(name_dir):
     """
     According to the plant number return a dict[id_camera][angle] of
@@ -142,7 +148,7 @@ def chessboards(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(name_dir, 'chessboard/points/')
+    data_directory = os.path.join(datadir, 'examples', name_dir, 'chessboard/points/')
 
     chessboards = list()
     for id_chessboard in [1, 2]:
@@ -151,6 +157,65 @@ def chessboards(name_dir):
                          "chessboard_{}.json".format(id_chessboard))))
 
     return chessboards
+
+
+def image_points(name_dir):
+    """
+    According to name_dir return a dict[id_camera] of camera
+    calibration object
+
+    :return: dict[id_camera] of camera calibration object
+    """
+    data_directory = os.path.join(datadir, 'examples', name_dir, 'chessboard/points/')
+
+    chessboards = {}
+    keep = [42] + list(range(0,360,30))
+    for id_chessboard in ['target_1', 'target_2']:
+        chessboard = Chessboard.load(
+            os.path.join(data_directory,
+                         "image_points_{}.json".format(id_chessboard)))
+        for rotation in list(chessboard.image_points['side']):
+            if not rotation in keep:
+                chessboard.image_points['side'].pop(rotation)
+        chessboards[id_chessboard] = chessboard
+
+    return chessboards
+
+
+def do_calibration(name_dir):
+    """Regenerate calibration of cameras"""
+    data_directory = os.path.join(name_dir, 'calibration')
+
+    cbs = dict(zip(('target_1', 'target_2'), chessboards(name_dir)))
+    # add missing info
+    cb = cbs['target_1']
+    cb.facing_angles = {'side': 48, 'top': 48}
+    cb.image_sizes = {'side': (2056, 2454), 'top': (2454, 2056)}
+    cb.check_order()
+    #
+    cb = cbs['target_2']
+    cb.facing_angles = {'side': 228, 'top': 228}
+    cb.image_sizes = {'side': (2056, 2454), 'top': (2454, 2056)}
+    cb.check_order()
+
+    chess_targets = Chessboards(cbs)
+    image_sizes = chess_targets.image_sizes()
+    image_resolutions = chess_targets.image_resolutions()
+    facings = chess_targets.facings()
+    target_points = chess_targets.target_points()
+    image_points = chess_targets.image_points()
+    # distance and inclination of objects
+    cameras_guess = {'side': (5500, 90), 'top': (2500, 0)}
+    targets_guess = {'target_1': (100, 45), 'target_2': (100, 45)}
+    setup = CalibrationSetup(cameras_guess, targets_guess, image_resolutions, image_sizes, facings,
+                             clockwise_rotation=True)
+    cameras, targets = setup.setup_calibration(reference_camera='side', reference_target='target_1')
+    calibration = Calibration(targets=targets, cameras=cameras,
+                              target_points=target_points, image_points=image_points,
+                              reference_camera='side', clockwise_rotation=True)
+    calibration.calibrate()
+    calibration.dump(os.path.join(data_directory, 'calibration_cameras.json'))
+
 
 
 def calibrations(name_dir):
@@ -165,11 +230,22 @@ def calibrations(name_dir):
 
     calibration = dict()
     for id_camera in ["side", "top"]:
-        calibration[id_camera] = CalibrationCamera.load(
+        calibration[id_camera] = OldCalibrationCamera.load(
             os.path.join(data_directory,
                          "calibration_camera_{}.json".format(id_camera)))
 
     return calibration
+
+def new_calibrations(name_dir):
+    """
+    According to name_dir return a camera
+    calibration object
+
+    """
+
+    file_name = os.path.join(name_dir, 'calibration', 'calibration_cameras.json')
+    return Calibration.load(file_name)
+
 
 
 def voxel_grid(name_dir, plant_number=1, voxels_size=4):

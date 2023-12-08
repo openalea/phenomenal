@@ -30,7 +30,7 @@ def test_chessboard_1():
 def test_chessboard_2():
     chess = phm_calib.Chessboard(50, (8, 6))
 
-    result = chess.get_corners_local_3d()
+    result = chess.get_corners_local_3d(old_style=True)
 
     assert numpy.array_equal(result[8 * 0 + 0], [0., 0., 0.])
     assert numpy.array_equal(result[8 * 0 + 1], [50., 0., 0.])
@@ -58,7 +58,7 @@ def test_chessboard_3():
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             "../data/plant_1")
     images = phm_data.chessboard_images(dir_path)[0]
-    found = chess.detect_corners("side", 42, images['side'][42])
+    found = chess.detect_corners("side", 42, images['side'][42], check_order=False)
 
     if found:
         corners = chess.get_corners_2d("side")[42]
