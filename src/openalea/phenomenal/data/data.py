@@ -25,6 +25,10 @@ from openalea.phenomenal.calibration import (Chessboard, Chessboards, Calibratio
 from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
 
+datadir = os.path.dirname(__file__).split('src')[0]
+
+def data_dir(name_dir, dtype='bin'):
+    return os.path.join(datadir, 'examples', name_dir, '{}/'.format(dtype))
 
 def _path_images(name_dir, dtype="bin"):
     """ According to the plant number return a dict[id_camera][angle] containing
@@ -40,7 +44,7 @@ def _path_images(name_dir, dtype="bin"):
     d : dict of dict of string
         dict[id_camera][angle] = filename
     """
-    data_directory = os.path.join(name_dir, '{}/'.format(dtype))
+    data_directory = os.path.join(datadir, 'examples', name_dir, '{}/'.format(dtype))
 
     d = collections.defaultdict(dict)
     for id_camera in ["side", "top"]:
@@ -117,6 +121,7 @@ def bin_images(name_dir):
     return d
 
 
+
 def chessboard_images(name_dir):
     """
     According to the plant number return a dict[id_camera][angle] of
@@ -143,13 +148,31 @@ def chessboards(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(name_dir, 'chessboard/points/')
+    data_directory = os.path.join(datadir, 'examples', name_dir, 'chessboard/points/')
 
     chessboards = list()
     for id_chessboard in [1, 2]:
         chessboards.append(Chessboard.load(
             os.path.join(data_directory,
                          "chessboard_{}.json".format(id_chessboard))))
+
+    return chessboards
+
+
+def image_points(name_dir):
+    """
+    According to name_dir return a dict[id_camera] of camera
+    calibration object
+
+    :return: dict[id_camera] of camera calibration object
+    """
+    data_directory = os.path.join(datadir, 'examples', name_dir, 'chessboard/points/')
+
+    chessboards = {}
+    for id_chessboard in ['target_1', 'target_2']:
+        chessboards[id_chessboard] = Chessboard.load(
+            os.path.join(data_directory,
+                         "image_points_{}.json".format(id_chessboard)))
 
     return chessboards
 
