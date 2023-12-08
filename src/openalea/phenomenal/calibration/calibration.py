@@ -486,7 +486,7 @@ class Calibrator(object):
                 self.image_resolutions[c][target_id] = res
 
 
-    def calibrate(self):
+    def calibrate(self, verbose=True):
         """Compute calibration"""
         cameras = {camera_id: (d['distance'], d['inclination'])
                    for camera_id, d in self.layout['cameras'].items()}
@@ -513,12 +513,13 @@ class Calibrator(object):
 
         calibration = Calibration(targets=targets, cameras=cameras,
                                   target_points=target_points, image_points=image_points,
-                                  reference_camera=reference_camera, clockwise_rotation=clockwise)
+                                  reference_camera=reference_camera,
+                                  clockwise_rotation=clockwise)
         # Three steps calibration yield better results than direct calibration
-        calibration.calibrate(fit_cameras=False)
+        calibration.calibrate(fit_cameras=False, verbose=verbose)
         if len(cameras) > 1:
-            calibration.calibrate(fit_angle_factor=False, fit_reference_camera=False, fit_targets=False)
-            calibration.calibrate()
+            calibration.calibrate(fit_angle_factor=False, fit_reference_camera=False, fit_targets=False, verbose=verbose)
+            calibration.calibrate(verbose=verbose)
         return calibration
 
     def target_frame(self, calibration):
@@ -621,13 +622,16 @@ class Calibrator(object):
             self.check_dir(path)
             chessboard.dump(path)
 
-    def load_image_points(self):
+    def load_image_points(self, image_points=None):
         """load image points
         """
         for target_id in self.layout['chessboards']:
-            items = ['image_points', target_id]
-            path = os.path.join(self.calibration_dir, '_'.join(items) + '.json')
-            chessboard = Chessboard.load(path)
+            if image_points is not None and target_id in image_points:
+                chessboard = image_points[target_id]
+            else:
+                items = ['image_points', target_id]
+                path = os.path.join(self.calibration_dir, '_'.join(items) + '.json')
+                chessboard = Chessboard.load(path)
             self.image_points[target_id] = chessboard.image_points
             self.image_paths = chessboard.image_ids
             self.image_sizes.update(chessboard.image_sizes)
