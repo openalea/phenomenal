@@ -169,10 +169,15 @@ def image_points(name_dir):
     data_directory = os.path.join(datadir, 'examples', name_dir, 'chessboard/points/')
 
     chessboards = {}
+    keep = [42] + list(range(0,360,30))
     for id_chessboard in ['target_1', 'target_2']:
-        chessboards[id_chessboard] = Chessboard.load(
+        chessboard = Chessboard.load(
             os.path.join(data_directory,
                          "image_points_{}.json".format(id_chessboard)))
+        for rotation in list(chessboard.image_points['side']):
+            if not rotation in keep:
+                chessboard.image_points['side'].pop(rotation)
+        chessboards[id_chessboard] = chessboard
 
     return chessboards
 
