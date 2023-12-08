@@ -46,7 +46,7 @@ def build_cube(cube_size, voxels_size, voxels_position):
 def random_voxel_grid(shape=(10, 15, 5), voxels_size=16, int_choice=1000):
 
     voxels_position = numpy.array(list(numpy.ndindex(shape))) * voxels_size
-    voxels_position = voxels_position.astype(numpy.float)
+    voxels_position = voxels_position.astype(float)
     numpy.random.shuffle(voxels_position)
 
     return VoxelGrid(voxels_position[:int_choice], voxels_size)
