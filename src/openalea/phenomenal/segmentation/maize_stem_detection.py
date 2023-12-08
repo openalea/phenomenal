@@ -28,7 +28,10 @@ def maize_stem_peak_detection(values, stop_index):
         nodes_length_smooth2 = list(smooth(numpy.array(values), window_len=15))
         max_peaks_smooth2, min_peaks_smooth2 = peak_detection(
             nodes_length_smooth2, order=3)
-        stop_index = max([i for i, v in min_peaks_smooth2 if i <= stop_index])
+
+        i_peaks = [i for i, v in min_peaks_smooth2 if i <= stop_index]
+        if i_peaks != []:
+            stop_index = max(i_peaks)
 
     max_peaks, min_peaks = peak_detection(values, order=3)
     min_peaks = [(i, v) for i, v in min_peaks if i <= stop_index]
@@ -54,7 +57,7 @@ def get_nodes_radius(center, points, radius):
 
 
 def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
-                   graph, distance_plane=1.00):
+                    graph, z_stem=None, distance_plane=1.):
 
     # ==========================================================================
 
@@ -83,15 +86,25 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
         arr_stem_segment_path,
         ball_radius=ball_radius)
 
-    nodes_length = list(map(float, map(len, closest_nodes_ball)))
-    index_20_percent = int(float(len(nodes_length)) * 0.20)
-    stop_index = nodes_length.index((max(nodes_length)))
+    if z_stem is None:
+        nodes_length = list(map(float, map(len, closest_nodes_ball)))
+        index_20_percent = int(float(len(nodes_length)) * 0.20)
+        stop_index = nodes_length.index((max(nodes_length)))
 
-    if stop_index <= index_20_percent:
-        stop_index = len(nodes_length)
+        if stop_index <= index_20_percent:
+            stop_index = len(nodes_length)
 
-    nodes_length = list(map(float, map(len, arr_closest_nodes_planes)))
-    min_peaks_stem = maize_stem_peak_detection(nodes_length, stop_index)
+        nodes_length = list(map(float, map(len, arr_closest_nodes_planes)))
+        min_peaks_stem = maize_stem_peak_detection(nodes_length, stop_index)
+
+    else:
+        list_z = [numpy.mean(plane[:, 2]) for plane in arr_closest_nodes_planes]
+        stop_index = numpy.argmin(abs(numpy.array(list_z) - z_stem))
+
+        nodes_length = list(map(float, map(len, arr_closest_nodes_planes)))
+        min_peaks_stem = maize_stem_peak_detection(nodes_length, stop_index)
+        if stop_index not in numpy.array(min_peaks_stem)[:, 0]:
+            min_peaks_stem += [(stop_index, 0.)]
 
     window_length = max(4, len(nodes_length) // 8)
     window_length = window_length + 1 if window_length % 2 == 0 else window_length
@@ -138,6 +151,7 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
 
     arr_stem_centred_path_min_peak = numpy.array(
         stem_centred_path_min_peak).transpose()
+    arr_stem_centred_path_min_peak = numpy.unique(arr_stem_centred_path_min_peak, axis=1) # remove redundancies
     tck, u = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=1)
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
 

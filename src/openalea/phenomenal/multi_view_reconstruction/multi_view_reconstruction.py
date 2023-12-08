@@ -558,7 +558,7 @@ def reconstruction_3d(image_views,
 
         voxels = split_voxels_in_eight(stage.consistent)
 
-        print(voxels.size)
+        #print(voxels.size)
 
         if voxels.size < 512:
             stage = kept_visible_voxel(
@@ -597,7 +597,7 @@ def project_voxel_centers_on_image(voxels_position,
     voxels_size : float
         Diameter size of the voxels
     shape_image: 2-tuple
-        Size height and length of the image target projected
+        Size height and width of the image target projected
     projection : function ((x, y, z)) -> (x, y)
         Function of projection who take 1 argument (tuple of position (x, y, z))
          and return this position 2D (x, y)
