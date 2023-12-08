@@ -57,7 +57,7 @@ Conda environement : https://docs.conda.io/en/latest/index.html
 #### From source
 
     # Install dependency with conda
-    conda create -n phm -c conda-forge python=3
+    conda create -n phm -c conda-forge python=3.8
     conda activate phm
     conda install -c conda-forge -c openalea cython numpy numba scipy scikit-image scikit-learn networkx=2.3 opencv matplotlib vtk pytest
 
