@@ -166,6 +166,33 @@ def compute_insertion_angle(polyline, stem_vector_mean):
 # ==============================================================================
 # ==============================================================================
 
+def voxel_base_height(vo, polyline, min_distance=30):
+    """
+    Search voxels that have a distance < min_distance to the polyline, and return the height of the lowest one.
+    This can be used to determine the insertion height of a maize mature leaf (with vo = mature leaf organ,
+    polyline = stem polyline), based on voxel data (since it's often more accurate than polyline data)
+    """
+
+    # all voxels
+    vxs = numpy.array(list(vo.voxels_position()))
+
+    # only voxels with distance to polyline lowest point < min_distance
+    vxs2 = []
+    for x, y, z in vxs:
+        # TODO : approx ?
+        # TODO : param min_distance depending on leaf length ?
+        x_stem, y_stem, z_stem = polyline[numpy.argmin(numpy.abs(polyline[:, 2] - z))]
+        if numpy.sqrt((x_stem - x) ** 2 + (y_stem - y) ** 2) < min_distance:
+            vxs2.append([x, y, z])
+    vxs2 = numpy.array(vxs2)
+
+    if vxs2.size == 0:
+        height = vo.info['pm_position_base']
+    else:
+        height = vxs2[numpy.argsort(vxs2[:, 2])][0]
+
+    return height
+
 
 def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
 
@@ -359,13 +386,17 @@ def maize_analysis(maize_segmented):
     # ==========================================================================
 
     mature_leafs = list()
+    stem_polyline = numpy.array(list(maize_segmented.get_stem().get_highest_polyline().polyline))
     for vo_mature_leaf in maize_segmented.get_mature_leafs():
 
         vo_mature_leaf = maize_mature_leaf_analysis(
             vo_mature_leaf, voxels_size, vo_stem.info['pm_vector_mean'])
-
+        
         if vo_mature_leaf is None:
             continue
+
+        if 'pm_z_base' in vo_mature_leaf.info:
+            vo_mature_leaf.info['pm_z_base_voxel'] = voxel_base_height(vo_mature_leaf, stem_polyline)[2]
 
         mature_leafs.append((vo_mature_leaf, vo_mature_leaf.info["pm_z_base"]))
     mature_leafs.sort(key=lambda x: x[1])
