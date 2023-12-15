@@ -20,8 +20,8 @@ import pathlib
 
 
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
-from openalea.phenomenal.calibration import (Chessboard, Chessboards, Calibration, CalibrationSetup,
-                                             OldCalibrationCamera)
+from openalea.phenomenal.calibration import (Chessboard, Chessboards, Calibration, CalibrationSetup)
+from openalea.phenomenal.calibration.object import OldCalibrationCamera
 from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
 
