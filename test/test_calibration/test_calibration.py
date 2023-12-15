@@ -82,7 +82,7 @@ def test_find_points():
                     'top': [(473, 255), (1951, 258)]}
     # accelerate test
     guess = [(700, 700, -700), (-700, 700, -700)]
-    calib = phm_calib.Calibration.from_dict(lemnatec2)
+    calib = phm_calib.CalibrationSolver.from_dict(lemnatec2)
     pts = calib.find_points(image_points, guess, niter=2)
     expected = [[-710.670687,  732.762684, -936.617387],
                 [694.774179,  736.698475, -945.038652]]
@@ -92,7 +92,7 @@ def test_find_points():
 def test_find_frame():
     image_points = {'side': [(478, 1969), (1550, 1976), (1250, 2193), (776, 2191)],
                     'top': [(473, 255), (1951, 258), (1460, 1799), (958, 1798)]}
-    calib = phm_calib.Calibration.from_dict(lemnatec2)
+    calib = phm_calib.CalibrationSolver.from_dict(lemnatec2)
     fr, fpts = calib.find_frame(image_points, [('x','y',0) for _ in image_points['side']],
                fixed_parameters={'_pos_x': 0, '_pos_y': 0},
                                 )
@@ -111,7 +111,7 @@ def test_find_camera():
                      [232.88649682, -735.81085532, -938.29077936],
                      [-244.15336169, -736.29942847, -935.63550613]]
     image_size = (2454, 2056)
-    calib = phm_calib.Calibration.from_dict(lemnatec2)
+    calib = phm_calib.CalibrationSolver.from_dict(lemnatec2)
     fx, fy = calib._cameras['top'].get_intrinsic()[numpy.diag_indices(2)]
     camera = calib.find_camera(image_points, target_points, image_size,
                                fixed_parameters={'_focal_length_x': fx,

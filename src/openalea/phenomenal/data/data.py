@@ -20,7 +20,7 @@ import pathlib
 
 
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
-from openalea.phenomenal.calibration import (Chessboard, Chessboards, Calibration, CalibrationSetup)
+from openalea.phenomenal.calibration import (Chessboard, Chessboards, CalibrationSolver, CalibrationSetup)
 from openalea.phenomenal.calibration.object import OldCalibrationCamera
 from openalea.phenomenal.object import VoxelGrid
 # ==============================================================================
@@ -210,9 +210,9 @@ def do_calibration(name_dir):
     setup = CalibrationSetup(cameras_guess, targets_guess, image_resolutions, image_sizes, facings,
                              clockwise_rotation=True)
     cameras, targets = setup.setup_calibration(reference_camera='side', reference_target='target_1')
-    calibration = Calibration(targets=targets, cameras=cameras,
-                              target_points=target_points, image_points=image_points,
-                              reference_camera='side', clockwise_rotation=True)
+    calibration = CalibrationSolver(targets=targets, cameras=cameras,
+                                    target_points=target_points, image_points=image_points,
+                                    reference_camera='side', clockwise_rotation=True)
     calibration.calibrate()
     calibration.dump(os.path.join(data_directory, 'calibration_cameras.json'))
 
@@ -244,7 +244,7 @@ def new_calibrations(name_dir):
     """
 
     file_name = os.path.join(name_dir, 'calibration', 'calibration_cameras.json')
-    return Calibration.load(file_name)
+    return CalibrationSolver.load(file_name)
 
 
 

@@ -1,8 +1,9 @@
 from __future__ import division, absolute_import, print_function
 
+import warnings
 import json
 import math
-
+from copy import deepcopy
 import numpy
 
 from .transformations import rotation_matrix, concatenate_matrices
@@ -117,11 +118,23 @@ class CalibrationCamera(CalibrationFrame):
         self._focal_length_x = None
         self._aspect_ratio = None
 
+    @property
+    def distance_to_origin(self):
+        return numpy.sqrt(self._pos_x ** 2 + self._pos_y ** 2 + self._pos_z ** 2)
+
+    @property
+    def pixel_size_at_origin(self):
+        """size of pixel (world unit) at world origin"""
+        focal = self._focal_length_x * (1 + self._aspect_ratio) / 2
+        return self.distance_to_origin / focal
+
     def __str__(self):
         out = ''
         fmm = numpy.round(self._focal_length_x / max(self._width_image, self._height_image) * 36)
         out += '\tFocal length X : ' + str(self._focal_length_x) + ' (' + str(fmm) + 'mm)\n'
         out += '\tPixel aspect ratio : ' + str(self._aspect_ratio) + '\n'
+        out += '\tPixel size at origin : ' + str(self.pixel_size_at_origin) + '\n'
+        out += '\tdistance to origin : ' + str(self.pixel_size_at_origin) + '\n'
         if self._width_image is not None:
             out += '\tOptical Center X : ' + str(self._width_image / 2.0) + '\n'
             out += '\tOptical Center Y : ' + str(self._height_image / 2.0)
@@ -227,6 +240,208 @@ class CalibrationCamera(CalibrationFrame):
             raise ValueError('Old style calibration should now  be loaded with OldCalibrationCamera.load method')
         c = CalibrationCamera.from_json(save_class)
         return c
+
+
+class Calibration(object):
+    """A class for calibrated rotation system"""
+    def __init__(self,angle_factor=1, targets=None, cameras=None, target_points=None,
+                 reference_camera='side', clockwise_rotation=True, calibration_statistics=None, frames=None):
+        self.angle_factor = angle_factor
+        self._targets = {}
+        self._targets_points = {}
+        self._cameras = {}
+        if cameras is not None:
+            self._cameras = deepcopy(cameras)
+        if targets is not None:
+            self._targets = deepcopy(targets)
+        if target_points is not None:
+            self._targets_points = target_points
+        self.clockwise = clockwise_rotation
+        self.reference_camera = reference_camera
+
+        self.calibration_statistics = calibration_statistics
+        if frames is not None:
+            self.frames = frames
+        else:
+            self.frames = {}
+
+    @property
+    def _nb_targets(self):
+        return len(self._targets)
+    @property
+    def _nb_cameras(self):
+        return len(self._cameras)
+
+    def __str__(self):
+        out = 'Calibration:\n\n'
+
+        out += 'Angle factor : ' + str(self.angle_factor) + '\n'
+        out += 'Clockwise rotation : ' + str(self.clockwise) + '\n\n'
+
+        for id_camera, camera in self._cameras.items():
+            out += 'Camera {}'.format(id_camera)
+            if id_camera == self.reference_camera:
+                out += ' (reference)'
+            out += ': \n'
+            out += str(camera)
+
+        for id_target, target in self._targets.items():
+            out += 'Target {}: \n'.format(id_target)
+            out += str(target)
+
+        return out
+
+    def dump(self, filename):
+        save_class = dict()
+        save_class['angle_factor'] = self.angle_factor
+        save_class['clockwise'] = self.clockwise
+        save_class['reference_camera'] = self.reference_camera
+        save_class['cameras_parameters'] = {id_camera: camera.to_json() for id_camera, camera in self._cameras.items()}
+        save_class['targets_parameters'] = {id_target: t.to_json() for id_target, t in self._targets.items()}
+
+        if self.calibration_statistics is not None:
+            save_class['calibration_statistics'] = self.calibration_statistics
+
+        if len(self.frames) > 0:
+            save_class['frames'] = {id_frame: frame.to_json() for id_frame, frame in self.frames.items()}
+
+        with open(filename, 'w') as output_file:
+            json.dump(save_class, output_file,
+                      sort_keys=True,
+                      indent=4,
+                      separators=(',', ': '))
+
+    @staticmethod
+    def from_dict(save_class):
+        c = Calibration()
+        c._cameras = {id_camera: CalibrationCamera.from_json(pars)
+                      for id_camera, pars in save_class['cameras_parameters'].items()}
+        c._targets = {id_target: CalibrationFrame.from_json(pars)
+                      for id_target, pars in save_class['targets_parameters'].items()}
+        c.angle_factor = save_class['angle_factor']
+        c.clockwise = save_class['clockwise']
+        c.reference_camera = save_class['reference_camera']
+        if 'calibration_statistics' in save_class:
+            c.calibration_statistics = save_class['calibration_statistics']
+        if 'frames' in save_class:
+            c.frames = {id_frame: CalibrationFrame.from_json(pars)
+                             for id_frame, pars in save_class['frames'].items()}
+        return c
+
+    @staticmethod
+    def load(filename):
+        with open(filename, 'r') as input_file:
+            save_class = json.load(input_file)
+        return Calibration.from_dict(save_class)
+
+
+    def get_frame(self, frame='native'):
+
+        if frame == 'native':
+            return Frame()
+        elif frame in self.frames:
+            return self.frames[frame].get_frame()
+        else:
+            warnings.warn('frame: ' + frame + ' not defined, falling back to native world frame')
+            return Frame()
+
+
+    @staticmethod
+    def turntable_frame(rotation, angle_factor=1, clockwise=True):
+        """ Frame attached to turntable. This correspond to a rotation of the world native frame.
+
+        Args:
+            rotation: the rotation consign of the turning table
+            angle_factor: a float multiplier of rotation consign to obtain actual rotation angle
+            clockwise: is turntable rotating clockwise ?
+
+        Returns:
+            a frame object
+        """
+
+        alpha = numpy.radians(rotation * angle_factor)
+        if clockwise:
+            alpha *= -1
+
+        return Frame([(numpy.cos(alpha), numpy.sin(alpha), 0),
+                      (-numpy.sin(alpha), numpy.cos(alpha), 0),
+                      (0, 0, 1)])
+
+    def get_turntable_frame(self, rotation):
+        return self.turntable_frame(rotation, self.angle_factor, self.clockwise)
+
+
+    def get_projection(self, id_camera, rotation, world_frame='native'):
+
+        camera = self._cameras[id_camera]
+        fr_cam = camera.get_frame()
+        fr_table = self.get_turntable_frame(rotation)
+        fr_world = self.get_frame(world_frame)
+
+        pixel_coords = camera.get_pixel_coordinates()
+
+        def projection(pts):
+            # native points
+            npts = fr_world.global_point(pts)
+            # rotated pts
+            rotated = fr_table.global_point(npts)
+            return pixel_coords(fr_cam.local_point(rotated))
+
+        return projection
+
+    def get_image_shape(self, id_camera):
+        return self._cameras[id_camera].image_shape()
+
+    def world_frame(self, camera):
+        """World frame defined by an alternative camera positioned in the current reference camera world frame"""
+        ref_azim = -numpy.pi / 2 # by definition of the reference camera
+        azim = numpy.arctan2(camera._pos_y, camera._pos_x)
+        return CalibrationFrame.from_tuple((0, 0, camera._pos_z, 0, 0, azim - ref_azim))
+
+    def frame_lines(self, view, angle, frame='native', l=100, w=10, at = (0, 0, 0)):
+        base_axis = numpy.array(((1, 0, 0), (0, 1, 0), (0, 0, 1)))
+        p = self.get_projection(view, angle, frame)
+        origin = tuple(numpy.array(p(at)).astype(int))
+        lines = []
+        for axe in base_axis:
+            end = tuple(numpy.array(p(numpy.array(at) + l * axe)).astype(int))
+            col = tuple([int(x) for x in axe * 255])
+            lines.append((origin, end, col, w))
+        return lines
+
+    def get_target_points(self, id_target):
+        if id_target == 'world':
+            fr_target = self.get_frame('native')
+        else:
+            fr_target = self._targets[id_target].get_frame()
+        return fr_target.global_point(self._targets_points[id_target])
+
+    def get_target_projected(self, id_camera, id_target, rotation):
+        proj = self.get_projection(id_camera, rotation)
+        target_pts = self.get_target_points(id_target)
+
+        return proj(target_pts)
+
+    def target_mask(self, id_camera, id_target, rotation, border=2):
+        """Get image coordinate of a mask arround the target
+
+            Args:
+                border : the size of the border (in square_size units)
+        """
+        pts = self.get_target_projected(id_camera, id_target, rotation)
+        targ = self._targets[id_target]
+        bs = targ.square_size * border / self._cameras[id_camera].pixel_size_at_origin
+        proj = self.get_projection(id_camera, rotation)
+        pts = self._targets[id_target]
+        u, v = zip(*pts)
+        h,w = self._cameras[id_camera].image_shape()
+        umin, vmin, umax, vmax = (numpy.clip(min(u) - bs, 1, w),
+                                  numpy.clip(min(v) - bs, 1, h),
+                                  numpy.clip(max(u) + bs, 1, w),
+                                  numpy.clip(max(v) + bs, 1, h))
+        return [(umin,vmin), (umax, vmin), (umax, vmax), (umin, vmax)]
+
+
 
 
 class OldCalibrationCamera(object):
@@ -440,3 +655,106 @@ class OldCalibrationCamera(object):
             c._target_2_rot_z = save_class['target_2_rot_z']
 
         return c
+
+
+
+# reader for old calibration
+def normalise_angle(angle):
+    """normalise an angle to the [-pi, pi] range"""
+    angle = numpy.array(float(angle))
+    modulo = 2 * numpy.pi
+    angle %= modulo
+    # force to [0, modulo] range
+    angle = (angle + modulo) % modulo
+    return angle - numpy.where(angle > modulo / 2., modulo, 0)
+class OldCalibration(object):
+    """A class for loading, inspecting and convert old Calibration to new Calibration"""
+
+    def __init__(self, cameras, targets):
+        """ Instantiate an OldCalibration instance
+
+        Args:
+            cameras: a {id_camera: OldCalibrationCamera, ...} dict of calibrated cameras objects (see
+            OldCameraCalibration class)
+            chessboards: a {id_target: Chessboard, ...} dict of Chessboard objects (see Chessboard class in
+            chessboard.py)
+        """
+        self.cameras = cameras
+        self.targets = targets
+
+    def calibration_error(self):
+        """error (pixels) between detected target image points and reprojection of 3D target points"""
+
+        image_points = {camera: {k: v.get_corners_2d(camera) for k, v in self.targets.items()} for camera in
+                        self.cameras}
+        target_points = {k: v.get_corners_local_3d(old_style=True) for k, v in self.targets.items()}
+
+        err = 0
+        nb_pts = 0
+        target_parameters = vars(self.cameras['side'])
+        for camera in image_points:
+            for target in image_points[camera]:
+                for angle in image_points[camera][target]:
+                    cam = self.cameras[camera]
+                    pars = [target_parameters['_' + target + '_' + x] for x in ('pos_x', 'pos_y', 'pos_z',
+                                                                                'rot_x', 'rot_y', 'rot_z')]
+                    pars += [numpy.radians(cam._angle_factor * angle)]
+                    fr_target = cam.target_frame(*pars)
+                    fr_cam = cam.get_camera_frame()
+                    pix_coord = cam.get_pixel_coordinates()
+                    pts_ref = image_points[camera][target][angle]
+                    pts = pix_coord(fr_cam.local_point(fr_target.global_point(target_points[target])))
+                    nb_pts += len(pts)
+                    err += numpy.linalg.norm(pts - pts_ref, axis=1).sum()
+
+        return err, float(err) / nb_pts
+
+    def guess_new_calibration(self):
+        """Instantiate a Calibration object using fitted parameters
+
+        Returns:
+            An (unfitted) Calibration object
+        """
+        cameras = {}
+        targets = {}
+        #
+        angle_factor = self.cameras['side']._angle_factor
+        tpars = vars(self.cameras['side'])
+        for tn, target in self.targets.items():
+            w, h = target.shape
+            size = target.square_size
+            chess_origin = ((w / 2.) * size, (h / 2.) * size)
+
+            t = CalibrationFrame()
+            t._pos_x = -tpars['_' + tn + '_pos_x'] - chess_origin[0]
+            t._pos_y = tpars['_' + tn + '_pos_y'] - chess_origin[1]
+            t._pos_z = tpars['_' + tn + '_pos_z']
+            # change of definition for rot
+            t._rot_x = normalise_angle(tpars['_' + tn + '_rot_x'] - tpars['_' + tn + '_rot_y'])
+            t._rot_y = 0
+            t._rot_z = - normalise_angle(tpars['_' + tn + '_rot_z'])
+            targets[tn] = t
+
+        for cn, camera in self.cameras.items():
+            c = CalibrationCamera()
+            c._width_image = camera._cam_width_image
+            c._height_image = camera._cam_height_image
+            c._focal_length_x = camera._cam_focal_length_x
+            c._focal_length_y = camera._cam_focal_length_y
+            c._pos_x = - camera._cam_pos_x
+            c._pos_y = camera._cam_pos_y
+            c._pos_z = camera._cam_pos_z
+            if cn == 'side':
+                # origin matrix for side cameras corresponds to -pi/2 rot around x axis
+                rx = camera._cam_rot_x - numpy.pi / 2.
+                ry = camera._cam_rot_y
+                rz = camera._cam_rot_z
+            else:
+                rx = camera._cam_rot_x + numpy.pi
+                ry = camera._cam_rot_y
+                rz = camera._cam_rot_z + numpy.pi / 2.
+            c._rot_x, c._rot_y, c._rot_z = normalise_angle(rx), normalise_angle(ry), normalise_angle(rz)
+            cameras[cn] = c
+
+        return Calibration(angle_factor=angle_factor, cameras=cameras, targets=targets,
+                                 clockwise_rotation=True, reference_camera='side')
