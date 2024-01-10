@@ -21,6 +21,7 @@ parameters available for the algorithms.
     openalea.phenomenal.multi_view_reconstruction
     openalea.phenomenal.mesh
     openalea.phenomenal.segmentation
+    openalea.phenomenal.tracking
 
 API References
 ''''''''''''''
@@ -35,3 +36,4 @@ API References
     generated/openalea.phenomenal.multi_view_reconstruction.rst
     generated/openalea.phenomenal.mesh.rst
     generated/openalea.phenomenal.segmentation.rst
+    generated/openalea.phenomenal.tracking.rst
