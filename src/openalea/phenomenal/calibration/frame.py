@@ -27,6 +27,7 @@ from numpy import (zeros,
                    cross,
                    transpose,
                    sign)
+from numba import njit
 # ==============================================================================
 
 __all__ = ["x_axis",
@@ -192,6 +193,7 @@ class Frame(object):
     # change of referential in the local plane O,Ox,Oy
     #
     ###############################################
+    @njit
     def local_tensor2(self, tensor):
         """Local coordinates of a global tensor
         expressed in the local plane Ox,Oy
@@ -213,6 +215,7 @@ class Frame(object):
 
         return ret
 
+    @njit
     def global_tensor2(self, tensor):
         """Global coordinates of a local tensor
 
@@ -232,7 +235,6 @@ class Frame(object):
             ret = tensordot(fr, ret, [1, nb])
 
         return ret
-
 
 def triangle_frame(pt1, pt2, pt3):
     """Compute the local frame of a triangle
@@ -315,7 +317,7 @@ def tetrahedron_frame(pt1, pt2, pt3, pt4):
     es = cross(et, er)
     return Frame((er, es, et), pt1)
 
-
+@njit
 def mean_frame(frames):
     """Compute the mean frame of all given frames.
 
