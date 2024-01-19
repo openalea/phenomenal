@@ -2,7 +2,9 @@ import numpy as np
 
 
 def polyline_length(pl):
-    return np.sum([np.linalg.norm(np.array(pl[k]) - np.array(pl[k + 1])) for k in range(len(pl) - 1)])
+    return np.sum(
+        [np.linalg.norm(np.array(pl[k]) - np.array(pl[k + 1])) for k in
+         range(len(pl) - 1)])
 
 
 def polyline_quantile_coordinate(pl, q):
@@ -34,8 +36,8 @@ def polyline_until_z(pl, z):
 
 
 def polyline_simplification(pl, n):
-
     if len(pl) < n:
         return np.array(pl)
     else:
-        return np.array([polyline_quantile_coordinate(pl, q) for q in np.linspace(0, 1, n)])
+        return np.array(
+            [polyline_quantile_coordinate(pl, q) for q in np.linspace(0, 1, n)])
