@@ -50,6 +50,7 @@ test:
     - openalea.phenomenal.multi_view_reconstruction
     - openalea.phenomenal.object
     - openalea.phenomenal.segmentation
+    - openalea.phenomenal.tracking
   requires:
     - pytest
   source_files:
@@ -59,6 +60,7 @@ test:
     - test/test_mesh/**
     - test/test_multi_view_reconstruction/**
     - test/test_object/**
+    - test/test_tracking/**
     - test/test_segmentation/**
   commands:
     - pytest
