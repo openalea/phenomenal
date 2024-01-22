@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Phenomenal Documentation documentation build configuration file, created by
+# Phenomenal Documentation build configuration file, created by
 # sphinx-quickstart on Mon Jan 25 12:17:47 2016.
 #
 # This file is execfile()d with the current directory set to its
