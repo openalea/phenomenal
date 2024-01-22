@@ -19,19 +19,24 @@ Image
 .. autosummary::
    :toctree: generated/
 
-   show_image
-   show_images
-   show_image_with_chessboard_corners
-   show_chessboard_3d_projection_on_image
+   image
+
+Calibration
+===========
+.. autosummary::
+    :toctree: generated/
+
+    calibration
 
 3D Data
 =======
 .. autosummary::
    :toctree: generated/
 
-   Display
-   Scene
-
+   scene
+   show_basic
+   show_segmentation
+   show_skeleton
 
 """
 # ==============================================================================

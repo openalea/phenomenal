@@ -15,10 +15,12 @@ import scipy.spatial
 import collections
 import numpy
 import sklearn.neighbors
+from numba import njit
 
 import openalea.phenomenal.multi_view_reconstruction._c_mvr as c_mvr
 
 from ..object import VoxelGrid
+
 # ==============================================================================
 # Class
 
@@ -29,8 +31,9 @@ VoxelsStage = collections.namedtuple(
 
 # ==============================================================================
 
+@njit(cache=True)
 def get_voxels_corners(voxels_position, voxels_size):
-    """ According the voxels position and their size, return a numpy array
+    """ According to the voxels position and their size, return a numpy array
     containing for each input voxels the position of the 8 corners.
 
     Parameters
@@ -73,7 +76,6 @@ def get_voxels_corners(voxels_position, voxels_size):
 def get_bounding_box_voxel_projected(voxels_position,
                                      voxels_size,
                                      projection):
-
     """ Compute the bounding box value according the radius, angle and
     calibration parameters of point_3d projection
 
@@ -106,8 +108,8 @@ def get_bounding_box_voxel_projected(voxels_position,
 
     return bbox
 
-# ==============================================================================
 
+# ==============================================================================
 
 def split_voxels_in_eight(voxels):
     """ Split each voxel in 8 en return the numpy.array position
@@ -129,8 +131,8 @@ def split_voxels_in_eight(voxels):
     ----------
     voxels : Voxels
         Where position is a numpy.array([[x, y, z], ...] containing the center
-        position of each voxels and size the diameter size value (float) of each
-        voxels.
+        position of each voxel and size the diameter size value (float) of each
+        voxel.
 
     Returns
     -------
@@ -205,9 +207,9 @@ def voxels_is_visible_in_image(voxels_position,
         numpy.array([[x, y], ...])
 
     inclusive: Describe if the voxels projection are out of the image,
-    their are considering like still visible
+    they are considered like still visible
 
-    image_int: Integrale image of the binary image (optimization)
+    image_int: Integral image of the binary image (optimization)
 
 
     Returns
@@ -225,7 +227,7 @@ def voxels_is_visible_in_image(voxels_position,
     cond = ((r[:, 0] >= 0) &
             (r[:, 1] >= 0) &
             (r[:, 0] < length) &
-            (r[:,  1] < height))
+            (r[:, 1] < height))
 
     rr = r[cond].astype(int)
 
@@ -260,7 +262,7 @@ def voxels_is_visible_in_image(voxels_position,
     (min_xy_max_xy[:, 1])[min_xy_max_xy[:, 1] >= height] = height - 1
     (min_xy_max_xy[:, 3])[min_xy_max_xy[:, 3] >= height] = height - 1
     # Under zero limit
-    min_xy_max_xy[:, 0:2] -= 1 # For integral image optimization
+    min_xy_max_xy[:, 0:2] -= 1  # For integral image optimization
     min_xy_max_xy[min_xy_max_xy < 0] = 0
 
     # ==========================================================================
@@ -268,7 +270,7 @@ def voxels_is_visible_in_image(voxels_position,
     for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
 
         if (image_int[y_max, x_max] + image_int[y_min, x_min]
-        - image_int[y_min, x_max] - image_int[y_max, x_min]) > 0:
+            - image_int[y_min, x_max] - image_int[y_max, x_min]) > 0:
             bb[i] = 1
 
     # for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
@@ -316,7 +318,7 @@ def kept_visible_voxel(voxels_position,
     out : VoxelsStage
     """
 
-    photo_consistent = numpy.zeros((len(voxels_position), ),  dtype=int)
+    photo_consistent = numpy.zeros((len(voxels_position),), dtype=int)
     no_kept = None
 
     for i, image_view in enumerate(image_views):
@@ -346,8 +348,8 @@ def kept_visible_voxel(voxels_position,
 
     return VoxelsStage(consistent, inconsistent)
 
-# ==============================================================================
 
+# ==============================================================================
 
 def have_image_ref(image_views):
     for iv in image_views:
@@ -357,7 +359,6 @@ def have_image_ref(image_views):
 
 
 def create_groups(image_views, inconsistent):
-
     groups = collections.defaultdict(list)
     kept_groups = collections.defaultdict(list)
 
@@ -397,7 +398,6 @@ def create_groups(image_views, inconsistent):
 
 
 def check_groups(neigh, inconsistent, groups, nb_distance):
-
     if len(groups.values()) == 0:
         return None
 
@@ -416,7 +416,6 @@ def check_groups(neigh, inconsistent, groups, nb_distance):
 
 
 def reconstruction_inconsistent(image_views, stages, attractor=None):
-
     for iv in image_views:
         if iv.image_ref is not None:
             im = project_voxel_centers_on_image(stages[-1].consistent.position,
@@ -473,6 +472,7 @@ def reconstruction_inconsistent(image_views, stages, attractor=None):
 
 # ==============================================================================
 
+@njit(cache=True)
 def get_integrale_image(img):
     a = numpy.zeros_like(img, dtype=int)
     a[img > 0] = 1
@@ -543,11 +543,9 @@ def reconstruction_3d(image_views,
 
     int_images = list()
     for i, image_view in enumerate(image_views):
-
         a = numpy.zeros_like(image_view.image, dtype=numpy.uint32)
         c_mvr.integral_image(image_view.image, a)
         int_images.append(a)
-
 
     stage = VoxelsStage(Voxels(voxels_position, list_voxels_size[0]), None)
     stages = [stage]
@@ -558,7 +556,7 @@ def reconstruction_3d(image_views,
 
         voxels = split_voxels_in_eight(stage.consistent)
 
-        #print(voxels.size)
+        # print(voxels.size)
 
         if voxels.size < 512:
             stage = kept_visible_voxel(
@@ -576,6 +574,7 @@ def reconstruction_3d(image_views,
                                                         attractor=attractor)
 
     return VoxelGrid(consistent_stages[-1].position, consistent_stages[-1].size)
+
 
 # ==============================================================================
 
@@ -686,12 +685,12 @@ def project_voxels_position_on_image(voxels_position,
 
     return img
 
-# ==============================================================================
 
+# ==============================================================================
 
 def image_error(img_ref, img_src, precision=2):
     """
-    Return false position and true negative result from the comparaison on 
+    Return false position and true negative result from the comparison on
     two binaries images
     """
 
@@ -704,7 +703,6 @@ def image_error(img_ref, img_src, precision=2):
     true_negative = round(numpy.count_nonzero(true_negative) * 100.0 / nb_ref2,
                           precision)
     # true_negative = numpy.bitwise_and(img_ref == 0, img_src == 0)
-
 
     false_positive = round(numpy.count_nonzero(img[img < 0]) * 100.0 / nb_ref2,
                            precision)
@@ -743,7 +741,6 @@ def reconstruction_error(voxels_grid, image_views):
     sum_false_positive = 0
     sum_false_negative = 0
     for image_view in image_views:
-
         img_src = project_voxel_centers_on_image(
             voxels_grid.voxels_position,
             voxels_grid.voxels_size,

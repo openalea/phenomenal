@@ -1410,7 +1410,7 @@ def quaternion_real(quaternion):
     3.0
 
     """
-    return float(quaternion[0])
+    return numpy.float64(quaternion[0])
 
 
 def quaternion_imag(quaternion):
@@ -1564,7 +1564,7 @@ class Arcball(object):
             Radius of trackball in window coordinates.
 
         """
-        self._radius = float(radius)
+        self._radius = numpy.float64(radius)
         self._center[0] = center[0]
         self._center[1] = center[1]
 
@@ -1844,7 +1844,6 @@ def inverse_matrix(matrix):
 
     """
     return numpy.linalg.inv(matrix)
-
 
 def concatenate_matrices(*matrices):
     """Return concatenation of series of transformation matrices.

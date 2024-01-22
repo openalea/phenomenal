@@ -37,7 +37,7 @@ def max_distance_in_points(points):
 
 def max_distance_from_point_to_points(points, src_point):
     """
-    Compute and return the maximal euclidean distance between src_point and
+    Compute and return the maximal Euclidean distance between src_point and
     the most separate point from him in points.
 
     :param src_point: 3-tuple position of src_points: (x, y, z)

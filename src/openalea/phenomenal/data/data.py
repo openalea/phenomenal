@@ -9,26 +9,29 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
+import importlib
 import json
 import numpy
 import cv2
 import glob
 import os
 import collections
-import pkg_resources
 import pathlib
 
-
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
-from openalea.phenomenal.calibration import (Chessboard, Chessboards, Calibration, CalibrationSetup,
+from openalea.phenomenal.calibration import (Chessboard, Chessboards,
+                                             Calibration, CalibrationSetup,
                                              OldCalibrationCamera)
 from openalea.phenomenal.object import VoxelGrid
+
 # ==============================================================================
 
 datadir = os.path.dirname(__file__).split('src')[0]
 
+
 def data_dir(name_dir, dtype='bin'):
     return os.path.join(datadir, 'examples', name_dir, '{}/'.format(dtype))
+
 
 def _path_images(name_dir, dtype="bin"):
     """ According to the plant number return a dict[id_camera][angle] containing
@@ -44,11 +47,12 @@ def _path_images(name_dir, dtype="bin"):
     d : dict of dict of string
         dict[id_camera][angle] = filename
     """
-    data_directory = os.path.join(datadir, 'examples', name_dir, '{}/'.format(dtype))
+    data_directory = os.path.join(datadir, 'examples', name_dir,
+                                  '{}/'.format(dtype))
 
     d = collections.defaultdict(dict)
     for id_camera in ["side", "top"]:
-        filenames = glob.glob(os.path.join(data_directory, id_camera, '*'))
+        filenames = glob.glob(os.path.join(str(data_directory), id_camera, '*'))
         for filename in filenames:
             angle = int(pathlib.Path(filename).stem)
             d[id_camera][angle] = filename
@@ -99,8 +103,8 @@ def raw_images(name_dir):
     d = path_raw_images(name_dir)
     for id_camera in d:
         for angle in d[id_camera]:
-             img = cv2.imread(d[id_camera][angle], cv2.IMREAD_COLOR)
-             d[id_camera][angle] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = cv2.imread(d[id_camera][angle], cv2.IMREAD_COLOR)
+            d[id_camera][angle] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return d
 
 
@@ -121,7 +125,6 @@ def bin_images(name_dir):
     return d
 
 
-
 def chessboard_images(name_dir):
     """
     According to the plant number return a dict[id_camera][angle] of
@@ -138,6 +141,7 @@ def chessboard_images(name_dir):
             d[id_camera][angle] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return d,
 
+
 # ==============================================================================
 
 
@@ -148,12 +152,13 @@ def chessboards(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(datadir, 'examples', name_dir, 'chessboard/points/')
+    data_directory = os.path.join(datadir, 'examples', name_dir,
+                                  'chessboard/points/')
 
     chessboards = list()
     for id_chessboard in [1, 2]:
         chessboards.append(Chessboard.load(
-            os.path.join(data_directory,
+            os.path.join(str(data_directory),
                          "chessboard_{}.json".format(id_chessboard))))
 
     return chessboards
@@ -166,16 +171,17 @@ def image_points(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(datadir, 'examples', name_dir, 'chessboard/points/')
+    data_directory = os.path.join(datadir, 'examples', name_dir,
+                                  'chessboard/points/')
 
     chessboards = {}
-    keep = [42] + list(range(0,360,30))
+    keep = [42] + list(range(0, 360, 30))
     for id_chessboard in ['target_1', 'target_2']:
         chessboard = Chessboard.load(
-            os.path.join(data_directory,
+            os.path.join(str(data_directory),
                          "image_points_{}.json".format(id_chessboard)))
         for rotation in list(chessboard.image_points['side']):
-            if not rotation in keep:
+            if rotation not in keep:
                 chessboard.image_points['side'].pop(rotation)
         chessboards[id_chessboard] = chessboard
 
@@ -207,15 +213,17 @@ def do_calibration(name_dir):
     # distance and inclination of objects
     cameras_guess = {'side': (5500, 90), 'top': (2500, 0)}
     targets_guess = {'target_1': (100, 45), 'target_2': (100, 45)}
-    setup = CalibrationSetup(cameras_guess, targets_guess, image_resolutions, image_sizes, facings,
+    setup = CalibrationSetup(cameras_guess, targets_guess, image_resolutions,
+                             image_sizes, facings,
                              clockwise_rotation=True)
-    cameras, targets = setup.setup_calibration(reference_camera='side', reference_target='target_1')
+    cameras, targets = setup.setup_calibration(reference_camera='side',
+                                               reference_target='target_1')
     calibration = Calibration(targets=targets, cameras=cameras,
-                              target_points=target_points, image_points=image_points,
+                              target_points=target_points,
+                              image_points=image_points,
                               reference_camera='side', clockwise_rotation=True)
     calibration.calibrate()
     calibration.dump(os.path.join(data_directory, 'calibration_cameras.json'))
-
 
 
 def calibrations(name_dir):
@@ -236,6 +244,7 @@ def calibrations(name_dir):
 
     return calibration
 
+
 def new_calibrations(name_dir):
     """
     According to name_dir return a camera
@@ -243,9 +252,9 @@ def new_calibrations(name_dir):
 
     """
 
-    file_name = os.path.join(name_dir, 'calibration', 'calibration_cameras.json')
+    file_name = os.path.join(name_dir, 'calibration',
+                             'calibration_cameras.json')
     return Calibration.load(file_name)
-
 
 
 def voxel_grid(name_dir, plant_number=1, voxels_size=4):
@@ -264,6 +273,7 @@ def voxel_grid(name_dir, plant_number=1, voxels_size=4):
 
     return vg
 
+
 # ==============================================================================
 
 
@@ -276,17 +286,17 @@ def tutorial_data_binarization_mask():
     :return: list of image
     """
 
-    data_directory = pkg_resources.resource_filename(
+    data_directory = importlib.resources(
         'openalea.phenomenal', 'data/plant_6/mask/')
 
     masks = list()
     for filename in ["mask_hsv.png",
                      "mask_mean_shift.png"]:
-
         masks.append(cv2.imread(os.path.join(data_directory, filename),
                                 flags=cv2.IMREAD_GRAYSCALE))
 
     return masks
+
 
 # ==============================================================================
 
@@ -316,6 +326,7 @@ def synthetic_plant(name_dir, registration_point=(0, 0, 750)):
         meta_data = json.load(infile)
 
     return vertices, faces, meta_data
+
 
 # ==============================================================================
 

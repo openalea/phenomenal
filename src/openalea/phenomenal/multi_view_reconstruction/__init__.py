@@ -19,11 +19,8 @@ Main's function
 .. autosummary::
    :toctree: generated/
 
-    reconstruction_3d
-    project_voxel_centers_on_image
-    project_voxels_position_on_image
-    image_error
-    reconstruction_error
+    multi_view_reconstruction
+    _multi_view_reconstruction_octree
 
 """
 # ==============================================================================

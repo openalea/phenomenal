@@ -15,8 +15,9 @@ import scipy.integrate
 
 from .plane_interception import (intercept_points_along_path_with_planes,
                                  max_distance_in_points)
-# ==============================================================================
 
+
+# ==============================================================================
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
@@ -53,7 +54,6 @@ def get_max_distance(node, nodes):
 
 
 def compute_width_organ(closest_nodes):
-
     width = list()
     for nodes in closest_nodes:
         width.append(max_distance_in_points(nodes))
@@ -62,7 +62,6 @@ def compute_width_organ(closest_nodes):
 
 
 def compute_curvilinear_abscissa(polyline, length):
-
     v = 0.0
     curvilinear_abscissa = [0]
     for n1, n2 in zip(polyline, polyline[1:]):
@@ -73,7 +72,6 @@ def compute_curvilinear_abscissa(polyline, length):
 
 
 def compute_length_organ(polyline):
-
     length = 0
     for n1, n2 in zip(polyline, polyline[1:]):
         length += numpy.linalg.norm(numpy.array(n1) - numpy.array(n2))
@@ -82,7 +80,6 @@ def compute_length_organ(polyline):
 
 
 def compute_inclination_angle(polyline, step=1):
-
     if not len(polyline) > step:
         return None
 
@@ -109,7 +106,6 @@ def compute_inclination_angle(polyline, step=1):
 
 
 def compute_fitted_width(width, curvilinear_abscissa):
-
     x = numpy.array(curvilinear_abscissa)
     XX = numpy.vstack((x ** 2, x)).T
     p_all = numpy.linalg.lstsq(XX, width[::-1], rcond=None)[0]
@@ -119,7 +115,6 @@ def compute_fitted_width(width, curvilinear_abscissa):
 
 
 def compute_vector_mean(polyline):
-
     x, y, z = polyline[0]
 
     vectors = list()
@@ -135,7 +130,6 @@ def compute_vector_mean(polyline):
 
 
 def compute_azimuth_angle(polyline):
-
     vector_mean = compute_vector_mean(polyline)
     x, y, z = vector_mean
     azimuth_angle = math.degrees(math.atan2(y, x))
@@ -144,7 +138,6 @@ def compute_azimuth_angle(polyline):
 
 
 def compute_insertion_angle(polyline, stem_vector_mean):
-
     x, y, z = polyline[0]
 
     vectors = list()
@@ -176,12 +169,13 @@ def voxel_base_height(vo, polyline, min_distance=30):
     # all voxels
     vxs = numpy.array(list(vo.voxels_position()))
 
-    # only voxels with distance to polyline lowest point < min_distance
+    # only voxels with distance to polyline the lowest point < min_distance
     vxs2 = []
     for x, y, z in vxs:
         # TODO : approx ?
         # TODO : param min_distance depending on leaf length ?
-        x_stem, y_stem, z_stem = polyline[numpy.argmin(numpy.abs(polyline[:, 2] - z))]
+        x_stem, y_stem, z_stem = polyline[
+            numpy.argmin(numpy.abs(polyline[:, 2] - z))]
         if numpy.sqrt((x_stem - x) ** 2 + (y_stem - y) ** 2) < min_distance:
             vxs2.append([x, y, z])
     vxs2 = numpy.array(vxs2)
@@ -195,7 +189,6 @@ def voxel_base_height(vo, polyline, min_distance=30):
 
 
 def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
-
     if len(polyline) <= 1:
         return None
 
@@ -214,15 +207,15 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
 
     organ.info['pm_width_max'] = max(width)
     organ.info['pm_width_mean'] = sum(width) / float(len(width))
-    organ.info['pm_surface'] = scipy.integrate.simps(
-        width, curvilinear_abscissa)
+    organ.info['pm_surface'] = scipy.integrate.simpson(
+        y= width, x=curvilinear_abscissa)
 
     fitted_width = compute_fitted_width(width, normalized_curvilinear_abscissa)
     organ.info['pm_fitted_width_max'] = max(fitted_width)
-    organ.info['pm_fitted_width_mean'] = (sum(fitted_width) /float(len(
+    organ.info['pm_fitted_width_mean'] = (sum(fitted_width) / float(len(
         fitted_width)))
-    organ.info['pm_fitted_surface'] = scipy.integrate.simps(
-        fitted_width, curvilinear_abscissa)
+    organ.info['pm_fitted_surface'] = scipy.integrate.simpson(
+        y=fitted_width, x=curvilinear_abscissa)
     # Compute azimuth
     azimuth_angle, vector_mean = compute_azimuth_angle(polyline)
     organ.info['pm_vector_mean'] = vector_mean
@@ -242,7 +235,6 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
 
 
 def maize_stem_analysis(vo, voxels_size, distance_plane=0.75):
-
     voxels_position = vo.voxels_position()
     polyline = vo.get_longest_segment().polyline
 
@@ -267,7 +259,6 @@ def maize_stem_analysis(vo, voxels_size, distance_plane=0.75):
 def maize_mature_leaf_analysis(vo, voxels_size,
                                stem_vector_mean,
                                distance_plane=0.75):
-
     voxels_position = vo.voxels_position()
     polyline = vo.get_longest_segment().polyline
 
@@ -303,7 +294,6 @@ def maize_mature_leaf_analysis(vo, voxels_size,
 
 
 def maize_growing_leaf_analysis_real_length(maize_segmented, vo):
-
     voxels = maize_segmented.get_voxels_position(except_organs=[vo])
     longest_polyline = vo.get_longest_segment().polyline
     voxels = set(voxels).intersection(longest_polyline)
@@ -315,7 +305,6 @@ def maize_growing_leaf_analysis(vo, voxels_size,
                                 stem_vector_mean,
                                 voxels,
                                 distance_plane=0.75):
-
     voxels_position = vo.voxels_position()
     polyline = vo.get_longest_segment().polyline
     vo.info['pm_full_length'] = compute_length_organ(polyline)
@@ -352,7 +341,7 @@ def maize_growing_leaf_analysis(vo, voxels_size,
 
     if vo is not None:
         vo.info['pm_length_speudo_stem'] = (
-            vo.info['pm_length_with_speudo_stem'] - vo.info['pm_length'])
+                vo.info['pm_length_with_speudo_stem'] - vo.info['pm_length'])
 
     return vo
 
@@ -376,7 +365,7 @@ def maize_analysis(maize_segmented):
         vo.info['pm_label'] = vo.label
         vo.info['pm_sub_label'] = vo.sub_label
         vo.info['pm_voxels_volume'] = (
-            len(vo.voxels_position()) * maize_segmented.voxels_size ** 3)
+                len(vo.voxels_position()) * maize_segmented.voxels_size ** 3)
 
     # ==========================================================================
 
@@ -386,17 +375,19 @@ def maize_analysis(maize_segmented):
     # ==========================================================================
 
     mature_leafs = list()
-    stem_polyline = numpy.array(list(maize_segmented.get_stem().get_highest_polyline().polyline))
+    stem_polyline = numpy.array(
+        list(maize_segmented.get_stem().get_highest_polyline().polyline))
     for vo_mature_leaf in maize_segmented.get_mature_leafs():
 
         vo_mature_leaf = maize_mature_leaf_analysis(
             vo_mature_leaf, voxels_size, vo_stem.info['pm_vector_mean'])
-        
+
         if vo_mature_leaf is None:
             continue
 
         if 'pm_z_base' in vo_mature_leaf.info:
-            vo_mature_leaf.info['pm_z_base_voxel'] = voxel_base_height(vo_mature_leaf, stem_polyline)[2]
+            vo_mature_leaf.info['pm_z_base_voxel'] = \
+            voxel_base_height(vo_mature_leaf, stem_polyline)[2]
 
         mature_leafs.append((vo_mature_leaf, vo_mature_leaf.info["pm_z_base"]))
     mature_leafs.sort(key=lambda x: x[1])
@@ -405,7 +396,6 @@ def maize_analysis(maize_segmented):
 
     growing_leafs = list()
     for vo_growing_leaf in maize_segmented.get_growing_leafs():
-
         z = maize_growing_leaf_analysis_real_length(maize_segmented,
                                                     vo_growing_leaf)
         growing_leafs.append((vo_growing_leaf, z))

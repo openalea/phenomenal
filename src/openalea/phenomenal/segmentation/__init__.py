@@ -19,18 +19,21 @@ Skeletonization
 .. autosummary::
     :toctree: generated/
 
-    connect_all_node_with_nearest_neighbors
-    create_graph
-    graph_from_voxel_grid
-    skeletonize
-    segment_reduction
+    graph
+    image_3d_routines
+    _skeleton_octree
+    skeleton_phenomenal
+    skeleton_thinning
 
 Maize Segmentation
 ==================
 .. autosummary::
     :toctree: generated/
 
+    peak_detection
+    plane_interception
     maize_segmentation
+    maize_stem_detection
     maize_analysis
 """
 # ==============================================================================
