@@ -57,6 +57,7 @@ test:
   requires:
     - pytest
   source_files:
+    - examples/data/**
     - test/data/**
     - test/test_calibration/**
     - test/test_image/**
