@@ -28,7 +28,7 @@ requirements:
 
   run:
     - python
-    - numpy>1.22
+    - numpy
     - cython
     - numba
     - scipy
