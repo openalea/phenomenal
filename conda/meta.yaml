@@ -23,12 +23,12 @@ requirements:
     - python
     - setuptools
     - cython    
-    - numpy > 1.22
+    - numpy
     - scipy
 
   run:
     - python
-    - numpy > 1.22
+    - numpy
     - cython
     - numba
     - scipy
