@@ -208,14 +208,14 @@ def organ_analysis(organ, polyline, closest_nodes, stem_vector_mean=None):
     organ.info['pm_width_max'] = max(width)
     organ.info['pm_width_mean'] = sum(width) / float(len(width))
     organ.info['pm_surface'] = scipy.integrate.simpson(
-        width, curvilinear_abscissa)
+        y= width, x=curvilinear_abscissa)
 
     fitted_width = compute_fitted_width(width, normalized_curvilinear_abscissa)
     organ.info['pm_fitted_width_max'] = max(fitted_width)
     organ.info['pm_fitted_width_mean'] = (sum(fitted_width) / float(len(
         fitted_width)))
     organ.info['pm_fitted_surface'] = scipy.integrate.simpson(
-        fitted_width, curvilinear_abscissa)
+        y=fitted_width, x=curvilinear_abscissa)
     # Compute azimuth
     azimuth_angle, vector_mean = compute_azimuth_angle(polyline)
     organ.info['pm_vector_mean'] = vector_mean
