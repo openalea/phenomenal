@@ -9,13 +9,14 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import time
-import vtk
 import math
-import numpy
 from threading import Lock
 
+import numpy
+import vtk
+
 from ..calibration.transformations import rotation_matrix
+
 
 # ==============================================================================
 

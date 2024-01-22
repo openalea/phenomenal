@@ -17,13 +17,13 @@ Data Structure
 .. autosummary::
    :toctree: generated/
 
-   Image3D
-   ImageView
-   VoxelGrid
-   VoxelSegment
-   VoxelOrgan
-   VoxelSkeleton
-   VoxelSegmentation
+   image3D
+   imageView
+   voxelGrid
+   voxelSegment
+   voxelOrgan
+   voxelSkeleton
+   voxelSegmentation
 """
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
