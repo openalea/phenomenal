@@ -24,10 +24,13 @@ def test_read_write():
     voxels_position = numpy.array(list(numpy.ndindex((10, 15, 5)))) * 16
     src_vg = phm_obj.VoxelGrid(voxels_position, voxels_size)
 
-    for ext in ('npz', 'json', 'csv'):
+    for ext in ('npz', 'json', 'csv', 'xyz'):
         filename = 'test.' + ext
         src_vg.write(filename)
-        dist_vg = phm_obj.VoxelGrid.read(filename)
+        if ext == 'xyz':
+            dist_vg = phm_obj.VoxelGrid.read(filename, voxels_size)
+        else:
+            dist_vg = phm_obj.VoxelGrid.read(filename)
         os.remove(filename)
 
         assert src_vg.voxels_size == dist_vg.voxels_size

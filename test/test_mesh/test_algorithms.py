@@ -27,7 +27,7 @@ def test_mesh_error_1():
         image_3d = phm_obj.VoxelGrid(voxels_position, voxels_size).to_image_3d()
 
     except Exception as e:
-        assert type(e) == ValueError
+        assert isinstance(e, ValueError)
     else:
         assert False
 
@@ -42,7 +42,7 @@ def test_mesh_error_2():
         vertices, faces = phm_mesh.meshing(image_3d)
 
     except Exception as e:
-        assert type(e) == ValueError
+        assert isinstance(e, ValueError)
     else:
         assert False
 

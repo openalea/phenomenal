@@ -17,15 +17,14 @@ import os
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.multi_view_reconstruction as phm_mvr
+
 # ==============================================================================
 
 plant_1_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                        "../data/plant_1")
-
+                           "../data/plant_1")
 
 
 def test_split_voxel_centers_in_eight_1():
-
     voxels = phm_mvr.Voxels(numpy.array([[0.0, 0.0, 0.0]]), 16)
     result_voxels = phm_mvr.split_voxels_in_eight(voxels)
 
@@ -51,7 +50,6 @@ def test_split_voxel_centers_in_eight_2():
 
 
 def test_get_voxels_corners():
-
     voxels_position = numpy.array([[0.0, 0.0, 0.0],
                                    [4.0, 4.0, 4.0]])
     voxels_size = 16
@@ -76,11 +74,11 @@ def test_get_voxels_corners():
 
     assert numpy.array_equal(ref, res)
 
+
 # ==============================================================================
 
 
 def test_get_bounding_box_voxel_projected_1():
-
     voxels_position = numpy.array([[0, 0, 0]])
     voxel_size = 20
 
@@ -95,7 +93,6 @@ def test_get_bounding_box_voxel_projected_1():
 
 
 def test_get_bounding_box_voxel_projected_2():
-
     plant_number = 1
     angle = 0
     calibrations = phm_data.calibrations(plant_1_dir)
@@ -118,7 +115,6 @@ def test_get_bounding_box_voxel_projected_2():
 
 
 def test_split_and_projection():
-
     plant_number = 1
     angle = 0
     calibrations = phm_data.calibrations(plant_1_dir)
@@ -162,7 +158,7 @@ def get_image_views_cube_projected(with_ref=False):
                                           voxels_position=(0, 0, 0))
 
     assert len(voxels_position) == 1000
-    volume = len(voxels_position) * (10**3)
+    volume = len(voxels_position) * (10 ** 3)
     assert volume == 1000000
 
     # ==========================================================================
@@ -193,7 +189,6 @@ def get_image_views_cube_projected(with_ref=False):
 
 
 def test_reconstruction_3d_1():
-
     # Load images binarize
     bin_images = phm_data.bin_images(plant_1_dir)
     calibrations = phm_data.calibrations(plant_1_dir)
