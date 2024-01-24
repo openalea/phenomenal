@@ -57,9 +57,9 @@ Conda environement : https://docs.conda.io/en/latest/index.html
 #### From source
 
     # Install dependency with conda
-    conda create -n phm -c conda-forge python=3
+    conda create -n phm -c conda-forge python
     conda activate phm
-    conda install -c conda-forge -c openalea cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan=0.10
+    conda install -c conda-forge -c numba cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan=0.10
 
     # Load phenomenal and install
     git clone https://github.com/openalea/phenomenal.git
