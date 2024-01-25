@@ -46,8 +46,11 @@ dynamic = ["version", "readme"]
 version = {attr = "openalea.phenomenal.__version__"}
 readme = {file = ["README.md"]}
 
+[options.package_data]
+binaries = ["**/*.so"]
+
 [tool.setuptools.packages.find]
 where = ["src"]  # list of folders that contain the packages (["."] by default)
-include = ["openalea.phenomenal*"]  # package names should match these glob patterns (["*"] by default)
+include = ["openalea.phenomenal*", "**/*.so"]  # package names should match these glob patterns (["*"] by default)
 exclude = ["test*"]  # exclude packages matching these glob patterns (empty by default)
 namespaces = true  # to disable scanning PEP 420 namespaces (true by default)
