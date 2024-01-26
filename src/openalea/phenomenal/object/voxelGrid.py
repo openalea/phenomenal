@@ -16,11 +16,14 @@ import numpy
 import csv
 
 from .image3D import Image3D
+
+
 # ==============================================================================
 
 
 class NumpyEncoder(json.JSONEncoder):
     """ Special json encoder for numpy types """
+
     def default(self, obj):
         if isinstance(obj, numpy.integer):
             return int(obj)
@@ -116,25 +119,24 @@ class VoxelGrid(object):
     # ==========================================================================
 
     def to_image_3d(self):
-            (x_min, y_min, z_min), (x_max, y_max, z_max) = self.bounding_box()
+        (x_min, y_min, z_min), (x_max, y_max, z_max) = self.bounding_box()
 
-            len_x = int((x_max - x_min) / self.voxels_size + 1)
-            len_y = int((y_max - y_min) / self.voxels_size + 1)
-            len_z = int((z_max - z_min) / self.voxels_size + 1)
+        len_x = int((x_max - x_min) / self.voxels_size + 1)
+        len_y = int((y_max - y_min) / self.voxels_size + 1)
+        len_z = int((z_max - z_min) / self.voxels_size + 1)
 
-            image_3d = Image3D.zeros((len_x, len_y, len_z),
-                                     dtype=bool,
-                                     voxels_size=self.voxels_size,
-                                     world_coordinate=(x_min, y_min, z_min))
+        image_3d = Image3D.zeros((len_x, len_y, len_z),
+                                 dtype=bool,
+                                 voxels_size=self.voxels_size,
+                                 world_coordinate=(x_min, y_min, z_min))
 
-            bound_min = numpy.array((x_min, y_min, z_min))
-            vs_pos = numpy.array(self.voxels_position)
+        bound_min = numpy.array((x_min, y_min, z_min))
+        vs_pos = numpy.array(self.voxels_position)
 
-            r = ((vs_pos - bound_min) / self.voxels_size).astype(int)
-            image_3d[r[:, 0], r[:, 1], r[:, 2]] = 1
+        r = ((vs_pos - bound_min) / self.voxels_size).astype(int)
+        image_3d[r[:, 0], r[:, 1], r[:, 2]] = 1
 
-            return image_3d
-
+        return image_3d
 
     @staticmethod
     def from_image_3d(image_3d, voxels_value=1,
@@ -158,7 +160,6 @@ class VoxelGrid(object):
 
         return VoxelGrid(voxels_position, voxels_size)
 
-
     # ==========================================================================
     # READ / WRITE
     # ==========================================================================
@@ -172,11 +173,13 @@ class VoxelGrid(object):
             return self.write_to_json(filename)
         if ext == "csv":
             return self.write_to_csv(filename)
+        if ext == "xyz":
+            return self.write_to_xyz(filename)
 
         raise ValueError("No extension")
 
     @staticmethod
-    def read(filename):
+    def read(filename, voxel_size=None):
         ext = filename.split(".")[-1]
 
         if ext == "npz":
@@ -185,6 +188,8 @@ class VoxelGrid(object):
             return VoxelGrid.read_from_json(filename)
         if ext == "csv":
             return VoxelGrid.read_from_csv(filename)
+        if ext == "xyz":
+            return VoxelGrid.read_from_xyz(filename, voxel_size)
 
         raise ValueError("No extension")
 
@@ -204,7 +209,6 @@ class VoxelGrid(object):
             os.makedirs(os.path.dirname(filename))
 
         with open(filename, 'w') as f:
-
             data = dict()
             data['voxels_size'] = self.voxels_size
             vp = list(map(tuple, self.voxels_position))

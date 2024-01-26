@@ -1,6 +1,6 @@
 package:
   name: openalea.phenomenal
-  version: "1.7.1"
+  version: "1.9.2"
 
 source:
   path: ..
@@ -10,14 +10,17 @@ build:
   preserve_egg_dir: True
   string: phenomenal
   script:
-    - {{ PYTHON }} setup.py install --single-version-externally-managed --record record.txt
+    - {{ PYTHON }} setup.py install #--single-version-externally-managed --record record.txt
 
 requirements:
 
   build:
     - {{ compiler('c') }}
     - {{ compiler("cxx") }}
-    
+    - python 
+    - setuptools
+    - numpy
+    - cython
 
   host:
     - python
@@ -29,14 +32,17 @@ requirements:
   run:
     - python
     - numpy
+    - cython
+    - numba
     - scipy
     - scikit-image
     - scikit-learn
-    - networkx<=2.3
+    - networkx
     - opencv [win or linux]
     - opencv!=4.1.2 [osx]
     - matplotlib
     - vtk
+    - skan=0.10
     - pywin32 [win]
 
 test:
@@ -50,15 +56,18 @@ test:
     - openalea.phenomenal.multi_view_reconstruction
     - openalea.phenomenal.object
     - openalea.phenomenal.segmentation
+    - openalea.phenomenal.tracking
   requires:
     - pytest
   source_files:
+    - examples/data/**
     - test/data/**
     - test/test_calibration/**
     - test/test_image/**
     - test/test_mesh/**
     - test/test_multi_view_reconstruction/**
     - test/test_object/**
+    - test/test_tracking/**
     - test/test_segmentation/**
   commands:
     - pytest

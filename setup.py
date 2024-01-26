@@ -18,16 +18,12 @@
 # ==============================================================================
 import numpy
 from Cython.Build import cythonize
-from setuptools import setup, find_packages, Extension, Command
+from setuptools import setup, find_namespace_packages, Extension
 # ==============================================================================
 
 namespace = "openalea"
 pkg_root_dir = 'src'
-packages = [pkg for pkg in find_packages(pkg_root_dir)]
-top_pkgs = [pkg for pkg in packages if len(pkg.split('.')) <= 2]
-package_dir = dict([('', pkg_root_dir)] +
-                   [(pkg, pkg_root_dir + "/" + pkg.replace('.', '/'))
-                    for pkg in top_pkgs])
+packages = find_namespace_packages(where='src', include=['openalea.*'])
 
 
 extentions = [
@@ -43,9 +39,13 @@ extentions = [
         language="c++")
         ]
 
+version = {}
+with open("src/openalea/phenomenal/version.py") as fp:
+    exec(fp.read(), version)
+
 setup(
     name="openalea.phenomenal",
-    version="1.8.1",
+    version=version["__version__"],
     description="",
     long_description="",
 
@@ -66,7 +66,7 @@ setup(
 
     # package installation
     packages=packages,
-    package_dir=package_dir,
+    package_dir={'': 'src'},
     zip_safe=False,
     ext_modules=cythonize(extentions),
 

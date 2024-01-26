@@ -19,27 +19,30 @@ Target & Chessboard
 .. autosummary::
    :toctree: generated/
 
-   Target
-   Chessboard
+   chessboard
 
 Calibration
 ===========
 .. autosummary::
    :toctree: generated/
 
-   CalibrationCamera
-   CalibrationCameraTop
-   CalibrationCameraSideWith2TargetYXZ
+   calibration
+   calibration_manual
+   calibration_opencv
 
 Frame
 =====
 .. autosummary::
    :toctree: generated/
 
-    Frame
-    x_axis
-    y_axis
-    z_axis
+    frame
+
+Transformations
+================
+.. autosummary::
+   :toctree: generated/
+
+    transformations
 """
 # ==============================================================================
 from __future__ import division, print_function, absolute_import

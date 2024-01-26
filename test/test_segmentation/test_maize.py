@@ -16,11 +16,21 @@ import os
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.segmentation as phm_seg
+
+
 # ==============================================================================
 
 
-def test_maize():
+def test_detect_stem_tip():
+    voxel_grid = phm_data.random_voxel_grid(voxels_size=32)
 
+    graph = phm_seg.graph_from_voxel_grid(voxel_grid)
+    voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph)
+    detection = phm_seg.detect_stem_tip(voxel_skeleton, graph, n_candidates=1)
+    assert detection > 0
+
+
+def test_maize():
     voxel_grid = phm_data.random_voxel_grid(voxels_size=32)
 
     graph = phm_seg.graph_from_voxel_grid(voxel_grid)
@@ -33,6 +43,7 @@ def test_maize():
     vms.write_to_json_gz(filename)
     vms = phm_obj.VoxelSegmentation.read_from_json_gz(filename)
     os.remove(filename)
+
 
 if __name__ == "__main__":
     for func_name in dir():
