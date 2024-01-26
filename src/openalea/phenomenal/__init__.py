@@ -7,3 +7,9 @@
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
 # ==============================================================================
+# {# pkglts, base
+from . import version
+
+__version__ = version.__version__
+
+# #}
