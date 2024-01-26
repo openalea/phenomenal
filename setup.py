@@ -43,9 +43,13 @@ extentions = [
         language="c++")
         ]
 
+version = {}
+with open("src/openalea/phenomenal/version.py") as fp:
+    exec(fp.read(), version)
+
 setup(
     name="openalea.phenomenal",
-    version="1.9.0",
+    version=version["__version__"],
     description="",
     long_description="",
 
