@@ -41,25 +41,25 @@ Conda environement : https://docs.conda.io/en/latest/index.html
 
 ##### Create a new environment with phenomenal installed in there :
 
-    conda create -n phm -c conda-forge -c openalea openalea.phenomenal
-    conda activate phm
+    mamba create -n phm -c conda-forge -c openalea openalea.phenomenal
+    mamba activate phm
 
 ##### In a existing environment :
 
-    conda install -c conda-forge -c openalea openalea.phenomenal
+    mamba install -c conda-forge -c openalea openalea.phenomenal
 
 ##### (Optional) Test your installation :
 
-    conda install -c conda-forge pytest
+    mamba install -c conda-forge pytest
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal/test; pytest
 
 #### From source
 
     # Install dependency with conda
-    conda create -n phm -c conda-forge python=3.8
-    conda activate phm
-    conda install -c conda-forge -c openalea cython numpy numba scipy scikit-image scikit-learn networkx=2.3 opencv matplotlib vtk pytest
+    mamba create -n phm -c conda-forge python
+    mamba activate phm
+    mamba install -c conda-forge -c numba cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan=0.10
 
     # Load phenomenal and install
     git clone https://github.com/openalea/phenomenal.git

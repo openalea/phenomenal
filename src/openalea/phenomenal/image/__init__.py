@@ -17,38 +17,31 @@ Image Methods
 Threshold
 =========
 .. autosummary::
-    :toctree: generated
+    :toctree: generated/
 
-    threshold_meanshift
-    threshold_hsv
-    mean_image
-    phenoarch_side_binarization
+    threshold
 
 
 Image Skeleton
 ==============
 .. autosummary::
-    :toctree: generated
+    :toctree: generated/
 
-    skeletonize_thinning
-    skeletonize_erode_dilate
+    skeletonize
 
 Morphologic Operation
 =====================
 .. autosummary::
-    :toctree: generated
+    :toctree: generated/
 
-    dilate_erode
-    erode_dilate
-    close
+    morphology
 
 Input / Output
 ==============
 .. autosummary::
-    :toctree: generated
+    :toctree: generated/
 
-    read_image
-    write_image
+    formats
 
 """
 # ==============================================================================

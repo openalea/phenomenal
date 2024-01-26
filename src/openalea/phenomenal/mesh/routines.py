@@ -22,7 +22,7 @@ __all__ = ["normals",
 
 
 def median_color_from_images(vertices, faces, calibration, images):
-    """ Return the colors of each faces according the median of their color list
+    """ Return the colors of each face according the median of their color list
     in the faces projected images.
 
     Parameters
@@ -38,7 +38,7 @@ def median_color_from_images(vertices, faces, calibration, images):
 
     calibration: projection function
 
-    images: images[id_camera][angle] = imaga
+    images: images[id_camera][angle] = image
 
     Returns
     -------
