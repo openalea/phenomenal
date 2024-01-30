@@ -10,7 +10,7 @@
 from __future__ import division, print_function, absolute_import
 
 import vtk
-import vtk.util.numpy_support
+import vtkmodules.util.numpy_support
 import numpy
 import math
 import skimage.measure
