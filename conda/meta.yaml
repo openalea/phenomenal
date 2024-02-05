@@ -25,14 +25,14 @@ requirements:
     - {{ compiler('c') }}   # [unix]
     - {{ compiler("cxx") }} # [unix]
     - m2w64-toolchain       # [win]
-    - python 
+    - python
     - setuptools
     - numpy
     - cython
 
 
   run:
-    - python
+    - python x.x
     - numpy
     - cython
     - numba
