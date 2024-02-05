@@ -14,10 +14,8 @@ build:
 requirements:
   host:
     - python x.x
-    - setuptools
-    - cython    
-    - numpy
-    - scipy
+    - numpy x.x
+    - scipy x.x
 
   build:
     - {{ compiler('c') }} 
@@ -30,9 +28,9 @@ requirements:
 
   run:
     - python x.x
-    - numpy
+    - numpy x.x
     - numba
-    - scipy
+    - scipy x.x
     - scikit-image
     - scikit-learn
     - networkx
