@@ -13,8 +13,9 @@ build:
 
 requirements:
   host:
-    - python x.x
-    - numpy x.x
+    - python
+    - numpy 
+    - scipy
     - cython
 
   build:
@@ -22,6 +23,9 @@ requirements:
     - {{ compiler("cxx") }} 
     - python
     - setuptools
+    - numpy
+    - scipy
+    - cython
 
   run:
     - python x.x
