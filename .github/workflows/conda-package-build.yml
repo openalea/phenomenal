@@ -13,7 +13,5 @@ on:
 jobs:
   build:
     uses: openalea/github-action-conda-build/.github/workflows/conda-package-build.yml@main
-    with:
-      conda: mamba
     secrets:
       anaconda_token: ${{ secrets.ANACONDA_TOKEN }}
