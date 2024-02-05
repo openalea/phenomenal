@@ -15,7 +15,6 @@ requirements:
   host:
     - python x.x
     - numpy x.x
-    - cython
 
   build:
     - {{ compiler('c') }} 
@@ -29,6 +28,7 @@ requirements:
   run:
     - python x.x
     - numpy x.x
+    - cython
     - numba
     - scipy
     - scikit-image
