@@ -31,7 +31,6 @@ requirements:
   run:
     - python x.x
     - numpy
-    - cython
     - numba
     - scipy
     - scikit-image
