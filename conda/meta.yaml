@@ -11,7 +11,7 @@ build:
   number: 0
   preserve_egg_dir: True
   string: phenomenal
-  script: pip install .
+  script: python setup.py install
 
 requirements:
   host:
