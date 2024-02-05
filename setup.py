@@ -68,7 +68,7 @@ setup(
     packages=packages,
     package_dir={'': 'src'},
     zip_safe=False,
-    ext_modules=cythonize(extentions),
+    ext_modules=cythonize(extentions, language_level = "3"),
 
     entry_points={
         "wralea": ["openalea.phenomenal = openalea.phenomenal_wralea", ],
