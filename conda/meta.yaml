@@ -1,3 +1,5 @@
+{% set native = 'm2w64-' if win else '' %}
+
 package:
   name: openalea.phenomenal
   version: "1.9.2"
@@ -10,24 +12,25 @@ build:
   preserve_egg_dir: True
   string: phenomenal
   script:
-    - {{ PYTHON }} setup.py install #--single-version-externally-managed --record record.txt
+    - script: pip install .
 
 requirements:
+  host:
+    - python x.x
+    - setuptools
+    - cython    
+    - numpy
+    - scipy
 
   build:
-    - {{ compiler('c') }}
-    - {{ compiler("cxx") }}
+    - {{ compiler('c') }}   # [unix]
+    - {{ compiler("cxx") }} # [unix]
+    - m2w64-toolchain       # [win]
     - python 
     - setuptools
     - numpy
     - cython
 
-  host:
-    - python
-    - setuptools
-    - cython    
-    - numpy
-    - scipy
 
   run:
     - python
