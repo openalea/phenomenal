@@ -9,7 +9,9 @@ build:
   number: 0
   preserve_egg_dir: True
   string: phenomenal
-  script: {{PYTHON}} setup.py install
+  script: 
+    - {{PYTHON}} setup.py build_ext -j{{ CPU_COUNT }}
+    - {{ PYTHON }} -m pip install . -vv
 
 requirements:
   host:
