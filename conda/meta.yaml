@@ -1,5 +1,3 @@
-{% set native = 'm2w64-' if win else '' %}
-
 package:
   name: openalea.phenomenal
   version: "1.9.2"
@@ -22,9 +20,8 @@ requirements:
     - scipy
 
   build:
-    - {{ compiler('c') }}   # [unix]
-    - {{ compiler("cxx") }} # [unix]
-    - m2w64-toolchain       # [win]
+    - {{ compiler('c') }} 
+    - {{ compiler("cxx") }} 
     - python
     - setuptools
     - numpy
