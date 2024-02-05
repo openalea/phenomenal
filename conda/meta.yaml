@@ -15,7 +15,6 @@ requirements:
   host:
     - python x.x
     - numpy x.x
-    - scipy x.x
 
   build:
     - {{ compiler('c') }} 
@@ -30,7 +29,7 @@ requirements:
     - python x.x
     - numpy x.x
     - numba
-    - scipy x.x
+    - scipy
     - scikit-image
     - scikit-learn
     - networkx
