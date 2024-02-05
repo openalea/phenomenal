@@ -9,28 +9,29 @@ build:
   number: 0
   preserve_egg_dir: True
   string: phenomenal
-  script:
-    - {{ PYTHON }} setup.py install #--single-version-externally-managed --record record.txt
+  script: 
+    - {{PYTHON}} setup.py build_ext -j{{ CPU_COUNT }}
+    - {{ PYTHON }} -m pip install . -vv
 
 requirements:
-
-  build:
-    - {{ compiler('c') }}
-    - {{ compiler("cxx") }}
-    - python 
-    - numpy
-    - cython
-
   host:
     - python
+    - numpy 
+    - scipy
+    - cython
+
+  build:
+    - {{ compiler('c') }} 
+    - {{ compiler("cxx") }} 
+    - python
     - setuptools
-    - cython    
     - numpy
     - scipy
+    - cython
 
   run:
-    - python
-    - numpy
+    - python x.x
+    - numpy x.x
     - cython
     - numba
     - scipy
@@ -38,10 +39,10 @@ requirements:
     - scikit-learn
     - networkx
     - opencv [win or linux]
-    - opencv!=4.1.2 [osx]
+    - opencv >4.1.2 [osx]
     - matplotlib
     - vtk
-    - skan=0.10
+    - skan>=0.10
     - pywin32 [win]
 
 test:
