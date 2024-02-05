@@ -38,7 +38,7 @@ requirements:
     - opencv!=4.1.2 [osx]
     - matplotlib
     - vtk
-    - skan=0.10
+    - skan>=0.10
     - pywin32 [win]
 
 test:
