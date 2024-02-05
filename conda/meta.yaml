@@ -15,15 +15,13 @@ requirements:
   host:
     - python x.x
     - numpy x.x
+    - cython
 
   build:
     - {{ compiler('c') }} 
     - {{ compiler("cxx") }} 
     - python
     - setuptools
-    - numpy
-    - cython
-
 
   run:
     - python x.x
