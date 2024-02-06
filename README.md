@@ -1,8 +1,8 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1436634.svg)](https://doi.org/10.5281/zenodo.1436634)
 [![Licence](https://anaconda.org/openalea/openalea.phenomenal/badges/license.svg)](https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt)
-[![Platform](https://anaconda.org/openalea/openalea.phenomenal/badges/platforms.svg)](https://anaconda.org/openalea/openalea.phenomenal)
-[![Last version](https://anaconda.org/openalea/openalea.phenomenal/badges/version.svg)](https://anaconda.org/OpenAlea/openalea.phenomenal/files)
+[![Platform](https://anaconda.org/openalea3/openalea.phenomenal/badges/platforms.svg)](https://anaconda.org/openalea3/openalea.phenomenal)
+[![Last version](https://anaconda.org/openalea3/openalea.phenomenal/badges/version.svg)](https://anaconda.org/OpenAlea3/openalea.phenomenal/files)
 [![GitHub CI](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml/badge.svg)](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml)
 [![Documentation Status](https://readthedocs.org/projects/phenomenal/badge/?version=latest)](https://phenomenal.readthedocs.io/en/latest/?badge=latest)
 [![aunch interactive phenomenal notebook with myBinder service](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
