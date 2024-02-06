@@ -1,7 +1,7 @@
 name: phenomenal
 channels:
   - conda-forge
-  - openalea
+  - openalea3
 
 dependencies:
   - python
