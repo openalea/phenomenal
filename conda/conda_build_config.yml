@@ -1,0 +1,21 @@
+# from conda-forge-pinning
+c_compiler:
+  - gcc                        # [linux]
+  - clang                      # [osx]
+  - vs2019                     # [win and x86_64]
+  - vs2022                     # [win and arm64]
+c_compiler_version:            # [unix]
+  - 12                         # [linux]
+  - 16                         # [osx]
+  - 10                         # [os.environ.get("CF_CUDA_ENABLED", "False") == "True" and linux]
+  - 11                         # [os.environ.get("CF_CUDA_ENABLED", "False") == "True" and linux]
+cxx_compiler:
+  - gxx                        # [linux]
+  - clangxx                    # [osx]
+  - vs2019                     # [win and x86_64]
+  - vs2022                     # [win and arm64]
+cxx_compiler_version:          # [unix]
+  - 12                         # [linux]
+  - 16                         # [osx]
+  - 10                         # [os.environ.get("CF_CUDA_ENABLED", "False") == "True" and linux]
+  - 11                         # [os.environ.get("CF_CUDA_ENABLED", "False") == "True" and linux]
