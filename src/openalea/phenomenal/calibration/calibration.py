@@ -188,9 +188,44 @@ class Calibrator(object):
         return mask
 
     def roi_mask(self, roi, image):
-        mask = numpy.empty_like(image)
+        mask = numpy.zeros_like(image)
+        contour = numpy.array(roi)
+        cv2.fillPoly(mask, pts=[contour], color=(255, 255, 255))
+        if len(mask.shape) == 3:
+            mask = cv2.cvtColor(mask, cv2.COLOR_RGB2GRAY)
         return mask
 
+    def target_masks(self, calibration, cameras=None, targets=None):
+        """generate target mask from prior-calibration"""
+
+        consider = {}
+        if cameras is None:
+            consider = {k: list(v) for k, v in self.image_paths.items()}
+        elif isinstance(cameras, str):
+            consider = {cameras: list(self.image_paths[cameras])}
+        else:
+            for item in cameras:
+                if isinstance(item, str):
+                    camera_id = item
+                    rotation_list = list(self.image_paths[camera_id])
+                else:
+                    camera_id, rotation_list = item
+                consider[camera_id] = rotation_list
+
+        if targets is None:
+            targets = list(self.layout['chessboards'])
+
+        masks = {}
+        for target_id in targets:
+            masks[target_id] = []
+            for camera_id, rotation_list in consider.items():
+                for rotation in rotation_list:
+                    masks[target_id].append((camera_id,
+                                             rotation,
+                                             calibration.target_mask(camera_id, target_id, rotation)
+                                             )
+                                            )
+        return masks
     def detect_corners(self, cameras=None, masks=None, maximal_aiming_angle=65):
         """ Detection of pixel coordinates of chessboard corner points
 
@@ -261,6 +296,17 @@ class Calibrator(object):
             for c, res in chessboard.image_resolutions().items():
                 self.image_resolutions[c][target_id] = res
 
+    def target_points(self):
+        """extract target local3d point"""
+        target_points = {}
+        for target_id, d in self.layout['chessboards'].items():
+            if target_id in self.image_points:
+                chessboard = Chessboard(square_size=d['between_corners'],
+                                        shape=(d['corners_h'], d['corners_v']),
+                                        facing_angles=self._facings[target_id])
+                chessboard.image_points = self.image_points[target_id]
+                target_points[target_id] = chessboard.get_corners_local_3d()
+        return target_points
 
     def calibrate(self, verbose=True):
         """Compute calibration"""

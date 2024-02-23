@@ -409,16 +409,36 @@ class Calibration(object):
             lines.append((origin, end, col, w))
         return lines
 
-    def get_target_points(self, id_target):
+    #TODO : target_points should be managed by calibrator (just like image_points), not calibration
+    def target_box(self, id_target, border=2):
+        pts = self._targets_points[id_target]
+        x, y, _ = zip(*pts)
+        dx = numpy.min(numpy.abs(numpy.diff(x)))
+        dy = numpy.max(numpy.abs(numpy.diff(y)))
+        xmin, ymin, xmax, ymax = (numpy.min(x) - border * dx,
+                                  numpy.min(y) - border * dy,
+                                  numpy.max(x) + border * dx,
+                                  numpy.max(y) + border * dy)
+
+        return [numpy.array((xmin, ymin, 0)),
+                numpy.array((xmin, ymax, 0)),
+                numpy.array((xmax, ymax, 0)),
+                numpy.array((xmax, ymin, 0))]
+
+    def get_target_points(self, id_target, box=False, border=2):
         if id_target == 'world':
             fr_target = self.get_frame('native')
         else:
             fr_target = self._targets[id_target].get_frame()
-        return fr_target.global_point(self._targets_points[id_target])
+        if box:
+            pts = self.target_box(id_target, border=border)
+        else:
+            pts = self._targets_points[id_target]
+        return fr_target.global_point(pts)
 
-    def get_target_projected(self, id_camera, id_target, rotation):
+    def get_target_projected(self, id_camera, id_target, rotation, box=False, border=2):
         proj = self.get_projection(id_camera, rotation)
-        target_pts = self.get_target_points(id_target)
+        target_pts = self.get_target_points(id_target, box=box, border=border)
 
         return proj(target_pts)
 
@@ -428,20 +448,12 @@ class Calibration(object):
             Args:
                 border : the size of the border (in square_size units)
         """
-        pts = self.get_target_projected(id_camera, id_target, rotation)
-        targ = self._targets[id_target]
-        bs = targ.square_size * border / self._cameras[id_camera].pixel_size_at_origin
-        proj = self.get_projection(id_camera, rotation)
-        pts = self._targets[id_target]
+        pts = self.get_target_projected(id_camera, id_target, rotation, box=True, border=border)
         u, v = zip(*pts)
-        h,w = self._cameras[id_camera].image_shape()
-        umin, vmin, umax, vmax = (numpy.clip(min(u) - bs, 1, w),
-                                  numpy.clip(min(v) - bs, 1, h),
-                                  numpy.clip(max(u) + bs, 1, w),
-                                  numpy.clip(max(v) + bs, 1, h))
-        return [(umin,vmin), (umax, vmin), (umax, vmax), (umin, vmax)]
-
-
+        h, w = self._cameras[id_camera].image_shape()
+        uc, vc = (numpy.clip(u, 1, w).astype(int),
+                  numpy.clip(v, 1, h).astype(int))
+        return list(zip(uc, vc))
 
 
 class OldCalibrationCamera(object):
