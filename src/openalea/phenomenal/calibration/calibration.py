@@ -434,14 +434,17 @@ class Calibrator(object):
                     self.check_dir(path)
                     cv2.imwrite(path, resized)
 
-    def check_target_frame(self, calibration, resize=0.25, l=100):
-        outdir = os.path.join(self.calibration_dir, 'check_target_frame')
-        if 'target' not in calibration.frames:
-            calibration.frames['target'] = self.target_frame(calibration)
-        for camera_id, rot_dict in self.image_paths.items():
+    def check_frame(self, calibration, frame='target', image_paths=None, resize=0.25, l=100):
+        outdir = os.path.join(self.calibration_dir, 'check_' + frame + '_frame')
+        if frame not in calibration.frames:
+            frame = 'target'
+            calibration.frames[frame] = self.target_frame(calibration)
+        if image_paths is None:
+            image_paths = self.image_paths
+        for camera_id, rot_dict in image_paths.items():
             for rotation, path in rot_dict.items():
                 img = cv2.imread(self.abspath(path))
-                frame_lines = calibration.frame_lines(camera_id, rotation, frame='target', l=l)
+                frame_lines = calibration.frame_lines(camera_id, rotation, frame=frame, l=l)
                 for origin, end, col, w in frame_lines:
                     cv2.line(img, origin, end, col, w)
                 shape = [int(i * resize) for i in img.shape[:2]]
