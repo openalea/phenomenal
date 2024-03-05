@@ -128,13 +128,21 @@ class CalibrationCamera(CalibrationFrame):
         focal = self._focal_length_x * (1 + self._aspect_ratio) / 2
         return self.distance_to_origin / focal
 
+    def distance_to(self, xyz):
+        x, y, z = xyz
+        return numpy.sqrt((self._pos_x - x) ** 2 + (self._pos_y - y) ** 2 + (self._pos_z - z) ** 2)
+
+    def pixel_size_at(self, xyz):
+        focal = self._focal_length_x * (1 + self._aspect_ratio) / 2
+        return self.distance_to(xyz) / focal
+
     def __str__(self):
         out = ''
         fmm = numpy.round(self._focal_length_x / max(self._width_image, self._height_image) * 36)
         out += '\tFocal length X : ' + str(self._focal_length_x) + ' (' + str(fmm) + 'mm)\n'
         out += '\tPixel aspect ratio : ' + str(self._aspect_ratio) + '\n'
         out += '\tPixel size at origin : ' + str(self.pixel_size_at_origin) + '\n'
-        out += '\tdistance to origin : ' + str(self.pixel_size_at_origin) + '\n'
+        out += '\tdistance to origin : ' + str(self.distance_to_origin) + '\n'
         if self._width_image is not None:
             out += '\tOptical Center X : ' + str(self._width_image / 2.0) + '\n'
             out += '\tOptical Center Y : ' + str(self._height_image / 2.0)
