@@ -1225,7 +1225,7 @@ def find_frame(projections, image_points, frame_points, fixed_parameters=None, s
     if fixed_parameters is None:
         fixed_parameters = {}
 
-    image_points = {k: numpy.array(v) if v is not None else v for k, v in image_points.items()}
+    #image_points = {k: numpy.array(v) if v is not None else v for k, v in image_points.items()}
 
     # free frame parameters
     pars = ('_pos_x', '_pos_y', '_pos_z', '_rot_x', '_rot_y', '_rot_z')
@@ -1274,7 +1274,7 @@ def find_frame(projections, image_points, frame_points, fixed_parameters=None, s
 
         err = 0
         for id_camera in image_points:
-            im_pts = [p for p in image_points[id_camera] if p is not None]
+            im_pts = [numpy.array(p) for p in image_points[id_camera] if p is not None]
             world_pts = [p for p, im_p in zip(pts, image_points[id_camera]) if im_p is not None]
             proj = projections[id_camera]
             pix = proj(world_pts)
