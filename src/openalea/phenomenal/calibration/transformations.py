@@ -338,7 +338,7 @@ def rotation_matrix(angle, direction, point=None):
     M[:3, :3] = R
     if point is not None:
         # rotation not around origin
-        point = numpy.array(point[:3], dtype=numpy.float64, copy=False)
+        point = numpy.array(point[:3], dtype=numpy.float64)
         M[:3, 3] = point - numpy.dot(R, point)
     return M
 
@@ -356,7 +356,7 @@ def rotation_from_matrix(matrix):
     True
 
     """
-    R = numpy.array(matrix, dtype=numpy.float64, copy=False)
+    R = numpy.array(matrix, dtype=numpy.float64)
     R33 = R[:3, :3]
     # direction: unit eigenvector of R33 corresponding to eigenvalue of 1
     w, W = numpy.linalg.eig(R33.T)
@@ -491,12 +491,11 @@ def projection_matrix(point, normal, direction=None,
 
     """
     M = numpy.identity(4)
-    point = numpy.array(point[:3], dtype=numpy.float64, copy=False)
+    point = numpy.array(point[:3], dtype=numpy.float64)
     normal = unit_vector(normal[:3])
     if perspective is not None:
         # perspective projection
-        perspective = numpy.array(perspective[:3], dtype=numpy.float64,
-                                  copy=False)
+        perspective = numpy.array(perspective[:3], dtype=numpy.float64)
         M[0, 0] = M[1, 1] = M[2, 2] = numpy.dot(perspective-point, normal)
         M[:3, :3] -= numpy.outer(perspective, normal)
         if pseudo:
@@ -509,7 +508,7 @@ def projection_matrix(point, normal, direction=None,
         M[3, 3] = numpy.dot(perspective, normal)
     elif direction is not None:
         # parallel projection
-        direction = numpy.array(direction[:3], dtype=numpy.float64, copy=False)
+        direction = numpy.array(direction[:3], dtype=numpy.float64)
         scale = numpy.dot(direction, normal)
         M[:3, :3] -= numpy.outer(direction, normal) / scale
         M[:3, 3] = direction * (numpy.dot(point, normal) / scale)
@@ -552,7 +551,7 @@ def projection_from_matrix(matrix, pseudo=False):
     True
 
     """
-    M = numpy.array(matrix, dtype=numpy.float64, copy=False)
+    M = numpy.array(matrix, dtype=numpy.float64)
     M33 = M[:3, :3]
     w, V = numpy.linalg.eig(M)
     i = numpy.where(abs(numpy.real(w) - 1.0) < 1e-8)[0]

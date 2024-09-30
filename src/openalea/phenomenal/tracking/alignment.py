@@ -181,9 +181,9 @@ def insert_gaps(all_sequences, seq_indexes, alignment):
         for gi in gap_indexes:
 
             if all_sequences2[si].size == 0:
-                all_sequences2[si] = np.full((1, vec_len), np.NAN)
+                all_sequences2[si] = np.full((1, vec_len), np.nan)
             else:
-                all_sequences2[si] = np.insert(all_sequences2[si], gi, np.NAN, 0)
+                all_sequences2[si] = np.insert(all_sequences2[si], gi, np.nan, 0)
 
     return all_sequences2
 
