@@ -2,29 +2,15 @@
 Welcome to openalea.phenomenal's documentation!
 ======================================================
 
-Contents:
+.. include:: ../README.md
+   :parser: myst_parser.sphinx_
 
 .. toctree::
+   :hidden:
    :maxdepth: 2
 
-   readme
+   Home <self>
    installation
    usage
    authors
-   
-API reference
-=============
-
-.. toctree::
-   :maxdepth: 2
-
    api
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-
