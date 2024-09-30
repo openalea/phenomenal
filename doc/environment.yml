@@ -6,4 +6,11 @@ channels:
 dependencies:
   - python
   - sphinx_rtd_theme
+  - myst-parser
   - openalea.phenomenal
+  - ipykernel
+  - ipyvolume
+  - ipython_genutils
+  - pip
+  - pip:
+    - nbsphinx
