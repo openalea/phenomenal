@@ -43,6 +43,7 @@ requirements:
     - matplotlib
     - vtk
     - skan>=0.10
+    - vc [win]
     - pywin32 [win]
 
 test:
