@@ -20,10 +20,13 @@ requirements:
     - numpy 
     - scipy
     - cython
+    - vs2019_win-64 [win]
+    - pywin32 [win]
 
   build:
     - {{ compiler('c') }} 
     - {{ compiler("cxx") }} 
+    - vs2019_win-64 [win]
     - python
     - setuptools
     - numpy
