@@ -18,6 +18,9 @@ requirements:
     - python
     - setuptools
     - pip
+    - numpy
+    - scipy
+    - cython
 
   build:
     - {{ compiler('c') }} 
