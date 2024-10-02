@@ -7,7 +7,7 @@ source:
 
 build:
   number: 0
-  preserve_egg_dir: True
+  preserve_egg_dir: False
   string: phenomenal
   script: 
     - {{ PYTHON }} -m pip install . -vv
@@ -15,7 +15,6 @@ build:
 requirements:
   host:
     - python
-    - setuptools
     - numpy 
     - scipy
     - cython
