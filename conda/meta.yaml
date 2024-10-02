@@ -7,7 +7,7 @@ source:
 
 build:
   number: 0
-  preserve_egg_dir: False
+  preserve_egg_dir: True
   string: phenomenal
   script: 
     - {{ PYTHON }} -m pip install . -vv
