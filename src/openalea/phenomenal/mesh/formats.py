@@ -10,7 +10,8 @@
 from __future__ import division, print_function, absolute_import
 
 import vtk
-import vtk.util.numpy_support
+import vtkmodules.util.numpy_support
+import vtkmodules
 
 from .vtk_transformation import (from_vertices_faces_to_vtk_poly_data)
 # ==============================================================================
@@ -47,17 +48,17 @@ def read_ply_to_vertices_faces(filename):
 
     vtk_poly_data = ply_reader.GetOutput()
 
-    vertices = vtk.util.numpy_support.vtk_to_numpy(
+    vertices = vtkmodules.util.numpy_support.vtk_to_numpy(
         vtk_poly_data.GetPoints().GetData())
 
-    faces = vtk.util.numpy_support.vtk_to_numpy(
+    faces = vtkmodules.util.numpy_support.vtk_to_numpy(
         vtk_poly_data.GetPolys().GetData())
 
     faces = faces.reshape((len(faces) // 4, 4))
 
     colors = vtk_poly_data.GetPointData().GetScalars()
     if colors is not None:
-        colors = vtk.util.numpy_support.vtk_to_numpy(colors)
+        colors = vtkmodules.util.numpy_support.vtk_to_numpy(colors)
 
     return vertices, faces[:, 1:], colors
 
