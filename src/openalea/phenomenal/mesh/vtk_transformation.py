@@ -10,7 +10,7 @@
 from __future__ import division, print_function, absolute_import
 
 import vtk
-import vtk.util.numpy_support
+import vtkmodules.util.numpy_support
 import operator
 
 # ==============================================================================
@@ -105,10 +105,10 @@ def from_vertices_faces_to_vtk_poly_data(vertices,
 
 def from_vtk_poly_data_to_vertices_faces(vtk_poly_data):
 
-    vertices = vtk.util.numpy_support.vtk_to_numpy(
+    vertices = vtkmodules.util.numpy_support.vtk_to_numpy(
         vtk_poly_data.GetPoints().GetData())
 
-    faces = vtk.util.numpy_support.vtk_to_numpy(
+    faces = vtkmodules.util.numpy_support.vtk_to_numpy(
         vtk_poly_data.GetPolys().GetData())
 
     faces = faces.reshape((len(faces) // 4, 4))
@@ -126,12 +126,12 @@ def from_numpy_matrix_to_vtk_image_data(data_matrix):
     image_data.SetSpacing(1.0, 1.0, 1.0)
 
     if vtk.VTK_MAJOR_VERSION < 6:
-        image_data.SetScalarType(vtk.util.numpy_support.get_vtk_array_type(
+        image_data.SetScalarType(vtkmodules.util.numpy_support.get_vtk_array_type(
             data_matrix.dtype))
         image_data.SetNumberOfScalarComponents(1)
         image_data.AllocateScalars()
     else:
-        image_data.AllocateScalars(vtk.util.numpy_support.get_vtk_array_type(
+        image_data.AllocateScalars(vtkmodules.util.numpy_support.get_vtk_array_type(
             data_matrix.dtype), 1)
 
     lx, ly, lz = image_data.GetDimensions()

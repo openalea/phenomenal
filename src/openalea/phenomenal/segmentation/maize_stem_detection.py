@@ -109,7 +109,7 @@ def stem_detection(stem_segment_voxel, stem_segment_path, voxels_size,
     window_length = max(4, len(nodes_length) // 8)
     window_length = window_length + 1 if window_length % 2 == 0 else window_length
     smooth_distances = scipy.signal.savgol_filter(
-        numpy.array(distances, dtype=numpy.uint8),
+        numpy.array(distances, dtype=numpy.uint16),
         window_length=window_length,
         polyorder=2)
 
