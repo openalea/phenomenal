@@ -31,6 +31,27 @@ If you find our work useful in your research, please consider citing:
         journal = {bioRxiv}
     }
 
+If you use PhenoTrack3D to your research, cite:
+
+Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). https://doi.org/10.1186/s13007-022-00961-4
+    
+```latex
+@article {daviet22,
+	author = {Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c c} and Pradal, Christophe and Fournier, Christian},
+	title = {PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
+	elocation-id = @article{daviet2022phenotrack3d,
+	title={PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
+	author={Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c{c}} and Pradal, Christophe and Fournier, Christian},
+	journal={Plant Methods},
+	volume={18},
+	number={1},
+	pages={1--14},
+	year={2022},
+	publisher={Springer}
+}
+
+```
+
 
 ### Installation
 
@@ -58,7 +79,7 @@ Conda environement : https://docs.conda.io/en/latest/index.html
     # Install dependency with conda
     mamba create -n phm -c conda-forge python
     mamba activate phm
-    mamba install -c conda-forge -c numba cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan=0.10
+    mamba install -c conda-forge -c numba cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan
 
     # Load phenomenal and install
     git clone https://github.com/openalea/phenomenal.git

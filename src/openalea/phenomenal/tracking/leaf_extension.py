@@ -46,7 +46,7 @@ def skeleton_branches(image, n_kernel=15, min_length=30):
 
     # skeleton analysis : get branches
     skan_skeleton = Skeleton(skeleton)
-    branches = summarize(skan_skeleton)
+    branches = summarize(skan_skeleton, separator='-')
 
     # select branches having an endpoint, and a sufficient length
     branches_endpoint = branches[branches['branch-type'] == 1]
@@ -57,8 +57,7 @@ def skeleton_branches(image, n_kernel=15, min_length=30):
     node_ids = list(branches['node-id-src']) + list(branches['node-id-dst'])
     polylines = []
     for irow, row in branches_endpoint.iterrows():
-
-        polyline = np.array([coordinates[i] for i in skan_skeleton.path(irow)])
+        polyline = np.array([(coordinates[0][i],coordinates[1][i]) for i in skan_skeleton.path(irow)])
         polyline = polyline[:, ::-1]  # same (x, y) order as phenomenal
 
         # verify that all phm_leaf polylines are oriented the same way (phm_leaf insertion --> phm_leaf tip)
