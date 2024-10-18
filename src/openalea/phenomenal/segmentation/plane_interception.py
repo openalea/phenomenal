@@ -18,7 +18,7 @@ import scipy
 
 def max_distance_in_points(points):
     """
-    Compute and return the maximal euclidean distance between the two point the
+    Compute and return the maximal Euclidean distance between the two point the
     most separate in points.
 
     :param points: A ndarray of 3d points position.
@@ -27,7 +27,7 @@ def max_distance_in_points(points):
     if len(points) == 0:
         return 0
 
-    result = scipy.spatial.distance.pdist(points, 'euclidean')
+    result = scipy.spatial.distance.pdist(points, "euclidean")
 
     if len(result) > 0:
         return result.max()
@@ -47,9 +47,7 @@ def max_distance_from_point_to_points(points, src_point):
     if len(points) == 0:
         return 0
 
-    result = scipy.spatial.distance.cdist(numpy.array([src_point]),
-                                          points,
-                                          'euclidean')
+    result = scipy.spatial.distance.cdist(numpy.array([src_point]), points, "euclidean")
 
     if len(result) > 0:
         return result.max()
@@ -99,9 +97,11 @@ def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
         node = nodes.pop()
         rr = abs(voxels_point - node)
 
-        index = numpy.where((rr[:, 0] <= voxels_size) &
-                            (rr[:, 1] <= voxels_size) &
-                            (rr[:, 2] <= voxels_size))[0]
+        index = numpy.where(
+            (rr[:, 0] <= voxels_size)
+            & (rr[:, 1] <= voxels_size)
+            & (rr[:, 2] <= voxels_size)
+        )[0]
 
         nodes += list(voxels_point[index])
         closest_node += list(voxels_point[index])
@@ -115,34 +115,35 @@ def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
 
 
 def intercept_points_from_src_point_with_plane_equation(
-        points,
-        src_point,
-        plane_equation,
-        distance_from_plane,
-        distance_from_src_point=None):
+    points, src_point, plane_equation, distance_from_plane, distance_from_src_point=None
+):
     """
-    Intercept the points whose the distance from the plane (generate by
+    Intercept the points who's the distance from the plane (generate by
     plane_equation) are equal or inferior to the distance_from_plane. If
     distance_from_src_point is not None, the intercept points are also the
-    points whose the distance from the src_point are equal or inferior to the
+    points who's the distance from the src_point are equal or inferior to the
     distance_from_src_point.
 
     If points_graph is not None, points return are the points in the same
     connected component that src_point.
 
-    :param points: ndarray containing x,y, z position of each point
+    :param points: ndarray containing x,y, z position of each point.
     :param src_point: point source
     :param plane_equation:
     :param distance_from_plane:
     :param distance_from_src_point:
     :return: return the intercepted points
     """
-    res = abs(points[:, 0] * plane_equation[0] +
-              points[:, 1] * plane_equation[1] +
-              points[:, 2] * plane_equation[2] -
-              plane_equation[3]) / (math.sqrt(plane_equation[0] ** 2 +
-                                              plane_equation[1] ** 2 +
-                                              plane_equation[2] ** 2))
+    res = abs(
+        points[:, 0] * plane_equation[0]
+        + points[:, 1] * plane_equation[1]
+        + points[:, 2] * plane_equation[2]
+        - plane_equation[3]
+    ) / (
+        math.sqrt(
+            plane_equation[0] ** 2 + plane_equation[1] ** 2 + plane_equation[2] ** 2
+        )
+    )
 
     index = numpy.where(res < distance_from_plane)[0]
     closest_voxel = points[index]
@@ -167,21 +168,23 @@ def compute_plane_equation(orientation_vector, src_point):
     :return:
     """
 
-    d = (orientation_vector[0] * src_point[0] +
-         orientation_vector[1] * src_point[1] +
-         orientation_vector[2] * src_point[2])
+    d = (
+        orientation_vector[0] * src_point[0]
+        + orientation_vector[1] * src_point[1]
+        + orientation_vector[2] * src_point[2]
+    )
 
-    plane_equation = (orientation_vector[0],
-                      orientation_vector[1],
-                      orientation_vector[2],
-                      d)
+    plane_equation = (
+        orientation_vector[0],
+        orientation_vector[1],
+        orientation_vector[2],
+        d,
+    )
 
     return plane_equation
 
 
-def orientation_vector_of_point_in_polyline(polyline,
-                                            index_point,
-                                            windows_size):
+def orientation_vector_of_point_in_polyline(polyline, index_point, windows_size):
     """
     Compute and return orientation vector of point in polyline.
 
@@ -202,40 +205,44 @@ def orientation_vector_of_point_in_polyline(polyline,
     return orientation_vector
 
 
-def intercept_points_along_path_with_planes(points,
-                                            polyline,
-                                            windows_size=8,
-                                            distance_from_plane=4,
-                                            points_graph=None,
-                                            without_connection=False,
-                                            voxels_size=4,
-                                            with_relative_distance=True,
-                                            fix_distance_from_src_point=None):
-
+def intercept_points_along_path_with_planes(
+    points,
+    polyline,
+    windows_size=8,
+    distance_from_plane=4,
+    points_graph=None,
+    without_connection=False,
+    voxels_size=4,
+    with_relative_distance=True,
+    fix_distance_from_src_point=None,
+):
     length_polyline = len(polyline)
     intercepted_points = [None] * length_polyline
     planes_equation = [None] * length_polyline
-    distance_from_src_point = 1000,
+    distance_from_src_point = (1000,)
     for i in range(length_polyline - 1, -1, -1):
         point = tuple(polyline[i])
 
         # ======================================================================
 
         orientation_vector = orientation_vector_of_point_in_polyline(
-            polyline, i, windows_size)
+            polyline, i, windows_size
+        )
 
         plane_equation = compute_plane_equation(orientation_vector, point)
 
         if i < length_polyline - 1 and with_relative_distance:
             nodes = intercepted_points[i + 1]
             prev_radius_dist = max_distance_from_point_to_points(
-                numpy.array(list(nodes)), polyline[i + 1])
+                numpy.array(list(nodes)), polyline[i + 1]
+            )
 
             if prev_radius_dist == 0:
                 distance_from_src_point = 1000
             else:
                 distance_from_src_point = min(
-                    prev_radius_dist + 1 * voxels_size, 1000.0)
+                    prev_radius_dist + 1 * voxels_size, 1000.0
+                )
 
         if fix_distance_from_src_point is not None:
             distance_from_src_point = fix_distance_from_src_point
@@ -243,16 +250,12 @@ def intercept_points_along_path_with_planes(points,
         # ======================================================================
 
         pts = intercept_points_from_src_point_with_plane_equation(
-            points,
-            point,
-            plane_equation,
-            distance_from_plane,
-            distance_from_src_point)
+            points, point, plane_equation, distance_from_plane, distance_from_src_point
+        )
 
         if without_connection:
             pts = list(map(tuple, pts))
         elif points_graph is not None:
-
             pts = list(map(tuple, pts))
             pts = connected_points_with_point(pts, points_graph, point)
         else:
@@ -282,13 +285,10 @@ def intercept_points_with_ball(points, ball_center, ball_radius):
     return points[index]
 
 
-def intercept_points_along_polyline_with_ball(points,
-                                              graph,
-                                              polyline,
-                                              ball_radius=50):
+def intercept_points_along_polyline_with_ball(points, graph, polyline, ball_radius=50):
     """
     Return a list of intercept point along a polyline by a ball at each
-    points.
+    point.
 
     :param points: ndarray of points
     :param polyline: ndarray ot points
@@ -298,15 +298,13 @@ def intercept_points_along_polyline_with_ball(points,
     """
     intercepted_points = list()
     for point in polyline:
-        points_in_ball = intercept_points_with_ball(points,
-                                                    point,
-                                                    ball_radius)
+        points_in_ball = intercept_points_with_ball(points, point, ball_radius)
 
         points_in_ball = list(map(tuple, points_in_ball))
 
-        points_in_ball = connected_points_with_point(points_in_ball,
-                                                     graph,
-                                                     tuple(point))
+        points_in_ball = connected_points_with_point(
+            points_in_ball, graph, tuple(point)
+        )
 
         intercepted_points.append(points_in_ball)
 

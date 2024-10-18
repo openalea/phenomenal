@@ -11,6 +11,7 @@
 A 3D 6-subiteration thinning algorithm for extracting medial lines
 of Kalman Palagyi and Attila Kuba implementation
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -19,77 +20,53 @@ import numpy
 
 
 def _build_mask():
-    M1 = numpy.array([[['x', 'x', '0'],
-                       ['x', 'x', '0'],
-                       ['x', 'x', '0']],
+    M1 = numpy.array(
+        [
+            [["x", "x", "0"], ["x", "x", "0"], ["x", "x", "0"]],
+            [["x", "x", "0"], ["1", "1", "0"], ["x", "x", "0"]],
+            [["x", "x", "0"], ["x", "x", "0"], ["x", "x", "0"]],
+        ]
+    )
 
-                      [['x', 'x', '0'],
-                       ['1', '1', '0'],
-                       ['x', 'x', '0']],
+    M2 = numpy.array(
+        [
+            [[".", ".", "0"], [".", ".", "0"], [".", ".", "0"]],
+            [[".", ".", "0"], ["1", "1", "0"], [".", ".", "0"]],
+            [[".", ".", "."], [".", "1", "."], [".", ".", "."]],
+        ]
+    )
 
-                      [['x', 'x', '0'],
-                       ['x', 'x', '0'],
-                       ['x', 'x', '0']]])
+    M3 = numpy.array(
+        [
+            [[".", ".", "0"], [".", ".", "0"], [".", ".", "."]],
+            [[".", ".", "0"], ["1", "1", "0"], [".", "1", "."]],
+            [[".", ".", "."], [".", "1", "."], [".", ".", "."]],
+        ]
+    )
 
-    M2 = numpy.array([[['.', '.', '0'],
-                       ['.', '.', '0'],
-                       ['.', '.', '0']],
+    M4 = numpy.array(
+        [
+            [[".", ".", "0"], [".", ".", "0"], [".", ".", "0"]],
+            [[".", ".", "0"], ["1", "1", "0"], [".", ".", "0"]],
+            [[".", ".", "0"], [".", ".", "0"], [".", "1", "1"]],
+        ]
+    )
 
-                      [['.', '.', '0'],
-                       ['1', '1', '0'],
-                       ['.', '.', '0']],
+    M5 = numpy.array(
+        [
+            [["0", "0", "0"], ["0", "0", "0"], ["0", "0", "0"]],
+            [["x", "x", "0"], ["0", "1", "0"], ["x", "x", "0"]],
+            [["x", "x", "0"], ["1", "x", "0"], ["x", "x", "0"]],
+        ]
+    )
 
-                      [['.', '.', '.'],
-                       ['.', '1', '.'],
-                       ['.', '.', '.']]])
-
-    M3 = numpy.array([[['.', '.', '0'],
-                       ['.', '.', '0'],
-                       ['.', '.', '.']],
-
-                      [['.', '.', '0'],
-                       ['1', '1', '0'],
-                       ['.', '1', '.']],
-
-                      [['.', '.', '.'],
-                       ['.', '1', '.'],
-                       ['.', '.', '.']]])
-
-    M4 = numpy.array([[['.', '.', '0'],
-                       ['.', '.', '0'],
-                       ['.', '.', '0']],
-
-                      [['.', '.', '0'],
-                       ['1', '1', '0'],
-                       ['.', '.', '0']],
-
-                      [['.', '.', '0'],
-                       ['.', '.', '0'],
-                       ['.', '1', '1']]])
-
-    M5 = numpy.array([[['0', '0', '0'],
-                       ['0', '0', '0'],
-                       ['0', '0', '0']],
-
-                      [['x', 'x', '0'],
-                       ['0', '1', '0'],
-                       ['x', 'x', '0']],
-
-                      [['x', 'x', '0'],
-                       ['1', 'x', '0'],
-                       ['x', 'x', '0']]])
-
-    M6 = numpy.array([[['0', '0', '0'],
-                       ['0', '0', '0'],
-                       ['.', '.', '0']],
-
-                      [['0', '0', '0'],
-                       ['0', '1', '0'],
-                       ['1', '.', '0']],
-
-                      [['.', '.', '0'],
-                       ['1', '.', '0'],
-                       ['.', '.', '0']]])
+    M6 = numpy.array(
+        [
+            [["0", "0", "0"], ["0", "0", "0"], [".", ".", "0"]],
+            [["0", "0", "0"], ["0", "1", "0"], ["1", ".", "0"]],
+            [[".", ".", "0"], ["1", ".", "0"], [".", ".", "0"]],
+        ]
+    )
 
     U = [M1, M2, M3, M4, M5, M6]
 
@@ -122,13 +99,13 @@ def _check_mask(T, M):
     for i in range(3):
         for j in range(3):
             for k in range(3):
-                if M[i, j, k] == '.':
+                if M[i, j, k] == ".":
                     continue
-                if M[i, j, k] == '0' and T[i, j, k] != 0:
+                if M[i, j, k] == "0" and T[i, j, k] != 0:
                     return False
-                if M[i, j, k] == '1' and T[i, j, k] != 1:
+                if M[i, j, k] == "1" and T[i, j, k] != 1:
                     return False
-                if M[i, j, k] == 'x':
+                if M[i, j, k] == "x":
                     x_present = True
                     if T[i, j, k] == 1:
                         x_ok = True
@@ -147,7 +124,7 @@ def _applied_masks(mat, masks):
     xx, yy, zz = numpy.where(mat == 1)
     for i in range(len(xx)):
         x, y, z = xx[i], yy[i], zz[i]
-        block = mat[x - 1:x + 2, y - 1:y + 2, z - 1:z + 2]
+        block = mat[x - 1 : x + 2, y - 1 : y + 2, z - 1 : z + 2]
 
         for mask in masks:
             if _check_mask(block, mask):
@@ -157,7 +134,7 @@ def _applied_masks(mat, masks):
 
 
 def skeletonize_thinning(img):
-    """ A 3D 6-subiteration thinning algorithm for extracting medial lines
+    """A 3D 6-subiteration thinning algorithm for extracting medial lines
     of Kalman Palagyi and Attila Kuba implementation
 
     Parameters
@@ -170,10 +147,8 @@ def skeletonize_thinning(img):
         The thinned image.
     """
 
-
     mat_len_x, mat_len_y, mat_len_z = img.shape
-    mat_tmp = numpy.zeros((mat_len_x + 2, mat_len_y + 2, mat_len_z + 2),
-                          dtype=int)
+    mat_tmp = numpy.zeros((mat_len_x + 2, mat_len_y + 2, mat_len_z + 2), dtype=int)
     mat_tmp[1:-1, 1:-1, 1:-1] = img.astype(int)
 
     U, D, N, S, E, W = _build_mask()
@@ -182,7 +157,6 @@ def skeletonize_thinning(img):
 
     j = 0
     while True:
-
         j += 1
         nb1 = numpy.count_nonzero(mat_tmp)
         mat_tmp = _applied_masks(mat_tmp, U)

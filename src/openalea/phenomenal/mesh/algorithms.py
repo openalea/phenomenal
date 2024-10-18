@@ -10,7 +10,6 @@
 from __future__ import division, print_function, absolute_import
 
 import vtk
-import vtkmodules.util.numpy_support
 import numpy
 import math
 import skimage.measure
@@ -19,27 +18,30 @@ from .vtk_transformation import (
     from_numpy_matrix_to_vtk_image_data,
     from_vtk_poly_data_to_vertices_faces,
     from_vertices_faces_to_vtk_poly_data,
-    from_vtk_image_data_to_voxels_center)
+    from_vtk_image_data_to_voxels_center,
+)
 
 # ==============================================================================
 
-__all__ = ["meshing",
-           "marching_cubes",
-           "smoothing",
-           "decimation",
-           "voxelization",
-           "mesh_surface_area",
-           "from_vertices_faces_to_voxels_position"]
+__all__ = [
+    "meshing",
+    "marching_cubes",
+    "smoothing",
+    "decimation",
+    "voxelization",
+    "mesh_surface_area",
+    "from_vertices_faces_to_voxels_position",
+]
 
 # ==============================================================================
 
 
 def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     """
-    Build a polygonal mesh representation (= list of vertices and faces) 
+    Build a polygonal mesh representation (= list of vertices and faces)
     from a 3d image (= numpy array 3D).
-    
-    More, some option, is available to smooth the 3D object representation and 
+
+    More, some option, is available to smooth the 3D object representation and
     reduce the number triangle.
 
     Firstly :
@@ -55,10 +57,10 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
 
     Parameters
     ----------
-    
+
     image_3d : 3D numpy array
-        3D Array with positive values 
-        
+        3D Array with positive values
+
     smoothing_iteration : int, optional
         Number of iteration for smoothing
 
@@ -85,28 +87,22 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
 
     image_3d = image_3d.astype(numpy.uint8)
 
-    vtk_image_data = from_numpy_matrix_to_vtk_image_data(
-        image_3d)
+    vtk_image_data = from_numpy_matrix_to_vtk_image_data(image_3d)
 
     vtk_poly_data = marching_cubes(vtk_image_data, verbose=verbose)
 
     if smoothing_iteration > 1:
         vtk_poly_data = smoothing(
-            vtk_poly_data,
-            number_of_iteration=smoothing_iteration,
-            verbose=verbose)
+            vtk_poly_data, number_of_iteration=smoothing_iteration, verbose=verbose
+        )
 
     if 0.0 < reduction < 1.0:
-        vtk_poly_data = decimation(
-            vtk_poly_data,
-            reduction=reduction,
-            verbose=verbose)
+        vtk_poly_data = decimation(vtk_poly_data, reduction=reduction, verbose=verbose)
 
     if vtk_poly_data.GetNumberOfPoints() == 0:
         return list(), list()
 
-    vertices, faces, color = from_vtk_poly_data_to_vertices_faces(
-        vtk_poly_data)
+    vertices, faces, color = from_vtk_poly_data_to_vertices_faces(vtk_poly_data)
     vertices = vertices * image_3d.voxels_size + image_3d.world_coordinate
 
     return vertices, faces
@@ -148,9 +144,11 @@ def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
 
     """
     if verbose:
-        print(("=" * 80 + "\n" +
-               "Marching cubes : \n"
-               "\tIso value :{}\n").format(iso_value))
+        print(
+            ("=" * 80 + "\n" + "Marching cubes : \n" "\tIso value :{}\n").format(
+                iso_value
+            )
+        )
 
     surface = vtk.vtkMarchingCubes()
     if vtk.VTK_MAJOR_VERSION <= 5:
@@ -165,20 +163,22 @@ def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
     vtk_poly_data = surface.GetOutput()
 
     if verbose:
-
-        print(("\tThere are {} points.\n"
-               "\tThere are {} polygons.\n"
-               + "=" * 80).format(vtk_poly_data.GetNumberOfPoints(),
-                                  vtk_poly_data.GetNumberOfPolys()))
+        print(
+            ("\tThere are {} points.\n" "\tThere are {} polygons.\n" + "=" * 80).format(
+                vtk_poly_data.GetNumberOfPoints(), vtk_poly_data.GetNumberOfPolys()
+            )
+        )
 
     return vtk_poly_data
 
 
-def smoothing(vtk_poly_data,
-              feature_angle=120.0,
-              number_of_iteration=5,
-              pass_band=0.01,
-              verbose=False):
+def smoothing(
+    vtk_poly_data,
+    feature_angle=120.0,
+    number_of_iteration=5,
+    pass_band=0.01,
+    verbose=False,
+):
     """
     Call of vtkWindowedSincPolyDataFilter on a vtk_poly_data to smoothing the
     edge of poly_data
@@ -215,12 +215,14 @@ def smoothing(vtk_poly_data,
     """
 
     if verbose:
-        print(("=" * 80 + "\n" +
-               "Smoothing : \n"
-               "\tFeature angle :{}\n"
-               "\tNumber of iteration :{}\n"
-               "\tPass band : {}\n\n" +
-               "=" * 80).format(feature_angle, number_of_iteration, pass_band))
+        print(
+            (
+                "=" * 80 + "\n" + "Smoothing : \n"
+                "\tFeature angle :{}\n"
+                "\tNumber of iteration :{}\n"
+                "\tPass band : {}\n\n" + "=" * 80
+            ).format(feature_angle, number_of_iteration, pass_band)
+        )
 
     smoother = vtk.vtkWindowedSincPolyDataFilter()
 
@@ -267,18 +269,21 @@ def decimation(vtk_poly_data, reduction=0.95, verbose=False):
         Point and cell attribute values (e.g., scalars, vectors, etc.)
     """
     if verbose:
-
-        print(("=" * 80 + "\n" +
-               "Decimation : \n"
-               "\tReduction (percentage) :{}\n"
-               "\n"
-               "\tBefore decimation\n"
-               "\t-----------------\n"
-               "\tThere are {} points.\n"
-               "\tThere are {} polygons.\n").format(
-            reduction,
-            vtk_poly_data.GetNumberOfPoints(),
-            vtk_poly_data.GetNumberOfPolys()))
+        print(
+            (
+                "=" * 80 + "\n" + "Decimation : \n"
+                "\tReduction (percentage) :{}\n"
+                "\n"
+                "\tBefore decimation\n"
+                "\t-----------------\n"
+                "\tThere are {} points.\n"
+                "\tThere are {} polygons.\n"
+            ).format(
+                reduction,
+                vtk_poly_data.GetNumberOfPoints(),
+                vtk_poly_data.GetNumberOfPolys(),
+            )
+        )
 
     decimate = vtk.vtkQuadricDecimation()
     decimate.SetTargetReduction(reduction)
@@ -295,22 +300,27 @@ def decimation(vtk_poly_data, reduction=0.95, verbose=False):
     vtk_poly_decimated.ShallowCopy(decimate.GetOutput())
 
     if verbose:
-        print(("\tAfter decimation\n"
-               "\t-----------------\n"
-               "\tThere are {} points.\n"
-               "\tThere are {} polygons.\n" +
-               80 * "=").format(reduction,
-                                vtk_poly_data.GetNumberOfPoints(),
-                                vtk_poly_data.GetNumberOfPolys()))
+        print(
+            (
+                "\tAfter decimation\n"
+                "\t-----------------\n"
+                "\tThere are {} points.\n"
+                "\tThere are {} polygons.\n" + 80 * "="
+            ).format(
+                reduction,
+                vtk_poly_data.GetNumberOfPoints(),
+                vtk_poly_data.GetNumberOfPolys(),
+            )
+        )
 
     return vtk_poly_decimated
 
 
 def voxelization(vtk_poly_data, voxels_size=1):
     """
-    Transform a mesh vtk poly data mesh representation objet to a list of 
+    Transform a mesh vtk poly data mesh representation objet to a list of
     voxels position, according to a voxels size float.
-    
+
     Parameters
     ----------
     vtk_poly_data : vtkPolyData
@@ -331,11 +341,11 @@ def voxelization(vtk_poly_data, voxels_size=1):
     vtk_image_data : vtkImageData
         Topologically and geometrically regular array of data
 
-        vtkImageData is a data object that is a concrete implementation of 
-        vtkDataSet. vtkImageData represents a geometric structure that is a 
-        topological and geometrical regular array of points. 
+        vtkImageData is a data object that is a concrete implementation of
+        vtkDataSet. vtkImageData represents a geometric structure that is a
+        topological and geometrical regular array of points.
         Examples include volumes (voxel data) and pixmaps
-    
+
     """
     # ==========================================================================
     # Build White Image
@@ -353,8 +363,7 @@ def voxelization(vtk_poly_data, voxels_size=1):
 
     dim = [0] * 3
     for i in range(3):
-        dim[i] = int(math.ceil(
-            (bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]))
+        dim[i] = int(math.ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]))
 
     white_image.SetDimensions(dim)
     white_image.SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1)
@@ -395,7 +404,6 @@ def voxelization(vtk_poly_data, voxels_size=1):
 
     vtk.vtkCleanPolyData()
 
-
     # ==========================================================================
     # Cut the corresponding white image and set the background:
 
@@ -411,9 +419,8 @@ def voxelization(vtk_poly_data, voxels_size=1):
     return imgstenc.GetOutput()
 
 
-def mesh_surface_area(vertices,
-                      faces):
-    """ Return the surface_area of a mesh
+def mesh_surface_area(vertices, faces):
+    """Return the surface_area of a mesh
 
     :param vertices:
     :param faces:
@@ -422,10 +429,7 @@ def mesh_surface_area(vertices,
     return skimage.measure.mesh_surface_area(vertices, faces)
 
 
-def from_vertices_faces_to_voxels_position(vertices,
-                                           faces,
-                                           voxels_size=4):
-
+def from_vertices_faces_to_voxels_position(vertices, faces, voxels_size=4):
     poly_data = from_vertices_faces_to_vtk_poly_data(vertices, faces)
     image_data = voxelization(poly_data, voxels_size=voxels_size)
     voxels_position = from_vtk_image_data_to_voxels_center(image_data)

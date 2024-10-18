@@ -20,21 +20,42 @@ from ..object import Image3D
 
 def remove_internal(image_3d):
     len_x, len_y, len_z = image_3d.shape
-    im = Image3D.zeros((len_x + 2, len_y + 2, len_z + 2),
-                       voxels_size=image_3d.voxels_size)
+    im = Image3D.zeros(
+        (len_x + 2, len_y + 2, len_z + 2), voxels_size=image_3d.voxels_size
+    )
     im[1:-1, 1:-1, 1:-1] = image_3d
 
     xx, yy, zz = numpy.where(image_3d == 1)
 
-    ijk = [(-1, -1, -1), (-1, -1, 0), (-1, -1, 1),
-           (-1, 0, -1), (-1, 0, 0), (-1, 0, 1),
-           (-1, 1, -1), (-1, 1, 0), (-1, 1, 1),
-           (0, -1, -1), (0, -1, 0), (0, -1, 1),
-           (0, 0, -1), (0, 0, 0), (0, 0, 1),
-           (0, 1, -1), (0, 1, 0), (0, 1, 1),
-           (1, -1, -1), (1, -1, 0), (1, -1, 1),
-           (1, 0, -1), (1, 0, 0), (1, 0, 1),
-           (1, 1, -1), (1, 1, 0), (1, 1, 1)]
+    ijk = [
+        (-1, -1, -1),
+        (-1, -1, 0),
+        (-1, -1, 1),
+        (-1, 0, -1),
+        (-1, 0, 0),
+        (-1, 0, 1),
+        (-1, 1, -1),
+        (-1, 1, 0),
+        (-1, 1, 1),
+        (0, -1, -1),
+        (0, -1, 0),
+        (0, -1, 1),
+        (0, 0, -1),
+        (0, 0, 0),
+        (0, 0, 1),
+        (0, 1, -1),
+        (0, 1, 0),
+        (0, 1, 1),
+        (1, -1, -1),
+        (1, -1, 0),
+        (1, -1, 1),
+        (1, 0, -1),
+        (1, 0, 0),
+        (1, 0, 1),
+        (1, 1, -1),
+        (1, 1, 0),
+        (1, 1, 1),
+    ]
 
     def removable(x, y, z):
         for i, j, k in ijk:
@@ -65,14 +86,14 @@ def labeling_connected_component(image_3d):
 
     @njit(cache=True)
     def get_neighbors(x, y, z):
-        l = list()
+        neighbors = list()
         for i in [-1, 0, 1]:
             for j in [-1, 0, 1]:
                 for k in [-1, 0, 1]:
                     ind = x + i, y + j, z + k
                     if im[ind] == 1:
-                        l.append(ind)
-        return l
+                        neighbors.append(ind)
+        return neighbors
 
     num_label = 1
     for i in range(len(xx)):

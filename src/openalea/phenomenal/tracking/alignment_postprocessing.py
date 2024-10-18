@@ -9,7 +9,10 @@ Functions used in the following post processing steps after the alignment of seq
 """
 
 import numpy as np
-from openalea.phenomenal.tracking.polyline_utils import polyline_quantile_coordinate, polyline_length
+from openalea.phenomenal.tracking.polyline_utils import (
+    polyline_quantile_coordinate,
+    polyline_length,
+)
 
 
 def detect_abnormal_ranks(alignment_matrix):
@@ -31,10 +34,15 @@ def detect_abnormal_ranks(alignment_matrix):
     """
 
     alignment_matrix = np.array(alignment_matrix)
-    counts = [len([k for k in alignment_matrix[:, i] if k != -1]) for i in range(alignment_matrix.shape[1])]
+    counts = [
+        len([k for k in alignment_matrix[:, i] if k != -1])
+        for i in range(alignment_matrix.shape[1])
+    ]
     abnormal_ranks = []
     for i in range(len(counts)):
-        if 0 < i < len(counts) - 1 and counts[i] < 0.5 * np.mean([counts[i - 1], counts[i + 1]]):
+        if 0 < i < len(counts) - 1 and counts[i] < 0.5 * np.mean(
+            [counts[i - 1], counts[i + 1]]
+        ):
             abnormal_ranks.append(i)
 
     return abnormal_ranks

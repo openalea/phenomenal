@@ -1,10 +1,10 @@
-""" Multiple sequence alignment """
+"""Multiple sequence alignment"""
 
 import numpy as np
 from copy import deepcopy
 
 
-def needleman_wunsch(X, Y, gap, gap_extremity_factor=1.):
+def needleman_wunsch(X, Y, gap, gap_extremity_factor=1.0):
     """
     Performs pairwise alignment of profiles X and Y with Needleman-Wunsch algorithm.
     A profile is defined as an array of one or more sequences of the same length.
@@ -40,8 +40,8 @@ def needleman_wunsch(X, Y, gap, gap_extremity_factor=1.):
 
     # Optimal score at each possible pair of characters.
     F = np.zeros((nx + 1, ny + 1))
-    F[:, 0] = np.linspace(start=0, stop=-nx*gap_extremity, num=nx+1)
-    F[0, :] = np.linspace(start=0, stop=-ny*gap_extremity, num=ny+1)
+    F[:, 0] = np.linspace(start=0, stop=-nx * gap_extremity, num=nx + 1)
+    F[0, :] = np.linspace(start=0, stop=-ny * gap_extremity, num=ny + 1)
 
     # Pointers to trace through an optimal alignment.
     P = np.zeros((nx + 1, ny + 1))
@@ -52,7 +52,6 @@ def needleman_wunsch(X, Y, gap, gap_extremity_factor=1.):
     t = np.zeros(3)
     for i in range(nx):
         for j in range(ny):
-
             # TODO : gap argument should be useless ?
             t[0] = F[i, j] - alignment_score(X[:, i, :], Y[:, j, :], gap_extremity)
 
@@ -179,7 +178,6 @@ def insert_gaps(all_sequences, seq_indexes, alignment):
 
     for si in seq_indexes:
         for gi in gap_indexes:
-
             if all_sequences2[si].size == 0:
                 all_sequences2[si] = np.full((1, vec_len), np.nan)
             else:
@@ -188,7 +186,9 @@ def insert_gaps(all_sequences, seq_indexes, alignment):
     return all_sequences2
 
 
-def multi_alignment(sequences, gap, gap_extremity_factor=1., start=0, align_range=None):
+def multi_alignment(
+    sequences, gap, gap_extremity_factor=1.0, start=0, align_range=None
+):
     """
     Multiple sequence alignment algorithm to align n sequences, using a progressive method. At each step, a sequence (Y)
     is aligned with a matrix (X) corresponding to a profile (i.e. the alignement of k sequences) resulting in the
@@ -214,20 +214,27 @@ def multi_alignment(sequences, gap, gap_extremity_factor=1., start=0, align_rang
     -------
     """
 
-    assert(-1 <= start <= len(sequences) - 1)
+    assert -1 <= start <= len(sequences) - 1
 
     aligned_sequences = deepcopy(sequences)
 
     # init
     # (k_start -> 0) then (k_start -> n)
     k_start = len(aligned_sequences) - 1 if start == -1 else start
-    alignment_order = np.array(list(range(0, k_start + 1)[::-1]) + list(range(k_start + 1, len(aligned_sequences))))
+    alignment_order = np.array(
+        list(range(0, k_start + 1)[::-1])
+        + list(range(k_start + 1, len(aligned_sequences)))
+    )
     for k in range(1, len(aligned_sequences)):
         xi = alignment_order[:k]  # ref
         yi = alignment_order[k]
 
         # select the 2 profiles to align
-        xi_in_range = xi if align_range is None else [val for val in xi if abs(val - k) <= align_range]
+        xi_in_range = (
+            xi
+            if align_range is None
+            else [val for val in xi if abs(val - k) <= align_range]
+        )
         X = np.array([aligned_sequences[i] for i in xi_in_range])
         Y = np.array([aligned_sequences[yi]])
 
@@ -235,7 +242,9 @@ def multi_alignment(sequences, gap, gap_extremity_factor=1., start=0, align_rang
         rx, ry = needleman_wunsch(X, Y, gap, gap_extremity_factor=gap_extremity_factor)
 
         # update all sequences from sq0 to sq yi
-        aligned_sequences = insert_gaps(aligned_sequences, xi, rx)  # xi = sequences that all have already been aligned
+        aligned_sequences = insert_gaps(
+            aligned_sequences, xi, rx
+        )  # xi = sequences that all have already been aligned
         aligned_sequences = insert_gaps(aligned_sequences, [yi], ry)
 
     # convert list of aligned sequences (all having the same length) in a matrix of vector indexes (-1 = gap)

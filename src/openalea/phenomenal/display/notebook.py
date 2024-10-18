@@ -18,19 +18,12 @@ from ._order_color_map import order_color_map
 
 def plot_voxel(voxels_position, marker="box", color="green", size=2.0):
     if len(voxels_position) > 0:
-        x, y, z = (voxels_position[:, 0],
-                   voxels_position[:, 1],
-                   voxels_position[:, 2])
+        x, y, z = (voxels_position[:, 0], voxels_position[:, 1], voxels_position[:, 2])
 
         ipyvolume.scatter(x, y, z, size=size, marker=marker, color=color)
 
 
-def show_voxel_grid(voxel_grid,
-                    color='green',
-                    size=2,
-                    width=500,
-                    height=500):
-
+def show_voxel_grid(voxel_grid, color="green", size=2, width=500, height=500):
     ipyvolume.figure(width=width, height=height, controls=True, lighting=True)
     plot_voxel(voxel_grid.voxels_position, size=size, color=color)
 
@@ -49,18 +42,12 @@ def show_voxel_grid(voxel_grid,
     ipyvolume.show()
 
 
-def show_mesh(vertices,
-              faces,
-              color='green',
-              width=500,
-              height=500,
-              colors=None):
-
+def show_mesh(vertices, faces, color="green", width=500, height=500, colors=None):
     ipyvolume.figure(width=width, height=height)
     ipyvolume.view(0, 90)
     ipyvolume.plot_trisurf(
-        vertices[:, 0], vertices[:, 1], vertices[:, 2],
-        triangles=faces, color=color)
+        vertices[:, 0], vertices[:, 1], vertices[:, 2], triangles=faces, color=color
+    )
 
     x_min = vertices[:, 0].min()
     x_max = vertices[:, 0].max()
@@ -78,13 +65,15 @@ def show_mesh(vertices,
     ipyvolume.show()
 
 
-def show_skeleton(voxel_skeleton,
-                  size=2,
-                  with_voxel=True,
-                  voxels_color='green',
-                  polyline_color='red',
-                  width=500, height=500):
-
+def show_skeleton(
+    voxel_skeleton,
+    size=2,
+    with_voxel=True,
+    voxels_color="green",
+    polyline_color="red",
+    width=500,
+    height=500,
+):
     ipyvolume.figure(width=width, height=height)
     ipyvolume.view(0, 90)
 
@@ -97,10 +86,12 @@ def show_skeleton(voxel_skeleton,
 
     for vs in voxel_skeleton.segments:
         for color, index in [("blue", 0), ("red", -1)]:
-            plot_voxel(numpy.array([vs.polyline[index]]),
-                       size=size * 2,
-                       marker="sphere",
-                       color=color)
+            plot_voxel(
+                numpy.array([vs.polyline[index]]),
+                size=size * 2,
+                marker="sphere",
+                color=color,
+            )
 
     x_min = voxels_position[:, 0].min()
     x_max = voxels_position[:, 0].max()
@@ -115,22 +106,18 @@ def show_skeleton(voxel_skeleton,
     ipyvolume.show()
 
 
-def show_segmentation(voxel_segmentation,
-                      size=2.0,
-                      width=500, height=500):
-
+def show_segmentation(voxel_segmentation, size=2.0, width=500, height=500):
     ipyvolume.figure(width=width, height=height)
     ipyvolume.view(0, 90)
 
     def get_color(label, info):
-
         if label == "stem":
             color = (128, 128, 128)
         elif label == "unknown":
             color = (255, 255, 255)
-        elif 'pm_leaf_number' in info:
+        elif "pm_leaf_number" in info:
             color_map = order_color_map()
-            color = color_map[info['pm_leaf_number']]
+            color = color_map[info["pm_leaf_number"]]
             color = tuple([int(255 * x) for x in color])
         else:
             if label == "growing_leaf":
@@ -141,29 +128,30 @@ def show_segmentation(voxel_segmentation,
         return "rgb" + str(color)
 
     for vo in voxel_segmentation.voxel_organs:
+        voxels_position = numpy.array(list(map(tuple, list(vo.voxels_position()))))
 
-        voxels_position = numpy.array(
-            list(map(tuple, list(vo.voxels_position()))))
+        plot_voxel(voxels_position, size=size * 1, color=get_color(vo.label, vo.info))
 
-        plot_voxel(voxels_position,
-                   size=size * 1,
-                   color=get_color(vo.label, vo.info))
+        if (
+            (vo.label == "mature_leaf" or vo.label == "growing_leaf")
+            and len(vo.voxel_segments) > 0
+            and "pm_position_tip" in vo.info
+        ):
+            plot_voxel(
+                numpy.array([vo.info["pm_position_tip"]]),
+                size=size * 2,
+                color="red",
+                marker="sphere",
+            )
 
-        if ((vo.label == "mature_leaf" or vo.label == "growing_leaf") and
-                len(vo.voxel_segments) > 0 and "pm_position_tip" in vo.info):
+            plot_voxel(
+                numpy.array([vo.info["pm_position_base"]]),
+                size=size * 2,
+                color="blue",
+                marker="sphere",
+            )
 
-            plot_voxel(numpy.array([vo.info['pm_position_tip']]),
-                       size=size * 2,
-                       color="red",
-                       marker="sphere")
-
-            plot_voxel(numpy.array([vo.info['pm_position_base']]),
-                       size=size * 2,
-                       color="blue",
-                       marker="sphere")
-
-    voxels_position = numpy.array(list(
-        voxel_segmentation.get_voxels_position()))
+    voxels_position = numpy.array(list(voxel_segmentation.get_voxels_position()))
 
     x_min = voxels_position[:, 0].min()
     x_max = voxels_position[:, 0].max()
@@ -178,29 +166,28 @@ def show_segmentation(voxel_segmentation,
     ipyvolume.show()
 
 
-def show_syntehtic_plant(vertices, faces, meta_data=None,
-                         size=0.5, color='green',
-                         width=500, height=500):
-
+def show_syntehtic_plant(
+    vertices, faces, meta_data=None, size=0.5, color="green", width=500, height=500
+):
     ipyvolume.figure(width=width, height=height)
     ipyvolume.view(0, 90)
 
     ipyvolume.plot_trisurf(
-        vertices[:, 0], vertices[:, 1], vertices[:, 2],
-        triangles=faces, color=color)
+        vertices[:, 0], vertices[:, 1], vertices[:, 2], triangles=faces, color=color
+    )
 
     voxels_position = vertices
     if meta_data is not None:
-        ranks = meta_data['leaf_order']
-        polylines = {n: list(map(
-            numpy.array, list(zip(*meta_data['leaf_polylines'][i]))))
-                     for i, n in enumerate(ranks)}
+        ranks = meta_data["leaf_order"]
+        polylines = {
+            n: list(map(numpy.array, list(zip(*meta_data["leaf_polylines"][i]))))
+            for i, n in enumerate(ranks)
+        }
 
         voxels = set()
         for leaf_order in polylines:
             x, y, z, r = polylines[leaf_order]
-            polyline = numpy.array(list(zip(x, y, z))) * 10 - \
-                       numpy.array([0, 0, 750])
+            polyline = numpy.array(list(zip(x, y, z))) * 10 - numpy.array([0, 0, 750])
 
             plot_voxel(polyline, size=size, color="red")
             voxels = voxels.union(set(map(tuple, list(polyline))))

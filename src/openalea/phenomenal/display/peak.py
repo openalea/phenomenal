@@ -14,7 +14,6 @@ import matplotlib.pyplot
 
 
 def show_values(list_values, list_color):
-
     matplotlib.pyplot.figure()
     for values, color in zip(list_values, list_color):
         plot_values(values, color)
@@ -22,5 +21,4 @@ def show_values(list_values, list_color):
 
 
 def plot_values(values, color):
-
     matplotlib.pyplot.plot(range(len(values)), values, color)

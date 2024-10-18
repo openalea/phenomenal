@@ -3,14 +3,17 @@ import numpy as np
 
 def polyline_length(pl):
     return np.sum(
-        [np.linalg.norm(np.array(pl[k]) - np.array(pl[k + 1])) for k in
-         range(len(pl) - 1)])
+        [
+            np.linalg.norm(np.array(pl[k]) - np.array(pl[k + 1]))
+            for k in range(len(pl) - 1)
+        ]
+    )
 
 
 def polyline_quantile_coordinate(pl, q):
     pl = np.array(pl)
     d = np.diff(pl, axis=0)
-    segdists = np.sqrt((d ** 2).sum(axis=1))
+    segdists = np.sqrt((d**2).sum(axis=1))
     s = np.cumsum(segdists) / np.sum(segdists)
     s = np.concatenate((np.array([0]), s))
 
@@ -26,7 +29,7 @@ def polyline_quantile_coordinate(pl, q):
 
 
 def polyline_until_z(pl, z):
-    """ return the polyline section starting from height z """
+    """return the polyline section starting from height z"""
     # TODO : it's approximate
     if np.max(np.array(pl)[:, 2]) <= z:
         i = 0
@@ -40,4 +43,5 @@ def polyline_simplification(pl, n):
         return np.array(pl)
     else:
         return np.array(
-            [polyline_quantile_coordinate(pl, q) for q in np.linspace(0, 1, n)])
+            [polyline_quantile_coordinate(pl, q) for q in np.linspace(0, 1, n)]
+        )

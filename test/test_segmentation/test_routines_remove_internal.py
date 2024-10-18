@@ -19,7 +19,6 @@ import openalea.phenomenal.segmentation as phm_seg
 
 
 def test_simply_working_1():
-
     image_3d = phm_obj.Image3D.ones((10, 10, 10))
     im = phm_seg.remove_internal(image_3d)
 
@@ -34,6 +33,6 @@ def test_simply_working_1():
 
 if __name__ == "__main__":
     for func_name in dir():
-        if func_name.startswith('test_'):
+        if func_name.startswith("test_"):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()
