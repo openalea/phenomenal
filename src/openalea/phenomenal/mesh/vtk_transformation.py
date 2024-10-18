@@ -27,7 +27,7 @@ __all__ = [
 # ==============================================================================
 
 
-def voxel_grid_to_vtk_poly_data(voxel_grid, color=None):
+def voxel_grid_to_vtk_poly_data(voxel_grid):
     voxels_position = voxel_grid.voxels_position
     voxels_size = voxel_grid.voxels_size
 

@@ -2,6 +2,7 @@ import os
 import pytest
 
 import openalea.phenomenal.object.voxelSegmentation as phm_seg
+from openalea.phenomenal.tracking.display import plot_polylines
 
 from openalea.phenomenal.tracking.phenomenal_coupling import phm_to_phenotrack_input
 from openalea.phenomenal.tracking.trackedPlant import TrackedPlant
@@ -99,3 +100,11 @@ def test_tracking_growing(time_series):
     output, _ = trackedplant.output()
 
     assert [len(o) == len(s.leaves) for o, s in zip(output, trackedplant.snapshots)]
+
+def test_display(time_series):
+    phm_segs, timestamps = time_series
+    phenotrack_segs, checks_stem = phm_to_phenotrack_input(phm_segs, timestamps)
+    for seg in phenotrack_segs:
+        print(seg)
+        print(seg['polylines_sequence'])
+        plot_polylines(seg['polylines_sequence'],ranks=[0])

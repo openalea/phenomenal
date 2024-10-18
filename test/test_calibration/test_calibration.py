@@ -90,17 +90,23 @@ def test_find_points():
 
 
 def test_find_frame():
-    image_points = {'side': [(478, 1969), (1550, 1976), (1250, 2193), (776, 2191)],
-                    'top': [(473, 255), (1951, 258), (1460, 1799), (958, 1798)]}
+    image_points = {
+        "side": [(478, 1969), (1550, 1976), (1250, 2193), (776, 2191)],
+        "top": [(473, 255), (1951, 258), (1460, 1799), (958, 1798)],
+    }
     calib = phm_calib.Calibration.from_dict(lemnatec2)
-    fr, fpts = calib.find_frame(image_points, [('x','y',0) for _ in image_points['side']],
-               fixed_parameters={'_pos_x': 0, '_pos_y': 0},
-                                )
+    fr, fpts = calib.find_frame(
+        image_points,
+        [("x", "y", 0) for _ in image_points["side"]],
+        fixed_parameters={"_pos_x": 0, "_pos_y": 0},
+    )
     numpy.testing.assert_almost_equal(fr._pos_z, -938.86, decimal=2)
-    expected = [(-710.748065,  732.711416, 0),
-                (694.650717,  736.685707, 0),
-                (232.955844, -735.798007, 0),
-                (-244.093682, -736.321985, 0)]
+    expected = [
+        (-710.748065, 732.711416, 0),
+        (694.650717, 736.685707, 0),
+        (232.955844, -735.798007, 0),
+        (-244.093682, -736.321985, 0),
+    ]
     numpy.testing.assert_allclose(fpts, expected, rtol=0.01)
 
 

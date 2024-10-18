@@ -9,8 +9,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from __future__ import division, print_function
-
 import os
 
 import openalea.phenomenal.data as phm_data
@@ -43,10 +41,3 @@ def test_maize():
     vms.write_to_json_gz(filename)
     phm_obj.VoxelSegmentation.read_from_json_gz(filename)
     os.remove(filename)
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()
