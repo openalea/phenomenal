@@ -10,6 +10,7 @@
 """
 Formats module to read/write image
 """
+
 # ==============================================================================
 from __future__ import division, print_function
 
@@ -43,8 +44,7 @@ def write_image(filename, image):
     :param image: numpy image to write
     :return: None
     """
-    if (os.path.dirname(filename) and not os.path.exists(
-            os.path.dirname(filename))):
+    if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
 
     cv2.imwrite(filename, image)

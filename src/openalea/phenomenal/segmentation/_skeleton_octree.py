@@ -8,8 +8,9 @@
 #
 # ==============================================================================
 """
-    This module is actually deprecated
+This module is actually deprecated
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -35,25 +36,23 @@ def find_base_stem_position_octree(octree, voxel_size, neighbor_size=50):
     def func_get(node):
         return node.position
 
-    l = octree.root.get_nodes(func_if_true_add_node=func_if_true_add_node,
-                              func_get=func_get)
+    l = octree.root.get_nodes(
+        func_if_true_add_node=func_if_true_add_node, func_get=func_get
+    )
 
     index = numpy.argmin(numpy.array(l)[:, 2])
 
     return numpy.array(l)[index]
 
 
-def skeletonize_octree(voxel_octree,
-                       voxels_size_to_skeletonize=4,
-                       distance_planes=1,
-                       voxels_size_output=4):
-
+def skeletonize_octree(
+    voxel_octree, voxels_size_to_skeletonize=4, distance_planes=1, voxels_size_output=4
+):
     # ==========================================================================
 
     vpc = voxel_octree.get_voxel_point_cloud(voxels_size_to_skeletonize)
     voxel_graph = graph_from_voxel_grid(vpc)
-    voxel_skeleton = skeletonize(voxel_graph, graph,
-                                 distance_plane=distance_planes)
+    voxel_skeleton = skeletonize(voxel_graph, graph, distance_plane=distance_planes)
 
     # return voxel_skeleton, voxel_graph
 
@@ -65,20 +64,20 @@ def skeletonize_octree(voxel_octree,
     # ==========================================================================
 
     x_stem, y_stem, z_stem = find_base_stem_position_octree(
-        voxel_octree, voxels_size_output)
+        voxel_octree, voxels_size_output
+    )
 
     vpc = voxel_octree.get_voxel_point_cloud(voxels_size_output)
     voxel_graph = voxel_graph_from_voxel_grid(vpc)
     all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
-        voxel_graph.graph, (x_stem, y_stem, z_stem), weight="weight")
+        voxel_graph.graph, (x_stem, y_stem, z_stem), weight="weight"
+    )
 
     for voxel_segment in voxel_skeleton.segments:
-
         voxels_position = list()
         for position in voxel_segment.voxels_position:
             node = voxel_octree.get_node_position(position)
-            positions = node.get_sons_voxels_position_with_size(
-                voxels_size_output)
+            positions = node.get_sons_voxels_position_with_size(voxels_size_output)
             voxels_position.extend(positions)
 
         voxel_segment.voxels_position = voxels_position
@@ -90,8 +89,7 @@ def skeletonize_octree(voxel_octree,
         voxels_position = list()
         for position in voxel_segment.polylines[0]:
             node = voxel_octree.get_node_position(position)
-            positions = node.get_sons_voxels_position_with_size(
-                voxels_size_output)
+            positions = node.get_sons_voxels_position_with_size(voxels_size_output)
             voxels_position.extend(positions)
 
         polyline = None

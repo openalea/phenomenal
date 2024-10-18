@@ -17,7 +17,6 @@ from .display import Display
 
 
 class Scene(Display):
-
     def __init__(self):
         Display.__init__(self)
 
@@ -41,29 +40,23 @@ class Scene(Display):
     # ==========================================================================
 
     @staticmethod
-    def get_actor_from_plane(center,
-                             normal,
-                             color=(0, 0, 1),
-                             radius=100):
-
+    def get_actor_from_plane(center, normal, color=(0, 0, 1), radius=100):
         source = vtk.vtkPlaneSource()
         source.SetXResolution(radius)
         source.SetYResolution(radius)
 
-        d = - (normal[0] * center[0] +
-               normal[1] * center[1] +
-               normal[2] * center[2])
+        d = -(normal[0] * center[0] + normal[1] * center[1] + normal[2] * center[2])
 
         origin = (center[0] - 50, center[1] - radius / 2)
-        z = (- normal[0] * origin[0] - normal[1] * origin[1] - d) / normal[2]
+        z = (-normal[0] * origin[0] - normal[1] * origin[1] - d) / normal[2]
         source.SetOrigin(origin[0], origin[1], z)
 
         p1 = (origin[0] + radius, origin[1])
-        z = (- normal[0] * p1[0] - normal[1] * p1[1] - d) / normal[2]
+        z = (-normal[0] * p1[0] - normal[1] * p1[1] - d) / normal[2]
         source.SetPoint1(p1[0], p1[1], z)
 
         p1 = (origin[0], origin[1] + radius)
-        z = (- normal[0] * p1[0] - normal[1] * p1[1] - d) / normal[2]
+        z = (-normal[0] * p1[0] - normal[1] * p1[1] - d) / normal[2]
         source.SetPoint2(p1[0], p1[1], z)
 
         mapper = vtk.vtkPolyDataMapper()
@@ -77,11 +70,7 @@ class Scene(Display):
         return actor
 
     @staticmethod
-    def get_actor_from_text(text,
-                            position=(0, 0, 0),
-                            scale=5,
-                            color=(0, 0, 1)):
-
+    def get_actor_from_text(text, position=(0, 0, 0), scale=5, color=(0, 0, 1)):
         text_source = vtk.vtkVectorText()
         text_source.SetText(text)
         text_source.Update()
@@ -98,10 +87,7 @@ class Scene(Display):
         return actor
 
     @staticmethod
-    def get_actor_from_ball_position(position,
-                                     radius=5,
-                                     color=(1, 0, 0)):
-
+    def get_actor_from_ball_position(position, radius=5, color=(1, 0, 0)):
         sphere_source = vtk.vtkSphereSource()
         sphere_source.SetCenter(position[0], position[1], position[2])
         sphere_source.SetRadius(radius)
@@ -116,11 +102,9 @@ class Scene(Display):
         return actor
 
     @staticmethod
-    def get_actor_from_arrow_vector(start_point,
-                                    end_point,
-                                    color=(0, 0, 0),
-                                    line_width=20):
-
+    def get_actor_from_arrow_vector(
+        start_point, end_point, color=(0, 0, 0), line_width=20
+    ):
         arrow_source = vtk.vtkArrowSource()
 
         random.seed(8775070)
@@ -177,11 +161,7 @@ class Scene(Display):
         return actor
 
     @staticmethod
-    def get_actor_from_vertices_faces(vertices,
-                                      faces,
-                                      color=None,
-                                      colors=None):
-
+    def get_actor_from_vertices_faces(vertices, faces, color=None, colors=None):
         # Setup the colors array
         vtk_colors = vtk.vtkUnsignedCharArray()
         vtk_colors.SetNumberOfComponents(3)
@@ -231,14 +211,9 @@ class Scene(Display):
         return actor
 
     @staticmethod
-    def get_actor_from_voxels(voxels_position,
-                              voxels_size,
-                              color=None):
-
+    def get_actor_from_voxels(voxels_position, voxels_size, color=None):
         if color is None:
-            color = (random.uniform(0, 1),
-                     random.uniform(0, 1),
-                     random.uniform(0, 1))
+            color = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
 
         points = vtk.vtkPoints()
         for v in voxels_position:
@@ -274,89 +249,48 @@ class Scene(Display):
 
     # ==========================================================================
 
-    def add_actor_from_plane(self,
-                             center,
-                             normal,
-                             color=(0, 0, 1),
-                             radius=100):
-
-        actor = self.get_actor_from_plane(center,
-                                          normal,
-                                          color=color,
-                                          radius=radius)
+    def add_actor_from_plane(self, center, normal, color=(0, 0, 1), radius=100):
+        actor = self.get_actor_from_plane(center, normal, color=color, radius=radius)
         self.add_actor(actor)
 
-    def add_actor_from_text(self,
-                            text,
-                            position=(0, 0, 0),
-                            scale=5,
-                            color=(0, 0, 1)):
-
-        actor = self.get_actor_from_text(text,
-                                         position=position,
-                                         scale=scale,
-                                         color=color)
+    def add_actor_from_text(self, text, position=(0, 0, 0), scale=5, color=(0, 0, 1)):
+        actor = self.get_actor_from_text(
+            text, position=position, scale=scale, color=color
+        )
 
         self.add_text_actor(actor)
 
-    def add_actor_from_ball_position(self,
-                                     position,
-                                     radius=5,
-                                     color=(1, 0, 0)):
-
-        actor = self.get_actor_from_ball_position(position,
-                                                  radius=radius,
-                                                  color=color)
+    def add_actor_from_ball_position(self, position, radius=5, color=(1, 0, 0)):
+        actor = self.get_actor_from_ball_position(position, radius=radius, color=color)
         self.add_actor(actor)
 
-    def add_actor_from_arrow_vector(self,
-                                    start_point,
-                                    end_point,
-                                    color=(0, 0, 0),
-                                    line_width=20):
-
-        actor = self.get_actor_from_arrow_vector(start_point,
-                                                 end_point,
-                                                 color=color,
-                                                 line_width=line_width)
+    def add_actor_from_arrow_vector(
+        self, start_point, end_point, color=(0, 0, 0), line_width=20
+    ):
+        actor = self.get_actor_from_arrow_vector(
+            start_point, end_point, color=color, line_width=line_width
+        )
 
         self.add_actor(actor)
 
-    def add_actor_from_vertices_faces(self,
-                                      vertices,
-                                      faces,
-                                      color=None,
-                                      colors=None):
-
-        actor = self.get_actor_from_vertices_faces(vertices,
-                                                   faces,
-                                                   color=color,
-                                                   colors=colors)
+    def add_actor_from_vertices_faces(self, vertices, faces, color=None, colors=None):
+        actor = self.get_actor_from_vertices_faces(
+            vertices, faces, color=color, colors=colors
+        )
         self.add_actor(actor)
 
-    def add_actor_from_voxels(self,
-                              voxels_position,
-                              voxels_size,
-                              color=None):
-
-        actor = self.get_actor_from_voxels(voxels_position,
-                                           voxels_size,
-                                           color=color)
+    def add_actor_from_voxels(self, voxels_position, voxels_size, color=None):
+        actor = self.get_actor_from_voxels(voxels_position, voxels_size, color=color)
 
         self.add_actor(actor)
 
     # ==========================================================================
 
-    def add_actors_from_voxels_list(self,
-                                    voxels_positions,
-                                    voxels_sizes,
-                                    colors=None):
-
+    def add_actors_from_voxels_list(self, voxels_positions, voxels_sizes, colors=None):
         if colors is None:
             colors = [None] * len(voxels_sizes)
 
         for voxels_position, voxels_size, color in zip(
-                voxels_positions, voxels_sizes, colors):
-            self.add_actor_from_voxels(voxels_position,
-                                       voxels_size,
-                                       color=color)
+            voxels_positions, voxels_sizes, colors
+        ):
+            self.add_actor_from_voxels(voxels_position, voxels_size, color=color)

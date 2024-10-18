@@ -13,16 +13,13 @@ import numpy
 import cv2
 # ==============================================================================
 
-__all__ = ["normals",
-           "centers",
-           "project_mesh_on_image",
-           "median_color_from_images"]
+__all__ = ["normals", "centers", "project_mesh_on_image", "median_color_from_images"]
 
 # ==============================================================================
 
 
 def median_color_from_images(vertices, faces, calibration, images):
-    """ Return the colors of each face according the median of their color list
+    """Return the colors of each face according the median of their color list
     in the faces projected images.
 
     Parameters
@@ -102,8 +99,7 @@ def normals(vertices, faces):
 
     # Find normal vectors for each face via cross product
     crosses = numpy.cross(a, b)
-    crosses = crosses / (numpy.sum(
-        crosses ** 2, axis=1) ** 0.5)[:, numpy.newaxis]
+    crosses = crosses / (numpy.sum(crosses**2, axis=1) ** 0.5)[:, numpy.newaxis]
 
     return crosses
 
@@ -133,7 +129,7 @@ def centers(vertices, faces):
 
 
 def project_mesh_on_image(vertices, faces, shape_image, projection):
-    """ Return a binary image resulting of the projection of a mesh
+    """Return a binary image resulting of the projection of a mesh
     object representation (vertices, faces) with a projection
     function.
 

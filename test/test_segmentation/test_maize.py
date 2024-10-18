@@ -36,17 +36,17 @@ def test_maize():
     graph = phm_seg.graph_from_voxel_grid(voxel_grid)
     voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph)
     vms = phm_seg.maize_segmentation(voxel_skeleton, graph)
-    vmsi = phm_seg.maize_analysis(vms)
+    phm_seg.maize_analysis(vms)
 
     # Write
-    filename = 'tmp.json'
+    filename = "tmp.json"
     vms.write_to_json_gz(filename)
-    vms = phm_obj.VoxelSegmentation.read_from_json_gz(filename)
+    phm_obj.VoxelSegmentation.read_from_json_gz(filename)
     os.remove(filename)
 
 
 if __name__ == "__main__":
     for func_name in dir():
-        if func_name.startswith('test_'):
+        if func_name.startswith("test_"):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()

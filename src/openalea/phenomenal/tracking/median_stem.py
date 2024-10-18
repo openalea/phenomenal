@@ -50,7 +50,6 @@ def get_median_polyline(polylines, n_stem_min=0, dz=2):
     median_polyline = []
 
     while len(polylines) > n_stem_min:
-
         xy = np.array([z_to_xy(pl, z) for pl in polylines])
         xy_median = list(np.median(xy, axis=0))
         median_polyline.append(xy_median + [z])

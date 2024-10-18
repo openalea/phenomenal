@@ -20,7 +20,6 @@ import openalea.phenomenal.image as phm_img
 
 
 def test_1():
-
     im1 = numpy.zeros((400, 400))
     im1[10:-10, 10:-10] = 255
 
@@ -35,6 +34,6 @@ def test_1():
 
 if __name__ == "__main__":
     for func_name in dir():
-        if func_name.startswith('test_'):
+        if func_name.startswith("test_"):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()

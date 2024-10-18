@@ -10,7 +10,7 @@
 #
 # ==============================================================================
 
-""" Test consistency of transformations between frames for the calibration Camera
+"""Test consistency of transformations between frames for the calibration Camera
 
 
 For these tests, we define a world frame defined by a right handed xyz frame composed of a vertical axis (z+ upward),
@@ -34,7 +34,7 @@ from openalea.phenomenal.calibration import CalibrationCamera, CalibrationFrame
 
 
 def test_image_frame():
-    """"test pixel position from point expressed in camera frame coordinates"""
+    """ "test pixel position from point expressed in camera frame coordinates"""
     w, h, fx, fy = 10, 10, 1, 1
     # world origin, situated 2 * f in font of camera (altitude 2f in camera frame)
     w_origin = numpy.array([0, 0, 2 * fx])
@@ -54,7 +54,7 @@ def test_image_frame():
 
     # test one point call
     uo, vo = CalibrationCamera.pixel_coordinates(w_origin, w, h, fx, fy)
-    assert (uo, vo) == (w/2, h/2)
+    assert (uo, vo) == (w / 2, h / 2)
 
     # test array call
     pts = numpy.array((w_origin, right, left, up, down))
@@ -67,16 +67,22 @@ def test_side_camera_frame():
     """side camera is along world y-axis (on y-), pointing to world origin, x camera and x world being identical"""
 
     # camera frame axis coordinates expressed in world coordinates
-    side_camera_axes = numpy.array([[1., 0., 0.],
-                                    [0., 0., -1.],
-                                    [0., 1., 0.]])
+    side_camera_axes = numpy.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
 
     # test camera axis frame
     c = CalibrationCamera()
     fx = 1
     c._width_image, c._height_image, c._focal_length_x, c._aspect_ratio = 10, 10, fx, 1
-    c._pos_x, c._pos_y, c._pos_z = 0, -2 * fx, 0  # side camera defines z=0 and x=0 planes
-    c._rot_x, c._rot_y, c._rot_z = -numpy.pi / 2, 0, 0  # make z camera axis points toward world origin
+    c._pos_x, c._pos_y, c._pos_z = (
+        0,
+        -2 * fx,
+        0,
+    )  # side camera defines z=0 and x=0 planes
+    c._rot_x, c._rot_y, c._rot_z = (
+        -numpy.pi / 2,
+        0,
+        0,
+    )  # make z camera axis points toward world origin
 
     f = c.get_frame()
     numpy.testing.assert_allclose(f._axes, side_camera_axes, atol=1e-6)
@@ -103,26 +109,28 @@ def test_side_camera_frame():
     pixels = p(pts)
     numpy.testing.assert_allclose(pixels, pix)
 
-    #test one point call
+    # test one point call
     pixel = p(pts[0])
     numpy.testing.assert_allclose(pixel, pix[0])
 
 
 def test_top_camera_frame():
     """top camera is along world z-axis (z+), pointing to world origin,
-       side camera (y-) being on the bottom of the image"""
+    side camera (y-) being on the bottom of the image"""
 
     # camera frame axis coordinates expressed in world coordinates
-    top_camera_axes = numpy.array([ [1., 0., 0.],
-                                    [0., -1., 0.],
-                                    [0., 0., -1.]])
+    top_camera_axes = numpy.array([[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]])
 
     # test camera axis frame
     c = CalibrationCamera()
     fx = 1
     c._width_image, c._height_image, c._focal_length_x, c._aspect_ratio = 10, 10, fx, 1
     c._pos_x, c._pos_y, c._pos_z = 0, 0, 2 * fx  # top camera is on z+
-    c._rot_x, c._rot_y, c._rot_z = -numpy.pi, 0, 0  # make z camera axis points toward world origin
+    c._rot_x, c._rot_y, c._rot_z = (
+        -numpy.pi,
+        0,
+        0,
+    )  # make z camera axis points toward world origin
 
     f = c.get_frame()
     numpy.testing.assert_allclose(f._axes, top_camera_axes, atol=1e-6)
@@ -160,7 +168,6 @@ def test_target_frame():
     c._rot_x, c._rot_y, c._rot_z = 0, 0, 0
     f = c.get_frame()
     numpy.testing.assert_allclose(f._axes, target_axis, atol=1e-6)
-
 
     # test positioning using rotations
     c = CalibrationFrame()

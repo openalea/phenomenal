@@ -26,6 +26,7 @@ Synthetic data (for test)
 
     synthetic_data
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -33,4 +34,4 @@ from .synthetic_data import *
 from .data import *
 # ==============================================================================
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+__all__ = [s for s in dir() if not s.startswith("_")]

@@ -13,8 +13,8 @@ from __future__ import division, print_function
 import time
 
 import openalea.phenomenal.data as phm_data
-import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.segmentation as phm_seg
+import cProfile
 # import openalea.phenomenal.display as phm_display
 # ==============================================================================
 
@@ -23,8 +23,7 @@ plant_number = 2
 voxels_size = 8
 bin_images = phm_data.bin_images(plant_number=plant_number)
 calibrations = phm_data.calibrations(plant_number=plant_number)
-voxel_grid = phm_data.voxel_grid(plant_number=plant_number,
-                                 voxels_size=voxels_size)
+voxel_grid = phm_data.voxel_grid(plant_number=plant_number, voxels_size=voxels_size)
 
 init_start = time.time()
 # ==============================================================================
@@ -44,20 +43,21 @@ for angle in range(0, 360, 30):
     image_projection.append((bin_images["side"][angle], projection))
 print("time processing , image_projection : {}".format(time.time() - start))
 
-print("len(voxel_skeleton_reduced.segments) : {}".format(
-    len(voxel_skeleton.segments)))
+print("len(voxel_skeleton_reduced.segments) : {}".format(len(voxel_skeleton.segments)))
 
 start = time.time()
 voxel_skeleton_reduced = phm_seg.segment_reduction(
-    voxel_skeleton, image_projection,
-    required_visible=4,
-    nb_min_pixel=100)
+    voxel_skeleton, image_projection, required_visible=4, nb_min_pixel=100
+)
 
 print("time processing , segment_reduction : {}".format(time.time() - start))
 
 # len_ref_segments = {2: 14}
-print("len(voxel_skeleton_reduced.segments) : {}".format(
-    len(voxel_skeleton_reduced.segments)))
+print(
+    "len(voxel_skeleton_reduced.segments) : {}".format(
+        len(voxel_skeleton_reduced.segments)
+    )
+)
 # assert (len_ref_segments[2] == len(voxel_skeleton_reduced.segments))
 
 # import openalea.phenomenal.display as phm_display
@@ -78,10 +78,10 @@ print("time processing , ALL : {}".format(time.time() - init_start))
 
 
 def test():
-    voxel_skeleton_reduced = phm_seg.segment_reduction(
-        voxel_skeleton, image_projection,
-        required_visible=4,
-        nb_min_pixel=100)
+    phm_seg.segment_reduction(
+        voxel_skeleton, image_projection, required_visible=4, nb_min_pixel=100
+    )
 
-import cProfile
+
+
 cProfile.run("test()", sort="cumulative")
