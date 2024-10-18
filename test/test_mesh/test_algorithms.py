@@ -9,13 +9,17 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from __future__ import division, print_function
-
 import os
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.mesh as phm_mesh
+from openalea.phenomenal.mesh import (
+    voxel_grid_to_vtk_poly_data,
+    from_voxel_centers_to_vtk_image_data,
+)
+
+
 # ==============================================================================
 
 
@@ -65,9 +69,14 @@ def test_meshing():
     assert 200 <= len(faces) <= 1000, len(faces)
 
     poly_data = phm_mesh.from_vertices_faces_to_vtk_poly_data(vertices, faces)
+    poly_data2 = voxel_grid_to_vtk_poly_data(voxel_grid)
+    assert (0.05 * poly_data2.GetNumberOfVerts()) == poly_data.GetNumberOfVerts()
 
     vtk_image_data = phm_mesh.voxelization(poly_data, voxels_size=voxels_size)
     voxels_position = phm_mesh.from_vtk_image_data_to_voxels_center(vtk_image_data)
+    image_data, (_, _, _) = from_voxel_centers_to_vtk_image_data(
+        voxels_position, voxels_size
+    )
 
     assert len(voxels_position) >= 1000
 
@@ -86,10 +95,3 @@ def test_format():
     os.remove(filename)
 
     print(type(color))
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name).upper())
-            eval(func_name)()

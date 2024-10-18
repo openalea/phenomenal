@@ -37,6 +37,9 @@ PALETTE = np.array(3 * PALETTE + [[255, 255, 255]])
 
 def plot_polylines(polylines, ranks):
     shapes = []
+    if not has_pgl_display:
+        print("plantgl not available, cannot plot")
+        return
 
     for polyline, rank in zip(polylines, ranks):
         col_r, col_g, col_b = PALETTE[rank - 1] if rank > 0 else [90, 90, 90]
