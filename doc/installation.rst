@@ -12,7 +12,7 @@ Create a new environment with phenomenal installed in there
 
 .. code-block:: bash
 
-    mamba create -n phm -c conda-forge -c openalea openalea.phenomenal
+    mamba create -n phm -c openalea3 -c conda-forge  openalea.phenomenal
     mamba activate phm
 
 Install phenomenal in a existing environment
@@ -20,7 +20,7 @@ Install phenomenal in a existing environment
 
 .. code-block:: bash
 
-    mamba install -c conda-forge -c openalea openalea.phenomenal
+    mamba install -c openalea3 -c conda-forge openalea.phenomenal
 
 (Optional) Test your installation
 ---------------------------------
