@@ -31,7 +31,7 @@ If you find our work useful in your research, please consider citing:
         journal = {bioRxiv}
     }
 
-If you use PhenoTrack3D to your research, cite:
+If you use PhenoTrack3D in your research, cite:
 
 Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). https://doi.org/10.1186/s13007-022-00961-4
     
