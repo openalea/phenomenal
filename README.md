@@ -5,7 +5,7 @@
 [![Last version](https://anaconda.org/openalea3/openalea.phenomenal/badges/version.svg)](https://anaconda.org/OpenAlea3/openalea.phenomenal/files)
 [![GitHub CI](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml/badge.svg)](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml)
 [![Documentation Status](https://readthedocs.org/projects/phenomenal/badge/?version=latest)](https://phenomenal.readthedocs.io/en/latest/?badge=latest)
-[![aunch interactive phenomenal notebook with myBinder service](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
+[![Launch interactive phenomenal notebook with myBinder service](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
 
 
 ## Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping
@@ -55,18 +55,18 @@ Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic
 
 ### Installation
 
-Conda environement : https://docs.conda.io/en/latest/index.html
+Conda environment : https://docs.conda.io/en/latest/index.html
 
 #### User
 
 ##### Create a new environment with phenomenal installed in there :
 
-    mamba create -n phm -c conda-forge -c openalea openalea.phenomenal
+    mamba create -n phm -c conda-forge -c openalea3 openalea.phenomenal
     mamba activate phm
 
 ##### In a existing environment :
 
-    mamba install -c conda-forge -c openalea openalea.phenomenal
+    mamba install -c conda-forge -c openalea3 openalea.phenomenal
 
 ##### (Optional) Test your installation :
 
