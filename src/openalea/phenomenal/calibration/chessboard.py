@@ -21,6 +21,134 @@ __all__ = ["Target", "Chessboard", "Chessboards"]
 # ==============================================================================
 
 
+def _contour(corners, corners_w, corners_h):
+    pts = corners[:,0,:].reshape((corners_h, corners_w, 2)).astype(int)
+    return numpy.array((pts[0, 0, :], pts[0, -1, :], pts[-1, -1, :], pts[-1, 0, :]))
+
+
+def detect_checkerboards(image, corners_w, corners_h, recursive=False, max_items=2):
+    """Find chessboard corners , with recursive search for multiple chessboard on a single image
+
+    Args:
+        image: numpy array of pixel intensities (rgb_color or grayscale)
+        corners_w: the number of corners (intersections of cheesboard squares) along chessboard width
+        corners_h: the number of corners (intersections of cheesboard squares) along chessboard height
+        recursive: should we recursively apply the search ?
+
+    Returns:
+        a list of pixel coordinates of corners for each chessboard found
+    """
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+    shape = (corners_w, corners_h)
+
+    corners = []
+    found = True
+
+    while found:
+        try:
+            found, _corners = cv2.findChessboardCorners(
+                image,
+                shape,
+                flags=cv2.CALIB_CB_ADAPTIVE_THRESH +
+                      cv2.CALIB_CB_NORMALIZE_IMAGE)
+
+            if found:
+                cv2.cornerSubPix(
+                    image, _corners, (11, 11), (-1, -1),
+                    criteria=(cv2.TERM_CRITERIA_EPS +
+                              cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
+                corners.append(_corners)
+                print(f'{corners_w}x{corners_h} checkerboard found (x{len(corners)})')
+
+            if recursive:
+                mask = numpy.zeros_like(image)
+                contour = _contour(_corners, corners_w=corners_w, corners_h=corners_h)
+                cv2.fillPoly(mask, pts=[contour], color=255)
+                image = cv2.bitwise_and(image, image, mask=cv2.bitwise_not(mask))
+
+        except cv2.error:
+            found = False
+
+        if not recursive:
+            break
+
+        if len(corners) == max_items:
+            break
+
+    return corners
+
+
+class TargetFinder:
+    """Find calibration targets of different types on a collection of images using minimal information"""
+
+    def __init__(self, targets=None, source_dir=None):
+        if targets is None:
+            self.targets = [{'class': 'Checkerboard', 'shape': (8, 6)}]
+        else:
+            self.targets = targets
+        self.image_points = collections.defaultdict(dict)
+        self.image_paths = collections.defaultdict(dict)
+        self.image_sizes = dict()
+        self.source_dir = source_dir
+
+    def abspath(self, path):
+        if self.source_dir is None:
+            return path
+        else:
+            return os.path.join(self.source_dir, path)
+
+    def find_targets(self, path, camera_id, rotation, recursive=True, max_items=2):
+        image = cv2.imread(self.abspath(path), cv2.IMREAD_GRAYSCALE)
+        for target in self.targets:
+            if target['class'] == 'Checkerboard':
+                corners_w, corners_h = target['shape']
+                corners = detect_checkerboards(image=image, corners_w=corners_w, corners_h=corners_h,
+                                               recursive=recursive, max_items=max_items)
+                self.image_points[camera_id][rotation] = [c.tolist() for c in corners]
+            if len(self.image_points[camera_id][rotation]) >= max_items:
+                break
+        h, w = image.shape[:2]
+        self.image_sizes[camera_id] = (w, h)
+        self.image_paths[camera_id][rotation] = path
+
+    def to_dict(self):
+        d = dict()
+        d['targets'] = self.targets
+        d['image_sizes'] = self.image_sizes
+        d['image_points'] = self.image_points
+        d['image_paths'] = self.image_paths
+        return d
+
+    @staticmethod
+    def from_dict(d, source_dir=None):
+        instance = TargetFinder(targets=d['targets'], source_dir=source_dir)
+        for cid in d['image_points']:
+            for rotation in d['image_points'][cid]:
+                rot=int(float(rotation))
+                instance.image_points[cid][rot] = d['image_points'][cid][rotation]
+        for cid in d['image_paths']:
+            for rotation in d['image_paths'][cid]:
+                rot=int(float(rotation))
+                instance.image_paths[cid][rot] = d['image_paths'][cid][rotation]
+        instance.image_sizes = d['image_sizes']
+
+        return instance
+
+    def dump(self, filename):
+        with open(filename, 'w') as output_file:
+            json.dump(self.to_dict(), output_file,
+                      sort_keys=True,
+                      indent=4,
+                      separators=(',', ': '))
+
+    @staticmethod
+    def load(filename, source_dir=None):
+        with open(filename, 'r') as input_file:
+            d = json.load(input_file)
+        return TargetFinder.from_dict(d, source_dir=source_dir)
+
 def compass_position(rotation, south_rotation, clockwise=True, intercardinal=False):
     """Find the cardinal position of a rotated object
 
@@ -233,29 +361,22 @@ class Chessboard(object):
         if image_id is not None:
             self.image_ids[id_camera][rotation] = image_id
 
-        try:
+        corners_w, corners_h = self.shape
+        _corners = detect_checkerboards(image, corners_w, corners_h, recursive=False)
+        if len(_corners) < 1:
+            found = False
+            corners = []
+        else:
+            found = True
+            corners = _corners[0]
 
-            found, corners = cv2.findChessboardCorners(
-                image,
-                tuple(self.shape),
-                flags=cv2.CALIB_CB_ADAPTIVE_THRESH +
-                cv2.CALIB_CB_NORMALIZE_IMAGE)
+        if found:
+            if check_order:
+                if id_camera not in self.facing_angles:
+                    raise ValueError('facing rotation should be specified for order checking')
+                corners = self.order_image_points(corners, rotation, self.facing_angles[id_camera])
 
-            if found:
-                cv2.cornerSubPix(
-                    image, corners, (11, 11), (-1, -1),
-                    criteria=(cv2.TERM_CRITERIA_EPS +
-                              cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
-
-                if check_order:
-                    if id_camera not in self.facing_angles:
-                        raise ValueError('facing rotation should be specified for order checking')
-                    corners = self.order_image_points(corners, rotation, self.facing_angles[id_camera])
-
-                self.image_points[id_camera][rotation] = corners
-
-        except cv2.error:
-            return False
+            self.image_points[id_camera][rotation] = corners
 
         return found
 
