@@ -79,7 +79,7 @@ Conda environment : https://docs.conda.io/en/latest/index.html
     # Install dependency with conda
     mamba create -n phm -c conda-forge python
     mamba activate phm
-    mamba install -c conda-forge -c numba cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan
+    mamba install -c conda-forge cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan
 
     # Load phenomenal and install
     git clone https://github.com/openalea/phenomenal.git
