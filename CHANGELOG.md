@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A `pyproject.toml` file.
 - This CHANGELOG.md file.
 - Phenotrack citation in [README.md](./README.md) (#44). 
 - [OpenAlea svg](./doc/_static/openalea_web.svg) logo for documentation.

@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools", "numpy", "cython"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openalea.phenomenal"
+authors = [
+  { name = "Simon Artzet"},
+  { name = "Christian Fournier"},
+  { name = "Mielewczik Michael"},
+  { name = "Brichet Nicolas"},
+  { name = "Chopard Jerome"},
+  { name = "Christophe Pradal"},
+  { name = "Benoit Daviet"},
+]
+description = "An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping"
+readme = "README.md"
+license.file = "LICENSE.txt"
+requires-python = ">=3.10"
+classifiers = [
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: CeCILL-C License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering",
+]
+dynamic = ["version"]
+dependencies = [
+    "cython",
+    "numpy",
+    "numba",
+    "scipy",
+    "scikit-image",
+    "scikit-learn",
+    "networkx",
+    "matplotlib",
+    "vtk",
+    "pytest",
+    "skan",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest >=6",
+]
+
+[project.urls]
+Homepage = "https://github.com/openalea/phenomenal"
+"Bug Tracker" = "https://github.com/openalea/phenomenal/issues"
+Discussions = "https://github.com/openalea/phenomenal/discussions"
+Changelog = "https://github.com/openalea/phenomenal/releases"

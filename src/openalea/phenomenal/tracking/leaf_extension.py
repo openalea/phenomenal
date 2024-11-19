@@ -46,7 +46,7 @@ def skeleton_branches(image, n_kernel=15, min_length=30):
 
     # skeleton analysis : get branches
     skan_skeleton = Skeleton(skeleton)
-    branches = summarize(skan_skeleton)
+    branches = summarize(skan_skeleton, separator="-")
 
     # select branches having an endpoint, and a sufficient length
     branches_endpoint = branches[branches["branch-type"] == 1]
