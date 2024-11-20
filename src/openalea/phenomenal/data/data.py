@@ -9,7 +9,6 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import importlib
 import json
 import glob
 import os
@@ -52,7 +51,6 @@ def _path_images(name_dir, dtype="bin"):
         dict[id_camera][angle] = filename
     """
     data_directory = os.path.join(datadir, "doc", "examples", name_dir, f"{dtype}/")
-    print(data_directory)
 
     d = collections.defaultdict(dict)
     for id_camera in ["side", "top"]:
@@ -288,7 +286,7 @@ def voxel_grid(name_dir, plant_number=1, voxels_size=4):
 # ==============================================================================
 
 
-def tutorial_data_binarization_mask():
+def tutorial_data_binarization_mask(name_dir):
     """
     Return the list of required images to process the notebook tutorial on
     binarization. The images are already load with opencv in unchanged format.
@@ -297,8 +295,7 @@ def tutorial_data_binarization_mask():
     :return: list of image
     """
 
-    data_directory = importlib.resources("openalea.phenomenal", "data/plant_6/mask/")
-
+    data_directory = os.path.join(datadir, "doc", "examples", name_dir, "plant_6/mask/")
     masks = []
     for filename in ["mask_hsv.png", "mask_mean_shift.png"]:
         masks.append(
