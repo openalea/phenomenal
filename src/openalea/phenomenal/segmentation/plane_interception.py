@@ -31,8 +31,7 @@ def max_distance_in_points(points):
 
     if len(result) > 0:
         return result.max()
-    else:
-        return 0
+    return 0
 
 
 def max_distance_from_point_to_points(points, src_point):
@@ -51,8 +50,7 @@ def max_distance_from_point_to_points(points, src_point):
 
     if len(result) > 0:
         return result.max()
-    else:
-        return 0
+    return 0
 
 
 def connected_points_with_point(points, points_graph, src_point):
@@ -91,7 +89,7 @@ def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
     :param voxels_size: float voxel size
     :param src_voxel_point: position x, y, z of voxel point
     """
-    closest_node, nodes = list(), list()
+    closest_node, nodes = [], []
     nodes.append(numpy.array(src_voxel_point))
     while nodes:
         node = nodes.pop()
@@ -194,7 +192,7 @@ def orientation_vector_of_point_in_polyline(polyline, index_point, windows_size)
     :return:
     """
     length_polyline = len(polyline)
-    vectors = list()
+    vectors = []
     for j in range(1, windows_size):
         x1, y1, z1 = polyline[max(0, index_point - j)]
         x2, y2, z2 = polyline[min(length_polyline - 1, index_point + j)]
@@ -296,7 +294,7 @@ def intercept_points_along_polyline_with_ball(points, graph, polyline, ball_radi
     :param ball_radius: size of the ball radius in mm
     :return: [[(x, y, z), ...], ...] : list of points intercepted by the ball
     """
-    intercepted_points = list()
+    intercepted_points = []
     for point in polyline:
         points_in_ball = intercept_points_with_ball(points, point, ball_radius)
 

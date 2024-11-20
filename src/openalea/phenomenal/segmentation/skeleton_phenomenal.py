@@ -12,6 +12,8 @@ from __future__ import division, print_function, absolute_import
 import numpy
 import networkx
 
+import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
+
 from ..multi_view_reconstruction import project_voxel_centers_on_image
 from .plane_interception import (
     intercept_points_along_path_with_planes,
@@ -19,7 +21,6 @@ from .plane_interception import (
 )
 from ..object import VoxelSkeleton, VoxelGrid, VoxelSegment
 
-import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
 
 # ==============================================================================
 
@@ -29,7 +30,7 @@ def segment_reduction(
 ):
     """
     Reduce the number of segments in a VoxelSkeleton object, according to
-    their projection results. Each segment are kept if their projection on
+    their projection results. Each segment is kept if their projection on
     the images are not cover by the projection of the other segments in
     number required_visible. Segments are not cover if their remaining
     projected pixel are superior to nb_min_pixel.
@@ -88,7 +89,7 @@ def segment_reduction(
     # ==========================================================================
     # start = time.time()
 
-    list_negative_image = list()
+    list_negative_image = []
     for j, (image, projection) in enumerate(image_projection):
         negative_image = image.copy().astype(numpy.int32)
         negative_image[negative_image > 0] = 2
@@ -193,6 +194,7 @@ def _segment_path(
         remain = set(voxels).difference(segment.voxels_position)
 
         return segment, remain
+    return None, None
 
 
 def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
@@ -224,7 +226,7 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
 
     k = neighbor_size / voxels_size
 
-    x_len, y_len, z_len = image_3d.shape
+    x_len, y_len, _ = image_3d.shape
 
     roi = image_3d[
         int(max(x - k, 0)) : int(min(x + k, x_len)),
@@ -358,7 +360,7 @@ def skeletonize(
     np_arr_all_graph_voxels_plant = numpy.array(graph.nodes())
     # ==========================================================================
 
-    segments = list()
+    segments = []
     while len(voxels_position_remain) != 0:
         (voxel_segment, voxels_position_remain) = _segment_path(
             voxels_position_remain,

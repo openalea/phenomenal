@@ -11,12 +11,12 @@ from __future__ import division, print_function, absolute_import
 
 import importlib
 import json
-import numpy
-import cv2
 import glob
 import os
 import collections
 import pathlib
+import numpy
+import cv2
 
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
 from openalea.phenomenal.calibration import (
@@ -34,7 +34,7 @@ datadir = os.path.dirname(__file__).split("src")[0]
 
 
 def data_dir(name_dir, dtype="bin"):
-    return os.path.join(datadir, "examples", name_dir, "{}/".format(dtype))
+    return os.path.join(datadir, "examples", name_dir, f"{dtype}/")
 
 
 def _path_images(name_dir, dtype="bin"):
@@ -51,7 +51,7 @@ def _path_images(name_dir, dtype="bin"):
     d : dict of dict of string
         dict[id_camera][angle] = filename
     """
-    data_directory = os.path.join(datadir, "examples", name_dir, "{}/".format(dtype))
+    data_directory = os.path.join(datadir, "examples", name_dir, f"{dtype}/")
 
     d = collections.defaultdict(dict)
     for id_camera in ["side", "top"]:
@@ -156,13 +156,11 @@ def chessboards(name_dir):
     """
     data_directory = os.path.join(datadir, "examples", name_dir, "chessboard/points/")
 
-    chessboards = list()
+    chessboards = []
     for id_chessboard in [1, 2]:
         chessboards.append(
             Chessboard.load(
-                os.path.join(
-                    str(data_directory), "chessboard_{}.json".format(id_chessboard)
-                )
+                os.path.join(str(data_directory), f"chessboard_{id_chessboard}.json")
             )
         )
 
@@ -182,9 +180,7 @@ def image_points(name_dir):
     keep = [42] + list(range(0, 360, 30))
     for id_chessboard in ["target_1", "target_2"]:
         chessboard = Chessboard.load(
-            os.path.join(
-                str(data_directory), "image_points_{}.json".format(id_chessboard)
-            )
+            os.path.join(str(data_directory), f"image_points_{id_chessboard}.json")
         )
         for rotation in list(chessboard.image_points["side"]):
             if rotation not in keep:
@@ -252,10 +248,10 @@ def calibrations(name_dir):
 
     data_directory = os.path.join(name_dir, "calibration/")
 
-    calibration = dict()
+    calibration = {}
     for id_camera in ["side", "top"]:
         calibration[id_camera] = OldCalibrationCamera.load(
-            os.path.join(data_directory, "calibration_camera_{}.json".format(id_camera))
+            os.path.join(data_directory, "calibration_camera_{id_camera}.json")
         )
 
     return calibration
@@ -282,9 +278,7 @@ def voxel_grid(name_dir, plant_number=1, voxels_size=4):
     :return: voxel_grid object
     """
     vg = VoxelGrid.read(
-        os.path.join(
-            name_dir, "plant_{}/voxels/{}.npz".format(plant_number, voxels_size)
-        )
+        os.path.join(name_dir, f"plant_{plant_number}/voxels/{voxels_size}.npz")
     )
 
     return vg
@@ -304,7 +298,7 @@ def tutorial_data_binarization_mask():
 
     data_directory = importlib.resources("openalea.phenomenal", "data/plant_6/mask/")
 
-    masks = list()
+    masks = []
     for filename in ["mask_hsv.png", "mask_mean_shift.png"]:
         masks.append(
             cv2.imread(
@@ -336,10 +330,10 @@ def synthetic_plant(name_dir, registration_point=(0, 0, 750)):
     """
     filename = os.path.join(name_dir, "synthetic_plant.ply")
 
-    vertices, faces, color = read_ply_to_vertices_faces(filename)
+    vertices, faces, _ = read_ply_to_vertices_faces(filename)
     vertices = numpy.array(vertices) * 10 - numpy.array([registration_point])
 
-    with open(filename.replace("ply", "json"), "r") as infile:
+    with open(filename.replace("ply", "json"), "r", encoding="UTF8") as infile:
         meta_data = json.load(infile)
 
     return vertices, faces, meta_data

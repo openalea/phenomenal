@@ -46,12 +46,12 @@ def median_color_from_images(vertices, faces, calibration, images):
 
     angles = numpy.array(range(0, 360, 30)).astype(float)
 
-    colors = list()
-    for ind, (i, j, k) in enumerate(faces):
+    colors = []
+    for _, (i, j, k) in enumerate(faces):
         pt1, pt2, pt3 = vertices[i], vertices[j], vertices[k]
         arr = numpy.array([pt1, pt2, pt3])
 
-        cc = list()
+        cc = []
         for angle in angles:
             pts = calibration.get_projection(angle)(arr).astype(int)
             if pts[0][1] == pts[1][1] == pts[2][1]:
@@ -143,14 +143,13 @@ def project_mesh_on_image(vertices, faces, shape_image, projection):
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=numpy.uint8)
 
-    # triangles = list()
+    # triangles = []
     for i, j, k in faces:
         pt1, pt2, pt3 = vertices[i], vertices[j], vertices[k]
         arr = numpy.array([pt1, pt2, pt3])
         pts = projection(arr).astype(int)
         if pts[0][1] == pts[1][1] == pts[2][1]:
             continue
-        else:
-            cv2.fillConvexPoly(img, pts, 255)
+        cv2.fillConvexPoly(img, pts, 255)
 
     return img

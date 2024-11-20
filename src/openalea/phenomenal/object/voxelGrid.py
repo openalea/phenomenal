@@ -12,8 +12,8 @@ from __future__ import division, print_function, absolute_import
 import os
 import re
 import json
-import numpy
 import csv
+import numpy
 
 from .image3D import Image3D
 
@@ -24,14 +24,14 @@ from .image3D import Image3D
 class NumpyEncoder(json.JSONEncoder):
     """Special json encoder for numpy types"""
 
-    def default(self, obj):
-        if isinstance(obj, numpy.integer):
-            return int(obj)
-        elif isinstance(obj, numpy.floating):
-            return float(obj)
-        elif isinstance(obj, numpy.ndarray):
-            return obj.tolist()
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if isinstance(o, numpy.integer):
+            return int(o)
+        if isinstance(o, numpy.floating):
+            return float(o)
+        if isinstance(o, numpy.ndarray):
+            return o.tolist()
+        return json.JSONEncoder.default(self, o)
 
 
 class VoxelGrid:
@@ -204,16 +204,15 @@ class VoxelGrid:
         if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
 
-        with open(filename, "w") as f:
-            data = dict()
-            data["voxels_size"] = self.voxels_size
+        with open(filename, "w", encoding="UTF8") as f:
+            data = {"voxels_size": self.voxels_size}
             vp = list(map(tuple, self.voxels_position))
             data["voxels_position"] = json.dumps(vp, cls=NumpyEncoder)
             json.dump(data, f)
 
     @staticmethod
     def read_from_json(filename):
-        with open(filename, "r") as f:
+        with open(filename, "r", encoding="UTF8") as f:
             data = json.load(f)
             voxels_size = data["voxels_size"]
             voxels_position = json.loads(data["voxels_position"])
@@ -224,15 +223,14 @@ class VoxelGrid:
         if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
 
-        f = open(filename, "w")
-        for x, y, z in self.voxels_position:
-            f.write("%f %f %f \n" % (x, y, z))
-        f.close()
+        with open(filename, "w", encoding="UTF8") as f:
+            for x, y, z in self.voxels_position:
+                f.write(f"{x} {y} {z} \n")
 
     @staticmethod
     def read_from_xyz(filename, voxels_size):
-        voxels_position = list()
-        with open(filename, "r") as f:
+        voxels_position = []
+        with open(filename, "r", encoding="UTF8") as f:
             for line in f:
                 point_3d = re.findall(r"[-0-9.]+", line)
 
@@ -252,7 +250,7 @@ class VoxelGrid:
             header = {}
         header.update({"voxels_size": self.voxels_size})
 
-        with open(filename, "w", newline="") as f:
+        with open(filename, "w", newline="", encoding="UTF8") as f:
             c = csv.writer(f)
             for k, v in header.items():
                 c.writerow(["# " + k + ": " + str(v)])
@@ -263,17 +261,16 @@ class VoxelGrid:
 
     @staticmethod
     def read_from_csv(filename, read_header=False):
-        voxels_position = list()
+        voxels_position = []
         header = {}
 
-        with open(filename, "r", newline="") as f:
+        with open(filename, "r", newline="", encoding="UTF8") as f:
             reader = csv.reader(f)
             for row in reader:
                 if row[0].split("#")[0].strip():
                     break
-                else:
-                    k, v = row[0].split("#")[1].strip().split(":")
-                    header[k.strip()] = v.strip()
+                k, v = row[0].split("#")[1].strip().split(":")
+                header[k.strip()] = v.strip()
 
             if "voxels_size" in header:
                 voxels_size = float(header["voxels_size"])
@@ -287,5 +284,4 @@ class VoxelGrid:
                     voxels_position.append((float(x), float(y), float(z)))
             if read_header:
                 return VoxelGrid(voxels_position, voxels_size), header
-            else:
-                return VoxelGrid(voxels_position, voxels_size)
+            return VoxelGrid(voxels_position, voxels_size)

@@ -70,14 +70,14 @@ def _build_mask():
 
     U = [M1, M2, M3, M4, M5, M6]
 
-    D = list()
+    D = []
     for M in U:
         D.append(M[:, :, ::-1])
 
-    W = list()
-    N = list()
-    E = list()
-    S = list()
+    W = []
+    N = []
+    E = []
+    S = []
 
     for M in U:
         tmp = numpy.zeros_like(M)
@@ -113,17 +113,15 @@ def _check_mask(T, M):
     if x_present:
         if x_ok:
             return True
-        else:
-            return False
-    else:
-        return True
+        return False
+    return True
 
 
 def _applied_masks(mat, masks):
     tmp = numpy.zeros_like(mat)
     xx, yy, zz = numpy.where(mat == 1)
-    for i in range(len(xx)):
-        x, y, z = xx[i], yy[i], zz[i]
+    for i, xx_val in enumerate(xx):
+        x, y, z = xx_val, yy[i], zz[i]
         block = mat[x - 1 : x + 2, y - 1 : y + 2, z - 1 : z + 2]
 
         for mask in masks:

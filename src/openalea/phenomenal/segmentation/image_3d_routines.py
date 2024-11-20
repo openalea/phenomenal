@@ -86,7 +86,7 @@ def labeling_connected_component(image_3d):
 
     @njit(cache=True)
     def get_neighbors(x, y, z):
-        neighbors = list()
+        neighbors = []
         for i in [-1, 0, 1]:
             for j in [-1, 0, 1]:
                 for k in [-1, 0, 1]:
@@ -96,8 +96,8 @@ def labeling_connected_component(image_3d):
         return neighbors
 
     num_label = 1
-    for i in range(len(xx)):
-        x, y, z = xx[i], yy[i], zz[i]
+    for i, xx_val in enumerate(xx):
+        x, y, z = xx_val, yy[i], zz[i]
 
         if mat[x, y, z] == 0:
             mat[x, y, z] = num_label

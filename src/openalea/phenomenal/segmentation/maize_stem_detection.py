@@ -26,15 +26,15 @@ from .plane_interception import (
 def maize_stem_peak_detection(values, stop_index):
     if len(values) > 15:
         nodes_length_smooth2 = list(smooth(numpy.array(values), window_len=15))
-        max_peaks_smooth2, min_peaks_smooth2 = peak_detection(
+        _, min_peaks_smooth2 = peak_detection(
             nodes_length_smooth2, order=3
         )
 
         i_peaks = [i for i, v in min_peaks_smooth2 if i <= stop_index]
-        if i_peaks != []:
+        if i_peaks:
             stop_index = max(i_peaks)
 
-    max_peaks, min_peaks = peak_detection(values, order=3)
+    _, min_peaks = peak_detection(values, order=3)
     min_peaks = [(i, v) for i, v in min_peaks if i <= stop_index]
     if len(min_peaks) <= 1:
         min_peaks = [(0, values[0]), (1, values[1])] + min_peaks
@@ -81,9 +81,9 @@ def stem_detection(
         numpy.array(list(nodes)) for nodes in closest_nodes_planes
     ]
 
-    distances = list()
-    for i in range(len(arr_closest_nodes_planes)):
-        distance = max_distance_in_points(arr_closest_nodes_planes[i])
+    distances = []
+    for _, closest_nodes_planes in enumerate(arr_closest_nodes_planes):
+        distance = max_distance_in_points(closest_nodes_planes)
         distances.append(float(distance))
     ball_radius = min(max(max(distances) / 2, 25), 75)
 
@@ -126,10 +126,10 @@ def stem_detection(
     ]
 
     stem_voxel = set()
-    radius = dict()
-    stem_centred_path_min_peak = list()
+    radius = {}
+    stem_centred_path_min_peak = []
     max_index_min_peak = 0
-    xx_yy_raw = list()
+    xx_yy_raw = []
     for i, _ in min_peaks_stem:
         max_index_min_peak = max(max_index_min_peak, i)
         radius[i] = smooth_distances[i] / 2.0
@@ -161,7 +161,7 @@ def stem_detection(
     arr_stem_centred_path_min_peak = numpy.unique(
         arr_stem_centred_path_min_peak, axis=1
     )  # remove redundancies
-    tck, u = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=1)
+    tck, _ = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=1)
     xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
 
     # ==========================================================================
@@ -173,11 +173,11 @@ def stem_detection(
 
     # ==========================================================================
 
-    real_path = list()
-    for i in range(len(xxx)):
+    real_path = []
+    for i, xxx_val in enumerate(xxx):
         r = radius_raw(i * len(rad) / 500.0)
 
-        x, y, z = xxx[i], yyy[i], zzz[i]
+        x, y, z = xxx_val, yyy[i], zzz[i]
         real_path.append((x, y, z))
         result = get_nodes_radius((x, y, z), arr_stem_voxels, r)
         stem_voxel = stem_voxel.union(result)

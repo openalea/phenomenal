@@ -19,10 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The documentation configuration file `conf.py` with [OpenAlea Guidelines](https://openalea.readthedocs.io/en/latest/development/guidelines.html).
 - Modernized the test suite.
-- Compatibility with numpy 2.0.     
-- Formating source files with [ruff](https://docs.astral.sh/ruff/)
+- Compatibility with numpy 2.0.
+- Updated code to respect guidelines.
+- Formating source files with [ruff](https://docs.astral.sh/ruff/).
 
 ### Fixed
 
-- Updating skan function to 0.11 version
-- Removed warning of test files saved with python 2 by saving them again with python 3
+- Updating skan function to more recent versions.
+- Removed warning of test files saved with python 2 by saving them again with python 3.

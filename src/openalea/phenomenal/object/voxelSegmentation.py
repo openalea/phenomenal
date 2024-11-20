@@ -19,9 +19,9 @@ from .voxelOrgan import VoxelOrgan
 
 class VoxelSegmentation:
     def __init__(self, voxels_size):
-        self.voxel_organs = list()
+        self.voxel_organs = []
         self.voxels_size = voxels_size
-        self.info = dict()
+        self.info = {}
 
     def update_plant_info(self):
         s = set()
@@ -34,7 +34,7 @@ class VoxelSegmentation:
 
     def get_voxels_position(self, except_organs=None):
         if except_organs is None:
-            except_organs = list()
+            except_organs = []
 
         voxels_position = set()
         for vo in self.voxel_organs:
@@ -46,7 +46,7 @@ class VoxelSegmentation:
     def get_number_of_leaf(self):
         number = 0
         for vo in self.voxel_organs:
-            if vo.label == "mature_leaf" or vo.label == "growing_leaf":
+            if vo.label in ("growing_leaf", "mature_leaf"):
                 number += 1
 
         return number
@@ -77,23 +77,23 @@ class VoxelSegmentation:
         return None
 
     def get_mature_leafs(self):
-        mature_leafs = list()
+        mature_leafs = []
         for vo in self.voxel_organs:
             if vo.label == "mature_leaf":
                 mature_leafs.append(vo)
         return mature_leafs
 
     def get_growing_leafs(self):
-        growing_leafs = list()
+        growing_leafs = []
         for vo in self.voxel_organs:
             if vo.label == "growing_leaf":
                 growing_leafs.append(vo)
         return growing_leafs
 
     def get_leafs(self):
-        leafs = list()
+        leafs = []
         for vo in self.voxel_organs:
-            if vo.label == "growing_leaf" or vo.label == "mature_leaf":
+            if vo.label in ("growing_leaf", "mature_leaf"):
                 leafs.append(vo)
         return leafs
 
@@ -106,22 +106,25 @@ class VoxelSegmentation:
             os.makedirs(os.path.dirname(filename))
 
         with gzip.open(filename, "wb") as f:
-            data = dict()
-            data["voxels_size"] = self.voxels_size
-            data["voxel_organs"] = list()
-            data["info"] = self.info
+            data = {
+                "voxels_size": self.voxels_size,
+                "voxel_organs": [],
+                "info": self.info,
+            }
 
             for vo in self.voxel_organs:
-                dvo = dict()
-                dvo["label"] = vo.label
-                dvo["sub_label"] = vo.sub_label
-                dvo["info"] = vo.info
-                dvo["voxel_segments"] = list()
+                dvo = {
+                    "label": vo.label,
+                    "sub_label": vo.sub_label,
+                    "info": vo.info,
+                    "voxel_segments": [],
+                }
 
                 for vs in vo.voxel_segments:
-                    dvs = dict()
-                    dvs["polyline"] = list(map(tuple, list(vs.polyline)))
-                    dvs["voxels_position"] = list(map(tuple, list(vs.voxels_position)))
+                    dvs = {
+                        "polyline": list(map(tuple, list(vs.polyline))),
+                        "voxels_position": list(map(tuple, list(vs.voxels_position))),
+                    }
                     dvo["voxel_segments"].append(dvs)
 
                 data["voxel_organs"].append(dvo)
@@ -130,7 +133,7 @@ class VoxelSegmentation:
 
     @staticmethod
     def read_from_json_gz(filename, without_info=False):
-        with gzip.open(filename, "rb") as f:
+        with gzip.open(filename, "rb", encoding="UTF8") as f:
             data = json.loads(f.read().decode("utf-8"))
             # data = ast.literal_eval(f.read())
 

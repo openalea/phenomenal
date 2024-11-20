@@ -41,7 +41,4 @@ def polyline_until_z(pl, z):
 def polyline_simplification(pl, n):
     if len(pl) < n:
         return np.array(pl)
-    else:
-        return np.array(
-            [polyline_quantile_coordinate(pl, q) for q in np.linspace(0, 1, n)]
-        )
+    return np.array([polyline_quantile_coordinate(pl, q) for q in np.linspace(0, 1, n)])

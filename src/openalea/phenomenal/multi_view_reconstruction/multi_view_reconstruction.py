@@ -10,9 +10,9 @@
 from __future__ import division, print_function
 
 import math
+import collections
 import cv2
 import scipy.spatial
-import collections
 import numpy
 import sklearn.neighbors
 from numba import njit
@@ -409,7 +409,7 @@ def check_groups(neigh, inconsistent, groups, nb_distance):
     if len(groups.values()) == 0:
         return None
 
-    positions = list()
+    positions = []
     for index in groups.values():
         index = numpy.array(index)
 
@@ -559,7 +559,7 @@ def reconstruction_3d(
     # Pre-processing (optimization): Compute integral image for speed
     # computation
 
-    int_images = list()
+    int_images = []
     for i, image_view in enumerate(image_views):
         a = numpy.zeros_like(image_view.image, dtype=numpy.uint32)
         c_mvr.integral_image(image_view.image, a)
