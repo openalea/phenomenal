@@ -27,3 +27,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updating skan function to more recent versions.
 - Removed warning of test files saved with python 2 by saving them again with python 3.
+- Fixing location of data for notebook examples.

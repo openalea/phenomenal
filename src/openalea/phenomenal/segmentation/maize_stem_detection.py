@@ -26,9 +26,7 @@ from .plane_interception import (
 def maize_stem_peak_detection(values, stop_index):
     if len(values) > 15:
         nodes_length_smooth2 = list(smooth(numpy.array(values), window_len=15))
-        _, min_peaks_smooth2 = peak_detection(
-            nodes_length_smooth2, order=3
-        )
+        _, min_peaks_smooth2 = peak_detection(nodes_length_smooth2, order=3)
 
         i_peaks = [i for i, v in min_peaks_smooth2 if i <= stop_index]
         if i_peaks:

@@ -34,7 +34,7 @@ datadir = os.path.dirname(__file__).split("src")[0]
 
 
 def data_dir(name_dir, dtype="bin"):
-    return os.path.join(datadir, "examples", name_dir, f"{dtype}/")
+    return os.path.join(datadir, "doc", "examples", name_dir, f"{dtype}/")
 
 
 def _path_images(name_dir, dtype="bin"):
@@ -51,7 +51,8 @@ def _path_images(name_dir, dtype="bin"):
     d : dict of dict of string
         dict[id_camera][angle] = filename
     """
-    data_directory = os.path.join(datadir, "examples", name_dir, f"{dtype}/")
+    data_directory = os.path.join(datadir, "doc", "examples", name_dir, f"{dtype}/")
+    print(data_directory)
 
     d = collections.defaultdict(dict)
     for id_camera in ["side", "top"]:
@@ -154,7 +155,7 @@ def chessboards(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(datadir, "examples", name_dir, "chessboard/points/")
+    data_directory = os.path.join(datadir, "doc", "examples", name_dir, "chessboard/points/")
 
     chessboards = []
     for id_chessboard in [1, 2]:
@@ -174,7 +175,7 @@ def image_points(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(datadir, "examples", name_dir, "chessboard/points/")
+    data_directory = os.path.join(datadir, "doc", "examples", name_dir, "chessboard/points/")
 
     chessboards = {}
     keep = [42] + list(range(0, 360, 30))
@@ -251,7 +252,7 @@ def calibrations(name_dir):
     calibration = {}
     for id_camera in ["side", "top"]:
         calibration[id_camera] = OldCalibrationCamera.load(
-            os.path.join(data_directory, "calibration_camera_{id_camera}.json")
+            os.path.join(data_directory, f"calibration_camera_{id_camera}.json")
         )
 
     return calibration
