@@ -15,7 +15,6 @@ import cv2
 import scipy.spatial
 import numpy
 import sklearn.neighbors
-from numba import njit
 
 import openalea.phenomenal.multi_view_reconstruction._c_mvr as c_mvr
 
@@ -31,7 +30,6 @@ VoxelsStage = collections.namedtuple("VoxelsStage", ["consistent", "inconsistent
 # ==============================================================================
 
 
-@njit(cache=True)
 def get_voxels_corners(voxels_position, voxels_size):
     """According to the voxels position and their size, return a numpy array
     containing for each input voxels the position of the 8 corners.
@@ -485,7 +483,6 @@ def reconstruction_inconsistent(image_views, stages, attractor=None):
 # ==============================================================================
 
 
-@njit(cache=True)
 def get_integrale_image(img):
     a = numpy.zeros_like(img, dtype=int)
     a[img > 0] = 1
