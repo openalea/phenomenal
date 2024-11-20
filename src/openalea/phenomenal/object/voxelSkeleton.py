@@ -46,7 +46,7 @@ class VoxelSkeleton:
         if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
 
-        with gzip.open(filename, "wb", encoding="UTF8") as f:
+        with gzip.open(filename, "wb") as f:
             data = {"segments": [], "voxels_size": self.voxels_size}
 
             for seg in self.segments:
@@ -61,7 +61,7 @@ class VoxelSkeleton:
 
     @staticmethod
     def read_from_json_gz(filename):
-        with gzip.open(filename, "rb", encoding="UTF8") as f:
+        with gzip.open(filename, "rb") as f:
             data = json.loads(f.read().decode("utf-8"))
 
             segs = []

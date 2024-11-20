@@ -10,7 +10,6 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy
-from numba import njit
 
 from ..object import Image3D
 
@@ -84,7 +83,6 @@ def labeling_connected_component(image_3d):
 
     mat = Image3D.zeros_like(im)
 
-    @njit(cache=True)
     def get_neighbors(x, y, z):
         neighbors = []
         for i in [-1, 0, 1]:

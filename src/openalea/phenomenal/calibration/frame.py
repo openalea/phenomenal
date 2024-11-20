@@ -20,7 +20,6 @@ from __future__ import division, print_function, absolute_import
 import numpy.linalg
 
 from numpy import zeros, dot, add, subtract, divide, tensordot, cross, transpose, sign
-from numba import njit
 from functools import reduce
 # ==============================================================================
 
@@ -191,7 +190,6 @@ class Frame:
     # change of referential in the local plane O,Ox,Oy
     #
     ###############################################
-    @njit
     def local_tensor2(self, tensor):
         """Local coordinates of a global tensor
         expressed in the local plane Ox,Oy
@@ -213,7 +211,6 @@ class Frame:
 
         return ret
 
-    @njit
     def global_tensor2(self, tensor):
         """Global coordinates of a local tensor
 
@@ -317,7 +314,6 @@ def tetrahedron_frame(pt1, pt2, pt3, pt4):
     return Frame((er, es, et), pt1)
 
 
-@njit
 def mean_frame(frames):
     """Compute the mean frame of all given frames.
 
