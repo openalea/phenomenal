@@ -133,7 +133,7 @@ class VoxelSegmentation:
 
     @staticmethod
     def read_from_json_gz(filename, without_info=False):
-        with gzip.open(filename, "rb", encoding="UTF8") as f:
+        with gzip.open(filename, "rb") as f:
             data = json.loads(f.read().decode("utf-8"))
             # data = ast.literal_eval(f.read())
 
