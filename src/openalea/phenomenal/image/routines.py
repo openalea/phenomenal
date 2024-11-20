@@ -27,7 +27,7 @@ from functools import reduce
 
 def mean_image(images):
     """
-    Compute the mean of a image list.
+    Compute the mean of an image list.
 
     Parameters
     ----------

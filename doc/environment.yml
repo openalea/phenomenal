@@ -8,6 +8,7 @@ dependencies:
   - pydata-sphinx-theme
   - myst-parser
   - openalea.phenomenal
+  - sphinx-favicon
   - ipykernel
   - ipyvolume
   - ipython_genutils
