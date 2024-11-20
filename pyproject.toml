@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "numpy<2.0", "cython"]
+requires = ["setuptools", "numpy<2.0", "cython"] # Change the restricted version when updating from numpy 1.x
 build-backend = "setuptools.build_meta"
 
 [project]
