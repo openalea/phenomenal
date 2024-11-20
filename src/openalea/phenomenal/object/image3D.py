@@ -100,10 +100,10 @@ class Image3D(numpy.ndarray):
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
 
-        xl, yl, zl = self.shape
+        _, _, zl = self.shape
         for i in range(zl):
             mat = self[:, :, i] * 255
-            cv2.imwrite(folder_name + "%d.png" % i, mat)
+            cv2.imwrite(folder_name + f"{i}.png", mat)
 
     # ==========================================================================
     # CREATION ROUTINE

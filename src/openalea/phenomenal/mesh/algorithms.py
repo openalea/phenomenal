@@ -9,9 +9,9 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
+import math
 import vtk
 import numpy
-import math
 import skimage.measure
 
 from .vtk_transformation import (
@@ -100,9 +100,9 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
         vtk_poly_data = decimation(vtk_poly_data, reduction=reduction, verbose=verbose)
 
     if vtk_poly_data.GetNumberOfPoints() == 0:
-        return list(), list()
+        return [], []
 
-    vertices, faces, color = from_vtk_poly_data_to_vertices_faces(vtk_poly_data)
+    vertices, faces, _ = from_vtk_poly_data_to_vertices_faces(vtk_poly_data)
     vertices = vertices * image_3d.voxels_size + image_3d.world_coordinate
 
     return vertices, faces

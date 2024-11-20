@@ -1,20 +1,24 @@
 """
 Use binary images to extend the length of each phenomenal phm_leaf.
 
-Method : A 2d skeleton is computed for the binary image at a given angle. Then, the algorithm searches correspondences
-between phenomenal polylines (reprojected in 2D) and skeleton polylines. For each match, an extension factor e >= 1 is
-computed this way : e = (skeleton 2D polyline length) / (phenomenal 2D polyline length). This is done for each side
-angle. Then, results are merged : for each phenomenal phm_leaf, the final extension factor is equal to the median of
-all extension values found for this phm_leaf, or 1 if no extension value was found.
+Method : A 2d skeleton is computed for the binary image at a given angle. Then,
+the algorithm searches correspondences between phenomenal polylines
+(reprojected in 2D) and skeleton polylines. For each match, an
+extension factor e >= 1 is computed this way :
+    e = (skeleton 2D polyline length) / (phenomenal 2D polyline length).
+This is done for each side angle. Then, results are merged : for each
+phenomenal phm_leaf, the final extension factor is equal to the median of
+all extension values found for this phm_leaf, or 1 if no extension value
+was found.
 """
 
-import cv2
 import warnings
+import cv2
 import numpy as np
 
 from skimage.morphology import skeletonize
 from scipy.spatial.distance import directed_hausdorff
-from skan.csr import skeleton_to_csgraph, Skeleton, summarize  # skan<=0.9
+from skan.csr import skeleton_to_csgraph, Skeleton, summarize
 from openalea.phenomenal.tracking.polyline_utils import polyline_length
 
 
@@ -137,17 +141,17 @@ def compute_extension(
     # verify that a phenomenal polyline has no more than 1 corresponding skeleton polyline.
     # And keep extension polylines in a list for optional display
     extension_polylines = []
-    for k in res.keys():
+    for k, resi in res.items():
         # 1 skeleton branch candidate
-        if len(res[k]) == 1:
-            _, extension_factor, extension_pl = res[k][0]
+        if len(resi) == 1:
+            _, extension_factor, extension_pl = resi[0]
             res[k] = extension_factor
             extension_polylines.append(extension_pl)
         # several skeleton branch candidates
-        elif len(res[k]) > 1:
+        elif len(resi) > 1:
             d_min = float("inf")
             selected_pl = None
-            for d, extension_factor, extension_pl in res[k]:
+            for d, extension_factor, extension_pl in resi:
                 if d < d_min:
                     d_min = d
                     res[k] = extension_factor
@@ -186,7 +190,7 @@ def leaf_extension(phm_seg, binaries, projections):
     ]
     angles = binaries.keys()
 
-    res = dict()
+    res = {}
     for angle in angles:
         # 2D skeleton polylines
         polylines_sk = skeleton_branches(binaries[angle])

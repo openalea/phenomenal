@@ -28,13 +28,13 @@ class VoxelNode:
         self.is_leaf = True
 
     def __str__(self):
-        return """
+        return f"""
         OcNode:
-        \tposition : {0}
-        \tsize : {1}
-        \tdata: {2}
-        \tis_leaf : {3}
-        """.format(self.position, self.size, self.data, self.is_leaf)
+        \tposition : {self.position}
+        \tsize : {self.size}
+        \tdata: {self.data}
+        \tis_leaf : {self.is_leaf}
+        """
 
     def creates_sons(self):
         r = self.size / 4.0
@@ -70,7 +70,7 @@ class VoxelNode:
         func_if_true_look_in_sons=lambda n: True,
         func_get=lambda n: n,
     ):
-        l = list()
+        l = []
         if func_if_true_add_node(self):
             l.append(func_get(self))
 
@@ -88,7 +88,7 @@ class VoxelNode:
         return l
 
     def get_sons_voxels_position_with_size(self, voxels_size):
-        l = list()
+        l = []
         if self.data is True:
             if self.size == voxels_size:
                 l.append(self.position)
@@ -100,10 +100,7 @@ class VoxelNode:
 
     def get_leafs(self):
         def func_if_true_add_node(node):
-            if node.is_leaf:
-                return True
-            else:
-                return False
+            return node.is_leaf
 
         return self.get_nodes(func_if_true_add_node=func_if_true_add_node)
 
@@ -111,10 +108,11 @@ class VoxelNode:
         r = self.size / 2.0
 
         x, y, z = position
-        if self.position[0] - r <= x <= self.position[0] + r:
-            if self.position[1] - r <= y <= self.position[1] + r:
-                if self.position[2] - r <= z <= self.position[2] + r:
-                    return True
+        if (
+            self.position[0] - r <= x <= self.position[0] + r
+            and self.position[1] - r <= y <= self.position[1] + r
+        ) and self.position[2] - r <= z <= self.position[2] + r:
+            return True
         return False
 
     def get_neighbors_positions(self):
@@ -156,54 +154,47 @@ class VoxelNode:
         return neighbors
 
     def get_node_position(self, position):
-        # print(position, self.position)
-
         if (
             self.position[0] == position[0]
             and self.position[1] == position[1]
             and self.position[2] == position[2]
         ):
             return self
-        else:
-            if not self.is_leaf and self.in_it(position):
-                for son in self.sons:
-                    leaf = son.get_node_position(position)
-                    if leaf is not None:
-                        return leaf
-            else:
-                return None
+        if not self.is_leaf and self.in_it(position):
+            for son in self.sons:
+                leaf = son.get_node_position(position)
+                if leaf is not None:
+                    return leaf
+        return None
 
     def get_with_position(self, position):
         if self.in_it(position):
             if self.is_leaf:
                 return self
-            else:
-                for son in self.sons:
-                    leaf = son.find_leaf_with_position(position)
-                    if leaf is not None:
-                        return leaf
-        else:
-            return None
+            for son in self.sons:
+                leaf = son.find_leaf_with_position(position)
+                if leaf is not None:
+                    return leaf
+        return None
 
     def get_root(self):
         father = self.father
         if father is None:
             return self
-        else:
+        grandfather = father.father
+
+        while grandfather is not None:
+            father = grandfather
             grandfather = father.father
 
-            while grandfather is not None:
-                father = grandfather
-                grandfather = father.father
-
-            return father
+        return father
 
     def get_neighbors_leaf(self):
         neighbors_positions = self.get_neighbors_positions()
 
         root = self.get_root()
 
-        neighbors_leaf = list()
+        neighbors_leaf = []
         for position in neighbors_positions:
             leaf = root.find_leaf_with_position(position)
 
@@ -217,33 +208,31 @@ class VoxelNode:
 
         if self.father is None:
             return False
-        else:
-            for node in self.father.sons:
-                if node is self:
-                    continue
+        for node in self.father.sons:
+            if node is self:
+                continue
 
-                if node.position in neighbors_positions:
-                    if node.data is True:
-                        neighbors_positions.remove(node.position)
-                    else:
-                        return False
+            if node.position in neighbors_positions:
+                if node.data is True:
+                    neighbors_positions.remove(node.position)
                 else:
                     return False
+            else:
+                return False
 
-            root = self.get_root()
-            for position in neighbors_positions:
-                leaf = root.find_leaf_with_position(position)
+        root = self.get_root()
+        for position in neighbors_positions:
+            leaf = root.find_leaf_with_position(position)
 
-                if leaf is None or leaf.data is False:
-                    return False
+            if leaf is None or leaf.data is False:
+                return False
 
-            return True
+        return True
 
     def depth(self):
         if self.is_leaf:
             return 0
-        else:
-            return 1 + max([node.depth() for node in self.sons])
+        return 1 + max(node.depth() for node in self.sons)
 
     def insert_node(self, position, data):
         if self.in_it(position):
@@ -259,8 +248,7 @@ class VoxelNode:
 
                 if node is not None:
                     return node
-        else:
-            return None
+        return None
 
     def get_dict_nodes(self):
         if self.is_leaf:
@@ -270,17 +258,16 @@ class VoxelNode:
                 "data": self.data,
                 "sons": None,
             }
-        else:
-            sons = list()
-            for leaf in self.sons:
-                sons.append(leaf.get_dict_nodes())
+        sons = []
+        for leaf in self.sons:
+            sons.append(leaf.get_dict_nodes())
 
-            return {
-                "position": self.position,
-                "size": self.size,
-                "data": self.data,
-                "sons": sons,
-            }
+        return {
+            "position": self.position,
+            "size": self.size,
+            "data": self.data,
+            "sons": sons,
+        }
 
 
 class VoxelOctree:
@@ -341,8 +328,7 @@ class VoxelOctree:
         def f(node):
             if node.size == voxels_size and node.data is True:
                 return True
-            else:
-                return False
+            return False
 
         nodes = self.root.get_nodes(func_if_true_add_node=f, func_get=lambda n: n)
 
@@ -358,12 +344,11 @@ class VoxelOctree:
                     return True
                 if node.is_leaf and node.size > voxels_size:
                     return True
-            else:
-                return False
+            return False
 
         nodes = self.root.get_nodes(func_if_true_add_node=f, func_get=lambda n: n)
 
-        nodes_position = list()
+        nodes_position = []
         while nodes:
             node = nodes.pop()
 
@@ -408,12 +393,12 @@ class VoxelOctree:
             os.makedirs(os.path.dirname(filename))
 
         dict_nodes = self.root.get_dict_nodes()
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="UTF8") as f:
             json.dump(dict_nodes, f)
 
     @staticmethod
     def read_from_json(filename):
-        with open(filename, "r") as f:
+        with open(filename, "r", encoding="UTF8") as f:
             load_dict_octree = json.load(f)
 
         root = VoxelOctree.from_dict(load_dict_octree, None)
@@ -431,8 +416,8 @@ class VoxelOctree:
 
         if dict_sons is not None:
             node.is_leaf = False
-            for i in range(len(dict_sons)):
-                node.sons[i] = VoxelOctree.from_dict(dict_sons[i], node)
+            for i, val in enumerate(dict_sons):
+                node.sons[i] = VoxelOctree.from_dict(val, node)
         else:
             node.is_leaf = True
 

@@ -22,7 +22,7 @@ def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
 
     def func_if_true_add_node(node):
         if node.size == voxel_size and node.data is True:
-            x, y, z = node.position
+            x, y, _ = node.position
             if -k <= x <= k:
                 if -k <= y <= k:
                     return True
@@ -41,14 +41,14 @@ def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
 
 
 def _merge(graph, voxels, remaining_voxels, percentage=50):
-    voxels_neighbors = list()
+    voxels_neighbors = []
     for node in voxels:
         voxels_neighbors += graph[node].keys()
     voxels_neighbors = set(voxels_neighbors) - voxels
 
     subgraph = graph.subgraph(remaining_voxels)
 
-    connected_components = list()
+    connected_components = []
     for voxel_group in networkx.connected_components(subgraph):
         nb = len(voxel_group.intersection(voxels_neighbors))
 
@@ -70,7 +70,8 @@ def get_highest_segment(segments, n_candidates=1):
     ----------
     segments : list
         list of VoxelSegment
-    n_candidates : number of highest polylines pre-selected for the selection of the final highest polyline
+    n_candidates : number of highest polylines pre-selected for the selection
+    of the final highest polyline
     Returns
     -------
     highest_voxel_segment : VoxelSegment
@@ -111,7 +112,7 @@ def detect_stem_tip(voxel_skeleton, graph, n_candidates):
         stem_segment_voxel, stem_segment_path, voxels_size, graph, z_stem=None
     )
 
-    return sum([x[2] for x in stem_top]) / len([x[2] for x in stem_top])
+    return sum(x[2] for x in stem_top) / len([x[2] for x in stem_top])
 
 
 def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1):
@@ -146,7 +147,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1):
 
     # ==========================================================================
     # Remove stem voxels from segment voxels
-    vs_to_remove = list()
+    vs_to_remove = []
     for vs in voxel_skeleton.segments:
         leaf_voxel = None
         subgraph = graph.subgraph(vs.voxels_position - stem_voxel)
@@ -184,9 +185,9 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1):
     # Define mature & cornet leaf
 
     organ_unknown = VoxelOrgan("unknown")
-    organ_unknown.add_voxel_segment(voxels_remain, list())
+    organ_unknown.add_voxel_segment(voxels_remain, [])
 
-    mature_organs, growing_organs = list(), list()
+    mature_organs, growing_organs = [], []
     for vs in voxel_skeleton.segments:
         if len(vs.real_polyline) == 0:
             organ_unknown.voxel_segments.append(vs)
@@ -207,7 +208,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1):
     # MERGE MATURE LEAFS
     # ==========================================================================
     percentage = 50
-    ltmp = list()
+    ltmp = []
     while mature_organs:
         vo_1 = mature_organs.pop()
         again = True
@@ -252,7 +253,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1):
     # MERGE GROWING LEAFS
     # ==========================================================================
     percentage = 85
-    ltmp = list()
+    ltmp = []
     while growing_organs:
         vo_1 = growing_organs.pop()
         again = True

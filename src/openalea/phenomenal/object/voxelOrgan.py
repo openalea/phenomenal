@@ -17,10 +17,10 @@ from .voxelSegment import VoxelSegment
 
 class VoxelOrgan:
     def __init__(self, label, sub_label=None):
-        self.voxel_segments = list()
+        self.voxel_segments = []
         self.label = label
         self.sub_label = sub_label
-        self.info = dict()
+        self.info = {}
 
     def add_voxel_segment(self, voxels_position, polyline, closest_nodes=None):
         self.voxel_segments.append(
@@ -37,7 +37,7 @@ class VoxelOrgan:
     # ==========================================================================
 
     def get_longest_segment(self):
-        longest_polyline = list()
+        longest_polyline = []
         longest_segment = None
 
         for vs in self.voxel_segments:
@@ -50,7 +50,7 @@ class VoxelOrgan:
     # ==========================================================================
 
     def get_highest_polyline(self):
-        highest_polyline = list()
+        highest_polyline = []
         z_max = float("-inf")
         for vs in self.voxel_segments:
             z = numpy.max(numpy.array(vs.polyline)[:, 2])

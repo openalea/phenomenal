@@ -1,10 +1,11 @@
 """
 Time-lapse tracking of leaves in a time-series of 3D maize segmentations.
-//!\\ In the tracking algorithm, ranks start at 0. But in the final output, ranks start at 1. (see get_ranks() method)
+//!\\ In the tracking algorithm, ranks start at 0. But in the final output,
+ranks start at 1. (see get_ranks() method)
 """
 
-import numpy as np
 import warnings
+import numpy as np
 
 from openalea.phenomenal.tracking.alignment import multi_alignment
 from openalea.phenomenal.tracking.alignment_postprocessing import (
@@ -15,8 +16,8 @@ from openalea.phenomenal.tracking.alignment_postprocessing import (
 
 def check_time_intervals(times, discontinuity=5.0):
     """
-    If a gap between two successive time steps is too high compared to the median interval, all time-steps after the
-    gap are invalidated
+    If a gap between two successive time steps is too high compared to the
+    median interval, all time-steps after the gap are invalidated
 
     Parameters
     ----------
@@ -39,7 +40,8 @@ def check_time_intervals(times, discontinuity=5.0):
 
 
 class TrackedLeaf:
-    """Describe a leaf organ, with attributes specific to leaf tracking algorithm."""
+    """Describe a leaf organ, with attributes specific to leaf tracking
+    algorithm."""
 
     def __init__(self, polyline, features):
         """
@@ -78,8 +80,8 @@ class TrackedLeaf:
 
 
 class TrackedSnapshot:
-    """Describe the plant segmentation at a given time point, particularly the order of leaves, which is modified
-    during leaf tracking."""
+    """Describe the plant segmentation at a given time point, particularly
+    the order of leaves, which is modified during leaf tracking."""
 
     def __init__(self, leaves, check):
         """
@@ -107,9 +109,10 @@ class TrackedSnapshot:
         self.sequence = [-1, -1, 0, 1, -1, 2, 3, -1]
         ===> self.leaf_ranks() returns [3, 4, 6, 7]
 
-        WARNING : the rank of a leaf is given by its position in TrackedSnapshot.sequence, which starts at 0.
-        But leaf ranks are usually numerated starting from 1: this second option is used in the output from this
-        function.
+        WARNING : the rank of a leaf is given by its position in
+        TrackedSnapshot.sequence, which starts at 0. But leaf ranks are usually
+        numerated starting from 1: this second option is used in the output
+        from this function.
         """
         return [
             self.sequence.index(i) + 1 if i in self.sequence else 0
@@ -174,7 +177,8 @@ class TrackedPlant:
     def get_ref_skeleton(self, nmax=15):
         """
         Compute a median skeleton {rank : leaf}.
-        For each rank, the leaf whose vector is less distant to all other leaves from the same ranks is selected.
+        For each rank, the leaf whose vector is less distant to all other leaves
+        from the same ranks is selected.
 
         Parameters
         ----------
@@ -185,7 +189,7 @@ class TrackedPlant:
         -------
         """
 
-        ref_skeleton = dict()
+        ref_skeleton = {}
 
         ranks = range(len(self.snapshots[0].sequence))
         for rank in ranks:
@@ -310,10 +314,7 @@ class TrackedPlant:
 
         mature_ref = self.get_ref_skeleton()
 
-        for r in mature_ref.keys():
-            # init leaf ref
-            leaf_ref = mature_ref[r]
-
+        for r, leaf_ref in mature_ref.items():
             # day t when leaf starts to be mature
             t_mature = next(
                 (
@@ -329,8 +330,8 @@ class TrackedPlant:
                 g_growing = [
                     g
                     for g, leaf in enumerate(snapshot.leaves)
-                    if (not leaf.features["mature"])  # avoids non-tracked mature
-                    and (g not in snapshot.sequence)  # avoids already-tracked growing
+                    if not leaf.features["mature"]  # avoids non-tracked mature
+                    and g not in snapshot.sequence  # avoids already-tracked growing
                 ]
                 if len(g_growing) > 0:
                     dists = [

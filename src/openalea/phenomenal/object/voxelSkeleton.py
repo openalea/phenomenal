@@ -9,10 +9,10 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import numpy
 import os
 import gzip
 import json
+import numpy
 
 from .voxelGrid import VoxelGrid
 from .voxelSegment import VoxelSegment
@@ -46,23 +46,22 @@ class VoxelSkeleton:
         if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
 
-        with gzip.open(filename, "wb") as f:
-            data = dict()
-            data["segments"] = list()
-            data["voxels_size"] = self.voxels_size
+        with gzip.open(filename, "wb", encoding="UTF8") as f:
+            data = {"segments": [], "voxels_size": self.voxels_size}
 
             for seg in self.segments:
-                dseg = dict()
-                dseg["voxels_position"] = list(seg.voxels_position)
-                dseg["polyline"] = seg.polyline
-                dseg["closest_nodes"] = [list(nodes) for nodes in seg.closest_nodes]
+                dseg = {
+                    "voxels_position": list(seg.voxels_position),
+                    "polyline": seg.polyline,
+                    "closest_nodes": [list(nodes) for nodes in seg.closest_nodes],
+                }
                 data["segments"].append(dseg)
 
             f.write(json.dumps(data).encode("utf-8"))
 
     @staticmethod
     def read_from_json_gz(filename):
-        with gzip.open(filename, "rb") as f:
+        with gzip.open(filename, "rb", encoding="UTF8") as f:
             data = json.loads(f.read().decode("utf-8"))
 
             segs = []

@@ -9,8 +9,8 @@
 # ==============================================================================
 from __future__ import print_function, absolute_import
 
-import numpy
 import math
+import numpy
 import scipy.integrate
 
 from .plane_interception import (
@@ -57,7 +57,7 @@ def get_max_distance(node, nodes):
 
 
 def compute_width_organ(closest_nodes):
-    width = list()
+    width = []
     for nodes in closest_nodes:
         width.append(max_distance_in_points(nodes))
 
@@ -90,7 +90,7 @@ def compute_inclination_angle(polyline, step=1):
     for (x0, y0, z0), (x1, y1, z1) in zip(polyline[::step], polyline[step::step]):
         length += numpy.linalg.norm(numpy.array((x1 - x0, y1 - y0, z1 - z0)))
 
-    angles = list()
+    angles = []
     z_axis = numpy.array([0, 0, 1])
 
     for (x0, y0, z0), (x1, y1, z1) in zip(polyline[::step], polyline[step::step]):
@@ -118,7 +118,7 @@ def compute_fitted_width(width, curvilinear_abscissa):
 def compute_vector_mean(polyline):
     x, y, z = polyline[0]
 
-    vectors = list()
+    vectors = []
     for i in range(1, len(polyline)):
         xx, yy, zz = polyline[i]
 
@@ -141,7 +141,7 @@ def compute_azimuth_angle(polyline):
 def compute_insertion_angle(polyline, stem_vector_mean):
     x, y, z = polyline[0]
 
-    vectors = list()
+    vectors = []
     for i in range(1, len(polyline) // 4 + 1):
         xx, yy, zz = polyline[i]
         vectors.append((xx - x, yy - y, zz - z))
@@ -163,9 +163,11 @@ def compute_insertion_angle(polyline, stem_vector_mean):
 
 def voxel_base_height(vo, polyline, min_distance=30):
     """
-    Search voxels that have a distance < min_distance to the polyline, and return the height of the lowest one.
-    This can be used to determine the insertion height of a maize mature leaf (with vo = mature leaf organ,
-    polyline = stem polyline), based on voxel data (since it's often more accurate than polyline data)
+    Search voxels that have a distance < min_distance to the polyline, and
+    return the height of the lowest one.
+    This can be used to determine the insertion height of a maize mature leaf
+    (with vo = mature leaf organ, polyline = stem polyline), based on voxel
+    data (since it's often more accurate than polyline data)
     """
 
     # all voxels
@@ -341,8 +343,8 @@ def maize_growing_leaf_analysis(
 
 
 def maize_analysis(maize_segmented):
-    """Update info fiel of the VoxelSegmentation object with the analysis
-    result computed. Each organ are a specific algorithm to extract information.
+    """Update info field of the VoxelSegmentation object with the analysis
+    result computed. Each organ is a specific algorithm to extract information.
 
     Parameters
     ----------
@@ -355,12 +357,13 @@ def maize_analysis(maize_segmented):
 
     voxels_size = maize_segmented.voxels_size
     for vo in maize_segmented.voxel_organs:
-        vo.info = dict()
-        vo.info["pm_label"] = vo.label
-        vo.info["pm_sub_label"] = vo.sub_label
-        vo.info["pm_voxels_volume"] = (
-            len(vo.voxels_position()) * maize_segmented.voxels_size**3
-        )
+        vo.info = {
+            "pm_label": vo.label,
+            "pm_sub_label": vo.sub_label,
+            "pm_voxels_volume": (
+                len(vo.voxels_position()) * maize_segmented.voxels_size**3
+            ),
+        }
 
     # ==========================================================================
 
@@ -369,7 +372,7 @@ def maize_analysis(maize_segmented):
 
     # ==========================================================================
 
-    mature_leafs = list()
+    mature_leafs = []
     stem_polyline = numpy.array(
         list(maize_segmented.get_stem().get_highest_polyline().polyline)
     )
@@ -391,7 +394,7 @@ def maize_analysis(maize_segmented):
 
     # ==========================================================================
 
-    growing_leafs = list()
+    growing_leafs = []
     for vo_growing_leaf in maize_segmented.get_growing_leafs():
         z = maize_growing_leaf_analysis_real_length(maize_segmented, vo_growing_leaf)
         growing_leafs.append((vo_growing_leaf, z))

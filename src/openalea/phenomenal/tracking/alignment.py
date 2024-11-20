@@ -1,17 +1,18 @@
 """Multiple sequence alignment"""
 
-import numpy as np
 from copy import deepcopy
+import numpy as np
 
 
 def needleman_wunsch(X, Y, gap, gap_extremity_factor=1.0):
     """
     Performs pairwise alignment of profiles X and Y with Needleman-Wunsch algorithm.
     A profile is defined as an array of one or more sequences of the same length.
-    Each sequence includes one or several vectors of the same length, and might contain gaps (vectors filled with NaN)
+    Each sequence includes one or several vectors of the same length, and might
+    contain gaps (vectors filled with NaN)
     Source code : https://gist.github.com/slowkow/06c6dba9180d013dfd82bec217d22eb5
-    The source code was modified to correct a few errors, and adapted to fit all requirements (extremity gap,
-    customized scoring function, etc.)
+    The source code was modified to correct a few errors, and adapted to fit all
+    requirements (extremity gap, customized scoring function, etc.)
 
     Parameters
     ----------
@@ -104,7 +105,8 @@ def needleman_wunsch(X, Y, gap, gap_extremity_factor=1.0):
 
 def scoring_function(vec1, vec2):
     """
-    Compute a dissimilarity score between two vectors of same length, which is equal to their euclidian distance.
+    Compute a dissimilarity score between two vectors of same length, which is
+    equal to their euclidian distance.
 
     Parameters
     ----------
@@ -123,7 +125,8 @@ def alignment_score(x, y, gap_extremity):
     """
 
     Compute a dissimilarity score between two arrays of vectors x and y.
-    x and y can have different lengths, but all vectors in x and y must have the same length.
+    x and y can have different lengths, but all vectors in x and y must have
+    the same length.
 
     Parameters
     ----------
@@ -157,8 +160,9 @@ def alignment_score(x, y, gap_extremity):
 
 def insert_gaps(all_sequences, seq_indexes, alignment):
     """
-    Add gaps in sequences of 'all_sequences' whose indexes is in 'seq_indexes'. A gap is defined as a NAN array element
-    in a given sequence. Gaps positions are given by 'alignment'.
+    Add gaps in sequences of 'all_sequences' whose indexes is in 'seq_indexes'.
+    A gap is defined as a NAN array element in a given sequence.
+    Gaps positions are given by 'alignment'.
 
     Parameters
     ----------
@@ -174,7 +178,7 @@ def insert_gaps(all_sequences, seq_indexes, alignment):
     all_sequences2 = deepcopy(all_sequences)
     gap_indexes = [i for i, e in enumerate(alignment) if e == -1]
 
-    vec_len = max([len(vec) for seq in all_sequences for vec in seq])
+    vec_len = max(len(vec) for seq in all_sequences for vec in seq)
 
     for si in seq_indexes:
         for gi in gap_indexes:
@@ -190,9 +194,11 @@ def multi_alignment(
     sequences, gap, gap_extremity_factor=1.0, start=0, align_range=None
 ):
     """
-    Multiple sequence alignment algorithm to align n sequences, using a progressive method. At each step, a sequence (Y)
-    is aligned with a matrix (X) corresponding to a profile (i.e. the alignement of k sequences) resulting in the
-    alignment of k + 1 sequences. Each pairwise alignment of X vs Y is based on needleman-wunsch algorithm.
+    Multiple sequence alignment algorithm to align n sequences, using a
+    progressive method. At each step, a sequence (Y) is aligned with a matrix
+    (X) corresponding to a profile (i.e. the alignment of k sequences)
+    resulting in the alignment of k + 1 sequences. Each pairwise alignment
+    of X vs Y is based on needleman-wunsch algorithm.
 
     Parameters
     ----------
@@ -201,14 +207,18 @@ def multi_alignment(
     gap : float
         penalty parameter to add a gap
     gap_extremity_factor : float
-        parameter to modify the gap penalty on sequence extremity positions, relatively to gap value.
-        For example, if gap = 5 and gap_extremity_factor = 0.6, Then the penalty for terminal gaps equals 3.
+        parameter to modify the gap penalty on sequence extremity positions,
+        relatively to gap value.
+        For example, if gap = 5 and gap_extremity_factor = 0.6,
+        Then the penalty for terminal gaps equals 3.
     start : int
-        sequences are progressively added to the global alignment from sequences[start] to sequences[0], then from
+        sequences are progressively added to the global alignment from
+        sequences[start] to sequences[0], then from
         sequences[start + 1] to sequences[-1]
     align_range : int
-        When adding a new sequence to the global alignment, only the already aligned sequences with a distance inferior
-        or equal to this parameter in the sequences order are used for the alignment.
+        When adding a new sequence to the global alignment, only the already
+        aligned sequences with a distance inferior or equal to this parameter
+        in the sequences order are used for the alignment.
 
     Returns
     -------

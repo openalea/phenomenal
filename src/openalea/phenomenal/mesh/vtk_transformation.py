@@ -9,9 +9,9 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
+import operator
 import vtk
 import vtkmodules.util.numpy_support
-import operator
 
 # ==============================================================================
 
@@ -43,18 +43,18 @@ def voxel_grid_to_vtk_poly_data(voxel_grid):
     cube_source.SetYLength(voxels_size)
     cube_source.SetZLength(voxels_size)
 
-    glyph3D = vtk.vtkGlyph3D()
+    glyph3_d = vtk.vtkGlyph3D()
 
     if vtk.VTK_MAJOR_VERSION <= 5:
-        glyph3D.SetSource(cube_source.GetOutput())
-        glyph3D.SetInput(polydata)
+        glyph3_d.SetSource(cube_source.GetOutput())
+        glyph3_d.SetInput(polydata)
     else:
-        glyph3D.SetSourceConnection(cube_source.GetOutputPort())
-        glyph3D.SetInputData(polydata)
+        glyph3_d.SetSourceConnection(cube_source.GetOutputPort())
+        glyph3_d.SetInputData(polydata)
 
-    glyph3D.Update()
+    glyph3_d.Update()
 
-    return glyph3D.GetOutput()
+    return glyph3_d.GetOutput()
 
 
 def from_vertices_faces_to_vtk_poly_data(
@@ -71,10 +71,10 @@ def from_vertices_faces_to_vtk_poly_data(
     polys = vtk.vtkCellArray()
 
     # Load the point, cell, and data attributes.
-    for i in range(len(vertices)):
-        points.InsertPoint(i, vertices[i])
-    for i in range(len(faces)):
-        polys.InsertNextCell(make_vtk_id_list(faces[i]))
+    for i, vertex in enumerate(vertices):
+        points.InsertPoint(i, vertex)
+    for _, face in enumerate(faces):
+        polys.InsertNextCell(make_vtk_id_list(face))
 
     # We now assign the pieces to the vtkPolyData.
     poly_data.SetPoints(points)
@@ -152,7 +152,7 @@ def from_vtk_image_data_to_voxels_center(image_data, true_value=255, component=0
     ori_x, ori_y, ori_z = image_data.GetOrigin()
     spa_x, spa_y, spa_z = image_data.GetSpacing()
 
-    voxels_points = list()
+    voxels_points = []
     for x in range(dim_x):
         for y in range(dim_y):
             for z in range(dim_z):
