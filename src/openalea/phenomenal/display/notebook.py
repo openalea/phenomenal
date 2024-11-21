@@ -193,7 +193,7 @@ def show_syntehtic_plant(
             voxels = voxels.union(set(map(tuple, list(polyline))))
 
         voxels = voxels.union(set(map(tuple, list(voxels_position))))
-        voxels_position = numpy.array(list(voxels), dtype=numpy.int)
+        voxels_position = numpy.array(list(voxels), dtype=numpy.intp)
 
     x_min = voxels_position[:, 0].min()
     x_max = voxels_position[:, 0].max()
