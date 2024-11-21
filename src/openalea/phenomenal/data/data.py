@@ -153,7 +153,9 @@ def chessboards(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(datadir, "doc", "examples", name_dir, "chessboard/points/")
+    data_directory = os.path.join(
+        datadir, "doc", "examples", name_dir, "chessboard/points/"
+    )
 
     chessboards = []
     for id_chessboard in [1, 2]:
@@ -173,7 +175,9 @@ def image_points(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(datadir, "doc", "examples", name_dir, "chessboard/points/")
+    data_directory = os.path.join(
+        datadir, "doc", "examples", name_dir, "chessboard/points/"
+    )
 
     chessboards = {}
     keep = [42] + list(range(0, 360, 30))

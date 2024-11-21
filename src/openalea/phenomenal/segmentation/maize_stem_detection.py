@@ -26,7 +26,9 @@ from .plane_interception import (
 def maize_stem_peak_detection(values, stop_index):
     if len(values) > 15:
         nodes_length_smooth2 = list(smooth(numpy.array(values), window_len=15))
-        _, min_peaks_smooth2 = peak_detection(nodes_length_smooth2, order=3)
+        _, min_peaks_smooth2 = peak_detection(
+            nodes_length_smooth2, order=3
+        )
 
         i_peaks = [i for i, v in min_peaks_smooth2 if i <= stop_index]
         if i_peaks:
@@ -80,8 +82,8 @@ def stem_detection(
     ]
 
     distances = []
-    for _, closest_nodes_planes in enumerate(arr_closest_nodes_planes):
-        distance = max_distance_in_points(closest_nodes_planes)
+    for i in range(len(arr_closest_nodes_planes)):
+        distance = max_distance_in_points(arr_closest_nodes_planes[i])
         distances.append(float(distance))
     ball_radius = min(max(max(distances) / 2, 25), 75)
 
@@ -172,10 +174,10 @@ def stem_detection(
     # ==========================================================================
 
     real_path = []
-    for i, xxx_val in enumerate(xxx):
+    for i in range(len(xxx)):
         r = radius_raw(i * len(rad) / 500.0)
 
-        x, y, z = xxx_val, yyy[i], zzz[i]
+        x, y, z = xxx[i], yyy[i], zzz[i]
         real_path.append((x, y, z))
         result = get_nodes_radius((x, y, z), arr_stem_voxels, r)
         stem_voxel = stem_voxel.union(result)

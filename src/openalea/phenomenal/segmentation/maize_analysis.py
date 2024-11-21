@@ -132,7 +132,7 @@ def compute_vector_mean(polyline):
 
 def compute_azimuth_angle(polyline):
     vector_mean = compute_vector_mean(polyline)
-    x, y, z = vector_mean
+    x, y, _ = vector_mean
     azimuth_angle = math.degrees(math.atan2(y, x))
 
     return azimuth_angle, tuple(vector_mean)
@@ -163,11 +163,9 @@ def compute_insertion_angle(polyline, stem_vector_mean):
 
 def voxel_base_height(vo, polyline, min_distance=30):
     """
-    Search voxels that have a distance < min_distance to the polyline, and
-    return the height of the lowest one.
-    This can be used to determine the insertion height of a maize mature leaf
-    (with vo = mature leaf organ, polyline = stem polyline), based on voxel
-    data (since it's often more accurate than polyline data)
+    Search voxels that have a distance < min_distance to the polyline, and return the height of the lowest one.
+    This can be used to determine the insertion height of a maize mature leaf (with vo = mature leaf organ,
+    polyline = stem polyline), based on voxel data (since it's often more accurate than polyline data)
     """
 
     # all voxels
@@ -178,7 +176,7 @@ def voxel_base_height(vo, polyline, min_distance=30):
     for x, y, z in vxs:
         # TODO : approx ?
         # TODO : param min_distance depending on leaf length ?
-        x_stem, y_stem, z_stem = polyline[numpy.argmin(numpy.abs(polyline[:, 2] - z))]
+        x_stem, y_stem, _ = polyline[numpy.argmin(numpy.abs(polyline[:, 2] - z))]
         if numpy.sqrt((x_stem - x) ** 2 + (y_stem - y) ** 2) < min_distance:
             vxs2.append([x, y, z])
     vxs2 = numpy.array(vxs2)
@@ -357,13 +355,10 @@ def maize_analysis(maize_segmented):
 
     voxels_size = maize_segmented.voxels_size
     for vo in maize_segmented.voxel_organs:
-        vo.info = {
-            "pm_label": vo.label,
-            "pm_sub_label": vo.sub_label,
-            "pm_voxels_volume": (
-                len(vo.voxels_position()) * maize_segmented.voxels_size**3
-            ),
-        }
+        vo.info = {"pm_label": vo.label, "pm_sub_label": vo.sub_label,
+                   "pm_voxels_volume": (
+                           len(vo.voxels_position()) * maize_segmented.voxels_size ** 3
+                   )}
 
     # ==========================================================================
 

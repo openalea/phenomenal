@@ -32,22 +32,6 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "cython",
-    "numpy",
-    "numba",
-    "scipy",
-    "scikit-image",
-    "scikit-learn",
-    "networkx",
-    "matplotlib",
-    "vtk",
-    "pytest",
-    "skan",
-]
-
-[project.optional-dependencies]
-test = [
-  "pytest >=6",
 ]
 
 [project.urls]
