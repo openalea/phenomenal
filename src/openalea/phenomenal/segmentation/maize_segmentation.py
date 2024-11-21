@@ -31,13 +31,13 @@ def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
     def func_get(node):
         return node.position
 
-    leaf = octree.root.get_nodes(
+    l = octree.root.get_nodes(
         func_if_true_add_node=func_if_true_add_node, func_get=func_get
     )
 
-    index = numpy.argmin(numpy.array(leaf)[:, 2])
+    index = numpy.argmin(numpy.array(l)[:, 2])
 
-    return numpy.array(leaf)[index]
+    return numpy.array(l)[index]
 
 
 def _merge(graph, voxels, remaining_voxels, percentage=50):
@@ -70,8 +70,7 @@ def get_highest_segment(segments, n_candidates=1):
     ----------
     segments : list
         list of VoxelSegment
-    n_candidates : number of highest polylines pre-selected for the selection
-    of the final highest polyline
+    n_candidates : number of highest polylines pre-selected for the selection of the final highest polyline
     Returns
     -------
     highest_voxel_segment : VoxelSegment
@@ -112,7 +111,7 @@ def detect_stem_tip(voxel_skeleton, graph, n_candidates):
         stem_segment_voxel, stem_segment_path, voxels_size, graph, z_stem=None
     )
 
-    return sum(x[2] for x in stem_top) / len([x[2] for x in stem_top])
+    return sum([x[2] for x in stem_top]) / len([x[2] for x in stem_top])
 
 
 def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1):
