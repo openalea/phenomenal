@@ -53,12 +53,12 @@ def skeleton_branches(image, n_kernel=15, min_length=30):
     branches_endpoint = branches_endpoint[branches_endpoint['branch-distance'] > min_length]
 
     # converting branches to polylines
-    _, coordinates = skeleton_to_csgraph(skeleton)
+    _, (u, v) = skeleton_to_csgraph(skeleton)
     node_ids = list(branches['node-id-src']) + list(branches['node-id-dst'])
     polylines = []
     for irow, row in branches_endpoint.iterrows():
 
-        polyline = np.array([coordinates[i] for i in skan_skeleton.path(irow)])
+        polyline = np.array([(u[i], v[i]) for i in skan_skeleton.path(irow)])
         polyline = polyline[:, ::-1]  # same (x, y) order as phenomenal
 
         # verify that all phm_leaf polylines are oriented the same way (phm_leaf insertion --> phm_leaf tip)
