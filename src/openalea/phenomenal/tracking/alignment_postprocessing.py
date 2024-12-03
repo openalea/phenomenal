@@ -1,7 +1,9 @@
 """
-Functions used in the following post processing steps after the alignment of sequences of ligulated leaves :
+Functions used in the following post-processing steps after the alignment of
+sequences of ligulated leaves :
 
-- Remove abnormal columns in the alignment matrix (i.e. ranks corresponding to artefacts, not to real leaves).
+- Remove abnormal columns in the alignment matrix (i.e. ranks corresponding to
+artefacts, not to real leaves).
 (detect_abnormal_ranks)
 
 - Backwards tracking of each leaf in its growth phase until its emergence.
@@ -9,15 +11,19 @@ Functions used in the following post processing steps after the alignment of seq
 """
 
 import numpy as np
-from openalea.phenomenal.tracking.polyline_utils import polyline_quantile_coordinate, polyline_length
+from openalea.phenomenal.tracking.polyline_utils import (
+    polyline_quantile_coordinate,
+    polyline_length,
+)
 
 
 def detect_abnormal_ranks(alignment_matrix):
     """
     Specific to plant alignment.
-    Detect abnormal columns in 'alignment_matrix' object resulting from multi alignment based on the following criteria:
-    - A column is abnormal if it contains 2 times less aligned vectors in average (value != -1 in 'alignment_matrix')
-    than the surrounding columns.
+    Detect abnormal columns in 'alignment_matrix' object resulting from multi
+    alignment based on the following criteria:
+    - A column is abnormal if it contains 2 times less aligned vectors in
+    average (value != -1 in 'alignment_matrix') than the surrounding columns.
     - first and last columns can't be abnormal
 
     Parameters
@@ -31,10 +37,15 @@ def detect_abnormal_ranks(alignment_matrix):
     """
 
     alignment_matrix = np.array(alignment_matrix)
-    counts = [len([k for k in alignment_matrix[:, i] if k != -1]) for i in range(alignment_matrix.shape[1])]
+    counts = [
+        len([k for k in alignment_matrix[:, i] if k != -1])
+        for i in range(alignment_matrix.shape[1])
+    ]
     abnormal_ranks = []
-    for i in range(len(counts)):
-        if 0 < i < len(counts) - 1 and counts[i] < 0.5 * np.mean([counts[i - 1], counts[i + 1]]):
+    for i, value in enumerate(counts):
+        if 0 < i < len(counts) - 1 and value < 0.5 * np.mean(
+            [counts[i - 1], counts[i + 1]]
+        ):
             abnormal_ranks.append(i)
 
     return abnormal_ranks

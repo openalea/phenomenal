@@ -10,6 +10,7 @@
 """
 Module to display image and binarization result
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -24,7 +25,7 @@ __all__ = ["show_image", "show_images"]
 # ==============================================================================
 
 
-def show_image(image, name_windows=''):
+def show_image(image, name_windows=""):
     matplotlib.pyplot.title(name_windows)
 
     if image.ndim == 2:
@@ -37,15 +38,14 @@ def show_image(image, name_windows=''):
     matplotlib.pyplot.show()
 
 
-def show_images(images, name_windows=''):
-
+def show_images(images, name_windows=""):
     matplotlib.pyplot.title(name_windows)
     nb_col = 4
     nb_row = int(math.ceil(len(images) / float(nb_col)))
 
     for i, image in enumerate(images, 1):
         ax = matplotlib.pyplot.subplot(nb_row, nb_col, i)
-        ax.axis('off')
+        ax.axis("off")
         if image.ndim == 2:
             img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
             ax.imshow(img)
@@ -53,4 +53,3 @@ def show_images(images, name_windows=''):
             ax.imshow(image)
 
     matplotlib.pyplot.show()
-

@@ -8,7 +8,7 @@ import openalea.phenomenal.calibration.transformations as tr
 
 def test_reflection_matrix():
     v0 = numpy.random.random(4) - 0.5
-    v0[3] = 1.
+    v0[3] = 1.0
     v1 = numpy.random.random(3) - 0.5
     R = tr.reflection_matrix(v0, v1)
     numpy.allclose(2, numpy.trace(R))
@@ -44,10 +44,9 @@ def test_rotation_matrix():
     R1 = tr.rotation_matrix(-angle, -direc, point)
     tr.is_same_transform(R0, R1)
 
-    I = numpy.identity(4, numpy.float64)
-    numpy.allclose(I, tr.rotation_matrix(math.pi * 2, direc))
-    numpy.allclose(2,
-                   numpy.trace(tr.rotation_matrix(math.pi / 2, direc, point)))
+    ID = numpy.identity(4, numpy.float64)
+    numpy.allclose(ID, tr.rotation_matrix(math.pi * 2, direc))
+    numpy.allclose(2, numpy.trace(tr.rotation_matrix(math.pi / 2, direc, point)))
 
 
 def test_projection_matrix():
@@ -59,7 +58,7 @@ def test_projection_matrix():
     direct = numpy.random.random(3) - 0.5
     persp = numpy.random.random(3) - 0.5
     P0 = tr.projection_matrix(point, normal)
-    P1 = tr.projection_matrix(point, normal, direction=direct)
+    _ = tr.projection_matrix(point, normal, direction=direct)
     P2 = tr.projection_matrix(point, normal, perspective=persp)
     P3 = tr.projection_matrix(point, normal, perspective=persp, pseudo=True)
     tr.is_same_transform(P2, numpy.dot(P0, P3))
@@ -110,11 +109,11 @@ def test_compose_matrix():
 
 
 def test_orthogonalization_matrix():
-    O = tr.orthogonalization_matrix([10, 10, 10], [90, 90, 90])
-    numpy.allclose(O[:3, :3], numpy.identity(3, float) * 10)
+    orth = tr.orthogonalization_matrix([10, 10, 10], [90, 90, 90])
+    numpy.allclose(orth[:3, :3], numpy.identity(3, float) * 10)
 
-    O = tr.orthogonalization_matrix([9.8, 12.0, 15.5], [87.2, 80.7, 69.7])
-    numpy.allclose(numpy.sum(O), 43.063229)
+    orth = tr.orthogonalization_matrix([9.8, 12.0, 15.5], [87.2, 80.7, 69.7])
+    numpy.allclose(numpy.sum(orth), 43.063229)
 
 
 def test_affine_matrix_from_points():
@@ -139,7 +138,7 @@ def test_euler_from_quaternion():
 
 
 def test_quaternion_from_euler():
-    q = tr.quaternion_from_euler(1, 2, 3, 'ryxz')
+    q = tr.quaternion_from_euler(1, 2, 3, "ryxz")
     numpy.allclose(q, [0.435953, 0.310622, -0.718287, 0.444435])
 
 

@@ -1,6 +1,6 @@
 package:
   name: openalea.phenomenal
-  version: "1.9.3"
+  version: "1.9.4"
 
 source:
   path: ..
@@ -42,7 +42,7 @@ requirements:
     - opencv >4.1.2 [osx]
     - matplotlib
     - vtk
-    - skan>=0.10
+    - skan
     - pywin32 [win]
 
 test:

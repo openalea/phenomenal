@@ -36,6 +36,7 @@ Maize Segmentation
     maize_stem_detection
     maize_analysis
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -50,4 +51,4 @@ from .maize_segmentation import *
 from .image_3d_routines import *
 # ==============================================================================
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+__all__ = [s for s in dir() if not s.startswith("_")]

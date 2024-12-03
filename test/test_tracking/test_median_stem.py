@@ -4,8 +4,10 @@ from openalea.phenomenal.tracking.median_stem import normal_stem_shape
 
 
 def test_stem_shape():
-
-    polylines = [np.array([[np.random.random(), np.random.random(), k] for k in range(30)]) for _ in range(5)]
+    polylines = [
+        np.array([[np.random.random(), np.random.random(), k] for k in range(30)])
+        for _ in range(5)
+    ]
 
     polylines[2][15][[0, 1]] = 10  # abnormally distant point in 2nd polyline
 

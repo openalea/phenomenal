@@ -12,8 +12,8 @@ from __future__ import division, print_function, absolute_import
 import os
 import re
 import json
-import numpy
 import csv
+import numpy
 
 from .image3D import Image3D
 
@@ -22,22 +22,20 @@ from .image3D import Image3D
 
 
 class NumpyEncoder(json.JSONEncoder):
-    """ Special json encoder for numpy types """
+    """Special json encoder for numpy types"""
 
-    def default(self, obj):
-        if isinstance(obj, numpy.integer):
-            return int(obj)
-        elif isinstance(obj, numpy.floating):
-            return float(obj)
-        elif isinstance(obj, numpy.ndarray):
-            return obj.tolist()
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if isinstance(o, numpy.integer):
+            return int(o)
+        if isinstance(o, numpy.floating):
+            return float(o)
+        if isinstance(o, numpy.ndarray):
+            return o.tolist()
+        return json.JSONEncoder.default(self, o)
 
 
-class VoxelGrid(object):
-
+class VoxelGrid:
     def __init__(self, voxels_position, voxels_size):
-
         self._voxels_position = voxels_position
         self._voxels_size = voxels_size
 
@@ -74,7 +72,6 @@ class VoxelGrid(object):
     # ==========================================================================
 
     def bounding_box(self):
-
         if len(self._voxels_position) == 0:
             raise ValueError("Empty list")
 
@@ -82,9 +79,9 @@ class VoxelGrid(object):
         y_min = float("inf")
         z_min = float("inf")
 
-        x_max = - float("inf")
-        y_max = - float("inf")
-        z_max = - float("inf")
+        x_max = -float("inf")
+        y_max = -float("inf")
+        z_max = -float("inf")
 
         for x, y, z in self._voxels_position:
             x_min = min(x_min, x)
@@ -102,7 +99,7 @@ class VoxelGrid(object):
         Compute the volume of the voxel point cloud
         """
 
-        return len(self._voxels_position) * self._voxels_size ** 3
+        return len(self._voxels_position) * self._voxels_size**3
 
     def __len__(self):
         return len(self._voxels_position)
@@ -125,10 +122,12 @@ class VoxelGrid(object):
         len_y = int((y_max - y_min) / self.voxels_size + 1)
         len_z = int((z_max - z_min) / self.voxels_size + 1)
 
-        image_3d = Image3D.zeros((len_x, len_y, len_z),
-                                 dtype=bool,
-                                 voxels_size=self.voxels_size,
-                                 world_coordinate=(x_min, y_min, z_min))
+        image_3d = Image3D.zeros(
+            (len_x, len_y, len_z),
+            dtype=bool,
+            voxels_size=self.voxels_size,
+            world_coordinate=(x_min, y_min, z_min),
+        )
 
         bound_min = numpy.array((x_min, y_min, z_min))
         vs_pos = numpy.array(self.voxels_position)
@@ -139,10 +138,9 @@ class VoxelGrid(object):
         return image_3d
 
     @staticmethod
-    def from_image_3d(image_3d, voxels_value=1,
-                      voxels_size=None,
-                      world_coordinate=None):
-
+    def from_image_3d(
+        image_3d, voxels_value=1, voxels_size=None, world_coordinate=None
+    ):
         xx, yy, zz = numpy.where(image_3d >= voxels_value)
 
         if voxels_size is None:
@@ -203,46 +201,38 @@ class VoxelGrid(object):
         return VoxelGrid.from_image_3d(image_3d)
 
     def write_to_json(self, filename):
-
-        if (os.path.dirname(filename) and not os.path.exists(
-                os.path.dirname(filename))):
+        if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
 
-        with open(filename, 'w') as f:
-            data = dict()
-            data['voxels_size'] = self.voxels_size
+        with open(filename, "w", encoding="UTF8") as f:
+            data = {"voxels_size": self.voxels_size}
             vp = list(map(tuple, self.voxels_position))
-            data['voxels_position'] = json.dumps(vp, cls=NumpyEncoder)
+            data["voxels_position"] = json.dumps(vp, cls=NumpyEncoder)
             json.dump(data, f)
 
     @staticmethod
     def read_from_json(filename):
-
-        with open(filename, 'r') as f:
+        with open(filename, "r", encoding="UTF8") as f:
             data = json.load(f)
-            voxels_size = data['voxels_size']
-            voxels_position = json.loads(data['voxels_position'])
+            voxels_size = data["voxels_size"]
+            voxels_position = json.loads(data["voxels_position"])
 
             return VoxelGrid(voxels_position, voxels_size)
 
     def write_to_xyz(self, filename):
-
-        if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
-                filename))):
+        if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
 
-        f = open(filename, 'w')
-        for x, y, z in self.voxels_position:
-            f.write("%f %f %f \n" % (x, y, z))
-        f.close()
+        with open(filename, "w", encoding="UTF8") as f:
+            for x, y, z in self.voxels_position:
+                f.write(f"{x} {y} {z} \n")
 
     @staticmethod
     def read_from_xyz(filename, voxels_size):
-
-        voxels_position = list()
-        with open(filename, 'r') as f:
+        voxels_position = []
+        with open(filename, "r", encoding="UTF8") as f:
             for line in f:
-                point_3d = re.findall(r'[-0-9.]+', line)
+                point_3d = re.findall(r"[-0-9.]+", line)
 
                 x = float(point_3d[0])
                 y = float(point_3d[1])
@@ -254,39 +244,36 @@ class VoxelGrid(object):
         return VoxelGrid(voxels_position, voxels_size)
 
     def write_to_csv(self, filename, header=None):
-
-        if (os.path.dirname(filename) and not os.path.exists(os.path.dirname(
-                filename))):
+        if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
         if header is None:
             header = {}
-        header.update({'voxels_size': self.voxels_size})
+        header.update({"voxels_size": self.voxels_size})
 
-        with open(filename, 'w', newline='') as f:
+        with open(filename, "w", newline="", encoding="UTF8") as f:
             c = csv.writer(f)
             for k, v in header.items():
-                c.writerow(['# ' + k + ': ' + str(v)])
-            c.writerow(['x_coord', 'y_coord', 'z_coord'])
+                c.writerow(["# " + k + ": " + str(v)])
+            c.writerow(["x_coord", "y_coord", "z_coord"])
 
             for x, y, z in self.voxels_position:
                 c.writerow([x, y, z])
 
     @staticmethod
     def read_from_csv(filename, read_header=False):
-        voxels_position = list()
+        voxels_position = []
         header = {}
 
-        with open(filename, 'r', newline='') as f:
+        with open(filename, "r", newline="", encoding="UTF8") as f:
             reader = csv.reader(f)
             for row in reader:
-                if row[0].split('#')[0].strip():
+                if row[0].split("#")[0].strip():
                     break
-                else:
-                    k, v = row[0].split('#')[1].strip().split(':')
-                    header[k.strip()] = v.strip()
+                k, v = row[0].split("#")[1].strip().split(":")
+                header[k.strip()] = v.strip()
 
-            if 'voxels_size' in header:
-                voxels_size = float(header['voxels_size'])
+            if "voxels_size" in header:
+                voxels_size = float(header["voxels_size"])
                 for x, y, z in reader:
                     voxels_position.append((float(x), float(y), float(z)))
             else:
@@ -297,5 +284,4 @@ class VoxelGrid(object):
                     voxels_position.append((float(x), float(y), float(z)))
             if read_header:
                 return VoxelGrid(voxels_position, voxels_size), header
-            else:
-                return VoxelGrid(voxels_position, voxels_size)
+            return VoxelGrid(voxels_position, voxels_size)
