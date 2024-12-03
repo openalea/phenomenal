@@ -66,6 +66,7 @@ def skeleton_branches(image, n_kernel=15, min_length=30):
         polyline = np.array(
             [[coordinates[0][i], coordinates[1][i]] for i in skan_skeleton.path(irow)]
         )
+
         polyline = polyline[:, ::-1]  # same (x, y) order as phenomenal
 
         # verify that all phm_leaf polylines are oriented the same way (phm_leaf insertion --> phm_leaf tip)
