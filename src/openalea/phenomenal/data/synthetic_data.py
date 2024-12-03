@@ -20,10 +20,9 @@ __all__ = ["bin_images_with_circle", "build_cube", "random_voxel_grid"]
 # ==============================================================================
 
 
-def bin_images_with_circle(shape_image=(2454, 2056),
-                           circle_position=(1227, 1028),
-                           circle_radius=100):
-
+def bin_images_with_circle(
+    shape_image=(2454, 2056), circle_position=(1227, 1028), circle_radius=100
+):
     images = dict()
     for angle in range(0, 360, 30):
         img = numpy.zeros(shape_image, dtype=numpy.uint8)
@@ -34,17 +33,17 @@ def bin_images_with_circle(shape_image=(2454, 2056),
 
 
 def build_cube(cube_size, voxels_size, voxels_position):
-
-    image_3d = Image3D.ones((cube_size, cube_size, cube_size),
-                            dtype=numpy.uint8,
-                            voxels_size=voxels_size,
-                            world_coordinate=voxels_position)
+    image_3d = Image3D.ones(
+        (cube_size, cube_size, cube_size),
+        dtype=numpy.uint8,
+        voxels_size=voxels_size,
+        world_coordinate=voxels_position,
+    )
 
     return VoxelGrid.from_image_3d(image_3d).voxels_position
 
 
 def random_voxel_grid(shape=(10, 15, 5), voxels_size=16, int_choice=1000):
-
     voxels_position = numpy.array(list(numpy.ndindex(shape))) * voxels_size
     voxels_position = voxels_position.astype(float)
     numpy.random.shuffle(voxels_position)

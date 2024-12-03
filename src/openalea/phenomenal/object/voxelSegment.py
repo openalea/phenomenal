@@ -12,18 +12,14 @@ from __future__ import division, print_function, absolute_import
 # ==============================================================================
 
 
-class VoxelSegment(object):
-
+class VoxelSegment:
     def __init__(self, polyline, voxels_position, closest_nodes):
-
         self.polyline = polyline
         self.voxels_position = voxels_position
         self.closest_nodes = closest_nodes
 
     def __copy__(self):
-        return type(self)(self.polyline,
-                          self.voxels_position,
-                          self.closest_nodes)
+        return type(self)(self.polyline, self.voxels_position, self.closest_nodes)
 
     def __len__(self):
         return len(self.voxels_position)

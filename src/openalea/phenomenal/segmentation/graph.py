@@ -19,7 +19,7 @@ from ..object import VoxelGrid
 
 
 def connect_all_node_with_nearest_neighbors(graph):
-    """ Connect all the nodes in the graph together
+    """Connect all the nodes in the graph together
 
     Parameters
     ----------
@@ -33,7 +33,8 @@ def connect_all_node_with_nearest_neighbors(graph):
     #     graph, copy=False))
 
     connected_component = [
-        graph.subgraph(c) for c in networkx.connected_components(graph)]
+        graph.subgraph(c) for c in networkx.connected_components(graph)
+    ]
 
     nodes_connected_component = [list(cc.nodes()) for cc in connected_component]
 
@@ -41,11 +42,10 @@ def connect_all_node_with_nearest_neighbors(graph):
     nodes_connected_component.remove(nodes_src)
 
     while len(nodes_connected_component) > 0:
-
         neigh = sklearn.neighbors.NearestNeighbors(n_neighbors=1)
         neigh.fit(nodes_src)
 
-        min_dist = float('inf')
+        min_dist = float("inf")
         pt_1, pt_2, nodes_dst = None, None, None
 
         for nodes in nodes_connected_component:
@@ -67,7 +67,7 @@ def connect_all_node_with_nearest_neighbors(graph):
 
 
 def create_graph(voxels_position, voxels_size):
-    """ Create a networkx.graph from voxels positions and voxels_size
+    """Create a networkx.graph from voxels positions and voxels_size
 
     Parameters
     ----------
@@ -84,40 +84,36 @@ def create_graph(voxels_position, voxels_size):
     graph.add_nodes_from(voxels_position)
 
     vs = voxels_size
-    neighbors = numpy.array([(-vs, -vs, -vs),
-                             (-vs, -vs, 0),
-                             (-vs, -vs, vs),
-
-                             (-vs, 0, -vs),
-                             (-vs, 0, 0),
-                             (-vs, 0, vs),
-
-                             (-vs, vs, -vs),
-                             (-vs, vs, 0),
-                             (-vs, vs, vs),
-
-                             (0, -vs, -vs),
-                             (0, -vs, 0),
-                             (0, -vs, vs),
-
-                             (0, 0, -vs),
-                             (0, 0, vs),
-
-                             (0, vs, -vs),
-                             (0, vs, 0),
-                             (0, vs, vs),
-
-                             (vs, -vs, -vs),
-                             (vs, -vs, 0),
-                             (vs, -vs, vs),
-
-                             (vs, 0, -vs),
-                             (vs, 0, 0),
-                             (vs, 0, vs),
-
-                             (vs, vs, -vs),
-                             (vs, vs, 0),
-                             (vs, vs, vs)])
+    neighbors = numpy.array(
+        [
+            (-vs, -vs, -vs),
+            (-vs, -vs, 0),
+            (-vs, -vs, vs),
+            (-vs, 0, -vs),
+            (-vs, 0, 0),
+            (-vs, 0, vs),
+            (-vs, vs, -vs),
+            (-vs, vs, 0),
+            (-vs, vs, vs),
+            (0, -vs, -vs),
+            (0, -vs, 0),
+            (0, -vs, vs),
+            (0, 0, -vs),
+            (0, 0, vs),
+            (0, vs, -vs),
+            (0, vs, 0),
+            (0, vs, vs),
+            (vs, -vs, -vs),
+            (vs, -vs, 0),
+            (vs, -vs, vs),
+            (vs, 0, -vs),
+            (vs, 0, 0),
+            (vs, 0, vs),
+            (vs, vs, -vs),
+            (vs, vs, 0),
+            (vs, vs, vs),
+        ]
+    )
 
     arr_vs = numpy.array(voxels_position)
     distances = numpy.linalg.norm(neighbors, axis=1)
@@ -194,9 +190,9 @@ def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
     if connect_all_point:
         graph = connect_all_node_with_nearest_neighbors(graph)
     else:
-        graph = max([graph.subgraph(c) for c in networkx.connected_components(
-            graph)], key=lambda g: g.number_of_nodes())
+        graph = max(
+            [graph.subgraph(c) for c in networkx.connected_components(graph)],
+            key=lambda g: g.number_of_nodes(),
+        )
 
     return graph
-
-

@@ -5,9 +5,10 @@ channels:
 
 dependencies:
   - python
-  - sphinx_rtd_theme
+  - pydata-sphinx-theme
   - myst-parser
   - openalea.phenomenal
+  - sphinx-favicon
   - ipykernel
   - ipyvolume
   - ipython_genutils

@@ -10,6 +10,7 @@
 """
 Post processing algorithms to improve binarization of a image
 """
+
 # ==============================================================================
 from __future__ import division, print_function
 
@@ -18,10 +19,7 @@ import numpy
 # ==============================================================================
 
 
-def dilate_erode(binary_image,
-                 kernel_shape=(3, 3),
-                 iterations=1,
-                 mask=None):
+def dilate_erode(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
     """
     Applied a morphology (dilate & erode) on binary_image on a ROI.
 
@@ -48,16 +46,16 @@ def dilate_erode(binary_image,
     # ==========================================================================
     # Check Parameters
     if not isinstance(binary_image, numpy.ndarray):
-        raise TypeError('binary_image must be a numpy.ndarray')
+        raise TypeError("binary_image must be a numpy.ndarray")
 
     if binary_image.ndim != 2:
-        raise ValueError('image must be 2D array')
+        raise ValueError("image must be 2D array")
 
     if mask is not None:
         if not isinstance(mask, numpy.ndarray):
-            raise TypeError('mask must be a numpy.ndarray')
+            raise TypeError("mask must be a numpy.ndarray")
         if mask.ndim != 2:
-            raise ValueError('mask must be 2D array')
+            raise ValueError("mask must be 2D array")
     # ==========================================================================
 
     if mask is not None:
@@ -76,10 +74,7 @@ def dilate_erode(binary_image,
     return out
 
 
-def erode_dilate(binary_image,
-                 kernel_shape=(3, 3),
-                 iterations=1,
-                 mask=None):
+def erode_dilate(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
     """
     Applied a morphology (erode & dilate) on binary_image on mask ROI.
 
@@ -106,16 +101,16 @@ def erode_dilate(binary_image,
     # ==========================================================================
     # Check Parameters
     if not isinstance(binary_image, numpy.ndarray):
-        raise TypeError('binary_image must be a numpy.ndarray')
+        raise TypeError("binary_image must be a numpy.ndarray")
 
     if binary_image.ndim != 2:
-        raise ValueError('binary_image must be 2D array')
+        raise ValueError("binary_image must be 2D array")
 
     if mask is not None:
         if not isinstance(mask, numpy.ndarray):
-            raise TypeError('mask must be a numpy.ndarray')
+            raise TypeError("mask must be a numpy.ndarray")
         if mask.ndim != 2:
-            raise ValueError('mask must be 2D array')
+            raise ValueError("mask must be 2D array")
     # ==========================================================================
 
     if mask is not None:
@@ -134,9 +129,7 @@ def erode_dilate(binary_image,
     return out
 
 
-def close(binary_image,
-          kernel_shape=(7, 7),
-          mask=None):
+def close(binary_image, kernel_shape=(7, 7), mask=None):
     """
     Applied a morphology close on binary_image on mask ROI.
 
@@ -160,15 +153,15 @@ def close(binary_image,
     # ==========================================================================
     # Check Parameters
     if not isinstance(binary_image, numpy.ndarray):
-        raise TypeError('image must be a numpy.ndarray')
+        raise TypeError("image must be a numpy.ndarray")
     if binary_image.ndim != 2:
-        raise ValueError('image must be 2D array')
+        raise ValueError("image must be 2D array")
 
     if mask is not None:
         if not isinstance(mask, numpy.ndarray):
-            raise TypeError('mask must be a numpy.ndarray')
+            raise TypeError("mask must be a numpy.ndarray")
         if mask.ndim != 2:
-            raise ValueError('mask must be 2D array')
+            raise ValueError("mask must be 2D array")
     # ==========================================================================
 
     if mask is not None:

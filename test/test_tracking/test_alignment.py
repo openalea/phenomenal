@@ -4,7 +4,6 @@ from openalea.phenomenal.tracking.alignment import needleman_wunsch, multi_align
 
 
 def test_needleman_wunsch_alignment():
-
     seq1 = np.random.random((1, 30, 3))
     seq2 = np.random.random((1, 50, 3))
 
@@ -17,7 +16,6 @@ def test_needleman_wunsch_alignment():
 
 
 def test_multi_alignment():
-
     sequences = [np.random.random((np.random.randint(1, 10), 3)) for _ in range(30)]
 
     _ = multi_alignment(sequences, gap=0.2)
@@ -25,16 +23,3 @@ def test_multi_alignment():
     _ = multi_alignment(sequences, gap=0.2, align_range=5)
 
     _ = multi_alignment(sequences, gap=0.2, start=15)
-
-
-
-
-
-
-
-
-
-
-
-
-

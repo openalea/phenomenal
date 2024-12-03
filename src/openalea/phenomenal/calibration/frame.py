@@ -13,43 +13,37 @@
 """
 This module defines a frame or coordinate system in space
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
 import numpy.linalg
 
-from numpy import (zeros,
-                   dot,
-                   add,
-                   subtract,
-                   divide,
-                   tensordot,
-                   cross,
-                   transpose,
-                   sign)
-from numba import njit
+from numpy import zeros, dot, add, subtract, divide, tensordot, cross, transpose, sign
+from functools import reduce
 # ==============================================================================
 
-__all__ = ["x_axis",
-           "y_axis",
-           "z_axis",
-           "Frame",
-           "triangle_frame",
-           "tetrahedron_frame",
-           "mean_frame",
-           "change_frame_tensor2",
-           "local_to_global3d"]
+__all__ = [
+    "x_axis",
+    "y_axis",
+    "z_axis",
+    "Frame",
+    "triangle_frame",
+    "tetrahedron_frame",
+    "mean_frame",
+    "change_frame_tensor2",
+    "local_to_global3d",
+]
 
 # ==============================================================================
 
-x_axis = numpy.array([1., 0., 0.])
-y_axis = numpy.array([0., 1., 0.])
-z_axis = numpy.array([0., 0., 1.])
+x_axis = numpy.array([1.0, 0.0, 0.0])
+y_axis = numpy.array([0.0, 1.0, 0.0])
+z_axis = numpy.array([0.0, 0.0, 1.0])
 
 
-class Frame(object):
-    """A helping class to deal with change of referential in 3D space.
-    """
+class Frame:
+    """A helping class to deal with change of referential in 3D space."""
 
     def __init__(self, axes=None, origin=None):
         """Constructor
@@ -64,10 +58,13 @@ class Frame(object):
                        in the global frame
         """
         if axes is None:
-            self._axes = numpy.array([(1., 0., 0.), (0., 1., 0.), (0., 0., 1.)])
+            self._axes = numpy.array(
+                [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
+            )
         else:
-            self._axes = numpy.array(tuple(divide(vec, numpy.linalg.norm(vec)) for
-                                     vec in axes))
+            self._axes = numpy.array(
+                tuple(divide(vec, numpy.linalg.norm(vec)) for vec in axes)
+            )
 
         if origin is None:
             self._origin = zeros(3)
@@ -193,7 +190,6 @@ class Frame(object):
     # change of referential in the local plane O,Ox,Oy
     #
     ###############################################
-    @njit
     def local_tensor2(self, tensor):
         """Local coordinates of a global tensor
         expressed in the local plane Ox,Oy
@@ -210,12 +206,11 @@ class Frame(object):
         nb = len(tensor.shape) - 1
 
         ret = tensordot(fr, tensor, [1, nb])
-        for i in xrange(1, len(tensor.shape)):
+        for i in range(1, len(tensor.shape)):
             ret = tensordot(fr, ret, [1, nb])
 
         return ret
 
-    @njit
     def global_tensor2(self, tensor):
         """Global coordinates of a local tensor
 
@@ -231,10 +226,11 @@ class Frame(object):
         nb = len(tensor.shape) - 1
 
         ret = tensordot(fr, tensor, [1, nb])
-        for i in xrange(1, len(tensor.shape)):
+        for i in range(1, len(tensor.shape)):
             ret = tensordot(fr, ret, [1, nb])
 
         return ret
+
 
 def triangle_frame(pt1, pt2, pt3):
     """Compute the local frame of a triangle
@@ -317,7 +313,7 @@ def tetrahedron_frame(pt1, pt2, pt3, pt4):
     es = cross(et, er)
     return Frame((er, es, et), pt1)
 
-@njit
+
 def mean_frame(frames):
     """Compute the mean frame of all given frames.
 

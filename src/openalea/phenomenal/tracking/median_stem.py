@@ -4,8 +4,8 @@ from scipy.spatial.distance import directed_hausdorff
 
 def z_to_xy(polyline, z):
     """
-    For all the points (x', y', z') in a polyline, this function returns the coordinates (x', y') whose corresponding
-    z' height is the closest to z.
+    For all the points (x', y', z') in a polyline, this function returns the
+    coordinates (x', y') whose corresponding z' height is the closest to z.
 
     Parameters
     ----------
@@ -34,7 +34,8 @@ def get_median_polyline(polylines, n_stem_min=0, dz=2):
     polylines : list
         list of 3D polylines
     n_stem_min : int
-        This parameters determines the maximum height of the median polyline : median polyline is only computed at
+        This parameters determines the maximum height of the median
+        polyline : median polyline is only computed at
         height z if at least n_stem_min polyline have a max height  > z.
     dz : float
         space between two successive points of the median polyline on z axis.
@@ -50,7 +51,6 @@ def get_median_polyline(polylines, n_stem_min=0, dz=2):
     median_polyline = []
 
     while len(polylines) > n_stem_min:
-
         xy = np.array([z_to_xy(pl, z) for pl in polylines])
         xy_median = list(np.median(xy, axis=0))
         median_polyline.append(xy_median + [z])
@@ -63,14 +63,16 @@ def get_median_polyline(polylines, n_stem_min=0, dz=2):
 
 def normal_stem_shape(polylines, dist_threshold=100):
     """
-    From a list of polylines representing stem shapes: check if each polyline has a normal shape compared to the rest.
+    From a list of polylines representing stem shapes: check if each polyline
+    has a normal shape compared to the rest.
 
     Parameters
     ----------
     polylines : list
         list of 3D polylines
     dist_threshold : float
-        a polyline whose hausdorff distance with the median polyline is above this threshold is considered as abnormal
+        a polyline whose hausdorff distance with the median polyline is above
+        this threshold is considered as abnormal
 
     Returns
     -------
@@ -81,7 +83,7 @@ def normal_stem_shape(polylines, dist_threshold=100):
     median_stem = get_median_polyline(polylines=polylines)
 
     is_normal = []
-    for i, polyline in enumerate(polylines):
+    for _, polyline in enumerate(polylines):
         d = directed_hausdorff(polyline, median_stem)[0]
         is_normal.append(d < dist_threshold)
 

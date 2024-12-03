@@ -73,9 +73,8 @@ def test_camera_opencv_parameters():
     cp.translation_vectors[10] = numpy.ones((3, 1))
     cp.translation_vectors[80] = numpy.zeros((3, 1))
 
-    cp.dump('test_camera_opencv_parameters')
-    new_cp = phm_calib.CalibrationCameraOpenCv.load(
-        'test_camera_opencv_parameters')
+    cp.dump("test_camera_opencv_parameters")
+    new_cp = phm_calib.CalibrationCameraOpenCv.load("test_camera_opencv_parameters")
 
     assert new_cp.focal_matrix[0][0] == 42
     assert new_cp.focal_matrix[1][1] == 1
@@ -93,11 +92,11 @@ def test_camera_opencv_parameters():
     assert (new_cp.translation_vectors[10] == 1).all()
     assert (new_cp.translation_vectors[80] == 0).all()
 
-    os.remove('test_camera_opencv_parameters.json')
+    os.remove("test_camera_opencv_parameters.json")
 
 
 if __name__ == "__main__":
     for func_name in dir():
-        if func_name.startswith('test_'):
+        if func_name.startswith("test_"):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()

@@ -12,4 +12,4 @@ from __future__ import division, print_function, absolute_import
 from .routine import *
 # ==============================================================================
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+__all__ = [s for s in dir() if not s.startswith("_")]
