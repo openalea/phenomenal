@@ -21,13 +21,20 @@ def phm_leaf_features(phm_leaf):
     if phm_leaf.info["pm_label"] == "mature_leaf":
         features["mature"] = True
         features["azimuth"] = phm_leaf.info["pm_azimuth_angle"]
-        features["length"] = phm_leaf.info["pm_length"]
+        if "pm_length_extended" in phm_leaf.info:
+            features["length"] = phm_leaf.info["pm_length_extended"]
+        else:
+            features["length"] = phm_leaf.info["pm_length"]
+            warnings.warn(
+                "Extented leaf length is not available, using polyline length instead"
+            )
+
         if "pm_z_base_voxel" in phm_leaf.info:
             features["height"] = phm_leaf.info["pm_z_base_voxel"]
         else:
             features["height"] = phm_leaf.info["pm_z_base"]
             warnings.warn(
-                "Insertion height computed from voxels is not available: wrong Phenomenal version"
+                "Insertion height computed from voxels is not available, using polyline base instead"
             )
 
     elif phm_leaf.info["pm_label"] == "growing_leaf":
