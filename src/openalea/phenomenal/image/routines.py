@@ -19,6 +19,7 @@ from __future__ import division, print_function
 from __future__ import absolute_import
 import cv2
 import numpy
+from skimage.filters import median
 
 from .threshold import threshold_hsv, threshold_meanshift
 from functools import reduce
@@ -86,8 +87,9 @@ def phenoarch_side_binarization(
         image, mean_image, threshold, dark_background, mask_mean_shift
     )
 
-    result = cv2.add(binary_hsv_image, binary_mean_shift_image)
+    result = numpy.add(binary_hsv_image, binary_mean_shift_image)
+    kernel = numpy.ones((3, 3), dtype=numpy.uint8)
 
-    result = cv2.medianBlur(result, 3)
+    result = median(result, kernel)
 
     return result

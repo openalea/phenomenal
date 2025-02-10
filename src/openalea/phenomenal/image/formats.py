@@ -15,30 +15,31 @@ Formats module to read/write image
 from __future__ import division, print_function
 
 import os
-import cv2
+
+import numpy
+from PIL import Image
 # ==============================================================================
 
 
-def read_image(filename, flags=cv2.IMREAD_UNCHANGED):
+def read_image(filename, flag=None):
     """
-    Read a image from a file name with opencv API.
+    Read an image from a file name with opencv API.
 
     :param filename: file name of the image
-    :param flags:
+    :param flag:
     :return: RGB or grayscale image
     """
-    img = cv2.imread(filename, flags=flags)
 
-    shape = img.shape
-    if len(shape) == 3:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = Image.open(filename)
+    if flag is not None:
+        img = numpy.asarray(img.convert(flag), dtype=numpy.uint8)
 
     return img
 
 
 def write_image(filename, image):
     """
-    Write a image in a file.
+    Write an image in a file.
 
     :param filename: output filename where write the image
     :param image: numpy image to write
@@ -47,4 +48,4 @@ def write_image(filename, image):
     if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
 
-    cv2.imwrite(filename, image)
+    Image.fromarray(image.astype(numpy.uint8)).save(filename)

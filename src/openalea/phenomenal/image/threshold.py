@@ -102,7 +102,7 @@ def threshold_meanshift(image, mean_image, threshold=0.3, reverse=False, mask=No
     out = numpy.uint8(out)
 
     if mask is not None:
-        out = cv2.bitwise_and(out, mask)
+        out = numpy.bitwise_and(out, mask)
 
     del img
 
@@ -127,7 +127,7 @@ def threshold_meanshift_enhance(image, mean_image, threshold=0.3, mask=None):
     out = numpy.uint8(out)
 
     if mask is not None:
-        out = cv2.bitwise_and(out, mask)
+        out = numpy.bitwise_and(out, mask)
 
     del img
 
@@ -201,6 +201,6 @@ def threshold_hsv(image, hsv_min, hsv_max, mask=None):
     out = cv2.inRange(image, hsv_min, hsv_max)
 
     if mask is not None:
-        out = cv2.bitwise_and(out, mask)
+        out = numpy.bitwise_and(out, mask)
 
     return out

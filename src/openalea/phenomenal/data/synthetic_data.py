@@ -10,7 +10,7 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy
-import cv2
+from skimage.draw import disk
 
 from ..object import Image3D, VoxelGrid
 # ==============================================================================
@@ -23,10 +23,11 @@ __all__ = ["bin_images_with_circle", "build_cube", "random_voxel_grid"]
 def bin_images_with_circle(
     shape_image=(2454, 2056), circle_position=(1227, 1028), circle_radius=100
 ):
-    images = dict()
+    images = {}
     for angle in range(0, 360, 30):
         img = numpy.zeros(shape_image, dtype=numpy.uint8)
-        cv2.circle(img, circle_position, circle_radius, 255, -1)
+        rr, cc = disk(circle_position, circle_radius)
+        img[rr, cc] = 255
         images[angle] = img
 
     return images

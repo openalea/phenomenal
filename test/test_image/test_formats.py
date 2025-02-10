@@ -24,7 +24,7 @@ def test_1():
     im1[10:-10, 10:-10] = 255
 
     phm_img.write_image("tmp.png", im1)
-    im2 = phm_img.read_image("tmp.png", cv2.IMREAD_GRAYSCALE)
+    im2 = phm_img.read_image("tmp.png", "L")
 
     assert numpy.array_equal(im1, im2)
 

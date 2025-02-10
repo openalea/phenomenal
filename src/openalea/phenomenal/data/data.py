@@ -9,15 +9,15 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import json
-import glob
-import os
 import collections
+import glob
+import json
+import os
 import pathlib
-import numpy
-import cv2
 
-from openalea.phenomenal.mesh import read_ply_to_vertices_faces
+import numpy
+from PIL import Image
+
 from openalea.phenomenal.calibration import (
     Chessboard,
     Chessboards,
@@ -25,6 +25,7 @@ from openalea.phenomenal.calibration import (
     CalibrationSetup,
     OldCalibrationCamera,
 )
+from openalea.phenomenal.mesh import read_ply_to_vertices_faces
 from openalea.phenomenal.object import VoxelGrid
 
 # ==============================================================================
@@ -105,8 +106,9 @@ def raw_images(name_dir):
     d = path_raw_images(name_dir)
     for id_camera in d:
         for angle in d[id_camera]:
-            img = cv2.imread(d[id_camera][angle], cv2.IMREAD_COLOR)
-            d[id_camera][angle] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            d[id_camera][angle] = numpy.asarray(
+                Image.open(d[id_camera][angle]), dtype=numpy.uint8
+            )
     return d
 
 
@@ -122,7 +124,9 @@ def bin_images(name_dir):
     d = path_bin_images(name_dir)
     for id_camera in d:
         for angle in d[id_camera]:
-            d[id_camera][angle] = cv2.imread(d[id_camera][angle], cv2.IMREAD_GRAYSCALE)
+            d[id_camera][angle] = numpy.asarray(
+                Image.open(d[id_camera][angle]).convert("L"), dtype=numpy.uint8
+            )
     return d
 
 
@@ -138,8 +142,7 @@ def chessboard_images(name_dir):
     d = path_chessboard_images(name_dir)
     for id_camera in d:
         for angle in d[id_camera]:
-            img = cv2.imread(d[id_camera][angle], cv2.IMREAD_COLOR)
-            d[id_camera][angle] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            d[id_camera][angle] = numpy.asarray(Image.open(d[id_camera][angle]))
     return (d,)
 
 
@@ -302,11 +305,7 @@ def tutorial_data_binarization_mask(name_dir):
     data_directory = os.path.join(datadir, "doc", "examples", name_dir, "plant_6/mask/")
     masks = []
     for filename in ["mask_hsv.png", "mask_mean_shift.png"]:
-        masks.append(
-            cv2.imread(
-                os.path.join(data_directory, filename), flags=cv2.IMREAD_GRAYSCALE
-            )
-        )
+        masks.append(numpy.asarray(Image.open(os.path.join(data_directory, filename))))
 
     return masks
 

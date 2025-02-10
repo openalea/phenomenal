@@ -345,6 +345,8 @@ class TrackedPlant:
 
     def output(self):
         ranks = [snapshot.leaf_ranks() for snapshot in self.snapshots]
-        features = [[leaf.features for leaf in snapshot.leaves] for snapshot in self.snapshots]
+        features = [
+            [leaf.features for leaf in snapshot.leaves] for snapshot in self.snapshots
+        ]
         checks = np.array([snapshot.check_continuity for snapshot in self.snapshots])
         return ranks, features, checks

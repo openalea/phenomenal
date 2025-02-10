@@ -213,7 +213,7 @@ class VoxelNode:
                 continue
 
             if node.position in neighbors_positions:
-                if node.data is True:
+                if node.data:
                     neighbors_positions.remove(node.position)
                 else:
                     return False

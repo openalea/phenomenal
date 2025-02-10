@@ -23,7 +23,6 @@ def test_display_scene_ball():
     sc.add_actor_from_ball_position(position=(1, 1, 1))
 
 
-
 @pytest.mark.skip()
 def test_display_scene_arrow():
     sc = phm_display.Scene()
