@@ -74,7 +74,7 @@ def test_tracking_mature(time_series):
             set([i for i in sq if i != -1])
         )  # no redundancy
 
-    output, _ = trackedplant.output()
+    output, _, _ = trackedplant.output()
 
     assert [len(o) == len(s.leaves) for o, s in zip(output, trackedplant.snapshots)]
 
@@ -97,14 +97,15 @@ def test_tracking_growing(time_series):
 
     trackedplant.growing_leaf_tracking()
 
-    output, _ = trackedplant.output()
+    output, _, _ = trackedplant.output()
 
     assert [len(o) == len(s.leaves) for o, s in zip(output, trackedplant.snapshots)]
+
 
 def test_display(time_series):
     phm_segs, timestamps = time_series
     phenotrack_segs, checks_stem = phm_to_phenotrack_input(phm_segs, timestamps)
     for seg in phenotrack_segs:
         print(seg)
-        print(seg['polylines_sequence'])
-        plot_polylines(seg['polylines_sequence'],ranks=[0])
+        print(seg["polylines_sequence"])
+        plot_polylines(seg["polylines_sequence"], ranks=[0])

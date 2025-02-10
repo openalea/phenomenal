@@ -6,6 +6,7 @@ import openalea.phenomenal.display as phm_display
 
 dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data")
 
+
 @pytest.mark.skip()
 def test_display_image():
     img = cv2.imread(os.path.join(dir_path, "plant_1", "bin", "side", "0.png"))

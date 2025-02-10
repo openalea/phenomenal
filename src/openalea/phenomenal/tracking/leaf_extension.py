@@ -13,8 +13,8 @@ was found.
 """
 
 import warnings
-import cv2
 import numpy as np
+import skimage
 
 from skimage.morphology import skeletonize
 from scipy.spatial.distance import directed_hausdorff
@@ -43,7 +43,7 @@ def skeleton_branches(image, n_kernel=15, min_length=30):
 
     # dilate image
     kernel = np.ones((n_kernel, n_kernel))
-    binary_dilated = cv2.dilate(binary, kernel, iterations=1)
+    binary_dilated = skimage.morphology.dilation(binary, kernel)
 
     # 2d skeleton image
     skeleton = skeletonize(binary_dilated)

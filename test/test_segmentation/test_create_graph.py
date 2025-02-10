@@ -32,8 +32,7 @@ def test_time_graph():
         best_time = min(best_time, float(time.time() - t0))
 
     print(
-        "{number_of_loop} loop, best of {number_of_loop}: "
-        "{best_time}s per loop".format(
+        "{number_of_loop} loop, best of {number_of_loop}: {best_time}s per loop".format(
             best_time=best_time, number_of_loop=number_of_loop
         )
     )

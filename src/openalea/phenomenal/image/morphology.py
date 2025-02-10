@@ -8,18 +8,20 @@
 #
 # ==============================================================================
 """
-Post processing algorithms to improve binarization of a image
+Post-processing algorithms to improve binarization of an image
 """
 
 # ==============================================================================
 from __future__ import division, print_function
 
-import cv2
 import numpy
+import skimage
+
+
 # ==============================================================================
 
 
-def dilate_erode(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
+def dilate_erode(binary_image, kernel_shape=(2, 2), iterations=1, mask=None):
     """
     Applied a morphology (dilate & erode) on binary_image on a ROI.
 
@@ -59,22 +61,24 @@ def dilate_erode(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
     # ==========================================================================
 
     if mask is not None:
-        out = cv2.bitwise_and(binary_image, mask)
+        out = numpy.bitwise_and(binary_image, mask)
     else:
         out = binary_image.copy()
 
-    element = cv2.getStructuringElement(cv2.MORPH_CROSS, kernel_shape)
-    out = cv2.dilate(out, element, iterations=iterations)
-    out = cv2.erode(out, element, iterations=iterations)
+    element = numpy.pad(numpy.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]]), kernel_shape)
+    for _ in range(iterations):
+        out = skimage.morphology.dilation(out, element)
+    for _ in range(iterations):
+        out = skimage.morphology.erosion(out, element)
 
     if mask is not None:
-        res = cv2.subtract(binary_image, mask)
-        out = cv2.add(res, out)
+        res = numpy.subtract(binary_image, mask)
+        out = numpy.add(res, out)
 
     return out
 
 
-def erode_dilate(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
+def erode_dilate(binary_image, kernel_shape=(2, 2), iterations=1, mask=None):
     """
     Applied a morphology (erode & dilate) on binary_image on mask ROI.
 
@@ -114,22 +118,25 @@ def erode_dilate(binary_image, kernel_shape=(3, 3), iterations=1, mask=None):
     # ==========================================================================
 
     if mask is not None:
-        out = cv2.bitwise_and(binary_image, mask)
+        out = numpy.bitwise_and(binary_image, mask)
     else:
         out = binary_image.copy()
 
-    element = cv2.getStructuringElement(cv2.MORPH_CROSS, kernel_shape)
-    out = cv2.erode(out, element, iterations=iterations)
-    out = cv2.dilate(out, element, iterations=iterations)
+    element = numpy.pad(numpy.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]]), kernel_shape)
+
+    for _ in range(iterations):
+        out = skimage.morphology.erosion(out, element)
+    for _ in range(iterations):
+        out = skimage.morphology.dilation(out, element)
 
     if mask is not None:
-        res = cv2.subtract(binary_image, mask)
-        out = cv2.add(res, out)
+        res = numpy.subtract(binary_image, mask)
+        out = numpy.add(res, out)
 
     return out
 
 
-def close(binary_image, kernel_shape=(7, 7), mask=None):
+def close(binary_image, kernel_shape=(6, 6), mask=None):
     """
     Applied a morphology close on binary_image on mask ROI.
 
@@ -165,14 +172,14 @@ def close(binary_image, kernel_shape=(7, 7), mask=None):
     # ==========================================================================
 
     if mask is not None:
-        out = cv2.bitwise_and(binary_image, mask)
+        out = numpy.bitwise_and(binary_image, mask)
     else:
         out = binary_image.copy()
 
     kernel = numpy.ones(kernel_shape, numpy.uint8)
-    out = cv2.morphologyEx(out, cv2.MORPH_CLOSE, kernel)
+    out = skimage.morphology.closing(out, kernel)
 
     if mask is not None:
-        out = cv2.add(binary_image, out)
+        out = numpy.add(binary_image, out)
 
     return out
