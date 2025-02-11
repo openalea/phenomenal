@@ -14,15 +14,15 @@ Routines functions to binarize images
 """
 
 # ==============================================================================
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 
-from __future__ import absolute_import
-import cv2
 import numpy
+from PIL import Image
 from skimage.filters import median
 
 from .threshold import threshold_hsv, threshold_meanshift
-from functools import reduce
+
+
 # ==============================================================================
 
 
@@ -64,10 +64,18 @@ def mean_image(images):
 
     length = len(images)
     weight = 1.0 / length
+    h = images[0].shape[0]
+    w = images[0].shape[1]
+    print(h)
+    print(w)
 
-    start = cv2.addWeighted(images[0], weight, images[1], weight, 0)
+    mean = numpy.zeros((h,w,4),float)
+    for im in images:
+        mean = mean + im * weight
 
-    return reduce(lambda x, y: cv2.addWeighted(x, 1, y, weight, 0), images[2:], start)
+    mean = numpy.array(numpy.round(mean), dtype=numpy.uint8)
+
+    return mean
 
 
 def phenoarch_side_binarization(
@@ -80,7 +88,7 @@ def phenoarch_side_binarization(
     mask_mean_shift=None,
     mask_hsv=None,
 ):
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv_image = numpy.asarray(Image.fromarray(image).convert('HSV'))
     binary_hsv_image = threshold_hsv(hsv_image, hsv_min, hsv_max, mask_hsv)
 
     binary_mean_shift_image = threshold_meanshift(
