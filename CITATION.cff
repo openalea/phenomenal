@@ -35,6 +35,7 @@ url: "https://github.com/openalea/phenomenal"
 
 preferred-citation:
     type: article
+    authors:
     - family-names: "Artzet"
       given-names: "Simon"
     - family-names: "Chen"
