@@ -8,8 +8,8 @@
 #
 # ==============================================================================
 # {# pkglts, base
-from . import version
+from .version import __version__
 
-__version__ = version.__version__
+__version__ = __version__
 
 # #}
