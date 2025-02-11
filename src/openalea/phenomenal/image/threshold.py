@@ -29,7 +29,7 @@ def threshold_meanshift(image, mean_image, threshold=0.3, reverse=False, mask=No
 
     If reverse is True (Inequality is reversed)::
 
-        image / mean <= (1.0 + threshold
+        image / mean <= (1.0 + threshold)
 
     Parameters
     ----------
