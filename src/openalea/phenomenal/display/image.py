@@ -14,9 +14,9 @@ Module to display image and binarization result
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
+import math
 import matplotlib.pyplot
 from PIL import Image
-import math
 import numpy
 # ==============================================================================
 
@@ -44,6 +44,7 @@ def show_images(images, name_windows=""):
     nb_row = int(math.ceil(len(images) / float(nb_col)))
 
     for i, image in enumerate(images, 1):
+        image = numpy.array(numpy.round(image), dtype=numpy.uint8)
         ax = matplotlib.pyplot.subplot(nb_row, nb_col, i)
         ax.axis("off")
         if image.ndim == 2:
