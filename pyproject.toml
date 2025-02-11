@@ -42,14 +42,6 @@ Changelog = "https://github.com/openalea/phenomenal/releases"
 [project.entry-points."wralea"]
 "openalea.phenomenal" = "openalea.phenomenal_wralea"
 
-[tool.setuptools]
-ext-modules = [
-  {name = "openalea.phenomenal.multi_view_reconstruction._c_mvr", sources = ["src/openalea/phenomenal/multi_view_reconstruction/src/c_mvr.pyx",
-            "src/openalea/phenomenal/multi_view_reconstruction/src/integral_image.cpp"]},
-  {name = "openalea.phenomenal.segmentation._c_skeleton", sources = ["src/openalea/phenomenal/segmentation/src/skeleton.pyx",
-            "src/openalea/phenomenal/segmentation/src/skel.cpp"]}
-]
-
 [tool.setuptools.dynamic]
 version = {attr = "openalea.phenomenal.__version__"}
 readme = {file = ["README.md"]}
@@ -57,7 +49,6 @@ readme = {file = ["README.md"]}
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["openalea.*"]
-
 
 [tool.setuptools.package-data]
 "*" = ["*.so", "*.dylib", "*.dll", "*.pyx","*.cpp","*.c","*.h"]
