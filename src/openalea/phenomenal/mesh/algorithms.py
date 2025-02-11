@@ -145,9 +145,7 @@ def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
     """
     if verbose:
         print(
-            ("=" * 80 + "\n" + "Marching cubes : \n" "\tIso value :{}\n").format(
-                iso_value
-            )
+            ("=" * 80 + "\n" + "Marching cubes : \n\tIso value :{}\n").format(iso_value)
         )
 
     surface = vtk.vtkMarchingCubes()
@@ -164,7 +162,7 @@ def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
 
     if verbose:
         print(
-            ("\tThere are {} points.\n" "\tThere are {} polygons.\n" + "=" * 80).format(
+            ("\tThere are {} points.\n\tThere are {} polygons.\n" + "=" * 80).format(
                 vtk_poly_data.GetNumberOfPoints(), vtk_poly_data.GetNumberOfPolys()
             )
         )
