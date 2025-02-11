@@ -12,7 +12,6 @@
 from __future__ import division, print_function
 
 import os
-import cv2
 import numpy
 
 import openalea.phenomenal.image as phm_img
@@ -30,10 +29,3 @@ def test_1():
 
     # delete the tmp file
     os.remove("tmp.png")
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()
