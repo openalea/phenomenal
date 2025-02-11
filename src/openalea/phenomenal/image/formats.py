@@ -25,9 +25,16 @@ def read_image(filename, flag=None):
     """
     Read an image from a file name with opencv API.
 
-    :param filename: file name of the image
-    :param flag:
-    :return: RGB or grayscale image
+    Parameters
+    ----------
+    filename: str
+        file name of the image
+    flag: str
+        The PIL flag to convert the image
+    Return
+    ------
+    img: numpy.ndarray
+        RGB or grayscale image
     """
 
     img = Image.open(filename)
@@ -41,9 +48,16 @@ def write_image(filename, image):
     """
     Write an image in a file.
 
-    :param filename: output filename where write the image
-    :param image: numpy image to write
-    :return: None
+    Parameters
+    ----------
+    filename: str
+        output filename where write the image.
+    image: numpy.ndarray
+        numpy image to write.
+
+    Returns
+    -------
+    None
     """
     if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))

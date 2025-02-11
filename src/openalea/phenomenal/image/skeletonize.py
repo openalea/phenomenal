@@ -21,8 +21,14 @@ def skeletonize_thinning(image):
     Thinning is used to reduce each connected component in a binary image to a
     single-pixel wide skeleton
 
-    :param image: binary image with 0 or 255
-    :return: skeleton of a binary image.
+    Parameters
+    ----------
+    image: numpy.ndarray
+        binary image with 0 or 255
+    Returns
+    -------
+    skeleton: numpy.ndarray
+        skeleton of a binary image.
     """
     img = image.copy().astype(numpy.uint8)
 
@@ -38,8 +44,14 @@ def skeletonize_erode_dilate(image):
     """
     Erode and dilate image to build skeleton
 
-    :param image: binary image with 0 or 255
-    :return: skeleton of a binary image.
+    Parameters
+    ----------
+    image: numpy.ndarray
+        binary image with 0 or 255
+    Returns
+    -------
+    skeleton: numpy.ndarray
+        skeleton of a binary image.
     """
     img = image.copy().astype(numpy.uint8)
 
