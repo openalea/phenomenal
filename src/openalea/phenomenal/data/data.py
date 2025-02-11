@@ -107,7 +107,7 @@ def raw_images(name_dir):
     for id_camera in d:
         for angle in d[id_camera]:
             d[id_camera][angle] = numpy.asarray(
-                Image.open(d[id_camera][angle]), dtype=numpy.uint8
+                Image.open(d[id_camera][angle]).convert('RGB'), dtype=numpy.uint8
             )
     return d
 
@@ -142,7 +142,7 @@ def chessboard_images(name_dir):
     d = path_chessboard_images(name_dir)
     for id_camera in d:
         for angle in d[id_camera]:
-            d[id_camera][angle] = numpy.asarray(Image.open(d[id_camera][angle]))
+            d[id_camera][angle] = numpy.asarray(Image.open(d[id_camera][angle]).convert('RGB'))
     return (d,)
 
 

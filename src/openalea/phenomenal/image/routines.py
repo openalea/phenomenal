@@ -66,14 +66,10 @@ def mean_image(images):
     weight = 1.0 / length
     h = images[0].shape[0]
     w = images[0].shape[1]
-    print(h)
-    print(w)
 
-    mean = numpy.zeros((h,w,4),float)
+    mean = numpy.zeros((h,w,3),float)
     for im in images:
         mean = mean + im * weight
-
-    mean = numpy.array(numpy.round(mean), dtype=numpy.uint8)
 
     return mean
 
