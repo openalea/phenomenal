@@ -58,6 +58,7 @@ def median_color_from_images(vertices, faces, calibration, images):
                 color = images["side"][angle][(pts[:, 0], pts[:, 1])]
             else:
                 cv2.fillConvexPoly(img, pts, 255)
+                print(img)
                 index = numpy.where(img == 255)
                 img[index] = 0
                 color = images["side"][angle][index]

@@ -661,7 +661,7 @@ def project_voxels_position_on_image(
     voxels_position, voxels_size, shape_image, projection
 ):
     """
-    Create a image with same shape that shape_image and project each voxel on
+    Create an image with same shape that shape_image and project each voxel on
     image and write positive value (255) on it.
 
     Parameters
