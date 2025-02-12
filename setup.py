@@ -21,7 +21,7 @@ from Cython.Build import cythonize
 from setuptools import setup, Extension
 # ==============================================================================
 
-extentions = [
+extensions = [
     Extension(
         "openalea.phenomenal.segmentation._c_skeleton",
         sources=[
@@ -44,5 +44,5 @@ extentions = [
 
 setup(
     # package installation
-    ext_modules=cythonize(extentions, language_level="3"),
+    ext_modules=cythonize(extensions, language_level="3"),
 )

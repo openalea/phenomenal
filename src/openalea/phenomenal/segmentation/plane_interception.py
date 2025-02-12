@@ -21,8 +21,15 @@ def max_distance_in_points(points):
     Compute and return the maximal Euclidean distance between the two point the
     most separate in points.
 
-    :param points: A ndarray of 3d points position.
-    :return: int : The maximal distance
+    Parameters
+    ----------
+    points: numpy.ndarray
+        array of 3d points position.
+
+    Returns
+    -------
+    max: int
+        The maximal distance
     """
     if len(points) == 0:
         return 0
@@ -39,9 +46,17 @@ def max_distance_from_point_to_points(points, src_point):
     Compute and return the maximal Euclidean distance between src_point and
     the most separate point from him in points.
 
-    :param src_point: 3-tuple position of src_points: (x, y, z)
-    :param points: A ndarray of 3d points position.
-    :return: int : The maximal distance
+    Parameters
+    ----------
+    src_point: tuple
+        3-tuple position of src_points: (x, y, z)
+    points: numpy.ndarray
+        An ndarray of 3d points position.
+
+    Returns
+    -------
+    max: int
+        The maximal distance
     """
     if len(points) == 0:
         return 0
@@ -60,11 +75,20 @@ def connected_points_with_point(points, points_graph, src_point):
 
     src_point should be in the points_graph.
 
-    :param points: ndarray points positions x, y, z
-    :param src_point: ndarray point position x, y, z
-    :param points_graph: networkx graph
-    :return: Return the connected points with src_point, based on points graph
-    connection.
+    Parameters
+    ----------
+    points: numpy.ndarray
+        Points positions x, y, z
+    src_point: numpy.ndarray
+        Point position x, y, z
+    points_graph: networkx.graph
+        The point graph
+
+    Returns
+    -------
+    connected_points: list
+        Return the connected points with src_point, based on points graph
+        connection.
     """
     # Compute connected component in points in the ball
     subgraph = points_graph.subgraph(points)
@@ -83,11 +107,21 @@ def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
     Return connected voxels point with src_voxel_point based on 26 neighboring
     voxel grid, with a size of voxels_size.
 
-    WARNING ! Work only with connected voxel, and voxel grid
+    .. warning:: WARNING ! Work only with connected voxel, and voxel grid
 
-    :param voxels_point: ndarray of voxel grid point
-    :param voxels_size: float voxel size
-    :param src_voxel_point: position x, y, z of voxel point
+    Parameters
+    ----------
+    voxels_point: numpy.ndarray
+        array of voxel grid point
+    voxels_size: int
+        the size of each voxel.
+    src_voxel_point: tuple
+        position x, y, z of voxel point
+
+    Returns
+    -------
+    connected_voxels: list[tuple]
+        A list of the connected voxels with the point.
     """
     closest_node, nodes = [], []
     nodes.append(numpy.array(src_voxel_point))
@@ -125,12 +159,22 @@ def intercept_points_from_src_point_with_plane_equation(
     If points_graph is not None, points return are the points in the same
     connected component that src_point.
 
-    :param points: ndarray containing x,y, z position of each point.
-    :param src_point: point source
-    :param plane_equation:
-    :param distance_from_plane:
-    :param distance_from_src_point:
-    :return: return the intercepted points
+    Parameters
+    ----------
+    points: numpy.ndarray
+        Array containing x,y, z position of each point.
+    src_point: tuple
+        Point source.
+    plane_equation: tuple
+        Element of an equation
+    distance_from_plane: float
+        The maximum distance from a plane.
+    distance_from_src_point: float
+        The distance from the source point
+    Returns
+    -------
+    closest_voxel: tuple
+        the closest voxels.
     """
     res = abs(
         points[:, 0] * plane_equation[0]
@@ -161,9 +205,18 @@ def compute_plane_equation(orientation_vector, src_point):
     a, b, c, _ = k
     Plane equation : - d = a * x + b * y + c * z
 
-    :param orientation_vector:
-    :param src_point:
-    :return:
+    Parameters
+    ----------
+
+    orientation_vector: tuple
+        The orientation vector.
+    src_point: tuple
+        The source point.
+
+    Returns
+    -------
+    plane_equation: tuple
+        The plane equation.
     """
 
     d = (
@@ -186,10 +239,19 @@ def orientation_vector_of_point_in_polyline(polyline, index_point, windows_size)
     """
     Compute and return orientation vector of point in polyline.
 
-    :param polyline:
-    :param index_point:
-    :param windows_size:
-    :return:
+    Parameters
+    ----------
+    polyline: numpy.ndarray
+        The polyline.
+    index_point: int
+        The index of the point.
+    windows_size: int
+        The size of the search window.
+
+    Returns
+    -------
+    orientation_vector: tuple
+        The orientation vector of the input point.
     """
     length_polyline = len(polyline)
     vectors = []
@@ -214,6 +276,35 @@ def intercept_points_along_path_with_planes(
     with_relative_distance=True,
     fix_distance_from_src_point=None,
 ):
+    """
+    Return a list of the intercept points along a path with a plane.
+
+    Parameters
+    ----------
+    points: list
+        The list of points.
+    polyline: numpy.ndarray
+        Array of points.
+    windows_size: int
+        The size of the search window.
+    distance_from_plane: int
+        The maximum distance from the plane.
+    points_graph: networkx.graph
+        The point graph.
+    without_connection: bool
+        Whether the graph as connection or not.
+    voxels_size: int
+        The size of each voxel.
+    with_relative_distance: bool
+    fix_distance_from_src_point: float
+        (optional) use a fixed distance.
+
+    Returns
+    -------
+    out: tuple
+        a tuple with a list of intercepted points and the plane equation.
+
+    """
     length_polyline = len(polyline)
     intercepted_points = [None] * length_polyline
     planes_equation = [None] * length_polyline
@@ -270,11 +361,20 @@ def intercept_points_with_ball(points, ball_center, ball_radius):
     Return a list of the intercept points by a ball of radius ball_radius and
     with center position ball_center.
 
-    :param points: ndarray of the x,y,z position of points.
-    :param ball_center: cndarray - position x, y, z of center position of the
-    ball. Ball center position should be in the points graph.
-    :param ball_radius: float value of the ball radius
-    :return: list of intercepted points
+    Parameters
+    ----------
+    points: numpy.ndarray
+        Array of the x,y,z position of points.
+    ball_center: tuple
+        ndarray - position x, y, z of center position of the ball.
+        Ball center position should be in the points graph.
+    ball_radius: float
+        Radius of the ball
+
+    Returns
+    -------
+    points: list
+        list of intercepted points
     """
     # Compute points in the ball
     points_distance_from_point = numpy.linalg.norm(points - ball_center, axis=1)
@@ -288,11 +388,21 @@ def intercept_points_along_polyline_with_ball(points, graph, polyline, ball_radi
     Return a list of intercept point along a polyline by a ball at each
     point.
 
-    :param points: ndarray of points
-    :param polyline: ndarray ot points
-    :param graph: graph of the points
-    :param ball_radius: size of the ball radius in mm
-    :return: [[(x, y, z), ...], ...] : list of points intercepted by the ball
+    Parameters
+    ----------
+    points: numpy.ndarray
+        Array of points
+    polyline: numpy.ndarray
+        Array of points
+    graph: networkx.graph
+        Graph of the points
+    ball_radius: float
+        The radius of the ball in mm
+
+    Returns
+    -------
+    intercepted_points: list
+        list of points intercepted by the ball [[(x, y, z), ...], ...].
     """
     intercepted_points = []
     for point in polyline:
