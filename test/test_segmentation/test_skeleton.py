@@ -32,7 +32,6 @@ def test_running():
     voxel_grid = phm_data.voxel_grid(data_dir, 1, 32)
 
     # Load images binarize
-
     graph = phm_seg.graph_from_voxel_grid(voxel_grid)
 
     voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph)
