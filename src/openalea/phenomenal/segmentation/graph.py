@@ -159,16 +159,16 @@ def _create_graph_with_sklearn(voxels_position, voxels_size):
 
 def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
     """
-    Return a weigthed networkx graph builded from a voxel_grid object where
+    Return a weighted networkx graph built from a voxel_grid object where
     each node of the graph is the tuple position of the voxels center.
-    Each node are edged, if present, to the nodes depict their
-    26-neigbors in the voxel_grid. The weigth of each edge is the distance
+    Each node is edged, if present, to the nodes depict their
+    26-neighbors in the voxel_grid. The weight of each edge is the distance
     between their voxel center position.
 
     If connect_all_point is False, then the graph returned is the subgraph
     with the biggest connected components. If connect_all_point is True,
     the subgraph of connected components are edged via the closest neighbors
-    between the subgraph with a weigth equal to the distance between their
+    between the subgraph with a weight equal to the distance between their
     position.
 
     Parameters
