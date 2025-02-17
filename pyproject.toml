@@ -51,7 +51,7 @@ dependencies = [
 test = ["pytest"]
 
 [project.urls]
-Homepage = "https://github.com/openalea/phenomenal"
+Homepage = "https://openalea.readthedocs.io/"
 "Bug Tracker" = "https://github.com/openalea/phenomenal/issues"
 Discussions = "https://github.com/openalea/phenomenal/discussions"
 Changelog = "https://github.com/openalea/phenomenal/releases"
