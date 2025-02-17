@@ -6,16 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [1.9.5]
 ### Added
 * A `CITATION.cff` file
 
 ### Changed
 * Unifying docstring style to follow [NumPy](https://numpydoc.readthedocs.io/en/latest/format.html) style.
 * Reducing OpenCV dependencies.
+* The `setup.py` only handles the Cython extensions. The rest is handled by the `pyproject.toml`. Phenomenal is now installable in [venv](https://docs.python.org/3/library/venv.html)
 
 ### Fixed
 * Orientation of meshes in notebook.
+* Phenotrack citation's formatting in `README.md`.
 
 ## [1.9.4]
 ### Added
