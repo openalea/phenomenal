@@ -14,45 +14,6 @@
 
 This work is based on our [biorxiv report](https://doi.org/10.1101/805739)
 
-### Citation
-
-If you find our work useful in your research, please consider citing:
-
-    @article {Artzet805739,
-        author = {Artzet, Simon and Chen, Tsu-Wei and Chopard, J{\'e}r{\^o}me and Brichet, Nicolas and Mielewczik, Michael and Cohen-Boulakia, Sarah and Cabrera-Bosquet, Lloren{\c c} and Tardieu, Fran{\c c}ois and Fournier, Christian and Pradal, Christophe},
-        title = {Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping},
-        elocation-id = {805739},
-        year = {2019},
-        doi = {10.1101/805739},
-        publisher = {Cold Spring Harbor Laboratory},
-        abstract = {In the era of high-throughput visual plant phenotyping, it is crucial to design fully automated and flexible workflows able to derive quantitative traits from plant images. Over the last years, several software supports the extraction of architectural features of shoot systems. Yet currently no end-to-end systems are able to extract both 3D shoot topology and geometry of plants automatically from images on large datasets and a large range of species. In particular, these software essentially deal with dicotyledons, whose architecture is comparatively easier to analyze than monocotyledons. To tackle these challenges, we designed the Phenomenal software featured with: (i) a completely automatic workflow system including data import, reconstruction of 3D plant architecture for a range of species and quantitative measurements on the reconstructed plants; (ii) an open source library for the development and comparison of new algorithms to perform 3D shoot reconstruction and (iii) an integration framework to couple workflow outputs with existing models towards model-assisted phenotyping. Phenomenal analyzes a large variety of data sets and species from images of high-throughput phenotyping platform experiments to published data obtained in different conditions and provided in a different format. Phenomenal has been validated both on manual measurements and synthetic data simulated by 3D models. It has been also tested on other published datasets to reproduce a published semi-automatic reconstruction workflow in an automatic way. Phenomenal is available as an open-source software on a public repository.},
-        URL = {https://www.biorxiv.org/content/early/2019/10/21/805739},
-        eprint = {https://www.biorxiv.org/content/early/2019/10/21/805739.full.pdf},
-        journal = {bioRxiv}
-    }
-
-If you use PhenoTrack3D in your research, cite:
-
-Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). https://doi.org/10.1186/s13007-022-00961-4
-    
-```latex
-@article {daviet22,
-	author = {Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c c} and Pradal, Christophe and Fournier, Christian},
-	title = {PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
-	elocation-id = @article{daviet2022phenotrack3d,
-	title={PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
-	author={Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c{c}} and Pradal, Christophe and Fournier, Christian},
-	journal={Plant Methods},
-	volume={18},
-	number={1},
-	pages={1--14},
-	year={2022},
-	publisher={Springer}
-}
-
-```
-
-
 ### Installation
 
 Conda environment : https://docs.conda.io/en/latest/index.html
@@ -108,3 +69,37 @@ You can try online with binder: https://mybinder.org/v2/gh/openalea/phenomenal/m
 ### License
 
 Our code is released under **Cecill-C** (https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt) licence. (see LICENSE file for details).
+
+### Citation
+
+If you find our work useful in your research, please consider citing:
+
+    @article {Artzet805739,
+        author = {Artzet, Simon and Chen, Tsu-Wei and Chopard, J{\'e}r{\^o}me and Brichet, Nicolas and Mielewczik, Michael and Cohen-Boulakia, Sarah and Cabrera-Bosquet, Lloren{\c c} and Tardieu, Fran{\c c}ois and Fournier, Christian and Pradal, Christophe},
+        title = {Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping},
+        elocation-id = {805739},
+        year = {2019},
+        doi = {10.1101/805739},
+        publisher = {Cold Spring Harbor Laboratory},
+        abstract = {In the era of high-throughput visual plant phenotyping, it is crucial to design fully automated and flexible workflows able to derive quantitative traits from plant images. Over the last years, several software supports the extraction of architectural features of shoot systems. Yet currently no end-to-end systems are able to extract both 3D shoot topology and geometry of plants automatically from images on large datasets and a large range of species. In particular, these software essentially deal with dicotyledons, whose architecture is comparatively easier to analyze than monocotyledons. To tackle these challenges, we designed the Phenomenal software featured with: (i) a completely automatic workflow system including data import, reconstruction of 3D plant architecture for a range of species and quantitative measurements on the reconstructed plants; (ii) an open source library for the development and comparison of new algorithms to perform 3D shoot reconstruction and (iii) an integration framework to couple workflow outputs with existing models towards model-assisted phenotyping. Phenomenal analyzes a large variety of data sets and species from images of high-throughput phenotyping platform experiments to published data obtained in different conditions and provided in a different format. Phenomenal has been validated both on manual measurements and synthetic data simulated by 3D models. It has been also tested on other published datasets to reproduce a published semi-automatic reconstruction workflow in an automatic way. Phenomenal is available as an open-source software on a public repository.},
+        URL = {https://www.biorxiv.org/content/early/2019/10/21/805739},
+        eprint = {https://www.biorxiv.org/content/early/2019/10/21/805739.full.pdf},
+        journal = {bioRxiv}
+    }
+
+If you use PhenoTrack3D in your research, cite:
+
+Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). https://doi.org/10.1186/s13007-022-00961-4
+    
+```latex
+@article {daviet22,
+	title={PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
+	author={Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c{c}} and Pradal, Christophe and Fournier, Christian},
+	journal={Plant Methods},
+	volume={18},
+	number={1},
+	pages={1--14},
+	year={2022},
+	publisher={Springer}
+}
+```
