@@ -2,7 +2,7 @@
 Installation
 ============
 
-You must use conda environement : https://docs.conda.io/en/latest/index.html
+You must use conda environment : https://docs.conda.io/en/latest/index.html
 
 Users
 =====

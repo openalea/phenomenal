@@ -33,7 +33,22 @@ classifiers = [
 ]
 dynamic = ["version", "readme"]
 dependencies = [
+  "cython",
+  "numpy<2.0",
+  "numba",
+  "scipy",
+  "scikit-image",
+  "scikit-learn",
+  "networkx",
+  "opencv-python",
+  "matplotlib",
+  "vtk",
+  "skan",
+  "orjson",
 ]
+
+[project.optional-dependencies]
+test = ["pytest"]
 
 [project.urls]
 Homepage = "https://github.com/openalea/phenomenal"
