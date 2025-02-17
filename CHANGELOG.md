@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Unifying docstring style to follow [NumPy](https://numpydoc.readthedocs.io/en/latest/format.html) style.
 * Reducing OpenCV dependencies.
 
+### Fixed
+* Orientation of meshes in notebook.
+
 ## [1.9.4]
 ### Added
 

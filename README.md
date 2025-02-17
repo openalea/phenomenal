@@ -25,7 +25,7 @@ Conda environment : https://docs.conda.io/en/latest/index.html
     mamba create -n phm -c conda-forge -c openalea3 openalea.phenomenal
     mamba activate phm
 
-##### In a existing environment :
+##### In an existing environment :
 
     mamba install -c conda-forge -c openalea3 openalea.phenomenal
 
