@@ -2,8 +2,7 @@
 Usage
 =====
 
-.. toctree::
-   :maxdepth: 1
+.. nbgallery::
 
    examples/Binarization
    examples/McCormick_Validation
