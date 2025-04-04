@@ -9,7 +9,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 
 
-## Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping
+# Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping
 
 ### Introduction
 
@@ -17,7 +17,7 @@ This work is based on our [biorxiv report](https://doi.org/10.1101/805739)
 
 ### Installation
 
-Conda environment : https://docs.conda.io/en/latest/index.html
+Conda environment : [https://docs.conda.io/en/latest/index.html](https://docs.conda.io/en/latest/index.html)
 
 #### User
 
@@ -53,11 +53,11 @@ Conda environment : https://docs.conda.io/en/latest/index.html
 
 ### Usage :
 
-Complete documentation is available at https://phenomenal.readthedocs.io
+Complete documentation is available at [https://phenomenal.rtfd.io/](https://phenomenal.rtfd.io/)
 
 Tutorials are available in the example folder as a Jupyter Notebook.
 
-You can try online with binder: https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples
+You can try online with binder: [https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
 
 
 ### Maintainers
@@ -68,7 +68,7 @@ You can try online with binder: https://mybinder.org/v2/gh/openalea/phenomenal/m
 
 ### License
 
-Our code is released under **Cecill-C** (https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt) licence. (see LICENSE file for details).
+Our code is released under **Cecill-C** ([https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt](https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt)) licence. (see LICENSE file for details).
 
 ### Citation
 
@@ -89,7 +89,7 @@ If you find our work useful in your research, please consider citing:
 
 If you use PhenoTrack3D in your research, cite:
 
-Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). https://doi.org/10.1186/s13007-022-00961-4
+Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). [https://doi.org/10.1186/s13007-022-00961-4](https://doi.org/10.1186/s13007-022-00961-4)
     
 ```latex
 @article {daviet22,
