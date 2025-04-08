@@ -28,6 +28,19 @@ __all__ = [
 
 
 def voxel_grid_to_vtk_poly_data(voxel_grid):
+    """
+    Get a vtkPolyData object from VoxelGrid object.
+
+    Parameters
+    -----------
+    voxel_grid: VoxelGrid
+        The voxel grid to transform.
+
+    Returns
+    -------
+    poly_data: vtk.vtkPolyData
+        A vtkPolyData object
+    """
     voxels_position = voxel_grid.voxels_position
     voxels_size = voxel_grid.voxels_size
 
@@ -60,6 +73,25 @@ def voxel_grid_to_vtk_poly_data(voxel_grid):
 def from_vertices_faces_to_vtk_poly_data(
     vertices, faces, vertices_colors=None, faces_colors=None
 ):
+    """
+    Get a vtkPolyData object from lists of vertices and faces.
+
+    Parameters
+    ----------
+    vertices: list[tuple]
+        A list of tuple of vertex positions.
+    faces: list[tuple]
+        A list of tuple of faces id.
+    vertices_colors: list[tuple]
+        A list of RGB color tuple per vertices.
+    faces_colors: list[tuple]
+        A list of RGB color tuple per faces.
+
+    Returns
+    -------
+    poly_data: vtk.vtkPolyData
+        A vtkPolyData object.
+    """
     def make_vtk_id_list(it):
         vil = vtk.vtkIdList()
         for j in it:
@@ -102,6 +134,19 @@ def from_vertices_faces_to_vtk_poly_data(
 
 
 def from_vtk_poly_data_to_vertices_faces(vtk_poly_data):
+    """
+    Get vertices and faces from a vtkPolyData object
+
+    Parameters
+    ----------
+    vtk_poly_data: vtk.vtkPolyData
+        The vtkPolyData object to get info from
+
+    Returns
+    -------
+    mesh: tuple
+        A tuple containing vertices, faces and colors of the mesh
+    """
     vertices = vtkmodules.util.numpy_support.vtk_to_numpy(
         vtk_poly_data.GetPoints().GetData()
     )
@@ -118,6 +163,19 @@ def from_vtk_poly_data_to_vertices_faces(vtk_poly_data):
 
 
 def from_numpy_matrix_to_vtk_image_data(data_matrix):
+    """
+    Get a vtkImageData from a matrix.
+
+    Parameters
+    ----------
+    data_matrix: numpy.matrix
+        The data matrix to get image info from.
+
+    Returns
+    -------
+    image_data: vtk.vtkImageData
+        A vtkImageData object with the matrix info.
+    """
     nx, ny, nz = data_matrix.shape
 
     image_data = vtk.vtkImageData()
@@ -148,6 +206,21 @@ def from_numpy_matrix_to_vtk_image_data(data_matrix):
 
 
 def from_vtk_image_data_to_voxels_center(image_data, true_value=255, component=0):
+    """
+    Get voxels center from a vtkImageData object.
+
+    Parameters
+    ----------
+    image_data: vtk.vtkImageData
+        The vtkImageData object.
+    true_value: int
+    component: int
+
+    Returns
+    -------
+    voxels_points: list
+        A list of voxel positions.
+    """
     dim_x, dim_y, dim_z = image_data.GetDimensions()
     ori_x, ori_y, ori_z = image_data.GetOrigin()
     spa_x, spa_y, spa_z = image_data.GetSpacing()
@@ -167,6 +240,23 @@ def from_vtk_image_data_to_voxels_center(image_data, true_value=255, component=0
 
 
 def from_voxel_centers_to_vtk_image_data(voxel_centers, voxel_size):
+    """
+    Get a vtkImageData object from a list of voxel centers.
+
+    Parameters
+    ----------
+    voxel_centers: list[tuple]
+        A list of voxel centers.
+    voxel_size: int
+        The size each voxel.
+
+    Returns
+    -------
+    image_data: tuple
+        A tuple containing the vtkImageData object and the min voxel position
+        values.
+
+    """
     x_min = min(voxel_centers, key=operator.itemgetter(0))[0]
     x_max = max(voxel_centers, key=operator.itemgetter(0))[0]
 

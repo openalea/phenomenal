@@ -18,15 +18,10 @@
 # ==============================================================================
 import numpy
 from Cython.Build import cythonize
-from setuptools import setup, find_namespace_packages, Extension
+from setuptools import setup, Extension
 # ==============================================================================
 
-namespace = "openalea"
-pkg_root_dir = "src"
-packages = find_namespace_packages(where="src", include=["openalea.*"])
-
-
-extentions = [
+extensions = [
     Extension(
         "openalea.phenomenal.segmentation._c_skeleton",
         sources=[
@@ -47,37 +42,7 @@ extentions = [
     ),
 ]
 
-version = {}
-with open("src/openalea/phenomenal/version.py") as fp:
-    exec(fp.read(), version)
-
 setup(
-    name="openalea.phenomenal",
-    version=version["__version__"],
-    description="",
-    long_description="",
-    author="* Simon Artzet\n"
-    "* Christian Fournier\n"
-    "* Mielewczik Michael\n"
-    "* Brichet Nicolas\n"
-    "* Chopard Jerome\n"
-    "* Christophe Pradal\n",
-    author_email="simon.artzet@gmail.com",
-    maintainer="Simon Artzet",
-    maintainer_email="simon.artzet@gmail.com",
-    url="https://github.com/openalea/phenomenal",
-    license="Cecill-C",
-    keywords="",
     # package installation
-    packages=packages,
-    package_dir={"": "src"},
-    zip_safe=False,
-    ext_modules=cythonize(extentions, language_level="3"),
-    entry_points={
-        "wralea": [
-            "openalea.phenomenal = openalea.phenomenal_wralea",
-        ],
-    },
-    # See MANIFEST.in
-    include_package_data=True,
+    ext_modules=cythonize(extensions, language_level="3"),
 )

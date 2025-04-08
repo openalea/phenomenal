@@ -1,0 +1,16 @@
+channels:
+  - conda-forge
+dependencies:
+  - cython
+  - numpy
+  - numba
+  - scipy
+  - scikit-image
+  - scikit-learn
+  - networkx
+  - opencv
+  - matplotlib
+  - vtk
+  - pytest
+  - skan
+  - orjson

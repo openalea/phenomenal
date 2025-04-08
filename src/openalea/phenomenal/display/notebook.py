@@ -38,13 +38,13 @@ def show_voxel_grid(voxel_grid, color="green", size=2, width=500, height=500):
     ipyvolume.xlim(x_min, x_min + xyz_max)
     ipyvolume.ylim(y_min, y_min + xyz_max)
     ipyvolume.zlim(z_min, z_min + xyz_max)
-    ipyvolume.view(0, 90)
+    ipyvolume.view(180, 90)
     ipyvolume.show()
 
 
-def show_mesh(vertices, faces, color="green", width=500, height=500, colors=None):
+def show_mesh(vertices, faces, color="green", width=500, height=500):
     ipyvolume.figure(width=width, height=height)
-    ipyvolume.view(0, 90)
+    ipyvolume.view(180, 90)
     ipyvolume.plot_trisurf(
         vertices[:, 0], vertices[:, 1], vertices[:, 2], triangles=faces, color=color
     )
@@ -75,7 +75,7 @@ def show_skeleton(
     height=500,
 ):
     ipyvolume.figure(width=width, height=height)
-    ipyvolume.view(0, 90)
+    ipyvolume.view(180, 90)
 
     if with_voxel:
         voxels_position = voxel_skeleton.voxels_position()
@@ -108,7 +108,7 @@ def show_skeleton(
 
 def show_segmentation(voxel_segmentation, size=2.0, width=500, height=500):
     ipyvolume.figure(width=width, height=height)
-    ipyvolume.view(0, 90)
+    ipyvolume.view(180, 90)
 
     def get_color(label, info):
         if label == "stem":
@@ -166,11 +166,11 @@ def show_segmentation(voxel_segmentation, size=2.0, width=500, height=500):
     ipyvolume.show()
 
 
-def show_syntehtic_plant(
+def show_synthetic_plant(
     vertices, faces, meta_data=None, size=0.5, color="green", width=500, height=500
 ):
     ipyvolume.figure(width=width, height=height)
-    ipyvolume.view(0, 90)
+    ipyvolume.view(180, 90)
 
     ipyvolume.plot_trisurf(
         vertices[:, 0], vertices[:, 1], vertices[:, 2], triangles=faces, color=color

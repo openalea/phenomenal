@@ -97,7 +97,7 @@ class Chessboard(object):
             self.facing_angles = facing_angles
 
     def __str__(self):
-        s = "Chessboard Attributes :\n" "Square size (mm): {}\n" "Shape : {}\n".format(
+        s = "Chessboard Attributes :\nSquare size (mm): {}\nShape : {}\n".format(
             self.square_size, self.shape
         )
 

@@ -201,7 +201,7 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
     """Function to find the base stem position of the plant from the voxels
     center positions list.
 
-    Voxels position are converted in 3d image to find arround the x and y-axis
+    Voxels position are converted in 3d image to find around the x and y-axis
     the points with the minimum value in a range of neighbor_side.
 
     Parameters
@@ -320,19 +320,19 @@ def skeletonize(
     graph : networkx.Graph
 
     subgraph: networkx.graph, optional
-        If not None, perfom the computation of the shorted paths on the
+        If not None, perform the computation of the shorted paths on the
         subgraph and remove voxels
 
     mode : str, optional
         Mode for intercept point along the paths. Two mode available, "ball"
-        or "plane". By default "plane" mode.
+        or "plane". By default, "plane" mode.
 
     plane_width : int, optional
-        Size in mm of the width of the plane. By default or if None is equal
+        Size in mm of the width of the plane. By default, or if None is equal
         to the voxel_size of the voxel_grid
 
     ball_radius : int, optional
-        Size in mm of the radius of the ball. By default or if None is equal
+        Size in mm of the radius of the ball. By default, or if None is equal
         to the voxel_size * 4 of the voxel_grid
 
     Returns

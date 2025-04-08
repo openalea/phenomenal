@@ -355,10 +355,13 @@ def maize_analysis(maize_segmented):
 
     voxels_size = maize_segmented.voxels_size
     for vo in maize_segmented.voxel_organs:
-        vo.info = {"pm_label": vo.label, "pm_sub_label": vo.sub_label,
-                   "pm_voxels_volume": (
-                           len(vo.voxels_position()) * maize_segmented.voxels_size ** 3
-                   )}
+        vo.info = {
+            "pm_label": vo.label,
+            "pm_sub_label": vo.sub_label,
+            "pm_voxels_volume": (
+                len(vo.voxels_position()) * maize_segmented.voxels_size**3
+            ),
+        }
 
     # ==========================================================================
 

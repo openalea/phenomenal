@@ -58,6 +58,7 @@ def median_color_from_images(vertices, faces, calibration, images):
                 color = images["side"][angle][(pts[:, 0], pts[:, 1])]
             else:
                 cv2.fillConvexPoly(img, pts, 255)
+                print(img)
                 index = numpy.where(img == 255)
                 img[index] = 0
                 color = images["side"][angle][index]
@@ -129,15 +130,26 @@ def centers(vertices, faces):
 
 
 def project_mesh_on_image(vertices, faces, shape_image, projection):
-    """Return a binary image resulting of the projection of a mesh
+    """
+    Returns a binary image resulting of the projection of a mesh
     object representation (vertices, faces) with a projection
     function.
 
-    :param vertices: list of 3d points position
-    :param faces: list of 3-tuple index vertices
-    :param shape_image: shape of the image
-    :param projection: projection function
-    :return: 2D numpy array
+    Parameters
+    ----------
+    vertices: list
+        A list of 3d points position
+    faces: list
+        A list of 3-tuple index vertices
+    shape_image: tuple
+        The shape of the image
+    projection: fct
+        projection function
+
+    Returns
+    -------
+    image: numpy.ndarray
+        A 2D numpy array
     """
     vertices = numpy.array(vertices)
     height, length = shape_image
