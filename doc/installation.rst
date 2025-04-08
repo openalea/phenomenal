@@ -2,7 +2,7 @@
 Installation
 ============
 
-You must use conda environement : https://docs.conda.io/en/latest/index.html
+You must use conda environment : https://docs.conda.io/en/latest/index.html
 
 Users
 =====
@@ -40,14 +40,13 @@ Install From source
 .. code-block:: bash
 
     # Install dependency with conda
-    mamba create -n phm -c conda-forge python
+    mamba env create -n phm -f conda/environment.yml
     mamba activate phm
-    mamba install -c conda-forge -c numba cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan=0.10
 
-    # Load phenomenal and install
+    # Clone phenomenal and install
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal
-    python setup.py develop
+    pip install .
 
     # (Optional) Test your installation
     cd test; pytest

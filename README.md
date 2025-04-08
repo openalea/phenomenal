@@ -6,13 +6,69 @@
 [![GitHub CI](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml/badge.svg)](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml)
 [![Documentation Status](https://readthedocs.org/projects/phenomenal/badge/?version=latest)](https://phenomenal.readthedocs.io/en/latest/?badge=latest)
 [![Launch interactive phenomenal notebook with myBinder service](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
+[![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 
 
-## Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping
+# Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping
 
 ### Introduction
 
 This work is based on our [biorxiv report](https://doi.org/10.1101/805739)
+
+### Installation
+
+Conda environment : [https://docs.conda.io/en/latest/index.html](https://docs.conda.io/en/latest/index.html)
+
+#### User
+
+##### Create a new environment with phenomenal installed in there :
+
+    mamba create -n phm -c conda-forge -c openalea3 openalea.phenomenal
+    mamba activate phm
+
+##### In an existing environment :
+
+    mamba install -c conda-forge -c openalea3 openalea.phenomenal
+
+##### (Optional) Test your installation :
+
+    mamba install -c conda-forge pytest
+    git clone https://github.com/openalea/phenomenal.git
+    cd phenomenal/test; pytest
+
+#### From source
+
+    # Install dependency with conda
+    mamba env create -n phm -f conda/environment.yml 
+    mamba activate phm
+
+    # Clone phenomenal and install
+    git clone https://github.com/openalea/phenomenal.git
+    cd phenomenal
+    pip install .
+
+    # (Optional) Test your installation
+    cd test; pytest
+
+
+### Usage :
+
+Complete documentation is available at [https://phenomenal.rtfd.io/](https://phenomenal.rtfd.io/)
+
+Tutorials are available in the example folder as a Jupyter Notebook.
+
+You can try online with binder: [https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
+
+
+### Maintainers
+
+* Artzet	    Simon
+* Fournier	    Christian
+* Pradal        Christophe
+
+### License
+
+Our code is released under **Cecill-C** ([https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt](https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt)) licence. (see LICENSE file for details).
 
 ### Citation
 
@@ -33,13 +89,10 @@ If you find our work useful in your research, please consider citing:
 
 If you use PhenoTrack3D in your research, cite:
 
-Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). https://doi.org/10.1186/s13007-022-00961-4
+Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). [https://doi.org/10.1186/s13007-022-00961-4](https://doi.org/10.1186/s13007-022-00961-4)
     
 ```latex
 @article {daviet22,
-	author = {Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c c} and Pradal, Christophe and Fournier, Christian},
-	title = {PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
-	elocation-id = @article{daviet2022phenotrack3d,
 	title={PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
 	author={Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c{c}} and Pradal, Christophe and Fournier, Christian},
 	journal={Plant Methods},
@@ -49,62 +102,4 @@ Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic
 	year={2022},
 	publisher={Springer}
 }
-
 ```
-
-
-### Installation
-
-Conda environment : https://docs.conda.io/en/latest/index.html
-
-#### User
-
-##### Create a new environment with phenomenal installed in there :
-
-    mamba create -n phm -c conda-forge -c openalea3 openalea.phenomenal
-    mamba activate phm
-
-##### In a existing environment :
-
-    mamba install -c conda-forge -c openalea3 openalea.phenomenal
-
-##### (Optional) Test your installation :
-
-    mamba install -c conda-forge pytest
-    git clone https://github.com/openalea/phenomenal.git
-    cd phenomenal/test; pytest
-
-#### From source
-
-    # Install dependency with conda
-    mamba create -n phm -c conda-forge python
-    mamba activate phm
-    mamba install -c conda-forge cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan
-
-    # Load phenomenal and install
-    git clone https://github.com/openalea/phenomenal.git
-    cd phenomenal
-    python setup.py develop
-
-    # (Optional) Test your installation
-    cd test; pytest
-
-
-### Usage :
-
-Complete documentation is available at https://phenomenal.readthedocs.io
-
-Tutorials are available in the example folder as a Jupyter Notebook.
-
-You can try online with binder: https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples
-
-
-### Maintainers
-
-* Artzet	    Simon
-* Fournier	    Christian
-* Pradal        Christophe
-
-### License
-
-Our code is released under **Cecill-C** (https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt) licence. (see LICENSE file for details).

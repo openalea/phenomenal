@@ -45,14 +45,14 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     reduce the number triangle.
 
     Firstly :
-        A marching cubes algorithm is apply to compute the polygonal mesh.
+        A marching cubes algorithm is applied to compute the polygonal mesh.
 
     Secondly :
-        A smoothing algorithm is apply according the number of iteration
+        A smoothing algorithm is applied according the number of iteration
         given
 
     Thirdly :
-        A mesh decimation algorithm is apply according the percentage of
+        A mesh decimation algorithm is applied according the percentage of
         reduction given.
 
     Parameters
@@ -145,9 +145,7 @@ def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
     """
     if verbose:
         print(
-            ("=" * 80 + "\n" + "Marching cubes : \n" "\tIso value :{}\n").format(
-                iso_value
-            )
+            ("=" * 80 + "\n" + "Marching cubes : \n\tIso value :{}\n").format(iso_value)
         )
 
     surface = vtk.vtkMarchingCubes()
@@ -164,7 +162,7 @@ def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
 
     if verbose:
         print(
-            ("\tThere are {} points.\n" "\tThere are {} polygons.\n" + "=" * 80).format(
+            ("\tThere are {} points.\n\tThere are {} polygons.\n" + "=" * 80).format(
                 vtk_poly_data.GetNumberOfPoints(), vtk_poly_data.GetNumberOfPolys()
             )
         )
@@ -333,9 +331,6 @@ def voxelization(vtk_poly_data, voxels_size=1):
     voxels_size : float, optional
         Size of the voxels
 
-    verbose : bool, optional
-        If True, print for some information of each part of the algorithms
-
     Returns
     -------
     vtk_image_data : vtkImageData
@@ -419,12 +414,20 @@ def voxelization(vtk_poly_data, voxels_size=1):
     return imgstenc.GetOutput()
 
 
-def mesh_surface_area(vertices, faces):
-    """Return the surface_area of a mesh
+def mesh_surface_area(vertices, faces) -> float:
+    """
+    Returns the surface_area of a mesh
 
-    :param vertices:
-    :param faces:
-    :return:
+    Parameters
+    ----------
+    vertices: list[tuple]
+        The vertices of the mesh.
+    faces: list[tuple]
+        The faces of the mesh
+    Returns
+    -------
+    area: float
+        Surface area of mesh
     """
     return skimage.measure.mesh_surface_area(vertices, faces)
 

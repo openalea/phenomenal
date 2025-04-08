@@ -178,7 +178,7 @@ def voxels_is_visible_in_image(
 
     |
 
-    2. If the bouding box of the voxel projected have positive value on
+    2. If the bounding box of the voxel projected have positive value on
     the image the voxel are True
 
     |
@@ -358,6 +358,18 @@ def kept_visible_voxel(
 
 
 def have_image_ref(image_views):
+    """
+    Returns whether an array of ImageView has a reference image or not.
+
+    Parameters
+    ----------
+    image_views: array[ImageView]
+        The array of ImageView to test
+
+    Returns
+    -------
+    True if the array has a reference image else False.
+    """
     for iv in image_views:
         if iv.image_ref is not None:
             return True
@@ -377,7 +389,7 @@ def create_groups(image_views, inconsistent):
                 inconsistent.position, inconsistent.size, iv.projection
             )
 
-            # add each voxels to a visual cones
+            # add each voxel to a visual cones
             for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):
                 if x_max < 0 or x_min >= length or y_max < 0 or y_min >= height:
                     continue
@@ -534,7 +546,7 @@ def reconstruction_3d(
 
     voxels_position : numpy.ndarray, optional
         List of first original voxel who will be split. If None, a list is
-        create with the voxel_center_origin value.
+        created with the voxel_center_origin value.
 
     Returns
     -------
@@ -617,9 +629,9 @@ def project_voxel_centers_on_image(
         Function of projection who take 1 argument (tuple of position (x, y, z))
          and return this position 2D (x, y)
     value : int
-        value between 0 and 255 of positive pixel. By default 255.
+        value between 0 and 255 of positive pixel. By default, 255.
     dtype : type
-        numpy type of the returned image. By default numpy.uint8.
+        numpy type of the returned image. By default, numpy.uint8.
 
     Returns
     -------
@@ -661,7 +673,7 @@ def project_voxels_position_on_image(
     voxels_position, voxels_size, shape_image, projection
 ):
     """
-    Create a image with same shape that shape_image and project each voxel on
+    Create an image with same shape that shape_image and project each voxel on
     image and write positive value (255) on it.
 
     Parameters
@@ -741,23 +753,15 @@ def reconstruction_error(voxels_grid, image_views):
 
     Parameters
     ----------
-    img_ref: numpy.ndarray
-        binary image reference
+    voxels_grid: VoxelGrid
+        The voxel grid
 
-    projection : function ((x, y, z)) -> (x, y)
-        Function of projection who take 1 argument (tuple of position (x, y, z))
-         and return this position 2D (x, y)
-
-    voxels_position : [(x, y, z)]
-        cList (collections.deque) of center position of voxel
-
-    voxels_size : float
-        Size of side geometry of voxel
-
+    image_views : numpy.ndarray[ImageView]
+        An array of all image views
     Returns
     -------
-    out : int
-        Error value
+    out : (float,float)
+        A tuple with the mean false positive and the mean false negative
     """
 
     sum_false_positive = 0

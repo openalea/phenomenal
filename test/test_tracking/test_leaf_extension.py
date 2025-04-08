@@ -1,5 +1,6 @@
 import os
-import cv2
+
+from PIL import Image
 import numpy as np
 
 from openalea.phenomenal.tracking.leaf_extension import (
@@ -15,7 +16,7 @@ datadir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data/tra
 
 
 def test_skan_skeleton():
-    binary = cv2.imread(datadir + "/binaries/90.png", 0)
+    binary = np.asarray(Image.open(datadir + "/binaries/90.png").convert("L"))
 
     sk1 = skeleton_branches(image=binary, min_length=0.0)
     sk2 = skeleton_branches(image=binary, min_length=30)
@@ -47,7 +48,9 @@ def test_full_leaf_extension_phenomenal():
     angles = [a * 30 for a in range(12)]
 
     binaries = {
-        angle: cv2.imread(datadir + "/binaries/{}.png".format(angle), 0)
+        angle: np.asarray(
+            Image.open(datadir + "/binaries/{}.png".format(angle)).convert("L")
+        )
         for angle in angles
     }
 
