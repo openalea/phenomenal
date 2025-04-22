@@ -41,11 +41,13 @@ Conda environment : [https://docs.conda.io/en/latest/index.html](https://docs.co
     # Install dependency with conda
     mamba env create -n phm -f conda/environment.yml 
     mamba activate phm
+    # (on windows only)
+    mamba install vs_win-64
 
     # Clone phenomenal and install
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal
-    pip install .
+    pip install -e .
 
     # (Optional) Test your installation
     cd test; pytest
