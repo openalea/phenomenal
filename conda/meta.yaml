@@ -39,15 +39,11 @@ requirements:
 
   build:
     - {{ compiler('c') }} 
-    - {{ compiler("cxx") }} 
-    - python
-    - setuptools
-    - numpy
-    - cython
+    - {{ compiler("cxx") }}
 
   run:
-    - python x.x
-    - numpy x.x
+    - python
+    - numpy
     - cython
     - numba
     - scipy
