@@ -67,7 +67,7 @@ def mean_image(images):
     h = images[0].shape[0]
     w = images[0].shape[1]
 
-    mean = numpy.zeros((h,w,3),float)
+    mean = numpy.zeros((h, w, 3), float)
     for im in images:
         mean = mean + im * weight
 
@@ -84,7 +84,7 @@ def phenoarch_side_binarization(
     mask_mean_shift=None,
     mask_hsv=None,
 ):
-    hsv_image = numpy.asarray(Image.fromarray(image).convert('HSV'))
+    hsv_image = numpy.asarray(Image.fromarray(image).convert("HSV"))
     binary_hsv_image = threshold_hsv(hsv_image, hsv_min, hsv_max, mask_hsv)
 
     binary_mean_shift_image = threshold_meanshift(

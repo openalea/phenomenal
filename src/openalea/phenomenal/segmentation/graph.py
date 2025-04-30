@@ -9,7 +9,10 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import networkx
+try:
+    import nx_cugraph as networkx
+except ImportError:
+    import networkx
 import numpy
 import sklearn.feature_extraction.image
 import sklearn.neighbors
