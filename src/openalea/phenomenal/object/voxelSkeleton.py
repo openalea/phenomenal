@@ -10,8 +10,9 @@
 from __future__ import division, print_function, absolute_import
 
 import os
+import sys
 import gzip
-import json
+import orjson
 import numpy
 
 from .voxelGrid import VoxelGrid
@@ -57,13 +58,16 @@ class VoxelSkeleton:
                 }
                 data["segments"].append(dseg)
 
-            f.write(json.dumps(data).encode("utf-8"))
+            f.write(orjson.dumps(data, option=orjson.OPT_SERIALIZE_NUMPY))
 
     @staticmethod
     def read_from_json_gz(filename):
         with gzip.open(filename, "rb") as f:
-            data = json.loads(f.read().decode("utf-8"))
-
+            try:
+                data = orjson.loads(f.read().decode("utf-8"))
+            except:
+                print(f"Cannot open file {filename}", file=sys.stderr)
+                return None
             segs = []
 
             for dseg in data["segments"]:

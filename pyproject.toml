@@ -59,6 +59,7 @@ doc = [
   "ipython_genutils",
   "nbsphinx",
 ]
+gpu = ["nx-cugraph-cu12"]
 
 [project.urls]
 Homepage = "https://openalea.readthedocs.io/"
