@@ -17,8 +17,13 @@ build:
 requirements:
   host:
     - python
+    - setuptools
+    - numpy
+    - scipy
+    - cython
 
   build:
+    - python
     - {{ compiler('c') }} 
     - {{ compiler("cxx") }}
 
