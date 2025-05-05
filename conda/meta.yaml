@@ -11,7 +11,10 @@ source:
   path: ..
 
 build:
-  script: 
+  number: 0
+  preserve_egg_dir: True
+  string: phenomenal
+  script:
     - {{ PYTHON }} -m pip install . -vv
 
 requirements:
@@ -23,8 +26,7 @@ requirements:
     - cython
 
   build:
-    - python
-    - {{ compiler('c') }} 
+    - {{ compiler('c') }}
     - {{ compiler("cxx") }}
 
   run:
