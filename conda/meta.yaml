@@ -23,8 +23,8 @@ requirements:
     - {{ compiler("cxx") }}
 
   run:
-    - python x.x
-    - numpy x.x
+    - python
+    - numpy
     - cython
     - numba
     - scipy
