@@ -11,6 +11,7 @@ from __future__ import division, print_function, absolute_import
 
 import math
 import numpy
+
 try:
     import nx_cugraph as networkx
 except ImportError:

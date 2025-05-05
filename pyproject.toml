@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "numpy<2.0", "cython"] # Change the restricted version when updating from numpy 1.x
+requires = ["setuptools", "numpy<2.0", "cython", "setuptools_scm"] # Change the restricted version when updating from numpy 1.x
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -52,7 +52,6 @@ test = ["pytest"]
 doc = [
   "pydata-sphinx-theme",
   "myst-parser",
-  "openalea.phenomenal",
   "sphinx-favicon",
   "ipykernel",
   "ipyvolume",
@@ -71,7 +70,6 @@ Changelog = "https://github.com/openalea/phenomenal/releases"
 "openalea.phenomenal" = "openalea.phenomenal_wralea"
 
 [tool.setuptools.dynamic]
-version = {attr = "openalea.phenomenal.__version__"}
 readme = {file = ["README.md"]}
 
 [tool.setuptools.packages.find]
@@ -80,3 +78,5 @@ include = ["openalea.*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.so", "*.dylib", "*.dll", "*.pyx","*.cpp","*.c","*.h"]
+
+[tool.setuptools_scm]
