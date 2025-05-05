@@ -10,6 +10,7 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy
+
 try:
     import nx_cugraph as networkx
 except ImportError:
@@ -52,7 +53,7 @@ def segment_reduction(
     """
     # ==========================================================================
 
-    # Ordonner
+    # Order
     orderer_voxel_segments = sorted(
         voxel_skeleton.segments, key=lambda vs: len(vs.polyline)
     )

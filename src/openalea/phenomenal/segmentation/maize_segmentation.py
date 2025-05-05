@@ -10,6 +10,7 @@
 from __future__ import print_function, division, absolute_import
 
 import numpy
+
 try:
     import nx_cugraph as networkx
 except ImportError:
