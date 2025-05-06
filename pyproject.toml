@@ -37,7 +37,6 @@ classifiers = [
 license = "CECILL-C"
 license-files = ["LICEN[CS]E*"]
 dynamic = ["version", "readme"]
-
 dependencies = [
   "numpy",
   "scipy",
