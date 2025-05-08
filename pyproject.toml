@@ -11,8 +11,28 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"openalea.phenomenal" = ["*.pyx", "*.cpp"]
+
 # enable dynamic version based on git tags
 [tool.setuptools_scm]
+
+[[tool.setuptools.ext-modules]]
+  name= "openalea.phenomenal.segmentation._c_skeleton"
+  sources = [
+    "src/openalea/phenomenal/segmentation/src/skeleton.pyx",
+    "src/openalea/phenomenal/segmentation/src/skel.cpp"
+  ]
+  language = "c++"
+
+[[tool.setuptools.ext-modules]]
+  name="openalea.phenomenal.multi_view_reconstruction._c_mvr"
+  sources = [
+    "src/openalea/phenomenal/multi_view_reconstruction/src/c_mvr.pyx",
+    "src/openalea/phenomenal/multi_view_reconstruction/src/integral_image.cpp"
+  ]
+  language = "c++"
+
 
 [project]
 name = "openalea.phenomenal"
@@ -69,11 +89,9 @@ channels = [
   "openalea3",
   "conda-forge",
 ]
+# deps not available in pip with conda name
 dependencies = [
   "opencv",
-]
-pinned-dependencies = [
-  "numpy",
 ]
 
 

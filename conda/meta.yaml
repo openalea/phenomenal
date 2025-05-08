@@ -6,10 +6,7 @@
 {% set home = pyproject.get('project', {}).get('urls', {}).get('Homepage', '') %}
 {% set build_deps = pyproject.get("build-system", {}).get("requires", []) %}
 {% set deps = pyproject.get('project', {}).get('dependencies', []) %}
-{% set pinned = pyproject.get('tool', {}).get('conda-environment', {}).get('pinned-dependencies',[]) %}
 {% set conda_deps = pyproject.get('tool', {}).get('conda-environment', {}).get('dependencies',[]) %}
-
-
 
 package:
   name: {{ name }}
@@ -21,15 +18,13 @@ source:
 build:
   number: 0
   preserve_egg_dir: True
-  string: {{ name | replace("openalea.", "") }}
   script:
-    - {{ PYTHON }} -m pip install . --no-deps -vv
+    - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
 
 requirements:
   host:
     - python
-    - numpy {{ numpy }}
-    {% for dep in build_deps if dep not in pinned %}
+    {% for dep in build_deps %}
     - {{ dep }}
     {% endfor  %}
 
@@ -38,8 +33,7 @@ requirements:
 
   run:
     - python
-    - {{ pin_compatible('numpy') }}
-    {% for dep in deps + conda_deps if dep not in pinned %}
+    {% for dep in deps + conda_deps %}
     - {{ dep }}
     {% endfor %}
 

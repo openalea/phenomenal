@@ -1,6 +1,10 @@
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 import numpy as np
 cimport numpy as np
+np.import_array()  # Ensures NumPy C API is ready
 from libc.stdlib cimport malloc, free
+
+
 
 cdef extern from "skel.h":
     int fc(int n, unsigned char * a, unsigned char* b, unsigned char* z)
