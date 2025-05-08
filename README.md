@@ -23,12 +23,12 @@ Conda environment : [https://docs.conda.io/en/latest/index.html](https://docs.co
 
 ##### Create a new environment with phenomenal installed in there :
 
-    mamba create -n phm -c conda-forge -c openalea3 openalea.phenomenal
+    mamba create -n phm -c conda-forge -c openalea3 openalea.phenomenal matplotlib
     mamba activate phm
 
 ##### In an existing environment :
 
-    mamba install -c conda-forge -c openalea3 openalea.phenomenal
+    mamba install -c conda-forge -c openalea3 openalea.phenomenal matplotlib
 
 ##### (Optional) Test your installation :
 
@@ -36,21 +36,41 @@ Conda environment : [https://docs.conda.io/en/latest/index.html](https://docs.co
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal/test; pytest
 
-#### From source
+### Developers
 
-    # Install dependency with conda
-    mamba env create -n phm -f conda/environment.yml 
-    mamba activate phm
-    # (on windows only)
-    mamba install vs_win-64
+#### Editable mode install
 
-    # Clone phenomenal and install
+    # (windows only) install VisualStudio Build Tools
+
+    # Clone phenomenal
     git clone https://github.com/openalea/phenomenal.git
-    cd phenomenal
-    pip install -e .
+    cd phenomenal    
+
+    # Solution 1: Build env from scratch (mostly use pip dependencies)
+    mamba env create -f conda/environment.yml
+    mamba activate phenomenal_dev
+
+    # Solution 2: use an existing env (mostly use conda dependencies)
+    mamba activate my_env
+    mamba install --only-deps -c openalea3 -c conda-forge openalea.phenomenal
+    mamba install cxx-compiler
+    pip install -e .[doc,test,plot]
 
     # (Optional) Test your installation
     cd test; pytest
+
+#### Conda package building 
+    
+    # (windows only) install VisualStudio Build Tools
+
+    # setup build env
+    mamba create -n buildenv conda-build conda-forge-pinning
+    mamba activate buildenv
+
+    # build package (see openalea guidelines for other options)
+    conda build . -m $CONDA_PREFIX/conda_build_config.yaml --python "3.12.* *_cpython"
+    # (on windows):
+    conda build .  -m %CONDA_PREFIX%\conda_build_config.yaml --python "3.12.* *_cpython"
 
 
 ### Usage :

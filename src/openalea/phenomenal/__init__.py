@@ -7,9 +7,10 @@
 #           http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html
 #
 # ==============================================================================
-# {# pkglts, base
-from .version import __version__
+from importlib.metadata import version, PackageNotFoundError
 
-__version__ = __version__
-
-# #}
+try:
+    __version__ = version("openalea.phenomenal")
+except PackageNotFoundError:
+    # package is not installed
+    pass

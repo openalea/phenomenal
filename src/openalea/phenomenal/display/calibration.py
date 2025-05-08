@@ -17,8 +17,10 @@ Modules to display calibration result
 from __future__ import division, print_function, absolute_import
 
 
-import matplotlib.pyplot
+
 import cv2
+
+from openalea.phenomenal.optional_deps import require_dependency
 # ==============================================================================
 
 __all__ = [
@@ -30,6 +32,8 @@ __all__ = [
 
 
 def show_image_with_chessboard_corners(image, corners, name_windows=""):
+    require_dependency('matplotlib', 'plot')
+    import matplotlib.pyplot
     img = image.copy()
 
     corners = corners.astype(int)
@@ -43,6 +47,8 @@ def show_image_with_chessboard_corners(image, corners, name_windows=""):
 def show_chessboard_3d_projection_on_image(
     image, points_2d_1, points_2d_2, figure_name=""
 ):
+    require_dependency('matplotlib', 'plot')
+    import matplotlib.pyplot
     img = image.copy()
 
     points_2d_1 = points_2d_1.astype(int)

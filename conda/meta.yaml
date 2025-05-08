@@ -1,22 +1,15 @@
-{% set pyproject = load_file_data('pyproject.toml') %}
+{% set pyproject = load_file_data('../pyproject.toml', from_recipe_dir=True) %}
+{% set name = pyproject.get('project').get('name') %}
 {% set description = pyproject.get('project').get('description') %}
-{% set home = pyproject.get('project', {}).get('urls').get('Homepage') %}
-
-{% set major = load_file_regex(
-  load_file="src/openalea/phenomenal/version.py",
-  regex_pattern='major = (.+)') %}
-{% set minor = load_file_regex(
-  load_file="src/openalea/phenomenal/version.py",
-  regex_pattern='minor = (.+)') %}
-{% set post = load_file_regex(
-  load_file="src/openalea/phenomenal/version.py",
-  regex_pattern='post = (.+)') %}
-
-{% set version = major[1]+'.'+minor[1]+'.'+post[1] %}
-
+{% set version = GIT_DESCRIBE_TAG | replace("v", "") %}
+{% set license = pyproject.get('project').get('license') %}
+{% set home = pyproject.get('project', {}).get('urls', {}).get('Homepage', '') %}
+{% set build_deps = pyproject.get("build-system", {}).get("requires", []) %}
+{% set deps = pyproject.get('project', {}).get('dependencies', []) %}
+{% set conda_deps = pyproject.get('tool', {}).get('conda-environment', {}).get('dependencies',[]) %}
 
 package:
-  name: openalea.phenomenal
+  name: {{ name }}
   version: {{ version }}
 
 source:
@@ -25,41 +18,25 @@ source:
 build:
   number: 0
   preserve_egg_dir: True
-  string: phenomenal
-  script: 
-    - {{ PYTHON }} -m pip install . -vv
+  script:
+    - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
 
 requirements:
   host:
     - python
-    - setuptools
-    - numpy
-    - scipy
-    - cython
+    {% for dep in build_deps %}
+    - {{ dep }}
+    {% endfor  %}
 
   build:
-    - {{ compiler('c') }} 
-    - {{ compiler("cxx") }} 
-    - python
-    - setuptools
-    - numpy
-    - cython
+    - {{ compiler("cxx") }}
 
   run:
-    - python x.x
-    - numpy x.x
-    - cython
-    - numba
-    - scipy
-    - scikit-image
-    - scikit-learn
-    - networkx
-    - opencv [win or linux]
-    - opencv >4.1.2 [osx]
-    - matplotlib
-    - vtk
-    - skan
-    - pywin32 [win]
+    - python
+    {% for dep in deps + conda_deps %}
+    - {{ dep }}
+    {% endfor %}
+
 
 test:
   imports:
@@ -91,10 +68,10 @@ test:
 about:
   home: {{ home }}
   summary: {{ description }}
-  license: Cecill-C License
-  license_file: LICENSE.txt
+  license: {{ license }}
 
 extra:
   recipe-maintainers:
     - artzet-s
     - pradal
+    - fournier

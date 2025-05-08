@@ -16,33 +16,20 @@
 """ """
 
 # ==============================================================================
+from setuptools import setup
+from setuptools.command.build_ext import build_ext
 import numpy
-from Cython.Build import cythonize
-from setuptools import setup, Extension
-# ==============================================================================
 
-extensions = [
-    Extension(
-        "openalea.phenomenal.segmentation._c_skeleton",
-        sources=[
-            "src/openalea/phenomenal/segmentation/src/skeleton.pyx",
-            "src/openalea/phenomenal/segmentation/src/skel.cpp",
-        ],
-        include_dirs=[numpy.get_include()],
-        language="c++",
-    ),
-    Extension(
-        "openalea.phenomenal.multi_view_reconstruction._c_mvr",
-        sources=[
-            "src/openalea/phenomenal/multi_view_reconstruction/src/c_mvr.pyx",
-            "src/openalea/phenomenal/multi_view_reconstruction/src/integral_image.cpp",
-        ],
-        include_dirs=[numpy.get_include()],
-        language="c++",
-    ),
-]
+
+class build_ext_with_numpy(build_ext):
+    def finalize_options(self):
+        super().finalize_options()
+        # Add numpy include dir to all extensions
+        print(numpy.get_include())
+        for ext in self.extensions:
+            ext.include_dirs.append(numpy.get_include())
+
 
 setup(
-    # package installation
-    ext_modules=cythonize(extensions, language_level="3"),
+    cmdclass={"build_ext": build_ext_with_numpy}
 )
