@@ -59,19 +59,6 @@ Conda environment : [https://docs.conda.io/en/latest/index.html](https://docs.co
     # (Optional) Test your installation
     cd test; pytest
 
-#### Conda package building 
-    
-    # (windows only) install VisualStudio Build Tools
-
-    # setup build env
-    mamba create -n buildenv conda-build conda-forge-pinning
-    mamba activate buildenv
-
-    # build package (see openalea guidelines for other options)
-    conda build . -m $CONDA_PREFIX/conda_build_config.yaml --python "3.12.* *_cpython"
-    # (on windows):
-    conda build .  -m %CONDA_PREFIX%\conda_build_config.yaml --python "3.12.* *_cpython"
-
 
 ### Usage :
 
