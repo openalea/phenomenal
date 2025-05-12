@@ -15,9 +15,10 @@ Module to display image and binarization result
 from __future__ import division, print_function, absolute_import
 
 import math
-import matplotlib.pyplot
 from PIL import Image
 import numpy
+
+from openalea.phenomenal.optional_deps import require_dependency
 # ==============================================================================
 
 __all__ = ["show_image", "show_images"]
@@ -26,6 +27,8 @@ __all__ = ["show_image", "show_images"]
 
 
 def show_image(image, name_windows=""):
+    require_dependency('matplotlib', 'plot')
+    import matplotlib.pyplot
     matplotlib.pyplot.title(name_windows)
 
     if image.ndim == 2:
@@ -39,6 +42,8 @@ def show_image(image, name_windows=""):
 
 
 def show_images(images, name_windows=""):
+    require_dependency('matplotlib', 'plot')
+    import matplotlib.pyplot
     matplotlib.pyplot.title(name_windows)
     nb_col = 4
     nb_row = int(math.ceil(len(images) / float(nb_col)))
