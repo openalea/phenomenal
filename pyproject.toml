@@ -64,6 +64,7 @@ dependencies = [
   "scikit-learn",
   "networkx",
   "vtk",
+  "orjson",
   "skan",
 ]
 
