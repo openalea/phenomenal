@@ -1,6 +1,38 @@
 [build-system]
-requires = ["setuptools", "numpy<2.0", "cython", "setuptools_scm"] # Change the restricted version when updating from numpy 1.x
+requires = [
+  "setuptools",
+  "setuptools-scm",
+  "numpy",
+  "cython",
+]
 build-backend = "setuptools.build_meta"
+
+# allow openalea to be a namespace package
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"openalea.phenomenal" = ["*.pyx", "*.cpp"]
+
+# enable dynamic version based on git tags
+[tool.setuptools_scm]
+
+[[tool.setuptools.ext-modules]]
+  name= "openalea.phenomenal.segmentation._c_skeleton"
+  sources = [
+    "src/openalea/phenomenal/segmentation/src/skeleton.pyx",
+    "src/openalea/phenomenal/segmentation/src/skel.cpp"
+  ]
+  language = "c++"
+
+[[tool.setuptools.ext-modules]]
+  name="openalea.phenomenal.multi_view_reconstruction._c_mvr"
+  sources = [
+    "src/openalea/phenomenal/multi_view_reconstruction/src/c_mvr.pyx",
+    "src/openalea/phenomenal/multi_view_reconstruction/src/integral_image.cpp"
+  ]
+  language = "c++"
+
 
 [project]
 name = "openalea.phenomenal"
@@ -14,42 +46,31 @@ authors = [
   { name = "Benoit Daviet"},
 ]
 description = "An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping"
-license = {file = "LICENSE"}
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: CeCILL-C License",
   "Operating System :: OS Independent",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering",
 ]
+license = "CECILL-C"
+license-files = ["LICEN[CS]E*"]
 dynamic = ["version", "readme"]
 dependencies = [
-  "cython",
-  "numpy<2.0",
-  "numba",
+  "numpy",
   "scipy",
   "scikit-image",
   "scikit-learn",
   "networkx",
-  "opencv-python",
-  "matplotlib",
   "vtk",
   "skan",
-  "orjson",
 ]
 
 [project.optional-dependencies]
 test = ["pytest"]
 doc = [
+  "pandoc",
   "pydata-sphinx-theme",
   "myst-parser",
   "sphinx-favicon",
@@ -58,7 +79,21 @@ doc = [
   "ipython_genutils",
   "nbsphinx",
 ]
-gpu = ["nx-cugraph-cu12"]
+plot = [
+  "matplotlib",
+]
+
+# not used yet by pip, but by meta.yaml
+[tool.conda-environment]
+channels = [
+  "openalea3",
+  "conda-forge",
+]
+# deps not available in pip with conda name
+dependencies = [
+  "opencv",
+]
+
 
 [project.urls]
 Homepage = "https://openalea.readthedocs.io/"
@@ -71,12 +106,3 @@ Changelog = "https://github.com/openalea/phenomenal/releases"
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"]}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["openalea.*"]
-
-[tool.setuptools.package-data]
-"*" = ["*.so", "*.dylib", "*.dll", "*.pyx","*.cpp","*.c","*.h"]
-
-[tool.setuptools_scm]
