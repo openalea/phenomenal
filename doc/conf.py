@@ -8,7 +8,7 @@ meta = metadata('openalea.' + pkg_name)
 release = meta.get("version")
 # for example take major/minor
 version = ".".join(release.split('.')[:3])
-author = meta['Author-email'].split(' <')[0]
+author = meta['Author'].split(',')[0] + "et al."
 desc = meta['Summary']
 
 # If extensions (or modules to document with autodoc) are in another directory,
