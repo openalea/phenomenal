@@ -60,6 +60,18 @@ Conda environment : [https://docs.conda.io/en/latest/index.html](https://docs.co
     cd test; pytest
 
 
+### GPU version:
+
+The package supports gpu acceleration of networkx by nx_cugraph. If you have nvidia gpu, just add it in your environment:
+
+#### Conda:
+    mamba install -c rapidsai -c conda-forge -c nvidia nx-cugraph 
+
+#### pip:
+    pip install nx-cugraph-cu12
+
+> :warning: **Warning**: Please make sure that your python and cuda version are supported
+
 ### Usage :
 
 Complete documentation is available at [https://phenomenal.rtfd.io/](https://phenomenal.rtfd.io/)
