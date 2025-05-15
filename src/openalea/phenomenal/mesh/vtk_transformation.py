@@ -92,6 +92,7 @@ def from_vertices_faces_to_vtk_poly_data(
     poly_data: vtk.vtkPolyData
         A vtkPolyData object.
     """
+
     def make_vtk_id_list(it):
         vil = vtk.vtkIdList()
         for j in it:

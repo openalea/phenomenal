@@ -10,7 +10,11 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy
-import networkx
+
+try:
+    import nx_cugraph as networkx
+except ImportError:
+    import networkx
 
 import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
 
@@ -49,7 +53,7 @@ def segment_reduction(
     """
     # ==========================================================================
 
-    # Ordonner
+    # Order
     orderer_voxel_segments = sorted(
         voxel_skeleton.segments, key=lambda vs: len(vs.polyline)
     )
