@@ -83,6 +83,9 @@ doc = [
 plot = [
   "matplotlib",
 ]
+gpu = [
+  "nx-cugraph-cu12"
+]
 
 # not used yet by pip, but by meta.yaml
 [tool.conda-environment]
