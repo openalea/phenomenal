@@ -1,8 +1,0 @@
-name: phenomenal
-channels:
-  - conda-forge
-dependencies:
-  - python
-  - pip
-  - pip:
-    - -e ..[doc]
