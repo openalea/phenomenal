@@ -20,8 +20,8 @@ from openalea.phenomenal.mesh import (
 )
 
 from pathlib import Path
-HERE = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
-DATADIR = HERE.parent / "data" / "plant_1"
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 # ==============================================================================
 
 
@@ -58,7 +58,7 @@ def test_meshing():
 
 
     voxel_grid = phm_data.voxel_grid(
-        DATADIR, voxels_size=voxels_size
+        data_dir, voxels_size=voxels_size
     )
 
     image_3d = voxel_grid.to_image_3d()

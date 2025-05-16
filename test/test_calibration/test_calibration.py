@@ -14,8 +14,8 @@ import openalea.phenomenal.calibration as phm_calib
 import openalea.phenomenal.data as phm_data
 
 from pathlib import Path
-HERE = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
-DATADIR = HERE.parent / "data" / "plant_1"
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 # ==============================================================================
 
 lemnatec2 = {
@@ -70,7 +70,7 @@ lemnatec2 = {
 
 
 def test_calibration_working():
-    chess = phm_data.chessboards(DATADIR)
+    chess = phm_data.chessboards(data_dir)
     assert len(chess) == 2
 
 def test_find_points():

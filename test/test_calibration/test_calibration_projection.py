@@ -16,13 +16,13 @@ import numpy
 import openalea.phenomenal.data as phm_data
 
 from pathlib import Path
-HERE = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
-DATADIR = HERE.parent / "data" / "plant_1"
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 # ==============================================================================
 
 
 def test_array_pixel_coordinates():
-    side_calibration = phm_data.calibrations(DATADIR)["side"]
+    side_calibration = phm_data.calibrations(data_dir)["side"]
 
     pt3d = (-322.20389648, 162.67521638, -4866.89129462)
     pt_2d = side_calibration.pixel_coordinates(
@@ -71,7 +71,7 @@ def test_array_pixel_coordinates():
 
 def test_array_camera_frame_local_point():
 
-    side_calibration = phm_data.calibrations(DATADIR)["side"]
+    side_calibration = phm_data.calibrations(data_dir)["side"]
     camera_frame = side_calibration.get_camera_frame()
 
     pt_3d = (-322.20389648, 162.67521638, -4866.89129462)
@@ -105,7 +105,7 @@ def test_array_camera_frame_local_point():
 def test_projection():
     angle = 0
 
-    side_calibration = phm_data.calibrations(DATADIR)["side"]
+    side_calibration = phm_data.calibrations(data_dir)["side"]
     projection = side_calibration.get_projection(angle)
 
     pts_3d = numpy.array(

@@ -15,16 +15,16 @@ import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.segmentation as phm_seg
 
 from pathlib import Path
-HERE = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
-DATADIR = HERE.parent / "data" / "plant_1"
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 
 # ==============================================================================
 
 
 def test_running():
-    bin_images = phm_data.bin_images(DATADIR)
-    calibrations = phm_data.calibrations(DATADIR)
-    voxel_grid = phm_data.voxel_grid(DATADIR, 32)
+    bin_images = phm_data.bin_images(data_dir)
+    calibrations = phm_data.calibrations(data_dir)
+    voxel_grid = phm_data.voxel_grid(data_dir, 32)
 
     # Load images binarize
     graph = phm_seg.graph_from_voxel_grid(voxel_grid)
