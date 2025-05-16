@@ -9,10 +9,9 @@
 # ==============================================================================
 
 import collections
-import glob
 import json
 import os
-import pathlib
+from pathlib import Path
 
 import numpy
 from PIL import Image
@@ -43,14 +42,15 @@ def _path_images(data_dir, dtype="bin"):
     d : dict of dict of string
         dict[id_camera][angle] = filename
     """
-    data_directory = os.path.join(data_dir, f"{dtype}/")
+    data_directory = Path(data_dir) / f"{dtype}"
 
     d = collections.defaultdict(dict)
-    for id_camera in ["side", "top"]:
-        filenames = glob.glob(os.path.join(str(data_directory), id_camera, "*"))
-        for filename in filenames:
-            angle = int(pathlib.Path(filename).stem)
-            d[id_camera][angle] = filename
+    for camera_dir in data_directory.iterdir():
+        id_camera = str(camera_dir.stem)
+        if id_camera in ('side', 'top'):
+            for filename in (data_directory / id_camera).iterdir():
+                angle = int(filename.stem)
+                d[id_camera][angle] = filename
 
     return d
 
