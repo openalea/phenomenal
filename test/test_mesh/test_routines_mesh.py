@@ -9,22 +9,22 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import os
-
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.mesh as phm_mesh
 
+
+from pathlib import Path
+HERE = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+DATADIR = HERE.parent / "data" / "plant_1"
 # ==============================================================================
 
 
 def test_normals_centers():
-    plant_number = 1
+
     voxels_size = 16
 
-    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data")
-    print(dir_path)
     voxel_grid = phm_data.voxel_grid(
-        dir_path, plant_number=plant_number, voxels_size=voxels_size
+        DATADIR, voxels_size=voxels_size
     )
 
     image_3d = voxel_grid.to_image_3d()
