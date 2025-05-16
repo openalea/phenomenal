@@ -8,12 +8,12 @@ from openalea.phenomenal.tracking.phenomenal_coupling import phm_to_phenotrack_i
 from openalea.phenomenal.tracking.trackedPlant import TrackedPlant
 
 from pathlib import Path
-HERE = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
-DATADIR = HERE.parent / "data" / "tracking"
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "tracking"
 
 @pytest.fixture
 def time_series():
-    fd = DATADIR / "time_series"
+    fd = data_dir / "time_series"
     phm_segs, timestamps = [], []
     for filename in os.listdir(fd):
         timestamps.append(int(filename.split(".gz")[0]))
