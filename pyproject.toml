@@ -7,9 +7,11 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-# allow openalea to be a namespace package
 [tool.setuptools.packages.find]
+# allow openalea to be a namespace package
 where = ["src"]
+# do not include test and doc in wheel
+exclude = ["test*", "doc*"]
 
 # force explicit declaration of data
 #(and avoid undesired automatic 'all-git' inclusions by setuptools-scm)
