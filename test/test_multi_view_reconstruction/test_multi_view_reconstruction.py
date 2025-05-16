@@ -12,17 +12,16 @@
 from __future__ import division, print_function
 
 import numpy
-import os
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.multi_view_reconstruction as phm_mvr
 
-# ==============================================================================
+from pathlib import Path
+HERE = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+DATADIR = HERE.parent / "data" / "plant_1"
 
-plant_1_dir = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-)
+# ==============================================================================
 
 
 def test_split_voxel_centers_in_eight_1():
@@ -103,7 +102,7 @@ def test_get_bounding_box_voxel_projected_1():
 
 def test_get_bounding_box_voxel_projected_2():
     angle = 0
-    calibrations = phm_data.calibrations(plant_1_dir)
+    calibrations = phm_data.calibrations(DATADIR)
     projection = calibrations["side"].get_projection(angle)
 
     voxels_position = numpy.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
@@ -126,7 +125,7 @@ def test_get_bounding_box_voxel_projected_2():
 
 def test_split_and_projection():
     angle = 0
-    calibrations = phm_data.calibrations(plant_1_dir)
+    calibrations = phm_data.calibrations(DATADIR)
     projection = calibrations["side"].get_projection(angle)
 
     voxels_position = numpy.array([[0, 0, 0]])
@@ -172,7 +171,7 @@ def get_image_views_cube_projected(with_ref=False):
     assert volume == 1000000
 
     # ==========================================================================
-    calibrations = phm_data.calibrations(plant_1_dir)
+    calibrations = phm_data.calibrations(DATADIR)
 
     shape_image = (2454, 2056)
     image_views = list()
@@ -198,8 +197,8 @@ def get_image_views_cube_projected(with_ref=False):
 
 def test_reconstruction_3d_1():
     # Load images binarize
-    bin_images = phm_data.bin_images(plant_1_dir)
-    calibrations = phm_data.calibrations(plant_1_dir)
+    bin_images = phm_data.bin_images(DATADIR)
+    calibrations = phm_data.calibrations(DATADIR)
 
     image_views = list()
     for id_camera in bin_images:
