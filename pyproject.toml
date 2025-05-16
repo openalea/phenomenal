@@ -11,6 +11,11 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# force explicit declaration of data
+#(and avoid undesired automatic 'all-git' inclusions by setuptools-scm)
+[tool.setuptools]
+include-package-data = false
+
 [tool.setuptools.package-data]
 "openalea.phenomenal" = ["*.pyx", "*.cpp"]
 
