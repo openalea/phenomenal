@@ -6,5 +6,6 @@ dependencies:
   - pip
   - cxx-compiler
   - opencv
+  - openalea.phenotyping_data
   - pip:
       - -e ..[doc,test,plot]

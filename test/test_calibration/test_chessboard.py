@@ -9,13 +9,14 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from __future__ import division, print_function
-
 import numpy
-import os
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.calibration as phm_calib
+
+from pathlib import Path
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 # ==============================================================================
 
 
@@ -54,10 +55,7 @@ def test_chessboard_2():
 def test_chessboard_3():
     chess = phm_calib.Chessboard(50, (8, 6))
 
-    dir_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-    )
-    images = phm_data.chessboard_images(dir_path)[0]
+    images = phm_data.chessboard_images(data_dir)[0]
     found = chess.detect_corners("side", 42, images["side"][42], check_order=False)
 
     if found:

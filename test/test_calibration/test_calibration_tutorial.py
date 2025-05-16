@@ -1,14 +1,14 @@
 """Test computation used in calibration tutorial (examples/calibration)"""
 
-import os
-
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.calibration as phm_calib
 
+from pathlib import Path
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 
 def test_detect_corners():
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data/plant_1")
-    chessboard_images = phm_data.chessboard_images(path)[0]
+    chessboard_images = phm_data.chessboard_images(data_dir)[0]
     square_size_of_chessboard = 47  # In mm
     square_shape_of_chessboard = (8, 6)  # (8 square x 6 square on chessboard)
     chessboard = phm_calib.Chessboard(
@@ -24,8 +24,7 @@ def test_detect_corners():
 
 
 def test_calibrate():
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data/plant_1")
-    image_points = phm_data.image_points(path)
+    image_points = phm_data.image_points(data_dir)
     calibrator = phm_calib.Calibrator(
         south_camera=("side", 90, 5500),
         targets={"target_1": (45, 48), "target_2": (45, 48 + 180)},
