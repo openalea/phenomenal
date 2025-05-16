@@ -53,15 +53,7 @@ test:
   requires:
     - pytest
   source_files:
-    - doc/examples/data/**
-    - test/data/**
-    - test/test_calibration/**
-    - test/test_image/**
-    - test/test_mesh/**
-    - test/test_multi_view_reconstruction/**
-    - test/test_object/**
-    - test/test_tracking/**
-    - test/test_segmentation/**
+    - test/
   commands:
     - pytest
 

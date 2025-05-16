@@ -19,7 +19,9 @@ from openalea.phenomenal.mesh import (
     from_voxel_centers_to_vtk_image_data,
 )
 
-
+from pathlib import Path
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 # ==============================================================================
 
 
@@ -51,13 +53,12 @@ def test_mesh_error_2():
 
 
 def test_meshing():
-    plant_number = 1
+
     voxels_size = 16
 
-    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data")
-    print(dir_path)
+
     voxel_grid = phm_data.voxel_grid(
-        dir_path, plant_number=plant_number, voxels_size=voxels_size
+        data_dir, voxels_size=voxels_size
     )
 
     image_3d = voxel_grid.to_image_3d()

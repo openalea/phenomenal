@@ -9,12 +9,13 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import os
 import numpy
-
 import openalea.phenomenal.calibration as phm_calib
-
 import openalea.phenomenal.data as phm_data
+
+from pathlib import Path
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 # ==============================================================================
 
 lemnatec2 = {
@@ -69,12 +70,8 @@ lemnatec2 = {
 
 
 def test_calibration_working():
-    name_dir = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-    )
-
-    phm_data.chessboards(name_dir)
-
+    chess = phm_data.chessboards(data_dir)
+    assert len(chess) == 2
 
 def test_find_points():
     pass

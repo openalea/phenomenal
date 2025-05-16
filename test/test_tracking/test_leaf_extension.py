@@ -1,5 +1,3 @@
-import os
-
 from PIL import Image
 import numpy as np
 
@@ -12,11 +10,13 @@ from openalea.phenomenal.tracking.leaf_extension import (
 import openalea.phenomenal.object.voxelSegmentation as phm_seg
 from openalea.phenomenal.calibration import Calibration
 
-datadir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data/tracking/")
+from pathlib import Path
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "tracking"
 
 
 def test_skan_skeleton():
-    binary = np.asarray(Image.open(datadir + "/binaries/90.png").convert("L"))
+    binary = np.asarray(Image.open(data_dir / "binaries" / "90.png").convert("L"))
 
     sk1 = skeleton_branches(image=binary, min_length=0.0)
     sk2 = skeleton_branches(image=binary, min_length=30)
@@ -49,16 +49,16 @@ def test_full_leaf_extension_phenomenal():
 
     binaries = {
         angle: np.asarray(
-            Image.open(datadir + "/binaries/{}.png".format(angle)).convert("L")
+            Image.open(data_dir /"binaries" / "{}.png".format(angle)).convert("L")
         )
         for angle in angles
     }
 
-    seg = phm_seg.VoxelSegmentation.read_from_json_gz(datadir + "/segmentation.gz")
+    seg = phm_seg.VoxelSegmentation.read_from_json_gz(data_dir / "segmentation.gz")
 
     assert all(["pm_length_extended" not in leaf.info for leaf in seg.get_leafs()])
 
-    calibration = Calibration.load(datadir + "/calibration.json")
+    calibration = Calibration.load(data_dir / "calibration.json")
     projections = {
         angle: calibration.get_projection(
             id_camera="side", rotation=angle, world_frame="pot"

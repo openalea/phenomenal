@@ -7,13 +7,13 @@ from openalea.phenomenal.tracking.display import plot_polylines
 from openalea.phenomenal.tracking.phenomenal_coupling import phm_to_phenotrack_input
 from openalea.phenomenal.tracking.trackedPlant import TrackedPlant
 
-
-datadir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data/tracking")
-
+from pathlib import Path
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "tracking"
 
 @pytest.fixture
 def time_series():
-    fd = datadir + "/time_series"
+    fd = data_dir / "time_series"
     phm_segs, timestamps = [], []
     for filename in os.listdir(fd):
         timestamps.append(int(filename.split(".gz")[0]))
