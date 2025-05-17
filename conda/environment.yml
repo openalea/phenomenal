@@ -1,5 +1,6 @@
 name: phenomenal_dev
 channels:
+  - openalea3
   - conda-forge
 dependencies:
   - python
