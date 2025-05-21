@@ -16,8 +16,6 @@ include-package-data = false # force explicit declaration of data (disable autom
 # enable dynamic version based on git tags
 [tool.setuptools_scm]
 
-[tool.setuptools.package-data]
-"openalea.phenomenal" = ["*.pyx", "*.cpp"]
 
 [[tool.setuptools.ext-modules]]
   name= "openalea.phenomenal.segmentation._c_skeleton"
