@@ -18,11 +18,12 @@ source:
 build:
   number: 0
   preserve_egg_dir: True
+  ignore:
+    - test/
+    - doc/
+    - binder/
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
-    # clean-up dir before building archive: only keep src (for pip install) and .github (for setuptools_scm)
-    - find . -mindepth 1 -maxdepth 1 -type d ! -name src ! -name .github -exec rm -rf {} +
-
 
 requirements:
   host:
