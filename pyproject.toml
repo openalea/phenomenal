@@ -8,21 +8,16 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-# allow openalea to be a namespace package
 where = ["src"]
-# do not include test and doc in wheel
-exclude = ["test*", "doc*"]
 
-# force explicit declaration of data
-#(and avoid undesired automatic 'all-git' inclusions by setuptools-scm)
 [tool.setuptools]
-include-package-data = false
-
-[tool.setuptools.package-data]
-"openalea.phenomenal" = ["*.pyx", "*.cpp"]
+include-package-data = false # force explicit declaration of data (disable automatic inclusion)
 
 # enable dynamic version based on git tags
 [tool.setuptools_scm]
+
+[tool.setuptools.package-data]
+"openalea.phenomenal" = ["*.pyx", "*.cpp"]
 
 [[tool.setuptools.ext-modules]]
   name= "openalea.phenomenal.segmentation._c_skeleton"
@@ -83,13 +78,17 @@ doc = [
   "myst-parser",
   "sphinx-favicon",
   "ipykernel",
-  "ipyvolume",
+  "sphinx-copybutton",
   "ipython_genutils",
   "nbsphinx",
 ]
 plot = [
   "matplotlib",
 ]
+notebook = [
+  "jupyterlab",
+  "ipyvolume",
+  ]
 gpu = [
   "nx-cugraph-cu12"
 ]
