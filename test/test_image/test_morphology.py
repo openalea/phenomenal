@@ -21,52 +21,48 @@ def test_close_wrong_parameters_1():
     try:
         phm_img.close(None)
     except Exception as e:
-        assert str(e) == 'image must be a numpy.ndarray'
-        assert type(e) == TypeError
+        assert str(e) == "image must be a numpy.ndarray"
+        assert isinstance(e, TypeError)
     else:
         assert False
 
 
 def test_close_wrong_parameters_2():
-
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.close(image)
     except Exception as e:
-        assert str(e) == 'image must be 2D array'
-        assert type(e) == ValueError
+        assert str(e) == "image must be 2D array"
+        assert isinstance(e, ValueError)
     else:
         assert False
 
 
 def test_close_wrong_parameters_3():
-
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = 42
     try:
         phm_img.close(image, mask=mask)
     except Exception as e:
-        assert str(e) == 'mask must be a numpy.ndarray'
-        assert type(e) == TypeError
+        assert str(e) == "mask must be a numpy.ndarray"
+        assert isinstance(e, TypeError)
     else:
         assert False
 
 
 def test_close_wrong_parameters_4():
-
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.close(image, mask=mask)
     except Exception as e:
-        assert str(e) == 'mask must be 2D array'
-        assert type(e) == ValueError
+        assert str(e) == "mask must be 2D array"
+        assert isinstance(e, ValueError)
     else:
         assert False
 
 
 def test_close_1():
-
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
@@ -84,6 +80,7 @@ def test_close_2():
     assert isinstance(image_cleaning, numpy.ndarray)
     assert image_cleaning.ndim == 2
 
+
 # ==============================================================================
 # MORPHOLOGY DILATE_ERODE TEST
 # ==============================================================================
@@ -93,7 +90,7 @@ def test_dilate_erode_wrong_parameters_1():
     try:
         phm_img.dilate_erode(None)
     except Exception as e:
-        assert type(e) == TypeError
+        assert isinstance(e, TypeError)
     else:
         assert False
 
@@ -103,7 +100,7 @@ def test_dilate_erode_wrong_parameters_2():
     try:
         phm_img.dilate_erode(image)
     except Exception as e:
-        assert type(e) == ValueError
+        assert isinstance(e, ValueError)
     else:
         assert False
 
@@ -114,7 +111,7 @@ def test_dilate_erode_wrong_parameters_3():
     try:
         phm_img.dilate_erode(image, mask=mask)
     except Exception as e:
-        assert type(e) == TypeError
+        assert isinstance(e, TypeError)
     else:
         assert False
 
@@ -125,7 +122,7 @@ def test_dilate_erode_wrong_parameters_4():
     try:
         phm_img.dilate_erode(image, mask=mask)
     except Exception as e:
-        assert type(e) == ValueError
+        assert isinstance(e, ValueError)
     else:
         assert False
 
@@ -148,6 +145,7 @@ def test_dilate_erode_2():
     assert isinstance(image_cleaning, numpy.ndarray)
     assert image_cleaning.ndim == 2
 
+
 # ==============================================================================
 # MORPHOLOGY ERODE_DILATE TEST
 # ==============================================================================
@@ -157,48 +155,44 @@ def test_erode_dilate_wrong_parameters_1():
     try:
         phm_img.erode_dilate(None)
     except Exception as e:
-        assert type(e) == TypeError
+        assert isinstance(e, TypeError)
     else:
         assert False
 
 
 def test_erode_dilate_wrong_parameters_2():
-
     image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.erode_dilate(image)
     except Exception as e:
-        assert type(e) == ValueError
+        assert isinstance(e, ValueError)
     else:
         assert False
 
 
 def test_erode_dilate_wrong_parameters_3():
-
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = 42
     try:
         phm_img.erode_dilate(image, mask=mask)
     except Exception as e:
-        assert type(e) == TypeError
+        assert isinstance(e, TypeError)
     else:
         assert False
 
 
 def test_erode_dilate_wrong_parameters_4():
-
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
     try:
         phm_img.erode_dilate(image, mask=mask)
     except Exception as e:
-        assert type(e) == ValueError
+        assert isinstance(e, ValueError)
     else:
         assert False
 
 
 def test_erode_dilate_1():
-
     image = numpy.zeros((25, 25), dtype=numpy.uint8)
     mask = numpy.zeros((25, 25), dtype=numpy.uint8)
 
@@ -219,6 +213,6 @@ def test_erode_dilate_2():
 
 if __name__ == "__main__":
     for func_name in dir():
-        if func_name.startswith('test_'):
+        if func_name.startswith("test_"):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()

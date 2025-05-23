@@ -18,11 +18,8 @@ from ..object import VoxelOctree
 # ==============================================================================
 # Function for no kep
 
-def voxel_is_visible_in_image(voxel_center,
-                              voxel_size,
-                              image,
-                              projection,
-                              inclusive):
+
+def voxel_is_visible_in_image(voxel_center, voxel_size, image, projection, inclusive):
     """
     Return True or False if the voxel projected on image with the function
     projection (projection) have positive value on image.
@@ -68,18 +65,16 @@ def voxel_is_visible_in_image(voxel_center,
     height_image, length_image = image.shape
     x, y = projection(voxel_center)
 
-    if (0 <= x < length_image and
-        0 <= y < height_image and
-            image[int(y), int(x)] > 0):
+    if 0 <= x < length_image and 0 <= y < height_image and image[int(y), int(x)] > 0:
         return True
 
     # ==========================================================================
 
     x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
-        voxel_center, voxel_size, projection)
+        voxel_center, voxel_size, projection
+    )
 
-    if (x_max < 0 or x_min >= length_image or
-            y_max < 0 or y_min >= height_image):
+    if x_max < 0 or x_min >= length_image or y_max < 0 or y_min >= height_image:
         return inclusive
 
     # if ((not (0 <= x_min < length_image or 0 <= x_max < length_image)) or
@@ -91,32 +86,30 @@ def voxel_is_visible_in_image(voxel_center,
     y_min = int(min(max(math.floor(y_min), 0), height_image - 1))
     y_max = int(min(max(math.ceil(y_max), 0), height_image - 1))
 
-    if (image[y_min, x_min] > 0 or
-        image[y_max, x_min] > 0 or
-        image[y_min, x_max] > 0 or
-            image[y_max, x_max] > 0):
+    if (
+        image[y_min, x_min] > 0
+        or image[y_max, x_min] > 0
+        or image[y_min, x_max] > 0
+        or image[y_max, x_max] > 0
+    ):
         return True
 
     # ==========================================================================
 
-    if numpy.any(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
+    if numpy.any(image[y_min : y_max + 1, x_min : x_max + 1] > 0):
         return True
 
     return False
 
 
-
-def voxel_is_fully_visible_in_image(voxel_center,
-                                    voxel_size,
-                                    image,
-                                    projection):
-
+def voxel_is_fully_visible_in_image(voxel_center, voxel_size, image, projection):
     height_image, length_image = image.shape
 
     # ==========================================================================
 
     x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
-        voxel_center, voxel_size, projection)
+        voxel_center, voxel_size, projection
+    )
 
     x_min = int(min(max(math.floor(x_min), 0), length_image - 1))
     x_max = int(min(max(math.ceil(x_max), 0), length_image - 1))
@@ -125,7 +118,7 @@ def voxel_is_fully_visible_in_image(voxel_center,
 
     # ==========================================================================
 
-    if numpy.all(image[y_min:y_max + 1, x_min:x_max + 1] > 0):
+    if numpy.all(image[y_min : y_max + 1, x_min : x_max + 1] > 0):
         return True
 
     return False
@@ -134,28 +127,24 @@ def voxel_is_fully_visible_in_image(voxel_center,
 def remove_surrounded(leaf_nodes):
     kept = collections.deque()
     for leaf in leaf_nodes:
-
         if not leaf.is_surrender():
             kept.append(leaf)
 
     return kept
 
 
-def remove_surrounded_fully_visible(leaf_nodes,
-                                    images_projections,
-                                    error_tolerance=0):
+def remove_surrounded_fully_visible(leaf_nodes, images_projections, error_tolerance=0):
     kept = collections.deque()
     for leaf in leaf_nodes:
-
         if leaf.is_surrender():
-
             voxel_center = leaf.position
             voxel_size = leaf.size
             negative_weight = 0
 
             for image, projection in images_projections:
                 if not voxel_is_fully_visible_in_image(
-                        voxel_center, voxel_size, image, projection):
+                    voxel_center, voxel_size, image, projection
+                ):
                     negative_weight += 1
                     if negative_weight > error_tolerance:
                         break
@@ -168,27 +157,25 @@ def remove_surrounded_fully_visible(leaf_nodes,
 
     return kept
 
+
 # ==============================================================================
 
 
-def _keep_visible(voxels_node,
-                  image_views,
-                  error_tolerance=0):
-
+def _keep_visible(voxels_node, image_views, error_tolerance=0):
     kept = collections.deque()
     for voxel_node in voxels_node:
-
         voxel_position = voxel_node.position
         voxel_size = voxel_node.size
         negative_weight = 0
 
         for image_view in image_views:
             if not voxel_is_visible_in_image(
-                    voxel_position,
-                    voxel_size,
-                    image_view.image,
-                    image_view.projection,
-                    image_view.inclusive):
+                voxel_position,
+                voxel_size,
+                image_view.image,
+                image_view.projection,
+                image_view.inclusive,
+            ):
                 negative_weight += 1
                 if negative_weight > error_tolerance:
                     break
@@ -204,12 +191,15 @@ def _keep_visible(voxels_node,
 
 # ==============================================================================
 
-def reconstruction_3d_octree(image_views,
-                             voxels_size=4,
-                             error_tolerance=0,
-                             voxel_center_origin=(0.0, 0.0, 0.0),
-                             world_size=4096,
-                             verbose=False):
+
+def reconstruction_3d_octree(
+    image_views,
+    voxels_size=4,
+    error_tolerance=0,
+    voxel_center_origin=(0.0, 0.0, 0.0),
+    world_size=4096,
+    verbose=False,
+):
     """
     Construct a list of voxel represented object with positive value on binary
     image in images of images_projections.
@@ -252,8 +242,7 @@ def reconstruction_3d_octree(image_views,
     if len(image_views) == 0:
         raise ValueError("Len images view have not length")
 
-    voxel_octree = VoxelOctree.from_position(
-        voxel_center_origin, world_size, True)
+    voxel_octree = VoxelOctree.from_position(voxel_center_origin, world_size, True)
 
     leaf_nodes = collections.deque()
     leaf_nodes.append(voxel_octree.root)
@@ -264,19 +253,16 @@ def reconstruction_3d_octree(image_views,
         nb_iteration += 1
 
     for i in range(nb_iteration):
-
         tmp = collections.deque()
         for leaf in leaf_nodes:
             tmp.extend(leaf.creates_sons())
         leaf_nodes = tmp
 
         if verbose is True:
-            print('Iteration', i + 1, '/', nb_iteration, end="")
-            print(' : ', len(leaf_nodes), end="")
+            print("Iteration", i + 1, "/", nb_iteration, end="")
+            print(" : ", len(leaf_nodes), end="")
 
-        leaf_nodes = _keep_visible(leaf_nodes,
-                                   image_views,
-                                   error_tolerance)
+        leaf_nodes = _keep_visible(leaf_nodes, image_views, error_tolerance)
 
         # Gain time is not enough for keeping that
         # if i + 1 < nb_iteration:
@@ -285,6 +271,6 @@ def reconstruction_3d_octree(image_views,
         #                                                  error_tolerance)
 
         if verbose is True:
-            print(' - ', len(leaf_nodes))
+            print(" - ", len(leaf_nodes))
 
     return voxel_octree

@@ -17,40 +17,34 @@ Image Methods
 Threshold
 =========
 .. autosummary::
-    :toctree: generated
+    :toctree: generated/
 
-    threshold_meanshift
-    threshold_hsv
-    mean_image
-    phenoarch_side_binarization
+    threshold
 
 
 Image Skeleton
 ==============
 .. autosummary::
-    :toctree: generated
+    :toctree: generated/
 
-    skeletonize_thinning
-    skeletonize_erode_dilate
+    skeletonize
 
 Morphologic Operation
 =====================
 .. autosummary::
-    :toctree: generated
+    :toctree: generated/
 
-    dilate_erode
-    erode_dilate
-    close
+    morphology
 
 Input / Output
 ==============
 .. autosummary::
-    :toctree: generated
+    :toctree: generated/
 
-    read_image
-    write_image
+    formats
 
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -61,4 +55,4 @@ from .skeletonize import *
 from .threshold import *
 # ==============================================================================
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+__all__ = [s for s in dir() if not s.startswith("_")]

@@ -1,0 +1,12 @@
+name: phenomenal_dev
+channels:
+  - openalea3
+  - conda-forge
+dependencies:
+  - python
+  - pip
+  - cxx-compiler
+  - opencv
+  - openalea.phenotyping_data
+  - pip:
+      - -e ..[doc,test,plot]

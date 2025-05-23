@@ -19,21 +19,27 @@ Image
 .. autosummary::
    :toctree: generated/
 
-   show_image
-   show_images
-   show_image_with_chessboard_corners
-   show_chessboard_3d_projection_on_image
+   image
+
+Calibration
+===========
+.. autosummary::
+    :toctree: generated/
+
+    calibration
 
 3D Data
 =======
 .. autosummary::
    :toctree: generated/
 
-   Display
-   Scene
-
+   scene
+   show_basic
+   show_segmentation
+   show_skeleton
 
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -47,4 +53,4 @@ from .show_skeleton import *
 from .show_segmentation import *
 # ==============================================================================
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+__all__ = [s for s in dir() if not s.startswith("_")]

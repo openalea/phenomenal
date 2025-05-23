@@ -18,7 +18,6 @@ import openalea.phenomenal.object as phm_obj
 
 
 def test_simply_working_1():
-
     voxels_position = list()
     voxels_position.append((0, 0, 0))
     voxels_position.append((10, 10, 10))
@@ -57,6 +56,6 @@ def test_simply_working_2():
 
 if __name__ == "__main__":
     for func_name in dir():
-        if func_name.startswith('test_'):
+        if func_name.startswith("test_"):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()
