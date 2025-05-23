@@ -14,7 +14,7 @@ import numpy
 # ==============================================================================
 
 
-class Segment(object):
+class Segment:
     def __init__(self, id_number, first_point):
         self.id_number = id_number
         self.first_id_number = id_number
@@ -41,7 +41,6 @@ class Segment(object):
         return xa - xb, ya - yb
 
     def compute_inclination(self, step=10):
-
         result = list()
 
         my_range = range(1, len(self.points) - step, step)
@@ -55,7 +54,7 @@ class Segment(object):
             diff_x = xa - xb
             diff_y = ya - yb
 
-            norm = math.sqrt(diff_x ** 2 + diff_y ** 2)
+            norm = math.sqrt(diff_x**2 + diff_y**2)
             inclination = math.atan2(math.fabs(diff_y), math.fabs(diff_x))
             inclination = inclination / math.pi * 180.0
 
@@ -64,7 +63,6 @@ class Segment(object):
         return result
 
     def compute_angle_orientation(self):
-
         yb, xb = self.first_point
         ya, xa = self.last_point
         yo, xo = (yb, xa)
@@ -79,13 +77,13 @@ class Segment(object):
         ao = math.sqrt((xa - xo) ** 2 + (ya - yo) ** 2)
         ob = math.sqrt((xo - xb) ** 2 + (yo - yb) ** 2)
 
-        alpha = math.acos((ao ** 2 + ab ** 2 - ob ** 2) / (2.0 * ao * ab))
+        alpha = math.acos((ao**2 + ab**2 - ob**2) / (2.0 * ao * ab))
         alpha = alpha * 180.0 / numpy.pi
 
         return alpha
 
 
-class Organ(object):
+class Organ:
     def __init__(self):
         self.segments = list()
         self.id_number = None
@@ -100,8 +98,8 @@ class Organ(object):
         return y_mean / len(self.segments), x_mean / len(self.segments)
 
     def get_height(self):
-        y_min = numpy.float('inf')
-        y_max = - numpy.float('inf')
+        y_min = numpy.float("inf")
+        y_max = -numpy.float("inf")
 
         for segment in self.segments:
             for y, x in segment.points:
@@ -132,8 +130,7 @@ class Organ(object):
         for organ_segment in self.segments:
             for y, x in organ_segment.points:
                 for yy, xx in segment.points:
-                    if (-radius <= y - yy <= radius and
-                                    -radius <= x - xx <= radius):
+                    if -radius <= y - yy <= radius and -radius <= x - xx <= radius:
                         return True
 
         return False
@@ -232,8 +229,8 @@ def segment_skeleton(skeleton_image):
     segments = list()
 
     id_number = 1
-    for j in xrange(h):
-        for i in xrange(l):
+    for j in range(h):
+        for i in range(l):
             pixel = skeleton_image[j, i]
 
             # Continue, pixel is black, no organs
@@ -258,9 +255,10 @@ def segment_skeleton(skeleton_image):
             # If possible next neighbors is 2 and furthermore 1 other pixel
             # is tagged, is a points of junction between 3 segment so we pass
             # the point
-            if not (number_of_valid_neighbors == 2 and
-                            neighbors_is_tagged(skeleton_image, j, i) is True):
-
+            if not (
+                number_of_valid_neighbors == 2
+                and neighbors_is_tagged(skeleton_image, j, i) is True
+            ):
                 if len(neighbors_index) > 0:
                     y, x = neighbors_index[0]
                     while y > -1 and x > -1:
@@ -290,6 +288,7 @@ def segment_skeleton(skeleton_image):
 # ==============================================================================
 # Segment Stem
 
+
 def compute_orientation(vector1, vector2):
     x1, y1 = vector1
     x2, y2 = vector2
@@ -298,19 +297,18 @@ def compute_orientation(vector1, vector2):
         return 90
 
     result = numpy.dot((x1, y1), (x2, y2)) / (
-        numpy.linalg.norm((x1, y1)) * numpy.linalg.norm((x2, y2)))
+        numpy.linalg.norm((x1, y1)) * numpy.linalg.norm((x2, y2))
+    )
 
     result = round(result, 5)
     return math.acos(result) * 180.0 / math.pi
 
 
 def build_stem_2(segments):
-
     print("Number of segments : ", len(segments))
 
     list_list = list()
     for segment_1 in segments[:]:
-
         list_candidate = list()
         list_candidate.append(segment_1)
 
@@ -332,11 +330,9 @@ def build_stem_2(segments):
     radius = 10
     stems = list()
     for list_candidate in list_list:
-
         list_of_possible_segment = list_candidate
 
         while list_of_possible_segment:
-
             segment = list_of_possible_segment.pop()
             stem = Stem()
             stem.segments.append(segment)
@@ -459,7 +455,6 @@ def segment_leaves(segments, stem):
             while stop is False:
                 stop = True
                 for seg_left in segments[:]:
-
                     if my_leaf.is_close(seg_left, 5):
                         my_leaf.segments.append(seg_left)
                         segments.remove(seg_left)
@@ -498,9 +493,7 @@ def segment_organs_skeleton_image(skeleton_image):
     stem = segment_stem(segments)
 
     # Remove stem segment from the segments list
-    segments[:] = [segment
-                   for segment in segments
-                   if not stem.is_in(segment) is True]
+    segments[:] = [segment for segment in segments if stem.is_in(segment) is not True]
 
     # compute_inclination(stem.segments)
 

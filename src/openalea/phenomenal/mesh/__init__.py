@@ -29,10 +29,7 @@ Formats
 .. autosummary::
    :toctree: generated/
 
-   write_vertices_faces_to_ply_file
-   read_ply_to_vertices_faces
-   write_vtk_poly_data_to_ply_file
-   read_ply_to_vtk_poly_data
+   formats
 
 
 Routines
@@ -40,8 +37,7 @@ Routines
 .. autosummary::
    :toctree: generated/
 
-   normals
-   centers
+   routines
 
 
 VTK Transformation
@@ -49,12 +45,10 @@ VTK Transformation
 .. autosummary::
    :toctree: generated/
 
-   from_vertices_faces_to_vtk_poly_data
-   from_vtk_poly_data_to_vertices_faces
-   from_voxel_centers_to_vtk_image_data
-   from_numpy_matrix_to_vtk_image_data
+   vtk_transformation
 
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -64,4 +58,4 @@ from .routines import *
 from .vtk_transformation import *
 # ==============================================================================
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+__all__ = [s for s in dir() if not s.startswith("_")]

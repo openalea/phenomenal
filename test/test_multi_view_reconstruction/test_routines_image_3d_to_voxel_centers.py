@@ -18,28 +18,26 @@ import openalea.phenomenal.object as phm_obj
 
 
 def test_simply_working_1():
-    image_3d = phm_obj.Image3D.ones((10, 10, 10),
-                                    voxels_size=16,
-                                    dtype=numpy.uint8,
-                                    world_coordinate=(1, 2, 3))
+    image_3d = phm_obj.Image3D.ones(
+        (10, 10, 10), voxels_size=16, dtype=numpy.uint8, world_coordinate=(1, 2, 3)
+    )
 
     vpc = phm_obj.VoxelGrid.from_image_3d(image_3d)
 
-    assert tuple(vpc.voxels_position[0]) == (1., 2., 3.)
-    assert tuple(vpc.voxels_position[1]) == (1., 2., 19.)
+    assert tuple(vpc.voxels_position[0]) == (1.0, 2.0, 3.0)
+    assert tuple(vpc.voxels_position[1]) == (1.0, 2.0, 19.0)
     assert len(vpc.voxels_position) == image_3d.size
 
 
 def test_simply_working_2():
-    image_3d = phm_obj.Image3D.ones((10, 10, 10),
-                                    voxels_size=16,
-                                    dtype=numpy.uint8,
-                                    world_coordinate=(1, 2, 3))
+    image_3d = phm_obj.Image3D.ones(
+        (10, 10, 10), voxels_size=16, dtype=numpy.uint8, world_coordinate=(1, 2, 3)
+    )
 
     vpc = phm_obj.VoxelGrid.from_image_3d(image_3d)
 
-    assert tuple(vpc.voxels_position[0]) == (1., 2., 3.)
-    assert tuple(vpc.voxels_position[1]) == (1., 2., 19.)
+    assert tuple(vpc.voxels_position[0]) == (1.0, 2.0, 3.0)
+    assert tuple(vpc.voxels_position[1]) == (1.0, 2.0, 19.0)
     assert len(vpc.voxels_position) == image_3d.size
 
     im = vpc.to_image_3d()
@@ -52,6 +50,6 @@ def test_simply_working_2():
 
 if __name__ == "__main__":
     for func_name in dir():
-        if func_name.startswith('test_'):
+        if func_name.startswith("test_"):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()

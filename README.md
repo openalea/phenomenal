@@ -1,19 +1,95 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1436634.svg)](https://doi.org/10.5281/zenodo.1436634)
 [![Licence](https://anaconda.org/openalea/openalea.phenomenal/badges/license.svg)](https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt)
-[![Platform](https://anaconda.org/openalea/openalea.phenomenal/badges/platforms.svg)](https://anaconda.org/openalea/openalea.phenomenal)
-[![Last version](https://anaconda.org/openalea/openalea.phenomenal/badges/version.svg)](https://anaconda.org/OpenAlea/openalea.phenomenal/files)
-[![Build Status](https://travis-ci.org/openalea/phenomenal.svg?branch=master)](https://travis-ci.org/openalea/phenomenal)
-[![Build status](https://ci.appveyor.com/api/projects/status/k7up7iy2ur2wmipx/branch/master?svg=true)](https://ci.appveyor.com/project/artzet-s/phenomenal/branch/master)
+[![Platform](https://anaconda.org/openalea3/openalea.phenomenal/badges/platforms.svg)](https://anaconda.org/openalea3/openalea.phenomenal)
+[![Last version](https://anaconda.org/openalea3/openalea.phenomenal/badges/version.svg)](https://anaconda.org/OpenAlea3/openalea.phenomenal/files)
+[![GitHub CI](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml/badge.svg)](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml)
 [![Documentation Status](https://readthedocs.org/projects/phenomenal/badge/?version=latest)](https://phenomenal.readthedocs.io/en/latest/?badge=latest)
-[![aunch interactive phenomenal notebook with myBinder service](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
+[![Launch interactive phenomenal notebook with myBinder service](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
+[![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 
 
-## Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping
+# Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping
 
 ### Introduction
 
 This work is based on our [biorxiv report](https://doi.org/10.1101/805739)
+
+### Installation
+
+Conda environment : [https://docs.conda.io/en/latest/index.html](https://docs.conda.io/en/latest/index.html)
+
+#### User
+
+##### Create a new environment with phenomenal installed in there :
+
+    mamba create -n phm -c conda-forge -c openalea3 openalea.phenomenal matplotlib
+    mamba activate phm
+
+##### In an existing environment :
+
+    mamba install -c conda-forge -c openalea3 openalea.phenomenal matplotlib
+
+##### (Optional) Test your installation :
+
+    mamba install -c conda-forge pytest
+    git clone https://github.com/openalea/phenomenal.git
+    cd phenomenal/test; pytest
+
+### Developers
+
+#### Editable mode install
+
+    # (windows only) install VisualStudio Build Tools
+
+    # Clone phenomenal
+    git clone https://github.com/openalea/phenomenal.git
+    cd phenomenal    
+
+    # Solution 1: Build env from scratch (mostly use pip dependencies)
+    mamba env create -f conda/environment.yml
+    mamba activate phenomenal_dev
+
+    # Solution 2: use an existing env (mostly use conda dependencies)
+    mamba activate my_env
+    mamba install --only-deps -c openalea3 -c conda-forge openalea.phenomenal
+    mamba install cxx-compiler
+    pip install -e .[doc,test,plot]
+
+    # (Optional) Test your installation
+    cd test; pytest
+
+
+### GPU version:
+
+The package supports gpu acceleration of networkx by nx_cugraph. If you have nvidia gpu, just add it in your environment:
+
+#### Conda:
+    mamba install -c rapidsai -c conda-forge -c nvidia nx-cugraph 
+
+#### pip:
+    pip install nx-cugraph-cu12
+
+> :warning: **Warning**: Please make sure that your python and cuda version are supported
+
+### Usage :
+
+Complete documentation is available at [https://phenomenal.rtfd.io/](https://phenomenal.rtfd.io/)
+
+Tutorials are available in the example folder as a Jupyter Notebook.
+
+You can try online with binder: [https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
+
+
+### Maintainers
+
+* Artzet	    Simon
+* Fournier	    Christian
+* Pradal        Christophe
+
+### License
+
+Our code is released under **Cecill-C** ([https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt](https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt)) licence. (see LICENSE file for details).
 
 ### Citation
 
@@ -32,59 +108,19 @@ If you find our work useful in your research, please consider citing:
         journal = {bioRxiv}
     }
 
+If you use PhenoTrack3D in your research, cite:
 
-### Installation
-
-Conda environement : https://docs.conda.io/en/latest/index.html
-
-#### User
-
-##### Create a new environment with phenomenal installed in there :
-
-    conda create -n phm -c conda-forge -c openalea openalea.phenomenal
-    conda activate phm
-
-##### In a existing environment :
-
-    conda install -c conda-forge -c openalea openalea.phenomenal
-
-##### (Optional) Test your installation :
-
-    conda install -c conda-forge pytest
-    git clone https://github.com/openalea/phenomenal.git
-    cd phenomenal/test; pytest
-
-#### From source
-
-    # Install dependency with conda
-    conda create -n phm -c conda-forge python=3.8
-    conda activate phm
-    conda install -c conda-forge -c openalea cython numpy numba scipy scikit-image scikit-learn networkx=2.3 opencv matplotlib vtk pytest
-
-    # Load phenomenal and install
-    git clone https://github.com/openalea/phenomenal.git
-    cd phenomenal
-    python setup.py develop
-
-    # (Optional) Test your installation
-    cd test; pytest
-
-
-### Usage :
-
-Complete documentation is available at https://phenomenal.readthedocs.io
-
-Tutorials are available in the example folder as a Jupyter Notebook.
-
-You can try online with binder: https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples
-
-
-### Maintainers
-
-* Artzet	    Simon
-* Fournier	    Christian
-* Pradal        Christophe
-
-### License
-
-Our code is released under **Cecill-C** (https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt) licence. (see LICENSE file for details).
+Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). [https://doi.org/10.1186/s13007-022-00961-4](https://doi.org/10.1186/s13007-022-00961-4)
+    
+```latex
+@article {daviet22,
+	title={PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
+	author={Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c{c}} and Pradal, Christophe and Fournier, Christian},
+	journal={Plant Methods},
+	volume={18},
+	number={1},
+	pages={1--14},
+	year={2022},
+	publisher={Springer}
+}
+```

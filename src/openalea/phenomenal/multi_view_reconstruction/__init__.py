@@ -19,13 +19,11 @@ Main's function
 .. autosummary::
    :toctree: generated/
 
-    reconstruction_3d
-    project_voxel_centers_on_image
-    project_voxels_position_on_image
-    image_error
-    reconstruction_error
+    multi_view_reconstruction
+    _multi_view_reconstruction_octree
 
 """
+
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
@@ -33,4 +31,4 @@ from .multi_view_reconstruction import *
 from ._multi_view_reconstruction_octree import *
 # ==============================================================================
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+__all__ = [s for s in dir() if not s.startswith("_")]

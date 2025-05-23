@@ -9,8 +9,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from __future__ import division, print_function
-
 import os
 
 import openalea.phenomenal.data as phm_data
@@ -20,11 +18,10 @@ import openalea.phenomenal.segmentation as phm_seg
 
 
 def test_readwrite():
-
     voxel_grid = phm_data.random_voxel_grid(voxels_size=32)
     graph = phm_seg.graph_from_voxel_grid(voxel_grid)
     src_vsk = phm_seg.skeletonize(voxel_grid, graph)
-    filename = 'test.json.gz'
+    filename = "test.json.gz"
     src_vsk.write_to_json_gz(filename)
     dst_vsk = phm_obj.VoxelSkeleton.read_from_json_gz(filename)
     os.remove(filename)

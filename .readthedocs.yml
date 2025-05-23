@@ -1,8 +1,13 @@
-conda:
-  file: doc/environment.yml
+version: 2
 
 build:
-  image: latest
+  os: "ubuntu-22.04"
+  tools:
+    python: "mambaforge-22.9"
 
-python:
-  setup_py_install: false
+conda:
+  environment: conda/environment.yml
+
+sphinx:
+  # Path to your Sphinx configuration file.
+  configuration: doc/conf.py

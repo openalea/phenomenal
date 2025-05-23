@@ -12,8 +12,7 @@ from __future__ import division, print_function, absolute_import
 # ==============================================================================
 
 
-class ImageView(object):
-
+class ImageView:
     def __init__(self, image, projection, inclusive=False, image_ref=None):
         self.image = image
         self.projection = projection

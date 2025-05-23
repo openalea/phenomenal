@@ -1,6 +1,16 @@
+{% set pyproject = load_file_data('../pyproject.toml', from_recipe_dir=True) %}
+{% set name = pyproject.get('project').get('name') %}
+{% set description = pyproject.get('project').get('description') %}
+{% set version = GIT_DESCRIBE_TAG | replace("v", "") %}
+{% set license = pyproject.get('project').get('license') %}
+{% set home = pyproject.get('project', {}).get('urls', {}).get('Homepage', '') %}
+{% set build_deps = pyproject.get("build-system", {}).get("requires", []) %}
+{% set deps = pyproject.get('project', {}).get('dependencies', []) %}
+{% set conda_deps = pyproject.get('tool', {}).get('conda-environment', {}).get('dependencies',[]) %}
+
 package:
-  name: openalea.phenomenal
-  version: "1.7.1"
+  name: {{ name }}
+  version: {{ version }}
 
 source:
   path: ..
@@ -8,36 +18,28 @@ source:
 build:
   number: 0
   preserve_egg_dir: True
-  string: phenomenal
+  ignore:
+    - test/
+    - doc/
   script:
-    - {{ PYTHON }} setup.py install --single-version-externally-managed --record record.txt
+    - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
 
 requirements:
-
-  build:
-    - {{ compiler('c') }}
-    - {{ compiler("cxx") }}
-    
-
   host:
     - python
-    - setuptools
-    - cython    
-    - numpy
-    - scipy
+    {% for dep in build_deps %}
+    - {{ dep }}
+    {% endfor  %}
+
+  build:
+    - {{ compiler("cxx") }}
 
   run:
     - python
-    - numpy
-    - scipy
-    - scikit-image
-    - scikit-learn
-    - networkx<=2.3
-    - opencv [win or linux]
-    - opencv!=4.1.2 [osx]
-    - matplotlib
-    - vtk
-    - pywin32 [win]
+    {% for dep in deps + conda_deps %}
+    - {{ dep }}
+    {% endfor %}
+
 
 test:
   imports:
@@ -50,25 +52,21 @@ test:
     - openalea.phenomenal.multi_view_reconstruction
     - openalea.phenomenal.object
     - openalea.phenomenal.segmentation
+    - openalea.phenomenal.tracking
   requires:
     - pytest
   source_files:
-    - test/data/**
-    - test/test_calibration/**
-    - test/test_image/**
-    - test/test_mesh/**
-    - test/test_multi_view_reconstruction/**
-    - test/test_object/**
-    - test/test_segmentation/**
+    - test/
   commands:
     - pytest
 
 about:
-  home: https://github.com/openalea/phenomenal
-  license: Cecill-C License
-  license_file: LICENSE.txt
+  home: {{ home }}
+  summary: {{ description }}
+  license: {{ license }}
 
 extra:
   recipe-maintainers:
     - artzet-s
     - pradal
+    - fournier
