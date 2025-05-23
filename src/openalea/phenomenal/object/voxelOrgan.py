@@ -15,30 +15,29 @@ from .voxelSegment import VoxelSegment
 # ==============================================================================
 
 
-class VoxelOrgan(object):
-
+class VoxelOrgan:
     def __init__(self, label, sub_label=None):
-        self.voxel_segments = list()
+        self.voxel_segments = []
         self.label = label
         self.sub_label = sub_label
-        self.info = dict()
+        self.info = {}
 
     def add_voxel_segment(self, voxels_position, polyline, closest_nodes=None):
-        self.voxel_segments.append(VoxelSegment(polyline, voxels_position, closest_nodes))
+        self.voxel_segments.append(
+            VoxelSegment(polyline, voxels_position, closest_nodes)
+        )
 
     def voxels_position(self):
-
         voxels_position = set()
         for voxel_segment in self.voxel_segments:
-            voxels_position = voxels_position.union(
-                voxel_segment.voxels_position)
+            voxels_position = voxels_position.union(voxel_segment.voxels_position)
 
         return voxels_position
 
     # ==========================================================================
 
     def get_longest_segment(self):
-        longest_polyline = list()
+        longest_polyline = []
         longest_segment = None
 
         for vs in self.voxel_segments:
@@ -51,8 +50,7 @@ class VoxelOrgan(object):
     # ==========================================================================
 
     def get_highest_polyline(self):
-
-        highest_polyline = list()
+        highest_polyline = []
         z_max = float("-inf")
         for vs in self.voxel_segments:
             z = numpy.max(numpy.array(vs.polyline)[:, 2])
@@ -64,7 +62,6 @@ class VoxelOrgan(object):
         return highest_polyline
 
     def get_real_index_position_base(self):
-
         voxels_position = self.voxels_position()
         long_polyline = self.get_longest_segment().polyline
         index_position_base = len(long_polyline) - 1
@@ -76,7 +73,6 @@ class VoxelOrgan(object):
         return index_position_base
 
     def real_longest_polyline(self):
-
         long_polyline = self.get_longest_segment().polyline
         index_position_base = self.get_real_index_position_base()
 

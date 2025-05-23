@@ -12,16 +12,17 @@
 from __future__ import division, print_function
 
 import numpy
-import os
 
 import openalea.phenomenal.data as phm_data
+
+from pathlib import Path
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 # ==============================================================================
 
 
 def test_array_pixel_coordinates():
-    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            "../data/plant_1")
-    side_calibration = phm_data.calibrations(dir_path)["side"]
+    side_calibration = phm_data.calibrations(data_dir)["side"]
 
     pt3d = (-322.20389648, 162.67521638, -4866.89129462)
     pt_2d = side_calibration.pixel_coordinates(
@@ -29,33 +30,40 @@ def test_array_pixel_coordinates():
         side_calibration._cam_width_image,
         side_calibration._cam_height_image,
         side_calibration._cam_focal_length_x,
-        side_calibration._cam_focal_length_y)
+        side_calibration._cam_focal_length_y,
+    )
 
     assert pt_2d == (1337.425449561858, 1070.86217103428)
 
-    pts_3d = numpy.array([[-322.20389648, 162.67521638, -4866.89129462],
-                          [-322.20389648, 162.67521638, -4866.89129462],
-                          [-322.20389648, 162.67521638, -4866.89129462],
-                          [-322.20389648, 162.67521638, -4866.89129462]])
+    pts_3d = numpy.array(
+        [
+            [-322.20389648, 162.67521638, -4866.89129462],
+            [-322.20389648, 162.67521638, -4866.89129462],
+            [-322.20389648, 162.67521638, -4866.89129462],
+            [-322.20389648, 162.67521638, -4866.89129462],
+        ]
+    )
 
-    pts_2d = side_calibration.arr_pixel_coordinates(
+    pts_2d = side_calibration.pixel_coordinates(
         pts_3d,
         side_calibration._cam_width_image,
         side_calibration._cam_height_image,
         side_calibration._cam_focal_length_x,
-        side_calibration._cam_focal_length_y)
+        side_calibration._cam_focal_length_y,
+    )
 
     for pt_2d in pts_2d:
         assert tuple(pt_2d) == (1337.425449561858, 1070.86217103428)
 
     pts_3d = numpy.array([[-322.20389648, 162.67521638, -4866.89129462]])
 
-    pts_2d = side_calibration.arr_pixel_coordinates(
+    pts_2d = side_calibration.pixel_coordinates(
         pts_3d,
         side_calibration._cam_width_image,
         side_calibration._cam_height_image,
         side_calibration._cam_focal_length_x,
-        side_calibration._cam_focal_length_y)
+        side_calibration._cam_focal_length_y,
+    )
 
     for pt_2d in pts_2d:
         assert tuple(pt_2d) == (1337.425449561858, 1070.86217103428)
@@ -63,9 +71,7 @@ def test_array_pixel_coordinates():
 
 def test_array_camera_frame_local_point():
 
-    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            "../data/plant_1")
-    side_calibration = phm_data.calibrations(dir_path)["side"]
+    side_calibration = phm_data.calibrations(data_dir)["side"]
     camera_frame = side_calibration.get_camera_frame()
 
     pt_3d = (-322.20389648, 162.67521638, -4866.89129462)
@@ -74,12 +80,14 @@ def test_array_camera_frame_local_point():
 
     assert tuple(result) == (95.38307, -4909.59993, -5763.88954)
 
-    pts_3d = [[-322.20389648, 162.67521638, -4866.89129462],
-              [-322.20389648, 162.67521638, -4866.89129462],
-              [-322.20389648, 162.67521638, -4866.89129462],
-              [-322.20389648, 162.67521638, -4866.89129462]]
+    pts_3d = [
+        [-322.20389648, 162.67521638, -4866.89129462],
+        [-322.20389648, 162.67521638, -4866.89129462],
+        [-322.20389648, 162.67521638, -4866.89129462],
+        [-322.20389648, 162.67521638, -4866.89129462],
+    ]
 
-    result = camera_frame.arr_local_point(pts_3d)
+    result = camera_frame.local_point(pts_3d)
     result = numpy.round(result.astype(float), 5)
 
     for pt_3d in result:
@@ -87,7 +95,7 @@ def test_array_camera_frame_local_point():
 
     pts_3d = [[-322.20389648, 162.67521638, -4866.89129462]]
 
-    result = camera_frame.arr_local_point(pts_3d)
+    result = camera_frame.local_point(pts_3d)
     result = numpy.round(result.astype(float), 5)
 
     for pt_3d in result:
@@ -96,16 +104,13 @@ def test_array_camera_frame_local_point():
 
 def test_projection():
     angle = 0
-    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            "../data/plant_1")
 
-    side_calibration = phm_data.calibrations(dir_path)["side"]
+    side_calibration = phm_data.calibrations(data_dir)["side"]
     projection = side_calibration.get_projection(angle)
 
-    pts_3d = numpy.array([[-472, -472, 200],
-                          [-472, -472, 200],
-                          [-472, -472, 200],
-                          [-472, -472, 200]])
+    pts_3d = numpy.array(
+        [[-472, -472, 200], [-472, -472, 200], [-472, -472, 200], [-472, -472, 200]]
+    )
 
     result = projection(pts_3d)
 
@@ -115,6 +120,6 @@ def test_projection():
 
 if __name__ == "__main__":
     for func_name in dir():
-        if func_name.startswith('test_'):
+        if func_name.startswith("test_"):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()

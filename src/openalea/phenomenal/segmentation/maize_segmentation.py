@@ -10,7 +10,11 @@
 from __future__ import print_function, division, absolute_import
 
 import numpy
-import networkx
+
+try:
+    import nx_cugraph as networkx
+except ImportError:
+    import networkx
 
 from .maize_stem_detection import stem_detection
 from ..object import VoxelOrgan, VoxelSegment, VoxelSegmentation
@@ -22,7 +26,7 @@ def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
 
     def func_if_true_add_node(node):
         if node.size == voxel_size and node.data is True:
-            x, y, z = node.position
+            x, y, _ = node.position
             if -k <= x <= k:
                 if -k <= y <= k:
                     return True
@@ -31,8 +35,9 @@ def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
     def func_get(node):
         return node.position
 
-    l = octree.root.get_nodes(func_if_true_add_node=func_if_true_add_node,
-                              func_get=func_get)
+    l = octree.root.get_nodes(
+        func_if_true_add_node=func_if_true_add_node, func_get=func_get
+    )
 
     index = numpy.argmin(numpy.array(l)[:, 2])
 
@@ -40,15 +45,14 @@ def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
 
 
 def _merge(graph, voxels, remaining_voxels, percentage=50):
-
-    voxels_neighbors = list()
+    voxels_neighbors = []
     for node in voxels:
         voxels_neighbors += graph[node].keys()
     voxels_neighbors = set(voxels_neighbors) - voxels
 
     subgraph = graph.subgraph(remaining_voxels)
 
-    connected_components = list()
+    connected_components = []
     for voxel_group in networkx.connected_components(subgraph):
         nb = len(voxel_group.intersection(voxels_neighbors))
 
@@ -59,80 +63,95 @@ def _merge(graph, voxels, remaining_voxels, percentage=50):
 
     return voxels, voxels_neighbors, connected_components
 
+
 # ==============================================================================
 
 
-def get_highest_segment(segments):
-    """ Return the segments with the highest polyline point according to z axis
+def get_highest_segment(segments, n_candidates=1):
+    """Return the segments with the highest polyline point according to z axis
 
     Parameters
     ----------
     segments : list
         list of VoxelSegment
+    n_candidates : number of highest polylines pre-selected for the selection of the final highest polyline
     Returns
     -------
     highest_voxel_segment : VoxelSegment
     """
-    z_max = float("-inf")
-    highest_voxel_segment = None
-    for segment in segments:
-        z = numpy.max(numpy.array(segment.polyline)[-1, 2])
 
-        if z > z_max:
-            z_max = z
+    # sort segments by descending height
+    segments.sort(key=lambda x: numpy.max(numpy.array(x.polyline)[-1, 2]), reverse=True)
+
+    candidates = segments[:n_candidates]
+
+    # save the segment with the lowest polyline tortuosity (arc-chord ratio)
+    tortuosity_min = float("+inf")
+    highest_voxel_segment = None
+    for segment in candidates:
+        pl = numpy.array(segment.polyline)
+        pl_length = numpy.sum(
+            [numpy.linalg.norm(pl[k] - pl[k + 1]) for k in range(len(pl) - 1)]
+        )
+        tortuosity = pl_length / numpy.linalg.norm(pl[0] - pl[-1])
+
+        if tortuosity < tortuosity_min:
+            tortuosity_min = tortuosity
             highest_voxel_segment = segment
 
     return highest_voxel_segment
 
 
-def maize_segmentation(voxel_skeleton, graph, stem_segment=None, stem_strategy="highest"):
-    """ Labeling segments in voxel_skeleton into 4 label.
+def detect_stem_tip(voxel_skeleton, graph, n_candidates):
+    voxels_size = voxel_skeleton.voxels_size
+    highest_voxel_segment = get_highest_segment(
+        voxel_skeleton.segments, n_candidates=n_candidates
+    )
+
+    stem_segment_voxel = highest_voxel_segment.voxels_position
+    stem_segment_path = highest_voxel_segment.polyline
+
+    _, _, _, stem_top = stem_detection(
+        stem_segment_voxel, stem_segment_path, voxels_size, graph, z_stem=None
+    )
+
+    return sum([x[2] for x in stem_top]) / len([x[2] for x in stem_top])
+
+
+def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1):
+    """Labeling segments in voxel_skeleton into 4 label.
     The label are "stem", "growing leaf", "mature_leaf", "unknown".
     Parameters
     ----------
     voxel_skeleton : openalea.phenomenal.object.VoxelSkeleton
-
     graph : networkx.Graph
-
-    stem_segment : If None, stem_segment is computed according stem_strategy.
-    stem_segment is VoxelSegment object depict the polyline where the plant stem is included. 
-
-    stem_strategy : "highest" or "longest". 
-    Select, according the stem_strategy, the more "highest" 
-    path (along z axis) or the "longest" path which theorically 
-    include the plant stem
 
     Returns
     -------
     vms : VoxelSegmentation
     """
 
-    # ==========================================================================
-    # Select the more highest segment on the skeleton
     voxels_size = voxel_skeleton.voxels_size
 
-    if stem_segment is None:
-        if stem_strategy == "highest":
-            highest_voxel_segment = get_highest_segment(voxel_skeleton.segments)
-        elif stem_strategy == "longest":
-            highest_voxel_segment = max(voxel_skeleton.segments, key=lambda e: len(e.polyline))
-        stem_segment_voxel = highest_voxel_segment.voxels_position
-        stem_segment_path = highest_voxel_segment.polyline
-    else:
-        stem_segment_voxel = stem_segment.voxels_position
-        stem_segment_path = stem_segment.polyline
+    # ==========================================================================
+    # Select the more highest segment on the skeleton
+    highest_voxel_segment = get_highest_segment(
+        voxel_skeleton.segments, n_candidates=n_candidates
+    )
 
+    stem_segment_voxel = highest_voxel_segment.voxels_position
+    stem_segment_path = highest_voxel_segment.polyline
 
     # ==========================================================================
     # Compute Stem detection
     stem_voxel, not_stem_voxel, stem_path, stem_top = stem_detection(
-        stem_segment_voxel, stem_segment_path, voxels_size, graph)
+        stem_segment_voxel, stem_segment_path, voxels_size, graph, z_stem=z_stem
+    )
 
     # ==========================================================================
     # Remove stem voxels from segment voxels
-    vs_to_remove = list()
+    vs_to_remove = []
     for vs in voxel_skeleton.segments:
-
         leaf_voxel = None
         subgraph = graph.subgraph(vs.voxels_position - stem_voxel)
         for voxel_group in networkx.connected_components(subgraph):
@@ -169,11 +188,10 @@ def maize_segmentation(voxel_skeleton, graph, stem_segment=None, stem_strategy="
     # Define mature & cornet leaf
 
     organ_unknown = VoxelOrgan("unknown")
-    organ_unknown.add_voxel_segment(voxels_remain, list())
+    organ_unknown.add_voxel_segment(voxels_remain, [])
 
-    mature_organs, growing_organs = list(), list()
+    mature_organs, growing_organs = [], []
     for vs in voxel_skeleton.segments:
-
         if len(vs.real_polyline) == 0:
             organ_unknown.voxel_segments.append(vs)
             continue
@@ -193,12 +211,11 @@ def maize_segmentation(voxel_skeleton, graph, stem_segment=None, stem_strategy="
     # MERGE MATURE LEAFS
     # ==========================================================================
     percentage = 50
-    ltmp = list()
+    ltmp = []
     while mature_organs:
         vo_1 = mature_organs.pop()
         again = True
         while again:
-
             voxels_1 = vo_1.voxels_position()
             real_polyline_1 = set(vo_1.real_longest_polyline())
 
@@ -235,17 +252,15 @@ def maize_segmentation(voxel_skeleton, graph, stem_segment=None, stem_strategy="
             if v > 1:
                 vo_1.sub_label = "connected"
 
-
     # ==========================================================================
     # MERGE GROWING LEAFS
     # ==========================================================================
     percentage = 85
-    ltmp = list()
+    ltmp = []
     while growing_organs:
         vo_1 = growing_organs.pop()
         again = True
         while again:
-
             voxels_1 = vo_1.voxels_position()
             real_polyline_1 = set(vo_1.real_longest_polyline())
 
@@ -264,9 +279,9 @@ def maize_segmentation(voxel_skeleton, graph, stem_segment=None, stem_strategy="
                 val_3 = nb * 100 / len(voxels_2)
                 val_4 = nb * 100 / len(voxels_1)
 
-                if ((val_1 >= percentage or val_2 >= percentage) and
-                        (val_3 >= percentage or val_4 >= percentage)):
-
+                if (val_1 >= percentage or val_2 >= percentage) and (
+                    val_3 >= percentage or val_4 >= percentage
+                ):
                     vo_1.voxel_segments += vo_2.voxel_segments
                     growing_organs.pop(i)
                     again = True

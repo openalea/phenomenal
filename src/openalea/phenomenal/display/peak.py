@@ -9,12 +9,16 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import matplotlib.pyplot
+from openalea.phenomenal.optional_deps import require_dependency
+
+
+
 # ==============================================================================
 
 
 def show_values(list_values, list_color):
-
+    require_dependency('matplotlib', 'plot')
+    import matplotlib.pyplot
     matplotlib.pyplot.figure()
     for values, color in zip(list_values, list_color):
         plot_values(values, color)
@@ -22,5 +26,6 @@ def show_values(list_values, list_color):
 
 
 def plot_values(values, color):
-
+    require_dependency('matplotlib', 'plot')
+    import matplotlib.pyplot
     matplotlib.pyplot.plot(range(len(values)), values, color)

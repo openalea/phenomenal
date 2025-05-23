@@ -12,8 +12,7 @@ from __future__ import division, print_function, absolute_import
 import math
 # ==============================================================================
 
-__all__ = ["EnvironmentCamera",
-           "CalibrationCameraManual"]
+__all__ = ["EnvironmentCamera", "CalibrationCameraManual"]
 
 # ==============================================================================
 
@@ -66,7 +65,6 @@ class EnvironmentCamera(object):
 
 class CalibrationCameraManual(object):
     def __init__(self, env_feat):
-
         # ======================================================================
         # Dimension image
         self.width_image = env_feat.w
@@ -84,9 +82,9 @@ class CalibrationCameraManual(object):
 
         # ======================================================================
         # X0, Y0, Z0
-        self.xo = ((w2 - env_feat.dleft) / env_feat.convSide)
+        self.xo = (w2 - env_feat.dleft) / env_feat.convSide
         self.yo = self.cbox / 2
-        self.zo = ((h2 - (h - env_feat.hSide)) / env_feat.convSide)
+        self.zo = (h2 - (h - env_feat.hSide)) / env_feat.convSide
 
         # ======================================================================
         # Top scale ground level (pix / cm)
@@ -94,7 +92,7 @@ class CalibrationCameraManual(object):
 
         # XT, YT, ZT
         self.xt = (h2 - env_feat.dleft_top) / conv_top
-        self.yt = ((w2 - (w - env_feat.dback - env_feat.cTop)) / conv_top)
+        self.yt = (w2 - (w - env_feat.dback - env_feat.cTop)) / conv_top
         self.zt = self.zo
 
         # ======================================================================
@@ -104,7 +102,7 @@ class CalibrationCameraManual(object):
 
         # ======================================================================
         # hcTop[1] scale level
-        cTop = (env_feat.lcTop[0] / env_feat.lcSide[0] * env_feat.convSide)
+        cTop = env_feat.lcTop[0] / env_feat.lcSide[0] * env_feat.convSide
         gamma = env_feat.lcTop[1] / env_feat.lcTop[0]
 
         self.pTop = cTop * (gamma - 1) / (env_feat.hcTop[0] - env_feat.hcTop[1])
@@ -113,7 +111,7 @@ class CalibrationCameraManual(object):
         # Scale level 0
         self.conv_top_ref = conv_top + self.pTop * self.zo
         self.conv_side_ref = env_feat.convSide + self.pSide * self.cbox / 2
-        self.rotationTop = - env_feat.angTop
+        self.rotationTop = -env_feat.angTop
 
     def top_projection(self, position):
         # coordinates / optical center in real world
@@ -131,8 +129,7 @@ class CalibrationCameraManual(object):
         xim = round(self.height_image / 2 + ximo)
         yim = round(self.width_image / 2 - yimo)
 
-        return (min(self.height_image, max(1, xim)),
-                min(self.width_image, max(1, yim)))
+        return (min(self.height_image, max(1, xim)), min(self.width_image, max(1, yim)))
 
     def side_projection(self, position):
         # coordinates / optical center in real world
@@ -151,12 +148,10 @@ class CalibrationCameraManual(object):
         xim = round(self.width_image / 2.0 + ximo)
         yim = round(self.height_image / 2.0 - yimo)
 
-        return (min(self.width_image, max(0, xim)),
-                min(self.height_image, max(0, yim)))
+        return (min(self.width_image, max(0, xim)), min(self.height_image, max(0, yim)))
 
     def side_rotation(self, position, angle):
-
-        t = - angle / 180.0 * math.pi
+        t = -angle / 180.0 * math.pi
         cbox2 = self.cbox / 2.0
         sint = math.sin(t)
         cost = math.cos(t)
@@ -170,7 +165,6 @@ class CalibrationCameraManual(object):
         return tmp_x + cbox2, tmp_y + cbox2, position[2]
 
     def project_point(self, point, angle):
-
         if angle == -1:
             return self.top_projection(point)
         else:

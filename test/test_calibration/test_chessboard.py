@@ -9,13 +9,14 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from __future__ import division, print_function
-
 import numpy
-import os
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.calibration as phm_calib
+
+from pathlib import Path
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 # ==============================================================================
 
 
@@ -30,35 +31,32 @@ def test_chessboard_1():
 def test_chessboard_2():
     chess = phm_calib.Chessboard(50, (8, 6))
 
-    result = chess.get_corners_local_3d()
+    result = chess.get_corners_local_3d(old_style=True)
 
-    assert numpy.array_equal(result[8 * 0 + 0], [0., 0., 0.])
-    assert numpy.array_equal(result[8 * 0 + 1], [50., 0., 0.])
-    assert numpy.array_equal(result[8 * 0 + 2], [100., 0., 0.])
-    assert numpy.array_equal(result[8 * 0 + 3], [150., 0., 0.])
-    assert numpy.array_equal(result[8 * 0 + 4], [200., 0., 0.])
-    assert numpy.array_equal(result[8 * 0 + 5], [250., 0., 0.])
-    assert numpy.array_equal(result[8 * 0 + 6], [300., 0., 0.])
-    assert numpy.array_equal(result[8 * 0 + 7], [350., 0., 0.])
+    assert numpy.array_equal(result[8 * 0 + 0], [0.0, 0.0, 0.0])
+    assert numpy.array_equal(result[8 * 0 + 1], [50.0, 0.0, 0.0])
+    assert numpy.array_equal(result[8 * 0 + 2], [100.0, 0.0, 0.0])
+    assert numpy.array_equal(result[8 * 0 + 3], [150.0, 0.0, 0.0])
+    assert numpy.array_equal(result[8 * 0 + 4], [200.0, 0.0, 0.0])
+    assert numpy.array_equal(result[8 * 0 + 5], [250.0, 0.0, 0.0])
+    assert numpy.array_equal(result[8 * 0 + 6], [300.0, 0.0, 0.0])
+    assert numpy.array_equal(result[8 * 0 + 7], [350.0, 0.0, 0.0])
 
-    assert numpy.array_equal(result[8 * 5 + 0], [0., 250., 0.])
-    assert numpy.array_equal(result[8 * 5 + 1], [50., 250., 0.])
-    assert numpy.array_equal(result[8 * 5 + 2], [100., 250., 0.])
-    assert numpy.array_equal(result[8 * 5 + 3], [150., 250., 0.])
-    assert numpy.array_equal(result[8 * 5 + 4], [200., 250., 0.])
-    assert numpy.array_equal(result[8 * 5 + 5], [250., 250., 0.])
-    assert numpy.array_equal(result[8 * 5 + 6], [300., 250., 0.])
-    assert numpy.array_equal(result[8 * 5 + 7], [350., 250., 0.])
+    assert numpy.array_equal(result[8 * 5 + 0], [0.0, 250.0, 0.0])
+    assert numpy.array_equal(result[8 * 5 + 1], [50.0, 250.0, 0.0])
+    assert numpy.array_equal(result[8 * 5 + 2], [100.0, 250.0, 0.0])
+    assert numpy.array_equal(result[8 * 5 + 3], [150.0, 250.0, 0.0])
+    assert numpy.array_equal(result[8 * 5 + 4], [200.0, 250.0, 0.0])
+    assert numpy.array_equal(result[8 * 5 + 5], [250.0, 250.0, 0.0])
+    assert numpy.array_equal(result[8 * 5 + 6], [300.0, 250.0, 0.0])
+    assert numpy.array_equal(result[8 * 5 + 7], [350.0, 250.0, 0.0])
 
 
 def test_chessboard_3():
-
     chess = phm_calib.Chessboard(50, (8, 6))
 
-    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            "../data/plant_1")
-    images = phm_data.chessboard_images(dir_path)[0]
-    found = chess.detect_corners("side", 42, images['side'][42])
+    images = phm_data.chessboard_images(data_dir)[0]
+    found = chess.detect_corners("side", 42, images["side"][42], check_order=False)
 
     if found:
         corners = chess.get_corners_2d("side")[42]
@@ -72,6 +70,6 @@ def test_chessboard_3():
 
 if __name__ == "__main__":
     for func_name in dir():
-        if func_name.startswith('test_'):
+        if func_name.startswith("test_"):
             print("{func_name}".format(func_name=func_name))
             eval(func_name)()
