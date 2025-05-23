@@ -66,6 +66,7 @@ dependencies = [
   "vtk",
   "orjson",
   "skan",
+  "ipyvolume",
 ]
 
 [project.optional-dependencies]
@@ -84,8 +85,7 @@ plot = [
   "matplotlib",
 ]
 notebook = [
-  "jupyterlab",
-  "ipyvolume",
+  "notebook",
   ]
 gpu = [
   "nx-cugraph-cu12"
