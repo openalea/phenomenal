@@ -292,9 +292,10 @@ def compute_all_shorted_path(graph, voxels_size, neighbor_size=45, src_node=None
     # ==========================================================================
     # Get the high points in the matrix and the supposed base plant points
     if src_node is None:
-        src_node = find_base_stem_position(
+        x_stem, y_stem, z_stem = find_base_stem_position(
         graph.nodes(), voxels_size, neighbor_size=neighbor_size
         )
+        src_node = (x_stem, y_stem, z_stem)
 
     # ==========================================================================
     # Compute the shorted path
