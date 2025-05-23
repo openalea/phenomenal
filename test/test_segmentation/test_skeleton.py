@@ -28,11 +28,8 @@ def test_running():
 
     # Load images binarize
     graph = phm_seg.graph_from_voxel_grid(voxel_grid)
-    src_node = tuple(phm_seg.find_base_stem_position(graph.nodes(), 
-                                                 voxel_grid.voxels_size, 
-                                                 neighbor_size=45))
 
-    voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph, src_node)
+    voxel_skeleton = phm_seg.skeletonize(voxel_grid, graph)
 
     image_projection = list()
     for angle in [0, 120, 270]:
