@@ -272,7 +272,7 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
     return base_stem_position
 
 
-def compute_all_shorted_path(graph, voxels_size, neighbor_size=45):
+def compute_all_shorted_path(graph, voxels_size, neighbor_size=45, src_node=None):
     """Compute all the shorted path from the base position of the graph
     position.
 
@@ -291,15 +291,16 @@ def compute_all_shorted_path(graph, voxels_size, neighbor_size=45):
     """
     # ==========================================================================
     # Get the high points in the matrix and the supposed base plant points
-    x_stem, y_stem, z_stem = find_base_stem_position(
+    if src_node is None:
+        src_node = find_base_stem_position(
         graph.nodes(), voxels_size, neighbor_size=neighbor_size
-    )
+        )
 
     # ==========================================================================
     # Compute the shorted path
 
     all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
-        graph, (x_stem, y_stem, z_stem), weight="weight"
+        graph, src_node, weight="weight"
     )
 
     return all_shorted_path_to_stem_base
@@ -314,6 +315,7 @@ def skeletonize(
     plane_width=None,
     ball_radius=None,
     neighbor_size=45,
+    src_node=None
 ):
     """Compute phenomenal skeletonization on the voxel_grid based on the graph.
 
@@ -354,7 +356,8 @@ def skeletonize(
 
     voxels_size = voxel_grid.voxels_size
     all_shorted_path_to_stem_base = compute_all_shorted_path(
-        subgraph, voxels_size, neighbor_size=neighbor_size
+        subgraph, voxels_size, neighbor_size=neighbor_size,
+        src_node=src_node
     )
 
     # ==========================================================================
