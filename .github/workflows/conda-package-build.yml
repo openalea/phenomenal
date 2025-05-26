@@ -3,16 +3,19 @@ name: build_publish_anaconda
 on:
   push:
     branches:
-      - '**'
+      - main
+      - master
     tags:
       - 'v*'
   pull_request:
     branches:
       - '**'
+  release:
+    types: [ created ]
 
 jobs:
   build:
-    uses: openalea/github-action-conda-build/.github/workflows/conda-package-build.yml@conda_forge_pinning
+    uses: openalea/github-action-conda-build/.github/workflows/conda-package-build.yml@19-release-2025-update-upload-rules
     secrets:
       anaconda_token: ${{ secrets.ANACONDA_TOKEN }}
     with:
