@@ -17,10 +17,8 @@ source:
 
 build:
   number: 0
+  string: py{{ PY_VER }}
   preserve_egg_dir: True
-  ignore:
-    - test/
-    - doc/
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
 
