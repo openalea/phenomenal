@@ -41,14 +41,14 @@ Input / Output
 .. autosummary::
     :toctree: generated/
 
-    formats
+    io
 
 """
 
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-from .formats import *
+from .io import *
 from .morphology import *
 from .routines import *
 from .skeletonize import *

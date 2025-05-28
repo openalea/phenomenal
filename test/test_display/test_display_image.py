@@ -1,7 +1,7 @@
-import cv2
 import pytest
 from pathlib import Path
 import openalea.phenomenal.display as phm_display
+from openalea.phenomenal.image.io import read_image
 
 
 @pytest.fixture
@@ -17,8 +17,8 @@ def data_dir():
 
 
 def test_display_image(matplotlib, data_dir):
-    img = cv2.imread(data_dir / "bin" / "side" / "0.png")
-    img_col = cv2.imread(data_dir / "chessboard" / "side" / "42.jpg")
+    img = read_image(data_dir / "bin" / "side" / "0.png", 'L')
+    img_col = read_image(data_dir / "chessboard" / "side" / "42.jpg", 'RGB')
     phm_display.show_image(img)
     phm_display.show_image(img_col)
     phm_display.show_images([img, img_col])
