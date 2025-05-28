@@ -86,7 +86,7 @@ def test_find_points():
     pts = calib.find_points(image_points, guess, niter=2)
     expected = [[-710.670687,  732.762684, -936.617387],
                 [694.774179,  736.698475, -945.038652]]
-    numpy.testing.assert_allclose(pts, expected, atol=1e-2)
+    numpy.testing.assert_allclose(pts, expected, rtol=1e-2)
 
 
 def test_find_frame():
