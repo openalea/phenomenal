@@ -32,23 +32,21 @@ __all__ = [
 
 
 def show_image_with_chessboard_corners(image, corners, name_windows=""):
-    require_dependency('matplotlib', 'plot')
-    import matplotlib.pyplot
+    plt = require_dependency('matplotlib.pyplot', 'plot')
     img = image.copy()
 
     corners = corners.astype(int)
     img[corners[:, 0, 1], corners[:, 0, 0]] = [0, 0, 255]
 
-    matplotlib.pyplot.title(name_windows)
-    matplotlib.pyplot.imshow(img)
-    matplotlib.pyplot.show()
+    plt.title(name_windows)
+    plt.imshow(img)
+    plt.show()
 
 
 def show_chessboard_3d_projection_on_image(
     image, points_2d_1, points_2d_2, figure_name=""
 ):
-    require_dependency('matplotlib', 'plot')
-    import matplotlib.pyplot
+    plt = require_dependency('matplotlib.pyplot', 'plot')
     img = image.copy()
 
     points_2d_1 = points_2d_1.astype(int)
@@ -59,6 +57,6 @@ def show_chessboard_3d_projection_on_image(
 
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
-    matplotlib.pyplot.figure(figure_name)
-    matplotlib.pyplot.imshow(img)
-    matplotlib.pyplot.show()
+    plt.figure(figure_name)
+    plt.imshow(img)
+    plt.show()
