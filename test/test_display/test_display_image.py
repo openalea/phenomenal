@@ -1,8 +1,14 @@
 import pytest
+import os
+import sys
 from pathlib import Path
 import openalea.phenomenal.display as phm_display
 from openalea.phenomenal.image.io import read_image
 
+skip_on_ci_non_linux = pytest.mark.skipif(
+    os.environ.get("CI") == "true" and not sys.platform.startswith("linux"),
+    reason="Skipped on CI except on Linux"
+)
 
 @pytest.fixture
 def matplotlib():
@@ -16,6 +22,7 @@ def data_dir():
     return data_dir
 
 
+@skip_on_ci_non_linux
 def test_display_image(matplotlib, data_dir):
     img = read_image(data_dir / "bin" / "side" / "0.png", 'L')
     img_col = read_image(data_dir / "chessboard" / "side" / "42.jpg", 'RGB')
