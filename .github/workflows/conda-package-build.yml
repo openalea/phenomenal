@@ -3,8 +3,7 @@ name: build_publish_anaconda
 on:
   push:
     branches:
-      - main
-      - master
+      - '**'
     tags:
       - 'v*'
   pull_request:
