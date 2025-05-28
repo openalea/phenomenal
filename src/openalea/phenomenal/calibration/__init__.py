@@ -49,6 +49,7 @@ Transformations
 from __future__ import division, print_function, absolute_import
 
 from .calibration import *
+from .object import *
 from .calibration_manual import *
 from .calibration_opencv import *
 from .chessboard import *

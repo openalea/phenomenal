@@ -1023,6 +1023,7 @@ class CalibrationSolver(Calibration):
         image_points = {k: numpy.array(v) for k, v in image_points.items()}
         if start is None:
             start = numpy.array([(0, 0, 0)] * len(list(image_points.values())[0]))
+        start = numpy.array(start).flatten()
 
         def fit_function(x0):
             err = 0

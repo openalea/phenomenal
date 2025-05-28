@@ -9,6 +9,14 @@ import numpy
 from .transformations import rotation_matrix, concatenate_matrices
 from .frame import Frame, x_axis, y_axis, z_axis
 
+# ==============================================================================
+
+__all__ = ["Calibration",
+           "OldCalibration",
+           "OldCalibrationCamera"]
+
+
+# ==============================================================================
 
 class CalibrationFrame(object):
     """A class for objects with local frames used for calibration
