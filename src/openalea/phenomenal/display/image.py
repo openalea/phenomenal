@@ -45,7 +45,7 @@ def show_images(images, name_windows=""):
     require_dependency('matplotlib', 'plot')
     import matplotlib.pyplot
     matplotlib.pyplot.title(name_windows)
-    nb_col = 4
+    nb_col = min(len(images), 4)
     nb_row = int(math.ceil(len(images) / float(nb_col)))
 
     for i, image in enumerate(images, 1):
