@@ -758,16 +758,16 @@ class CalibrationSolver(Calibration):
             _pos_x = 0
             _pos_z = 0
             if self.fit_aspect_ratio:
-                _focal_length_x, _aspect_ratio, \
-                _pos_y, \
-                _rot_x, _rot_y, _rot_z = ref_cam
+                (_focal_length_x, _aspect_ratio,
+                _pos_y,
+                _rot_x, _rot_y, _rot_z) = ref_cam
                 ref_cam = [_focal_length_x, _aspect_ratio,
                            _pos_x, _pos_y, _pos_z,
                            _rot_x, _rot_y, _rot_z]
             else:
-                _focal_length_x, \
-                _pos_y, \
-                _rot_x, _rot_y, _rot_z = ref_cam
+                (_focal_length_x,
+                _pos_y,
+                _rot_x, _rot_y, _rot_z) = ref_cam
                 ref_cam = [_focal_length_x,
                            _pos_x, _pos_y, _pos_z,
                            _rot_x, _rot_y, _rot_z]
@@ -793,14 +793,14 @@ class CalibrationSolver(Calibration):
         camera_focals = []
         for camera in cameras:
             if self.fit_aspect_ratio:
-                _focal_length_x, _aspect_ratio, \
-                _pos_x, _pos_y, _pos_z, \
-                _rot_x, _rot_y, _rot_z = camera
+                (_focal_length_x, _aspect_ratio,
+                _pos_x, _pos_y, _pos_z,
+                _rot_x, _rot_y, _rot_z) = camera
             else:
                 _aspect_ratio = 1
-                _focal_length_x, \
-                _pos_x, _pos_y, _pos_z, \
-                _rot_x, _rot_y, _rot_z = camera
+                (_focal_length_x,
+                _pos_x, _pos_y, _pos_z,
+                _rot_x, _rot_y, _rot_z) = camera
             camera_frames.append(CalibrationCamera.frame(_pos_x, _pos_y, _pos_z,
                                                          _rot_x, _rot_y, _rot_z))
             camera_focals.append([_focal_length_x, _aspect_ratio])
