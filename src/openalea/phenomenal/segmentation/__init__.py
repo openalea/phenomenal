@@ -38,7 +38,7 @@ Maize Segmentation
 """
 
 # ==============================================================================
-from __future__ import division, print_function, absolute_import
+
 
 from .plane_interception import *
 from .graph import *

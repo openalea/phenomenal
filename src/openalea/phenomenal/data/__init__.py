@@ -28,7 +28,7 @@ Synthetic data (for test)
 """
 
 # ==============================================================================
-from __future__ import division, print_function, absolute_import
+
 
 from .synthetic_data import *
 from .data import *

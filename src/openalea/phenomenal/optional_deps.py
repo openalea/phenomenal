@@ -1,4 +1,5 @@
-import importlib.util
+import importlib
+
 
 class OptionalDependencyError(ImportError):
     def __init__(self, package_name: str, extra_name: str):
@@ -8,6 +9,10 @@ class OptionalDependencyError(ImportError):
         )
         super().__init__(message)
 
+
 def require_dependency(package_name: str, extra_name: str):
-    if importlib.util.find_spec(package_name) is None:
+    try:
+        mod = importlib.import_module(package_name)
+    except ImportError:
         raise OptionalDependencyError(package_name, extra_name)
+    return mod

@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 
 import numpy
-from PIL import Image
 
 from openalea.phenomenal.calibration import (
     Chessboard,
@@ -25,6 +24,7 @@ from openalea.phenomenal.calibration import (
 )
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
 from openalea.phenomenal.object import VoxelGrid
+from openalea.phenomenal.image import read_image
 
 # ==============================================================================
 
@@ -98,9 +98,7 @@ def raw_images(data_dir):
     d = path_raw_images(data_dir)
     for id_camera in d:
         for angle in d[id_camera]:
-            d[id_camera][angle] = numpy.asarray(
-                Image.open(d[id_camera][angle]).convert("RGB"), dtype=numpy.uint8
-            )
+            d[id_camera][angle] = read_image(d[id_camera][angle], "RGB")
     return d
 
 
@@ -116,9 +114,7 @@ def bin_images(data_dir):
     d = path_bin_images(data_dir)
     for id_camera in d:
         for angle in d[id_camera]:
-            d[id_camera][angle] = numpy.asarray(
-                Image.open(d[id_camera][angle]).convert("L"), dtype=numpy.uint8
-            )
+            d[id_camera][angle] = read_image(d[id_camera][angle], "L")
     return d
 
 
@@ -134,9 +130,7 @@ def chessboard_images(data_dir):
     d = path_chessboard_images(data_dir)
     for id_camera in d:
         for angle in d[id_camera]:
-            d[id_camera][angle] = numpy.asarray(
-                Image.open(d[id_camera][angle]).convert("RGB")
-            )
+            d[id_camera][angle] = read_image(d[id_camera][angle], "RGB")
     return (d,)
 
 
@@ -299,7 +293,7 @@ def tutorial_data_binarization_mask(data_dir):
     data_directory = os.path.join(data_dir, "mask/")
     masks = []
     for filename in ["mask_hsv.png", "mask_mean_shift.png"]:
-        masks.append(numpy.asarray(Image.open(os.path.join(data_directory, filename))))
+        masks.append(read_image(os.path.join(data_directory, filename),'L'))
 
     return masks
 

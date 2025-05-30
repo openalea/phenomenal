@@ -12,7 +12,7 @@ Post-processing algorithms to improve binarization of an image
 """
 
 # ==============================================================================
-from __future__ import division, print_function
+
 
 import numpy
 import skimage

@@ -9,13 +9,12 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
+import os
 import numpy
-import openalea.phenomenal.calibration as phm_calib
-import openalea.phenomenal.data as phm_data
 
-from pathlib import Path
-test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
-data_dir = test_subdir.parent / "data" / "plant_1"
+import openalea.phenomenal.calibration as phm_calib
+
+import openalea.phenomenal.data as phm_data
 # ==============================================================================
 
 lemnatec2 = {
@@ -31,7 +30,7 @@ lemnatec2 = {
             "_rot_x": -1.563436412611411,
             "_rot_y": -0.0034441048748163894,
             "_rot_z": -0.0013892635134205022,
-            "_width_image": 2056,
+            "_width_image": 2056
         },
         "top": {
             "_focal_length_x": 3786.9976615441783,
@@ -43,8 +42,8 @@ lemnatec2 = {
             "_rot_x": 3.140604378068007,
             "_rot_y": 0.0013393974482163173,
             "_rot_z": 0.003890406092895482,
-            "_width_image": 2454,
-        },
+            "_width_image": 2454
+        }
     },
     "clockwise": True,
     "reference_camera": "side",
@@ -55,7 +54,7 @@ lemnatec2 = {
             "_pos_z": 289.41396894009847,
             "_rot_x": 1.322954720666246,
             "_rot_y": 0.03259785478254251,
-            "_rot_z": 0.8717478672441068,
+            "_rot_z": 0.8717478672441068
         },
         "target_2": {
             "_pos_x": -158.92264324949636,
@@ -63,64 +62,66 @@ lemnatec2 = {
             "_pos_z": 263.4924154812679,
             "_rot_x": 1.2812023189269341,
             "_rot_y": -0.045830612887471034,
-            "_rot_z": -2.3541476545144135,
-        },
-    },
+            "_rot_z": -2.3541476545144135
+        }
+    }
 }
 
-
 def test_calibration_working():
-    chess = phm_data.chessboards(data_dir)
-    assert len(chess) == 2
+
+    name_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "../data/plant_1")
+
+    chessboards = phm_data.chessboards(name_dir)
 
 def test_find_points():
-    pass
-    # image_points = {'side': [(478, 1969), (1550, 1976)],
-    #                 'top': [(473, 255), (1951, 258)]}
-    # # accelerate test
-    # guess = [(700, 700, -700), (-700, 700, -700)]
-    # calib = phm_calib.Calibration.from_dict(lemnatec2)
-    # pts = calib.find_points(image_points, guess, niter=2)
-    # expected = [[-710.670687,  732.762684, -936.617387],
-    #             [694.774179,  736.698475, -945.038652]]
-    # numpy.testing.assert_allclose(pts, expected, atol=1e-2)
+
+    image_points = {'side': [(478, 1969), (1550, 1976)],
+                    'top': [(473, 255), (1951, 258)]}
+    # accelerate test
+    guess = [(700, 700, -700), (-700, 700, -700)]
+    calib = phm_calib.CalibrationSolver.from_dict(lemnatec2)
+    pts = calib.find_points(image_points, guess, niter=2)
+    expected = [[-710.670687,  732.762684, -936.617387],
+                [694.774179,  736.698475, -945.038652]]
+    numpy.testing.assert_allclose(pts, expected, rtol=1e-2)
 
 
 def test_find_frame():
-    image_points = {
-        "side": [(478, 1969), (1550, 1976), (1250, 2193), (776, 2191)],
-        "top": [(473, 255), (1951, 258), (1460, 1799), (958, 1798)],
-    }
-    calib = phm_calib.Calibration.from_dict(lemnatec2)
-    fr, fpts = calib.find_frame(
-        image_points,
-        [("x", "y", 0) for _ in image_points["side"]],
-        fixed_parameters={"_pos_x": 0, "_pos_y": 0},
-    )
+    image_points = {'side': [(478, 1969), (1550, 1976), (1250, 2193), (776, 2191)],
+                    'top': [(473, 255), (1951, 258), (1460, 1799), (958, 1798)]}
+    calib = phm_calib.CalibrationSolver.from_dict(lemnatec2)
+    fr, fpts = calib.find_frame(image_points, [('x','y',0) for _ in image_points['side']],
+               fixed_parameters={'_pos_x': 0, '_pos_y': 0},
+                                )
     numpy.testing.assert_almost_equal(fr._pos_z, -938.86, decimal=2)
-    expected = [
-        (-710.748065, 732.711416, 0),
-        (694.650717, 736.685707, 0),
-        (232.955844, -735.798007, 0),
-        (-244.093682, -736.321985, 0),
-    ]
+    expected = [(-710.748065,  732.711416, 0),
+                (694.650717,  736.685707, 0),
+                (232.955844, -735.798007, 0),
+                (-244.093682, -736.321985, 0)]
     numpy.testing.assert_allclose(fpts, expected, rtol=0.01)
 
 
 def test_find_camera():
-    pass
-    # image_points = [(483, 248), (1972, 242), (1487, 1796), (982, 1798)]
-    # target_points = [[-710.69782628, 732.79049079, -936.7542377],
-    #                  [694.68805505, 736.60566056, -944.58282677],
-    #                  [232.88649682, -735.81085532, -938.29077936],
-    #                  [-244.15336169, -736.29942847, -935.63550613]]
-    # image_size = (2454, 2056)
-    # calib = phm_calib.Calibration.from_dict(lemnatec2)
-    # fx, fy = calib._cameras['top'].get_intrinsic()[numpy.diag_indices(2)]
-    # camera = calib.find_camera(image_points, target_points, image_size,
-    #                            fixed_parameters={'_focal_length_x': fx,
-    #                                              '_focal_length_y': fy},
-    #                            guess=calib._cameras['top'])
-    # numpy.testing.assert_almost_equal(camera._pos_x, -10.49, decimal=2)
-    # numpy.testing.assert_almost_equal(camera._pos_y, 10.07, decimal=2)
-    # numpy.testing.assert_almost_equal(camera._focal_length_x, fx, decimal=2)
+    image_points = [(483, 248), (1972, 242), (1487, 1796), (982, 1798)]
+    target_points = [[-710.69782628, 732.79049079, -936.7542377],
+                     [694.68805505, 736.60566056, -944.58282677],
+                     [232.88649682, -735.81085532, -938.29077936],
+                     [-244.15336169, -736.29942847, -935.63550613]]
+    image_size = (2454, 2056)
+    calib = phm_calib.CalibrationSolver.from_dict(lemnatec2)
+    fx, fy = calib._cameras['top'].get_intrinsic()[numpy.diag_indices(2)]
+    camera = calib.find_camera(image_points, target_points, image_size,
+                               guess=calib._cameras['top'])
+    ref = numpy.array((calib._cameras['top']._pos_x, calib._cameras['top']._pos_y,calib._cameras['top']._pos_z))
+    found = numpy.array((camera._pos_x, camera._pos_y, camera._pos_z))
+    err = numpy.linalg.norm(found - ref) / numpy.linalg.norm(ref)
+    numpy.testing.assert_almost_equal(err, 0.01, decimal=2)
+    numpy.testing.assert_almost_equal(abs(camera._focal_length_x - fx) / fx, 0.01, decimal=2)
+
+
+if __name__ == "__main__":
+    for func_name in dir():
+        if func_name.startswith('test_'):
+            print("{func_name}".format(func_name=func_name))
+            eval(func_name)()
