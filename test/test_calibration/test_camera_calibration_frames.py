@@ -27,7 +27,7 @@ up->down along image height
 
 """
 
-from __future__ import division, print_function
+
 import numpy
 
 from openalea.phenomenal.calibration.object import CalibrationFrame, CalibrationCamera

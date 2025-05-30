@@ -14,7 +14,7 @@ Routines functions to binarize images
 """
 
 # ==============================================================================
-from __future__ import division, print_function, absolute_import
+
 
 import numpy
 from PIL import Image

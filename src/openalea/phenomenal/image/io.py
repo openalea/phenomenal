@@ -12,7 +12,7 @@ Formats module to read/write image
 """
 
 # ==============================================================================
-from __future__ import division, print_function
+
 
 import os
 

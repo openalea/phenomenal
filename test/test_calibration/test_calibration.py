@@ -9,8 +9,6 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-from __future__ import division, print_function
-
 import os
 import numpy
 
