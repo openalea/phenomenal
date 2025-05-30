@@ -882,6 +882,7 @@ class CalibrationSolver(Calibration):
 
         err = self.fit_function(parameters)
 
+        #TODO replace print by logging and activate with verbose
         if self.verbose:
             print('Result : ', parameters)
             print('Err : ', err / self._nb_image_points)
