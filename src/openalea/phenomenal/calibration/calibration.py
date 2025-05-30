@@ -266,8 +266,8 @@ class Calibrator:
                 for camera_id, facing_rotation in self._facings[target_id].items():
                     for rotation in self.image_paths[camera_id]:
                         if abs(rotation - facing_rotation) < south_tol:
-                            path = self.image_paths[camera_id][rotation]
-                            image = cv2.imread(self.abspath(path), cv2.IMREAD_GRAYSCALE)
+                            img_path = self.image_paths[camera_id][rotation]
+                            image = cv2.imread(self.abspath(img_path), cv2.IMREAD_GRAYSCALE)
                             found = chessboard.detect_corners(camera_id, rotation, image, check_order=True, image_id=path)
                             print("Target {} Camera {} Angle {} - Chessboard corners {}".format(target_id, camera_id,
                                                                                                 str(rotation),
@@ -278,7 +278,7 @@ class Calibrator:
             else:
                 for camera_id, rotation_list in consider.items():
                     for rotation in rotation_list:
-                        path = self.image_paths[camera_id][rotation]
+                        img_path = self.image_paths[camera_id][rotation]
                         found = False
                         aiming_angle = self.aiming_angle(camera_id, target_id, rotation)
                         if aiming_angle > maximal_aiming_angle:
@@ -286,7 +286,7 @@ class Calibrator:
                                                                                             str(rotation),
                                                                                             str(aiming_angle)))
                         else:
-                            image = cv2.imread(self.abspath(path), cv2.IMREAD_GRAYSCALE)
+                            image = cv2.imread(self.abspath(img_path), cv2.IMREAD_GRAYSCALE)
                             if target_id in mask_dict:
                                 if camera_id in mask_dict[target_id]:
                                     if rotation in mask_dict[target_id][camera_id]:
@@ -403,7 +403,7 @@ class Calibrator:
         for target_id, list_items in masks.items():
             for camera_id, rotation, mask in list_items:
                 target_image = cv2.imread(self.abspath(self.image_paths[camera_id][rotation]))
-                path = outdir / f"{target_id}_{camera_id}_{rotation}.jpg"
+                out_path = outdir / f"{target_id}_{camera_id}_{rotation}.jpg"
                 if isinstance(mask, str):
                     mask = self.quadrant_mask(mask, target_image)
                 else:
@@ -411,8 +411,8 @@ class Calibrator:
                 masked = cv2.bitwise_and(target_image, target_image, mask=mask)
                 shape = [int(i * resize) for i in target_image.shape[:2]]
                 resized = cv2.resize(masked, shape, interpolation=cv2.INTER_AREA)
-                self.check_dir(path)
-                cv2.imwrite(path, resized)
+                self.check_dir(out_path)
+                cv2.imwrite(out_path, resized)
 
     def check_image_points(self, resize=0.25):
         outdir = self.calibration_dir / 'check_image_points'
@@ -421,14 +421,14 @@ class Calibrator:
             chessboard_shape = (c['corners_h'], c['corners_v'])
             for camera_id in self.image_points[target_id]:
                 for rotation, img_pts in self.image_points[target_id][camera_id].items():
-                    image_path = self.image_paths[camera_id][rotation]
-                    img = cv2.imread(self.abspath(self.image_paths[camera_id][rotation]))
+                    image_path = self.abspath(self.image_paths[camera_id][rotation])
+                    img = cv2.imread(image_path)
                     img = cv2.drawChessboardCorners(img, chessboard_shape, img_pts, True)
                     shape = [int(i * resize) for i in img.shape[:2]]
                     resized = cv2.resize(img, shape, interpolation=cv2.INTER_AREA)
-                    path = outdir / f"{target_id}_{camera_id}_{rotation}.jpg"
-                    self.check_dir(path)
-                    cv2.imwrite(path, resized)
+                    out_path = outdir / f"{target_id}_{camera_id}_{rotation}.jpg"
+                    self.check_dir(out_path)
+                    cv2.imwrite(out_path, resized)
 
     def check_frame(self, calibration, frame='target', image_paths=None, resize=0.25, l=100):
         outdir = self.calibration_dir / f"check_{frame}_frame"
@@ -445,9 +445,9 @@ class Calibrator:
                     cv2.line(img, origin, end, col, w)
                 shape = [int(i * resize) for i in img.shape[:2]]
                 resized = cv2.resize(img, shape, interpolation=cv2.INTER_AREA)
-                path = outdir / f"{camera_id}_{rotation}.jpg"
+                out_path = outdir / f"{camera_id}_{rotation}.jpg"
                 self.check_dir(path)
-                cv2.imwrite(path, resized)
+                cv2.imwrite(out_path, resized)
 
 
     def save_image_points(self, prefix=None):
@@ -467,9 +467,9 @@ class Calibrator:
             else:
                 items = [prefix]
             items += ['image_points', target_id]
-            path = self.calibration_dir / ('_'.join(items) + '.json')
-            self.check_dir(path)
-            chessboard.dump(path)
+            json_path = self.calibration_dir / ('_'.join(items) + '.json')
+            self.check_dir(json_path)
+            chessboard.dump(json_path)
 
     def load_image_points(self, image_points=None):
         """load image points
@@ -479,8 +479,8 @@ class Calibrator:
                 chessboard = image_points[target_id]
             else:
                 items = ['image_points', target_id]
-                path = self.calibration_dir / ('_'.join(items) + '.json')
-                chessboard = Chessboard.load(path)
+                img_pts_path = self.calibration_dir / ('_'.join(items) + '.json')
+                chessboard = Chessboard.load(img_pts_path)
             self.image_points[target_id] = chessboard.image_points
             self.image_paths = chessboard.image_ids
             self.image_sizes.update(chessboard.image_sizes)
