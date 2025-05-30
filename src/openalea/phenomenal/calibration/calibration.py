@@ -11,14 +11,11 @@
 where a target is rotating instead of a plant in the image acquisition system.
 """
 # ==============================================================================
-from __future__ import division, print_function, absolute_import
-
-
-
 import numpy
 import scipy.optimize
 import cv2
 import os
+from pathlib import Path
 from itertools import islice
 from copy import deepcopy
 from collections import defaultdict
@@ -53,7 +50,7 @@ def angle3(v1, v2):
     return numpy.degrees(angle)
 
 
-class Calibrator(object):
+class Calibrator:
     """Class for end to end calibration of rotating multiview acquisition system"""
 
     def __init__(self, south_camera, cameras=None, targets=None, chessboards=None,
@@ -491,7 +488,7 @@ class Calibrator(object):
             for c, res in chessboard.image_resolutions().items():
                 self.image_resolutions[c][target_id] = res
 
-class CalibrationSetup(object):
+class CalibrationSetup:
     """A class for helping the setup of a multi-view imaging systems to be calibrated"""
 
     def __init__(self, cameras=None, targets=None, image_resolutions=None, image_sizes=None, facings=None,
