@@ -17,7 +17,7 @@ This work is based on our [biorxiv report](https://doi.org/10.1101/805739)
 
 ### Installation
 
-Conda environment : [https://docs.conda.io/en/latest/index.html](https://docs.conda.io/en/latest/index.html)
+Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge)
 
 #### User
 
