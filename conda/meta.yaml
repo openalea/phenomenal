@@ -7,6 +7,8 @@
 {% set build_deps = pyproject.get("build-system", {}).get("requires", []) %}
 {% set deps = pyproject.get('project', {}).get('dependencies', []) %}
 {% set conda_deps = pyproject.get('tool', {}).get('conda-environment', {}).get('dependencies',[]) %}
+{% set build_suffix = environ.get('BUILD_SUFFIX', '') %}
+
 
 package:
   name: {{ name }}
@@ -17,7 +19,7 @@ source:
 
 build:
   number: 0
-  string: py{{ PY_VER }}
+  string: py{{ PY_VER }}{{ build_suffix }}
   preserve_egg_dir: True
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
