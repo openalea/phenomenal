@@ -14,7 +14,6 @@ where a target is rotating instead of a plant in the image acquisition system.
 import numpy
 import scipy.optimize
 import cv2
-import os
 from pathlib import Path
 from itertools import islice
 from copy import deepcopy
@@ -128,8 +127,8 @@ class Calibrator:
         self.image_paths = image_paths
         self.clockwise = clockwise_rotation
         self.world_unit = world_unit
-        self.data_dir = data_dir
-        self.calibration_dir = calibration_dir
+        self.data_dir = Path(data_dir)
+        self.calibration_dir = Path(calibration_dir)
 
         self.image_points = {target_id: defaultdict(dict) for target_id in targets}
         self.image_resolutions = defaultdict(dict)
@@ -142,9 +141,9 @@ class Calibrator:
 
     def abspath(self, path):
         if self.data_dir is None:
-            return path
+            return Path(path)
         else:
-            return os.path.join(self.data_dir, path)
+            return self.data_dir / path
 
     def alpha(self, rotation):
         angle = numpy.radians(rotation)
@@ -394,17 +393,17 @@ class Calibrator:
                                               fixed_parameters={'_pos_x': 0, '_pos_y':0, '_rot_x':0, '_rot_y':0},
                                               start={'_pos_z': 0, '_rot_z': -numpy.pi / 2})
         return pot_frame
+
     def check_dir(self, path):
-        dirname = os.path.dirname(path)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
 
     def check_target_masks(self, masks, resize=0.25):
-        outdir = os.path.join(self.calibration_dir, 'check_target_masks')
+        outdir = self.calibration_dir / 'check_target_masks'
         for target_id, list_items in masks.items():
             for camera_id, rotation, mask in list_items:
                 target_image = cv2.imread(self.abspath(self.image_paths[camera_id][rotation]))
-                path = os.path.join(outdir, '_'.join([target_id, camera_id, str(rotation)]) + '.jpg')
+                path = outdir / f"{target_id}_{camera_id}_{rotation}.jpg"
                 if isinstance(mask, str):
                     mask = self.quadrant_mask(mask, target_image)
                 else:
@@ -416,7 +415,7 @@ class Calibrator:
                 cv2.imwrite(path, resized)
 
     def check_image_points(self, resize=0.25):
-        outdir = os.path.join(self.calibration_dir, 'check_image_points')
+        outdir = self.calibration_dir / 'check_image_points'
         for target_id in self.image_points:
             c = self.layout['chessboards'][target_id]
             chessboard_shape = (c['corners_h'], c['corners_v'])
@@ -427,12 +426,12 @@ class Calibrator:
                     img = cv2.drawChessboardCorners(img, chessboard_shape, img_pts, True)
                     shape = [int(i * resize) for i in img.shape[:2]]
                     resized = cv2.resize(img, shape, interpolation=cv2.INTER_AREA)
-                    path = os.path.join(outdir, '_'.join([target_id, camera_id, str(rotation)]) + '.jpg')
+                    path = outdir / f"{target_id}_{camera_id}_{rotation}.jpg"
                     self.check_dir(path)
                     cv2.imwrite(path, resized)
 
     def check_frame(self, calibration, frame='target', image_paths=None, resize=0.25, l=100):
-        outdir = os.path.join(self.calibration_dir, 'check_' + frame + '_frame')
+        outdir = self.calibration_dir / f"check_{frame}_frame"
         if frame not in calibration.frames:
             frame = 'target'
             calibration.frames[frame] = self.target_frame(calibration)
@@ -446,7 +445,7 @@ class Calibrator:
                     cv2.line(img, origin, end, col, w)
                 shape = [int(i * resize) for i in img.shape[:2]]
                 resized = cv2.resize(img, shape, interpolation=cv2.INTER_AREA)
-                path = os.path.join(outdir, '_'.join([camera_id, str(rotation)]) + '.jpg')
+                path = outdir / f"{camera_id}_{rotation}.jpg"
                 self.check_dir(path)
                 cv2.imwrite(path, resized)
 
@@ -468,7 +467,7 @@ class Calibrator:
             else:
                 items = [prefix]
             items += ['image_points', target_id]
-            path = os.path.join(self.calibration_dir, '_'.join(items) + '.json')
+            path = self.calibration_dir / ('_'.join(items) + '.json')
             self.check_dir(path)
             chessboard.dump(path)
 
@@ -480,7 +479,7 @@ class Calibrator:
                 chessboard = image_points[target_id]
             else:
                 items = ['image_points', target_id]
-                path = os.path.join(self.calibration_dir, '_'.join(items) + '.json')
+                path = self.calibration_dir / ('_'.join(items) + '.json')
                 chessboard = Chessboard.load(path)
             self.image_points[target_id] = chessboard.image_points
             self.image_paths = chessboard.image_ids
