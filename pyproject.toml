@@ -81,7 +81,7 @@ doc = [
   "ipython_genutils",
   "nbsphinx",
 ]
-plot = [
+viz = [
   "matplotlib",
 ]
 notebook = [
