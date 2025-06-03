@@ -4,7 +4,7 @@ this_package = 'openalea.phenomenal'
 
 
 def extra_map(package):
-    """return a deps: extra_label mapping of optional deps of package"""
+    """return a {deps: extra_label} mapping of optional deps of package"""
     meta = metadata(package).json
     deps = meta.get('requires_dist', [])
     pkg_extra_map = {}
