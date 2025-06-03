@@ -17,7 +17,7 @@ from openalea.phenomenal.optional_deps import require_dependency
 
 
 def show_values(list_values, list_color):
-    plt = require_dependency('matplotlib.pyplot', 'viz')
+    plt = require_dependency('matplotlib.pyplot')
     plt.figure()
     for values, color in zip(list_values, list_color):
         plt.plot(values, color)
