@@ -32,7 +32,12 @@ class OptionalDependencyError(ImportError):
 
 
 def require_dependency(package_name: str):
-    """User-friendly import of extra deps"""
+    """
+    User-friendly import of extra deps
+
+    Args:
+        package_name: the name of the extra package required
+    """
     try:
         mod = importlib.import_module(package_name)
     except ImportError:
