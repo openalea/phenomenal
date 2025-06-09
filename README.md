@@ -54,7 +54,7 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
     mamba activate my_env
     mamba install --only-deps -c openalea3 -c conda-forge openalea.phenomenal
     mamba install cxx-compiler
-    pip install -e .[doc,test,plot]
+    pip install -e .[doc,test,viz]
 
     # (Optional) Test your installation
     cd test; pytest
