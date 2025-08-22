@@ -1,25 +1,23 @@
-name: build_publish_anaconda
+name: OpenAlea CI
 
 on:
   push:
     branches:
-      - '**'
+     - main
+     - master
     tags:
       - 'v*'
   pull_request:
-    branches:
-      - '**'
+    types:
+      - opened
+      - synchronize
+      - reopened
   release:
-    types: [published]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
+    types:
+      - published
 
 jobs:
   build:
-    uses: openalea/github-action-conda-build/.github/workflows/conda-package-build.yml@conda_forge_pinning
+    uses: openalea/action-build-publish-anaconda/.github/workflows/openalea_ci.yml@main
     secrets:
       anaconda_token: ${{ secrets.ANACONDA_TOKEN }}
-    with:
-      build-options: ""

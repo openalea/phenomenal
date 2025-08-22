@@ -92,7 +92,7 @@ gpu = [
 ]
 
 # not used yet by pip, but by meta.yaml
-[tool.conda-environment]
+[tool.conda.environment]
 channels = [
   "openalea3",
   "conda-forge",
