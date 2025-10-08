@@ -32,7 +32,6 @@ def show_mesh(
         vertices, faces, color=color, colors=colors
     )
     scene.add_actor(actor)
-    scene.add_actor(actor)
     scene.show(
         windows_size=windows_size,
         screenshot_filename=screenshot_filename,
