@@ -3,10 +3,9 @@
 [![Licence](https://anaconda.org/openalea/openalea.phenomenal/badges/license.svg)](https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt)
 [![Platform](https://anaconda.org/openalea3/openalea.phenomenal/badges/platforms.svg)](https://anaconda.org/openalea3/openalea.phenomenal)
 [![Last version](https://anaconda.org/openalea3/openalea.phenomenal/badges/version.svg)](https://anaconda.org/OpenAlea3/openalea.phenomenal/files)
-[![GitHub CI](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml/badge.svg)](https://github.com/openalea/phenomenal/actions/workflows/conda-package-build.yml)
+[![GitHub CI](https://github.com/openalea/phenomenal/actions/workflows/openalea_ci.yml/badge.svg)](https://github.com/openalea/phenomenal/actions/workflows/openalea_ci.yml)
 [![Documentation Status](https://readthedocs.org/projects/phenomenal/badge/?version=latest)](https://phenomenal.readthedocs.io/en/latest/?badge=latest)
 [![Launch interactive phenomenal notebook with myBinder service](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
-[![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 
 
 # Phenomenal: An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping

@@ -40,6 +40,7 @@ extensions = [
 
 nbsphinx_thumbnails = {
     'examples/Segmentation': '_static/segmentation_thumb.png',
+    'examples/Pipeline from point cloud file': '_static/point_cloud.png',
 }
 
 nbsphinx_allow_errors = True
