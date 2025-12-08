@@ -1,7 +1,9 @@
 name: phenomenal
 channels:
-  - conda-forge
+  - openalea3/label/dev
+  - openalea3/label/rc
   - openalea3
+  - conda-forge
 
 dependencies:
   - openalea.phenomenal
