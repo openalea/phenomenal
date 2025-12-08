@@ -39,14 +39,13 @@ Install From source
 
 .. code-block:: bash
 
-    # Install dependency with conda
-    mamba env create -n phm -f conda/environment.yml
-    mamba activate phm
-
     # Clone phenomenal and install
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal
-    pip install .
+
+    # Install dependency with conda
+    mamba env create -n phm -f conda/environment.yml
+    mamba activate phm
 
     # (Optional) Test your installation
     cd test; pytest
