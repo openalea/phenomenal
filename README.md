@@ -77,7 +77,7 @@ Complete documentation is available at [https://phenomenal.rtfd.io/](https://phe
 
 Tutorials are available in the example folder as a Jupyter Notebook.
 
-You can try online with binder: [https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples](https://mybinder.org/v2/gh/openalea/phenomenal/master?filepath=examples)
+You can try online with binder: [https://mybinder.org/v2/gh/openalea/phenomenal/HEAD?urlpath=%2Fdoc%2Ftree%2Fdoc%2Fexamples](https://mybinder.org/v2/gh/openalea/phenomenal/HEAD?urlpath=%2Fdoc%2Ftree%2Fdoc%2Fexamples)
 
 
 ### Maintainers
