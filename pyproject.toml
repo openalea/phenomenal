@@ -46,7 +46,6 @@ authors = [
   { name = "Benoit Daviet"},
 ]
 description = "An automatic open source library for 3D shoot architecture reconstruction and analysis for image-based plant phenotyping"
-requires-python = ">=3.9"
 classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
