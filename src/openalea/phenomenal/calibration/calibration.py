@@ -268,7 +268,7 @@ class Calibrator:
                         if abs(rotation - facing_rotation) < south_tol:
                             img_path = self.image_paths[camera_id][rotation]
                             image = cv2.imread(self.abspath(img_path), cv2.IMREAD_GRAYSCALE)
-                            found = chessboard.detect_corners(camera_id, rotation, image, check_order=True, image_id=path)
+                            found = chessboard.detect_corners(camera_id, rotation, image, check_order=True, image_id=img_path)
                             print("Target {} Camera {} Angle {} - Chessboard corners {}".format(target_id, camera_id,
                                                                                                 str(rotation),
                                                                                                 "found" if found else "not found"))
@@ -296,7 +296,7 @@ class Calibrator:
                                         else:
                                             mask = self.roi_mask(mask, image)
                                         image = numpy.bitwise_and(image, mask)
-                            found = chessboard.detect_corners(camera_id, rotation, image, check_order=True, image_id=path)
+                            found = chessboard.detect_corners(camera_id, rotation, image, check_order=True, image_id=img_path)
                             print("Target {} Camera {} Angle {} - Chessboard corners {}".format(target_id, camera_id,
                                                                                                 str(rotation),
                                                                                                 "found" if found else "not found"))
