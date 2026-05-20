@@ -4,9 +4,10 @@ import warnings
 import json
 import math
 from copy import deepcopy
+from pathlib import Path
 import numpy
 
-from .transformations import rotation_matrix, concatenate_matrices
+from .transformations import rotation_matrix, concatenate_matrices, quaternion_from_matrix
 from .frame import Frame, x_axis, y_axis, z_axis
 
 # ==============================================================================
@@ -326,6 +327,130 @@ class Calibration(object):
                       sort_keys=True,
                       indent=4,
                       separators=(',', ': '))
+
+    def colmap_mapping(self):
+        mapping = {id_camera: colmap_id for colmap_id, id_camera in enumerate(
+                self._cameras, start=1)}
+        return mapping
+
+    def colmap_cameras(self):
+        """
+        Generate a COLMAP-like cameras.txt content and a
+        camera_id -> colmap_camera_id mapping.
+
+        Returns
+        -------
+        cameras_txt : str
+            Content compatible with COLMAP cameras.txt
+
+        mapping : dict
+            Mapping from internal camera ids to COLMAP ids
+        """
+
+        lines = [
+            "# Camera list with one line of data per camera:",
+            "# CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]",
+            f"# Number of cameras: {len(self._cameras)}",
+        ]
+
+        mapping = self.colmap_mapping()
+
+        for id_camera, camera in self._cameras.items():
+            K = camera.get_intrinsic()
+
+            fx = float(K[0, 0])
+            fy = float(K[1, 1])
+            cx = float(K[0, 2])
+            cy = float(K[1, 2])
+
+            width = int(camera._width_image)
+            height = int(camera._height_image)
+
+            # COLMAP PINHOLE format:
+            # CAMERA_ID MODEL WIDTH HEIGHT fx fy cx cy
+            line = (
+                f"{mapping[id_camera]} "
+                f"PINHOLE "
+                f"{width} "
+                f"{height} "
+                f"{fx} {fy} {cx} {cy}"
+            )
+
+            lines.append(line)
+
+        cameras_txt = "\n".join(lines)
+
+        return cameras_txt
+
+    def colmap_images(self, image_paths):
+        """
+        Export COLMAP images.txt content.
+        """
+
+        lines = [
+            "# Image list with two lines of data per image:",
+            "# IMAGE_ID, QW, QX, QY, QZ, TX, TY, TZ, CAMERA_ID, IMAGE_NAME",
+            "# POINTS2D[] as second line",
+        ]
+
+        mapping = self.colmap_mapping()
+        iter_paths = ((cid, angle, path)
+              for cid, images in image_paths.items()
+              for angle, path in images.items()
+              )
+
+        for image_id, (camera_id, angle, path) in enumerate(iter_paths, start=1):
+            R, t = self.virtual_extrinsic(camera_id, angle)
+            M = numpy.eye(4)
+            M[:3, :3] = R
+
+            qw, qx, qy, qz = quaternion_from_matrix(
+                M,
+                isprecise=False
+            )
+
+            tx, ty, tz = t
+
+            colmap_id = mapping[camera_id]
+
+            image_name = f"{Path(path).name}"
+
+            line1 = (
+                f"{image_id} "
+                f"{qw} {qx} {qy} {qz} "
+                f"{tx} {ty} {tz} "
+                f"{colmap_id} "
+                f"{image_name}"
+            )
+
+            line2 = ""
+
+            lines.append(line1)
+            lines.append(line2)
+
+        return "\n".join(lines)
+
+    def virtual_extrinsic(self, id_camera, rotation):
+        camera = self._cameras[id_camera]
+        fr_cam = camera.get_frame()
+        fr_table = self.get_turntable_frame(rotation)
+
+        R_cam = fr_cam.rotation_to_local()
+        R_table = fr_table.rotation_to_local()
+
+        # virtual camera rotation
+        R_virtual = R_cam @ R_table.T
+
+        # camera center in global coordinates
+        C_cam = fr_cam.origin()
+
+        # table center
+        C_table = fr_table.origin()
+
+        # COLMAP translation
+        t_virtual = R_cam @ (C_table - C_cam)
+
+        return R_virtual, t_virtual
 
     @staticmethod
     def from_dict(save_class):

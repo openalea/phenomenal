@@ -18,3 +18,15 @@ class ImageView:
         self.projection = projection
         self.integral = None
 
+
+def image_views(image_paths, calibration, imread):
+    im_views = dict()
+    for id_camera in image_paths:
+        for angle in image_paths[id_camera]:
+            name = f'{id_camera}_{angle}'
+            projection = calibration.get_projection(id_camera, angle)
+            im_views[name] = ImageView(
+                imread(image_paths[id_camera][angle]),
+                projection
+            )
+    return im_views

@@ -120,6 +120,15 @@ def test_find_camera():
     numpy.testing.assert_almost_equal(abs(camera._focal_length_x - fx) / fx, 0.01, decimal=2)
 
 
+def test_colmap():
+    calib = phm_calib.CalibrationSolver.from_dict(lemnatec2)
+    image_paths = {'side':{angle:f'side{angle}.png' for angle in range(0,360,30)},'top':{0:'top.png'}}
+    cameras = calib.colmap_cameras()
+    images = calib.colmap_images(image_paths)
+    assert cameras is not None
+    assert images is not None
+
+
 if __name__ == "__main__":
     for func_name in dir():
         if func_name.startswith('test_'):
