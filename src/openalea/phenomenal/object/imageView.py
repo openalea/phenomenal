@@ -19,7 +19,7 @@ class ImageView:
         self.integral = None
 
 
-def image_views(image_paths, calibration, imread):
+def get_image_views(image_paths, calibration, imread):
     im_views = dict()
     for id_camera in image_paths:
         for angle in image_paths[id_camera]:
