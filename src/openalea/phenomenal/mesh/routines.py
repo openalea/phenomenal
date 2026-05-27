@@ -13,7 +13,7 @@ import numpy
 import cv2
 # ==============================================================================
 
-__all__ = ["normals", "centers", "project_mesh_on_image", "median_color_from_images"]
+__all__ = ["normals", "centers", "project_mesh_on_image", "median_color_from_images", "compute_median_colors"]
 
 # ==============================================================================
 
@@ -165,3 +165,46 @@ def project_mesh_on_image(vertices, faces, shape_image, projection):
         cv2.fillConvexPoly(img, pts, 255)
 
     return img
+
+
+def compute_median_colors(images, masks):
+    """
+    Compute mean foreground and background RGB colors.
+
+    Parameters
+    ----------
+    images : list of image paths or arrays
+    masks : list of mask paths or arrays
+
+    Returns
+    -------
+    fg_mean : uint8 (3,)
+    bg_mean : uint8 (3,)
+    """
+
+    fg_pixels = []
+    bg_pixels = []
+
+    for image, mask in zip(images, masks):
+
+        mask = mask > 0
+
+        fg = image[mask]
+        bg = image[~mask]
+
+        if len(fg):
+            fg_pixels.append(fg)
+
+        if len(bg):
+            bg_pixels.append(bg)
+
+    fg_pixels = numpy.concatenate(fg_pixels, axis=0)
+    bg_pixels = numpy.concatenate(bg_pixels, axis=0)
+
+    fg_median = fg_pixels.median(axis=0)
+    bg_median = bg_pixels.median(axis=0)
+
+    return (
+        fg_median.astype(numpy.uint8),
+        bg_median.astype(numpy.uint8),
+    )

@@ -226,13 +226,6 @@ class VoxelGrid:
             for x, y, z in self.voxels_position:
                 f.write(f"{x} {y} {z} \n")
 
-    def write_colmap_points(self, filename):
-        with open(filename, "w") as f:
-            for i, (x, y, z) in enumerate(self.voxels_position, start=1):
-                f.write(
-                    f"{i} {x} {y} {z} 0 255 0 1.0 \n"
-                )
-
     @staticmethod
     def read_from_xyz(filename, voxels_size):
         voxels_position = []
