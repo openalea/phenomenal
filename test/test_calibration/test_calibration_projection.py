@@ -22,7 +22,7 @@ data_dir = test_subdir.parent / "data" / "plant_1"
 
 
 def test_array_pixel_coordinates():
-    side_calibration = phm_data.calibrations(data_dir)["side"]
+    side_calibration = phm_data.load_calibration(data_dir).cameras["side"]
 
     pt3d = (-322.20389648, 162.67521638, -4866.89129462)
     pt_2d = side_calibration.pixel_coordinates(
@@ -71,7 +71,7 @@ def test_array_pixel_coordinates():
 
 def test_array_camera_frame_local_point():
 
-    side_calibration = phm_data.calibrations(data_dir)["side"]
+    side_calibration = phm_data.load_calibration(data_dir).cameras["side"]
     camera_frame = side_calibration.get_camera_frame()
 
     pt_3d = (-322.20389648, 162.67521638, -4866.89129462)
@@ -105,7 +105,7 @@ def test_array_camera_frame_local_point():
 def test_projection():
     angle = 0
 
-    side_calibration = phm_data.calibrations(data_dir)["side"]
+    side_calibration = phm_data.load_calibration(data_dir).cameras["side"]
     projection = side_calibration.get_projection(angle)
 
     pts_3d = numpy.array(

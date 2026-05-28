@@ -23,7 +23,7 @@ data_dir = test_subdir.parent / "data" / "plant_1"
 
 def test_running():
     bin_images = phm_data.bin_images(data_dir)
-    calibrations = phm_data.calibrations(data_dir)
+    calibration = phm_data.load_calibration(data_dir)
     voxel_grid = phm_data.voxel_grid(data_dir, 32)
 
     # Load images binarize
@@ -33,7 +33,7 @@ def test_running():
 
     image_projection = list()
     for angle in [0, 120, 270]:
-        projection = calibrations["side"].get_projection(angle)
+        projection = calibration.get_projection("side", angle)
         image_projection.append((bin_images["side"][angle], projection))
 
     voxel_skeleton = phm_seg.segment_reduction(

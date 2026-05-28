@@ -820,10 +820,12 @@ def normalise_angle(angle):
     # force to [0, modulo] range
     angle = (angle + modulo) % modulo
     return angle - numpy.where(angle > modulo / 2., modulo, 0)
+
+
 class OldCalibration(object):
     """A class for loading, inspecting and convert old Calibration to new Calibration"""
 
-    def __init__(self, cameras, targets):
+    def __init__(self, cameras, targets=None):
         """ Instantiate an OldCalibration instance
 
         Args:
@@ -835,9 +837,20 @@ class OldCalibration(object):
         self.cameras = cameras
         self.targets = targets
 
+    @staticmethod
+    def load(camera_calibration_paths):
+        cameras = {}
+        for id_camera, cam_path in camera_calibration_paths.items():
+            cameras[id_camera] = OldCalibrationCamera.load(cam_path)
+        return OldCalibration(cameras)
+
+    def get_projection(self, id_camera, angle):
+        return self.cameras[id_camera].get_projection(angle)
+
     def calibration_error(self):
         """error (pixels) between detected target image points and reprojection of 3D target points"""
 
+        assert self.targets is not None
         image_points = {camera: {k: v.get_corners_2d(camera) for k, v in self.targets.items()} for camera in
                         self.cameras}
         target_points = {k: v.get_corners_local_3d(old_style=True) for k, v in self.targets.items()}

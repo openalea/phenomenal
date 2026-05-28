@@ -22,7 +22,7 @@ import cProfile
 plant_number = 2
 voxels_size = 8
 bin_images = phm_data.bin_images(plant_number=plant_number)
-calibrations = phm_data.calibrations(plant_number=plant_number)
+calibrations = phm_data.load_calibration(plant_number=plant_number)
 voxel_grid = phm_data.voxel_grid(plant_number=plant_number, voxels_size=voxels_size)
 
 init_start = time.time()

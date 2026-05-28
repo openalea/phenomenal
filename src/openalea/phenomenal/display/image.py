@@ -23,22 +23,31 @@ __all__ = ["show_image", "show_images"]
 # ==============================================================================
 
 
-def show_image(image, name_windows=""):
-    plt.title(name_windows)
+def show_image(image, title=""):
+    plt.title(title)
     plt.axis('off')
     plt.imshow(Image.fromarray(image).convert("RGB"))
     plt.show()
 
 
-def show_images(images, name_windows=""):
-    plt.title(name_windows)
-    plt.axis('off')
+def show_images(images, title=None):
+
+    if isinstance(title, str):
+        plt.suptitle(title)
+        title = None
+
     nb_col = min(len(images), 4)
     nb_row = int(math.ceil(len(images) / float(nb_col)))
 
     for i, image in enumerate(images, 1):
         image = numpy.array(numpy.round(image), dtype=numpy.uint8)
+
         ax = plt.subplot(nb_row, nb_col, i)
         ax.axis("off")
+
+        if title is not None:
+            ax.set_title(title[i - 1])
+
         ax.imshow(Image.fromarray(image).convert("RGB"))
+
     plt.show()

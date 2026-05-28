@@ -70,7 +70,7 @@ def calibrations(chessboards, size_image=(2056, 2454), number_of_repetition=1):
     # Error of reprojection (in pixel distance) for all point in the target (48)
     # So real error is err / 48
 
-    return phm_data.calibrations(6)
+    return phm_data.load_calibration(6)
     # return calibrations
 
 

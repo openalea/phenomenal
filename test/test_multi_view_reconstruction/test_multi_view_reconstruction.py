@@ -102,8 +102,8 @@ def test_get_bounding_box_voxel_projected_1():
 
 def test_get_bounding_box_voxel_projected_2():
     angle = 0
-    calibrations = phm_data.calibrations(data_dir)
-    projection = calibrations["side"].get_projection(angle)
+    calibration = phm_data.load_calibration(data_dir)
+    projection = calibration.get_projection("side", angle)
 
     voxels_position = numpy.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
     voxels_size = 8
@@ -125,8 +125,8 @@ def test_get_bounding_box_voxel_projected_2():
 
 def test_split_and_projection():
     angle = 0
-    calibrations = phm_data.calibrations(data_dir)
-    projection = calibrations["side"].get_projection(angle)
+    calibration = phm_data.load_calibration(data_dir)
+    projection = calibration.get_projection("side", angle)
 
     voxels_position = numpy.array([[0, 0, 0]])
     voxels_size = 64
@@ -171,12 +171,12 @@ def get_image_views_cube_projected():
     assert volume == 1000000
 
     # ==========================================================================
-    calibrations = phm_data.calibrations(data_dir)
+    calibration = phm_data.load_calibration(data_dir)
 
     shape_image = (2454, 2056)
     image_views = dict()
     for angle in range(0, 360, 30):
-        projection = calibrations["side"].get_projection(angle)
+        projection = calibration.get_projection("side", angle)
 
         img = phm_mvr.project_voxel_centers_on_image(
             voxels_position, voxels_size, shape_image, projection
@@ -190,19 +190,9 @@ def get_image_views_cube_projected():
 def test_reconstruction_3d_plant1():
     # Load images binarize
     bin_images = phm_data.bin_images(data_dir)
-    calibrations = phm_data.calibrations(data_dir)
+    calibration = phm_data.load_calibration(data_dir)
 
-    image_views = dict()
-    for id_camera in bin_images:
-        for angle in bin_images[id_camera]:
-            projection = calibrations[id_camera].get_projection(angle)
-            iv = phm_obj.ImageView(
-                bin_images[id_camera][angle],
-                projection
-            )
-            name = f'{id_camera}_{angle}'
-            image_views[name] = iv
-
+    image_views = phm_obj.as_image_views(phm_obj.iter_images(bin_images), calibration)
     vg = phm_mvr.reconstruction_3d(
         image_views, voxels_size=64, error_tolerance=0)
     assert len(vg.voxels_position) > 0

@@ -20,7 +20,7 @@ from openalea.phenomenal.calibration import (
     Chessboards,
     Calibration,
     CalibrationSetup,
-    OldCalibrationCamera,
+    OldCalibration,
 )
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
 from openalea.phenomenal.object import VoxelGrid
@@ -55,7 +55,7 @@ def _path_images(data_dir, dtype="bin"):
     return d
 
 
-def path_bin_images(data_dir):
+def bin_image_paths(data_dir):
     """According to the plant number return a dict[id_camera][angle] containing
     filename of the binary image.
 
@@ -67,7 +67,7 @@ def path_bin_images(data_dir):
     return _path_images(data_dir, dtype="bin")
 
 
-def path_raw_images(data_dir):
+def raw_image_paths(data_dir):
     """
     According to the plant number return a dict[id_camera][angle] containing
     filename of the raw image.
@@ -77,7 +77,7 @@ def path_raw_images(data_dir):
     return _path_images(data_dir, dtype="raw")
 
 
-def path_chessboard_images(data_dir):
+def chessboard_image_paths(data_dir):
     """
     According to the plant number return a dict[id_camera][angle] containing
     filename of the raw image.
@@ -95,7 +95,7 @@ def raw_images(data_dir):
     :return: dict[id_camera][angle] of loaded RGB image
     """
 
-    d = path_raw_images(data_dir)
+    d = raw_image_paths(data_dir)
     for id_camera in d:
         for angle in d[id_camera]:
             d[id_camera][angle] = read_image(d[id_camera][angle], "RGB")
@@ -111,7 +111,7 @@ def bin_images(data_dir):
     :return: dict[id_camera][angle] of loaded grayscale image
     """
 
-    d = path_bin_images(data_dir)
+    d = bin_image_paths(data_dir)
     for id_camera in d:
         for angle in d[id_camera]:
             d[id_camera][angle] = read_image(d[id_camera][angle], "L")
@@ -127,7 +127,7 @@ def chessboard_images(data_dir):
     :return: dict[id_camera][angle] of loaded grayscale image
     """
 
-    d = path_chessboard_images(data_dir)
+    d = chessboard_image_paths(data_dir)
     for id_camera in d:
         for angle in d[id_camera]:
             d[id_camera][angle] = read_image(d[id_camera][angle], "RGB")
@@ -232,7 +232,7 @@ def do_calibration(data_dir):
     calibration.dump(os.path.join(data_directory, "calibration_cameras.json"))
 
 
-def calibrations(data_dir):
+def load_calibration(data_dir):
     """
     According to name_dir return a dict[id_camera] of camera
     calibration object
@@ -241,14 +241,9 @@ def calibrations(data_dir):
     """
 
     data_directory = os.path.join(data_dir, "calibration/")
-
-    calibration = {}
-    for id_camera in ["side", "top"]:
-        calibration[id_camera] = OldCalibrationCamera.load(
-            os.path.join(data_directory, f"calibration_camera_{id_camera}.json")
-        )
-
-    return calibration
+    camera_paths = {id_camera: os.path.join(data_directory, f"calibration_camera_{id_camera}.json")
+                    for id_camera in ["side", "top"]}
+    return OldCalibration.load(camera_paths)
 
 
 def new_calibrations(data_dir):
