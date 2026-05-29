@@ -247,6 +247,34 @@ class Scene(Display):
 
         return actor
 
+    @staticmethod
+    def get_actor_from_point_cloud(xyz, color=(0, 255, 0), point_size=1):
+        points = vtk.vtkPoints()
+
+        for p in xyz:
+            points.InsertNextPoint(
+                float(p[0]),
+                float(p[1]),
+                float(p[2]),
+            )
+
+        polydata = vtk.vtkPolyData()
+        polydata.SetPoints(points)
+
+        vertex_filter = vtk.vtkVertexGlyphFilter()
+        vertex_filter.SetInputData(polydata)
+        vertex_filter.Update()
+
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(vertex_filter.GetOutputPort())
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+
+        actor.GetProperty().SetColor(*color)
+        actor.GetProperty().SetPointSize(point_size)
+
+        return actor
     # ==========================================================================
 
     def add_actor_from_plane(self, center, normal, color=(0, 0, 1), radius=100):

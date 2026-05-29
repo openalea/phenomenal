@@ -10,7 +10,6 @@
 
 
 import os
-import re
 import json
 import csv
 import numpy
@@ -19,6 +18,10 @@ from .image3D import Image3D
 
 
 # ==============================================================================
+
+def read_pointcloud(filename, usecols=(0, 1, 2)):
+    """Read XYZ point positions from 3 first columns of a text file."""
+    return numpy.loadtxt(filename, usecols=usecols)
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -228,13 +231,7 @@ class VoxelGrid:
 
     @staticmethod
     def read_from_xyz(filename, voxels_size):
-        voxels_position = []
-        with open(filename, "r", encoding="UTF8") as f:
-            for line in f:
-                values = [float(v) for v in line.split()[:3]]
-                voxels_position.append(tuple(values))
-        f.close()
-
+        voxels_position = read_pointcloud(filename)
         return VoxelGrid(voxels_position, voxels_size)
 
     def write_to_csv(self, filename, header=None):
@@ -279,6 +276,16 @@ class VoxelGrid:
             if read_header:
                 return VoxelGrid(voxels_position, voxels_size), header
             return VoxelGrid(voxels_position, voxels_size)
+
+    @staticmethod
+    def build_from_pointcloud(xyz_position, voxel_size):
+        voxel_grid = VoxelGrid(numpy.array(xyz_position), voxel_size / 10)
+        voxel_grid = VoxelGrid.from_image_3d(
+            voxel_grid.to_image_3d(),
+            voxels_value=1,
+            voxels_size=voxel_size,  # must be integer
+            world_coordinate=(0.0, 0.0, 0.0))
+        return voxel_grid
 
 
 def bind_grids(voxel_grids, dx=50, dy=0, dz=0):

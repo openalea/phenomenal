@@ -15,6 +15,8 @@ from .scene import Scene
 # ==============================================================================
 
 
+
+
 def show_mesh(
     vertices,
     faces,
@@ -94,6 +96,19 @@ def show_vtk_poly_data(
         record_rate=record_rate,
     )
 
+
+
+def show_point_cloud(
+    xyz,
+    color=(0, 255, 0),
+    point_size=1
+):
+    """Display a point cloud from an (N, 3) xyz array."""
+
+    scene = Scene()
+    actor = scene.get_actor_from_point_cloud(xyz, color, point_size)
+    scene.add_actor(actor)
+    scene.show()
 
 # ==============================================================================
 
