@@ -164,3 +164,7 @@ def as_image_views(images_iterator, calibration):
         )
     return im_views
 
+
+def load_image_views(image_paths, calibration, imread):
+    iter = iter_image_paths(image_paths, imread)
+    return as_image_views(iter, calibration)

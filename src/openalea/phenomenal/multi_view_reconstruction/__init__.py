@@ -28,6 +28,7 @@ Main's function
 
 
 from .multi_view_reconstruction import *
+from .splatting import *
 from .evaluation import *
 from ._multi_view_reconstruction_octree import reconstruction_3d_octree
 from ._multi_view_reconstruction_neighbours import reconstruction_3d_neighbours
