@@ -79,7 +79,7 @@ def test_get_voxels_corners():
         ]
     )
 
-    assert numpy.array_equal(ref, res)
+    assert numpy.array_equal(ref, res.reshape(-1, 3))
 
 
 # ==============================================================================
@@ -90,9 +90,9 @@ def test_get_bounding_box_voxel_projected_1():
     voxel_size = 20
 
     def projection(pt):
-        return numpy.column_stack((pt[:, 0], pt[:, 1]))
+        return numpy.column_stack((pt[:, 0], pt[:, 1], pt[:, 2]))
 
-    res = phm_mvr.get_bounding_box_voxel_projected(
+    res,_ = phm_mvr.get_bounding_box_voxel_projected(
         voxels_position, voxel_size, projection
     )
     ref = numpy.array([[-10, -10, 10, 10]])
@@ -108,7 +108,7 @@ def test_get_bounding_box_voxel_projected_2():
     voxels_position = numpy.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
     voxels_size = 8
 
-    res = phm_mvr.get_bounding_box_voxel_projected(
+    res,_ = phm_mvr.get_bounding_box_voxel_projected(
         voxels_position, voxels_size, projection
     )
 
@@ -132,7 +132,7 @@ def test_split_and_projection():
     voxels_size = 64
 
     for i in range(5):
-        res = phm_mvr.get_bounding_box_voxel_projected(
+        res, _ = phm_mvr.get_bounding_box_voxel_projected(
             voxels_position, voxels_size, projection
         )
         res = numpy.floor(res).astype(int)

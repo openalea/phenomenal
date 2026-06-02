@@ -57,12 +57,12 @@ def kept_visible_voxel(
 
     for i, image_view in enumerate(image_views):
         photo_consistent += voxels_is_visible_in_image(
-            voxels_position,
-            voxels_size,
-            image_view.image,
-            image_view.projection,
-            image_view.inclusive,
-            image_view.integral,
+            voxels_position=voxels_position,
+            voxels_size=voxels_size,
+            image=image_view.image,
+            projection=image_view.projection,
+            inclusive=image_view.inclusive,
+            image_int=image_view.integral,
         )
 
         cond = photo_consistent >= i + 1 - error_tolerance
@@ -114,7 +114,7 @@ def create_groups(image_views, inconsistent):
         if iv.image_ref is not None:
             height, length = iv.image.shape
 
-            min_xy_max_xy = get_bounding_box_voxel_projected(
+            min_xy_max_xy, _ = get_bounding_box_voxel_projected(
                 inconsistent.position, inconsistent.size, iv.projection
             )
 

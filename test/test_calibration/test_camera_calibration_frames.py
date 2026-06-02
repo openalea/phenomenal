@@ -106,11 +106,11 @@ def test_side_camera_frame():
     p = c.get_projection()
     pts = numpy.array((w_origin, right, left, up, down))
     pix = numpy.array((i_origin, i_right, i_left, i_up, i_down))
-    pixels = p(pts)
+    pixels = p(pts)[:,:2]
     numpy.testing.assert_allclose(pixels, pix)
 
     # test one point call
-    pixel = p(pts[0])
+    pixel = p(pts[0])[:2]
     numpy.testing.assert_allclose(pixel, pix[0])
 
 
@@ -154,7 +154,7 @@ def test_top_camera_frame():
     p = c.get_projection()
     pts = numpy.array((w_origin, right, left, back, front))
     pix = numpy.array((i_origin, i_right, i_left, i_back, i_front))
-    pixels = p(pts)
+    pixels = p(pts)[:,:2]
     numpy.testing.assert_allclose(pixels, pix)
 
 

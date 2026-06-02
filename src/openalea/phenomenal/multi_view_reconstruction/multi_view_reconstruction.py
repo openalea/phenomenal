@@ -60,20 +60,34 @@ def find_best_angle(bin_side_images):
 
 
 def get_voxels_corners(voxels_position, voxels_size):
-    """According to the voxels position and their size, return a numpy array
-    containing for each input voxels the position of the 8 corners.
+    """Return the coordinates of the 8 corners of each voxel.
 
     Parameters
     ----------
-    voxels_position : numpy.ndarray
-        Center position of the voxels
+    voxels_position : numpy.ndarray, shape (N, 3)
+        Center coordinates of the voxels.
 
     voxels_size : float
-        Diameter size of the voxels
+        Edge length of the cubic voxels.
 
     Returns
     -------
-    a : numpy.array
+    corners : numpy.ndarray, shape (N, 8, 3)
+        Corner coordinates for each voxel.
+
+        ``corners[i, j]`` is the j-th corner of voxel i, with corners
+        ordered as::
+
+            0: (x-r, y-r, z-r)
+            1: (x+r, y-r, z-r)
+            2: (x-r, y+r, z-r)
+            3: (x-r, y-r, z+r)
+            4: (x+r, y+r, z-r)
+            5: (x+r, y-r, z+r)
+            6: (x-r, y+r, z+r)
+            7: (x+r, y+r, z+r)
+
+        where ``r = voxels_size / 2``.
     """
 
     r = voxels_size / 2.0
@@ -85,53 +99,77 @@ def get_voxels_corners(voxels_position, voxels_size):
     z_minus = voxels_position[:, 2] - r
     z_plus = voxels_position[:, 2] + r
 
-    a1 = numpy.column_stack((x_minus, y_minus, z_minus))
-    a2 = numpy.column_stack((x_plus, y_minus, z_minus))
-    a3 = numpy.column_stack((x_minus, y_plus, z_minus))
-    a4 = numpy.column_stack((x_minus, y_minus, z_plus))
-    a5 = numpy.column_stack((x_plus, y_plus, z_minus))
-    a6 = numpy.column_stack((x_plus, y_minus, z_plus))
-    a7 = numpy.column_stack((x_minus, y_plus, z_plus))
-    a8 = numpy.column_stack((x_plus, y_plus, z_plus))
+    corners = numpy.stack(
+        (
+            numpy.column_stack((x_minus, y_minus, z_minus)),
+            numpy.column_stack((x_plus,  y_minus, z_minus)),
+            numpy.column_stack((x_minus, y_plus,  z_minus)),
+            numpy.column_stack((x_minus, y_minus, z_plus)),
+            numpy.column_stack((x_plus,  y_plus,  z_minus)),
+            numpy.column_stack((x_plus,  y_minus, z_plus)),
+            numpy.column_stack((x_minus, y_plus,  z_plus)),
+            numpy.column_stack((x_plus,  y_plus,  z_plus)),
+        ),
+        axis=1,
+    )
 
-    a = numpy.concatenate((a1, a2, a3, a4, a5, a6, a7, a8), axis=1)
-    a = numpy.reshape(a, (a.shape[0] * 8, 3))
-
-    return a
+    return corners
 
 
 def get_bounding_box_voxel_projected(voxels_position, voxels_size, projection):
-    """Compute the bounding box value according the radius, angle and
-    calibration parameters of point_3d projection
+    """Compute projected bounding boxes of voxels.
 
     Parameters
     ----------
-    voxels_position : numpy.ndarray
-        Center position of voxel
+    voxels_position : numpy.ndarray, shape (N, 3)
+        Center position of the voxels.
 
     voxels_size : float
-        Size of side geometry of voxel
+        Edge length of the cubic voxels.
 
-    projection : function ((x, y, z)) -> (x, y)
-        Function of projection who take 1 argument (tuple of position (x, y, z))
-        and return this position 2D (x, y)
+    projection : callable
+        Function taking an array of 3D points of shape (M, 3) and returning
+        an array of projected points of shape (M, 3), where each row is
+        (u, v, depth).
 
     Returns
     -------
-    bbox : numpy.ndarray
-        [[x_min, x_max, y_min, y_max], ...]
-        Containing min and max value of point_3d projection in x and y axes.
+    bbox : numpy.ndarray, shape (N, 4)
+        Bounding boxes of the projected voxels::
+
+            [[x_min, y_min, x_max, y_max],
+             ...]
+
+    fully_in_front : numpy.ndarray, shape (N,)
+        Boolean array indicating whether all voxel corners are in front of
+        the camera (depth > 0).
     """
 
     voxels_corners = get_voxels_corners(voxels_position, voxels_size)
+    n_voxels = voxels_corners.shape[0]
 
-    pt = projection(voxels_corners)
+    # Project all corners
+    pt = projection(voxels_corners.reshape(-1, 3))
 
-    pt = numpy.reshape(pt, (pt.shape[0] // 8, 8, 2))
+    # (N*8, 3) -> (N, 8, 3)
+    pt = pt.reshape(n_voxels, 8, 3)
 
-    bbox = numpy.column_stack((pt.min(axis=1), pt.max(axis=1)))
+    # All corners are in front of the camera
+    fully_in_front = numpy.all(pt[:, :, 2] > 0, axis=1)
 
-    return bbox
+    # Bounding boxes from projected coordinates
+    uv = pt[:, :, :2]
+
+    bbox = numpy.column_stack(
+        (
+            uv[:, :, 0].min(axis=1),
+            uv[:, :, 1].min(axis=1),
+            uv[:, :, 0].max(axis=1),
+            uv[:, :, 1].max(axis=1),
+        )
+    )
+
+    return bbox, fully_in_front
 
 
 # ==============================================================================
@@ -192,6 +230,73 @@ def split_voxels_in_eight(voxels):
 
 
 # ==============================================================================
+def image_hits(points, image, projection):
+    """Determine if projection of points on image hits foreground
+
+    Args:
+        points: (N, 3) array of x,y,z positions of points
+        image: a binary image
+        projection: a function of (N, 3) array returning (u, v), depth arrays
+
+
+    Returns:
+        boolean array(N,) -> True if projection is on image and hits a pixel > 0
+    """
+    height, width = image.shape
+    N = len(points)
+
+    mask = numpy.zeros(N, dtype=bool)
+
+    uvd= projection(points)
+    px = uvd[:, 0]
+    py = uvd[:, 1]
+    depth = uvd[:, 2]
+
+    outside = (
+            (depth <= 0)
+            | (px < 0)
+            | (py < 0)
+            | (px >= width)
+            | (py >= height)
+    )
+
+    idx = numpy.nonzero(~outside)[0]
+
+    if idx.size > 0:
+        pix_x = px[idx].astype(numpy.int32)
+        pix_y = py[idx].astype(numpy.int32)
+        mask[idx] = image[pix_y, pix_x] > 0
+
+    return mask
+
+
+def is_fully_inside(boxes, width, height):
+    """Return True for boxes entirely contained within the image.
+
+    Parameters
+    ----------
+    boxes : numpy.ndarray, shape (N, 4)
+        Boxes in the form [x_min, x_max, y_min, y_max].
+
+    width : int
+        Image width.
+
+    height : int
+        Image height.
+
+    Returns
+    -------
+    inside : numpy.ndarray, shape (N,)
+        True for boxes whose four corners lie inside the image.
+    """
+
+    return (
+        (boxes[:, 0] >= 0) &
+        (boxes[:, 2] < width) &
+        (boxes[:, 1] >= 0) &
+        (boxes[:, 3] < height)
+    )
+
 def integral_image_hits(boxes, image_int, width, height):
     """
     boxes: (N, 4) array → [x_min, y_min, x_max, y_max] (float or int)
@@ -231,110 +336,56 @@ def integral_image_hits(boxes, image_int, width, height):
 
 
 def voxels_is_visible_in_image(
-    voxels_position, voxels_size, image, projection, inclusive, image_int=None):
+    voxels_position, voxels_size, image, image_int, projection, inclusive=True):
     """
-    Return a numpy array containing True if the voxel are
-        projected is photo-consistent on image else False
+    Return a numpy array containing True if the voxels are fully in front of the camera and contains at least
+    one foreground pixel. If inclusive = True (default), return also True for voxels that are undetermined,
+    ie that are partly or totally outside image (only empty fully visible voxels return False in this case).
 
-    **Algorithm**
-
-    1. Project each voxel center position on the image, if the position
-    projected (x, y) is positive on image return True
-
-    |
-
-    2. If the bounding box of the voxel projected have positive value on
-    the image the voxel are True
-
-    |
-
-    3. Check if one pixel containing in the bounding box projected on image
-       have positive value, if yes return True else return False
-
-    Parameters
-    ----------
+    Args:
     voxels_position : numpy.array([[x, y, z], ...]
         Center position of the voxels
 
     voxels_size : float
-        diameter size of the voxels
+        edge length of voxels
 
     image: numpy.array
         Binary image where the voxels are projected.
 
-    projection : function (numpy.array([[x, y, z], ...]) -> numpy.array([[x, y], ...])
+    projection : function (numpy.array([[x, y, z], ...]) -> numpy.array([[u, v, depth], ...])
         Function of projection who take 1 argument (numpy.array([[x, y, z],
-        ...] of voxels positions) and return the projected 2D position
-        numpy.array([[x, y], ...])
+        ...] of voxels positions) and return the projected position
 
-    inclusive: Describe if the voxels projection are out of the image,
-    they are considered like still visible
+    inclusive: the boolean value returned for voxels partly of totally projected out of the image
 
-    image_int: Integral image of the binary image (optimization)
+    image_int: Integral image of the binary image
 
-
-    Returns
-    -------
-    out : numpy.array([True, False, ...])
-        Numpy array containing True if the voxel are
-        projected is photo-consistent on image else False
+    Returns:
+        A boolean array as long as voxels_position
     """
-
     height, width = image.shape
     N = len(voxels_position)
-
-    mask = numpy.zeros(N, dtype=bool)
-
-    # ------------------------------------------------------------------
-    # 1.  Mark True if voxel center projection hits a non-zero pixel on image
-    pixel_coords = projection(voxels_position)
-    px = pixel_coords[:, 0]
-    py = pixel_coords[:, 1]
-    # In-bounds indices
-    idx = numpy.nonzero(
-        (px >= 0) & (py >= 0) & (px < width) & (py < height)
-    )[0]
-    if idx.size > 0:
-        pix = pixel_coords[idx].astype(numpy.int32)
-        mask[idx] |= image[pix[:, 1], pix[:, 0]] > 0
-
-    # ------------------------------------------------------------------
-    # 2. Filter and keep no-hits voxels
-    keep_idx = numpy.nonzero(~mask)[0]
-    if keep_idx.size == 0:
-        return mask
-    voxels_position_kept = voxels_position[keep_idx]
-
-    # ------------------------------------------------------------------
-    # 3. Project voxels and get projected Bounding boxes
-    min_xy_max_xy = get_bounding_box_voxel_projected(
-        voxels_position_kept, voxels_size, projection
-    )
-
-    x_min = min_xy_max_xy[:, 0]
-    y_min = min_xy_max_xy[:, 1]
-    x_max = min_xy_max_xy[:, 2]
-    y_max = min_xy_max_xy[:, 3]
-
-    # Out-of-screen are directly mark as True if inclusive
-    outside = (
-        (x_max < 0) | (x_min >= width) |
-        (y_max < 0) | (y_min >= height)
-    )
-
-    # Write directly into global mask
-    mask[keep_idx[outside]] = True if inclusive else False
-
-    # --------------------------------------------------------------
-    # 4. Only process remaining
-    inside_idx = keep_idx[~outside]
-
-    if inside_idx.size > 0:
-        boxes = min_xy_max_xy[~outside]
-        hits = integral_image_hits(boxes, image_int, width, height)
-        mask[inside_idx] |= hits
-
+    if not inclusive:
+        mask = image_hits(voxels_position, image, projection)
+        no_hits = ~mask
+        if numpy.any(no_hits):
+            boxes, fully_in_front = get_bounding_box_voxel_projected(voxels_position[no_hits], voxels_size, projection)
+            not_empty = integral_image_hits(boxes,image_int, width, height)
+            mask[no_hits] = fully_in_front & not_empty
+    else:
+        mask = numpy.ones(N, dtype=bool)
+        boxes, fully_in_front = get_bounding_box_voxel_projected(voxels_position, voxels_size, projection)
+        fully_inside = is_fully_inside(boxes, width, height)
+        fully_visible = fully_in_front & fully_inside
+        if numpy.any(fully_visible):
+             not_empty = integral_image_hits(
+                boxes[fully_visible],
+                image_int,
+                width,
+                height)
+             mask[fully_visible] = not_empty # False is returned for empty, ie when not_empty=False
     return mask
+
 
 
 # ==============================================================================
@@ -388,12 +439,12 @@ def filter_voxels(voxels, image_views, error_tolerance=0, clear_outside=True):
             image_view.integral = integral_image(image_view.image)
         inclusive = not clear_view[k]
         photo_consistent_score += voxels_is_visible_in_image(
-            voxels.position,
-            voxels.size,
-            image_view.image,
-            image_view.projection,
-            inclusive,
-            image_view.integral
+            voxels_position=voxels.position,
+            voxels_size=voxels.size,
+            image=image_view.image,
+            projection=image_view.projection,
+            inclusive=inclusive,
+            image_int=image_view.integral
         )
         cond = photo_consistent_score >= i + 1 - error_tolerance
         voxels = Voxels(voxels.position[cond], voxels.size)
@@ -477,7 +528,7 @@ def reconstruction_3d(
 
     image_views : {name: ImageView, ...}
         Dict of phenomenal.object.ImageView objects gathering image, projection, where image is a binary image
-        (numpy.ndarray) and projection a function projecting (x, y, z) ->  (u, v) coordinate on image
+        (numpy.ndarray) and projection a function projecting (x, y, z) ->  (u, v), depth coordinate on image
 
     voxels_size : float, optional
         Edge length of reconstructed voxels
@@ -550,7 +601,7 @@ def project_voxel_centers_on_image(
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=dtype)
 
-    min_xy_max_xy = get_bounding_box_voxel_projected(
+    min_xy_max_xy, _ = get_bounding_box_voxel_projected(
         voxels_position, voxels_size, projection
     )
 

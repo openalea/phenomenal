@@ -173,8 +173,7 @@ class CalibrationCamera(CalibrationFrame):
                     expressed in camera frame coordinates
 
         Returns:
-        - (u, v), depth: (u,v) coordinate of point in image in pix, depth: signed (positive frontside) distance
-           of point to camera image plane
+        - (u, v) coordinates of point in image in pix
         """
         cx = width_image / 2.0
         cy = height_image / 2.0
@@ -195,8 +194,7 @@ class CalibrationCamera(CalibrationFrame):
                     expressed in camera frame coordinates
 
         return:
-         - (u, v), depth: (u,v) coordinate of point in image in pix, depth: signed (positive frontside) distance
-           of point to camera image plane
+         - (u, v): coordinate of point in image in pix
         """
         pt = numpy.array(point_3d)
         x, y, z = pt.T
@@ -206,20 +204,23 @@ class CalibrationCamera(CalibrationFrame):
         v = y / z * fy + cy
 
         if len(pt.shape) > 1:
-            return numpy.column_stack((u, v)), z
+            return numpy.column_stack((u, v))
         else:
-            return (u, v), z
+            return (u, v)
 
-    def get_projection(self, with_depth=False):
+    def get_projection(self):
         fr_cam = self.get_frame()
-        pixel_coords= self.get_pixel_coordinates()
+        pixel_coords = self.get_pixel_coordinates()
 
         def projection(pts):
-            uv, depth = pixel_coords(fr_cam.local_point(pts))
-            if with_depth:
-                return uv, depth
+            cam_pts = numpy.array(fr_cam.local_point(pts))
+            uv = pixel_coords(cam_pts)
+            _, _ ,z =cam_pts.T
+            if len(cam_pts.shape) > 1:
+                return numpy.column_stack((uv, z))
             else:
-                return uv
+                u,v = uv
+                return u, v, z
 
         return projection
 
@@ -385,13 +386,13 @@ class Calibration(object):
         return self.turntable_frame(rotation, self.angle_factor, self.clockwise)
 
 
-    def get_projection(self, id_camera, rotation, world_frame='native', with_depth=False):
+    def get_projection(self, id_camera, rotation, world_frame='native'):
 
         camera = self._cameras[id_camera]
         fr_table = self.get_turntable_frame(rotation)
         fr_world = self.get_frame(world_frame)
 
-        camera_proj = camera.get_projection(with_depth=with_depth)
+        camera_proj = camera.get_projection()
 
         def projection(pts):
             # from world to native calibration points
@@ -530,9 +531,9 @@ class OldCalibrationCamera(object):
         v = y / z * focal_length_y + height_image / 2.0
 
         if len(pt.shape) > 1:
-            return numpy.column_stack((u, v)), z
+            return numpy.column_stack((u, v))
         else:
-            return (u, v), z
+            return u, v
 
 
     @staticmethod
@@ -600,7 +601,7 @@ class OldCalibrationCamera(object):
                                           self._cam_focal_length_x, self._cam_focal_length_y)
         return pixel_coords
 
-    def get_projection(self, alpha, with_depth=False):
+    def get_projection(self, alpha):
 
         fr_cam = self.get_camera_frame()
 
@@ -612,17 +613,14 @@ class OldCalibrationCamera(object):
             y = - pts[:, 0] * math.sin(angle) + pts[:, 1] * math.cos(angle)
             z = pts[:, 2]
 
-            origin = numpy.column_stack((x, y, z))
-
-            uv, z = self.pixel_coordinates(fr_cam.local_point(origin),
+            cam_pts = fr_cam.local_point(numpy.column_stack((x, y, z)))
+            _,_,z = cam_pts.T
+            uv = self.pixel_coordinates(cam_pts,
                                               self._cam_width_image,
                                               self._cam_height_image,
                                               self._cam_focal_length_x,
                                               self._cam_focal_length_y)
-            if with_depth:
-                return uv, z
-            else:
-                return uv
+            return numpy.column_stack((uv, -z))
 
         return projection
 
@@ -720,8 +718,8 @@ class OldCalibration(object):
             cameras[id_camera] = OldCalibrationCamera.load(cam_path)
         return OldCalibration(cameras)
 
-    def get_projection(self, id_camera, angle, with_depth=False):
-        return self.cameras[id_camera].get_projection(angle, with_depth)
+    def get_projection(self, id_camera, angle):
+        return self.cameras[id_camera].get_projection(angle)
 
     def calibration_error(self):
         """error (pixels) between detected target image points and reprojection of 3D target points"""

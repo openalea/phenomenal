@@ -112,7 +112,7 @@ def test_projection():
         [[-472, -472, 200], [-472, -472, 200], [-472, -472, 200], [-472, -472, 200]]
     )
 
-    result = projection(pts_3d)
+    result = projection(pts_3d)[:,:2]
 
     for pt_2d in result:
         assert tuple(pt_2d) == (1337.425449561377, 1070.8621710384346)
