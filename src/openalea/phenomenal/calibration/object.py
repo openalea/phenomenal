@@ -205,15 +205,9 @@ class CalibrationCamera(CalibrationFrame):
         v = y / z * fy + cy
 
         if depth:
-            if len(pt.shape) > 1:
-                return numpy.column_stack((u, v, z))
-            else:
-                return (u, v, z)
+            return numpy.column_stack((u, v, z))
         else:
-            if len(pt.shape) > 1:
-                return numpy.column_stack((u, v))
-            else:
-                return (u, v)
+            return numpy.column_stack((u, v))
 
     def get_projection(self, depth=False):
         fr_cam = self.get_frame()
@@ -615,10 +609,9 @@ class OldCalibrationCamera(object):
         angle = math.radians(alpha * self._angle_factor)
 
         def projection(pts):
-            pts = numpy.array(pts)
-            x = - pts[:, 0] * math.cos(angle) - pts[:, 1] * math.sin(angle)
-            y = - pts[:, 0] * math.sin(angle) + pts[:, 1] * math.cos(angle)
-            z = pts[:, 2]
+            x, y, z = numpy.array(pts).T
+            x = - x * math.cos(angle) - y * math.sin(angle)
+            y = - x * math.sin(angle) + y * math.cos(angle)
 
             origin = numpy.column_stack((x, y, z))
 
