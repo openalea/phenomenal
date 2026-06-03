@@ -1029,7 +1029,7 @@ class CalibrationSolver(Calibration):
                 im_pts = image_points[id_camera]
                 proj = self.get_projection(id_camera, 0)
                 pix = proj(pts)
-                err += numpy.linalg.norm(pix[:,:2] - im_pts, axis=1).sum()
+                err += numpy.linalg.norm(pix - im_pts, axis=1).sum()
             print(err)
             return err
 
@@ -1095,7 +1095,7 @@ class CalibrationSolver(Calibration):
             camera.set_vars(pars)
             proj = camera.get_projection()
             pix = proj(target_points)
-            err = numpy.linalg.norm(pix[:,:2] - image_points, axis=1).sum()
+            err = numpy.linalg.norm(pix - image_points, axis=1).sum()
             print(err)
             return err
 
@@ -1184,7 +1184,7 @@ class CalibrationSolver(Calibration):
                 world_pts = [p for p, im_p in zip(pts, image_points[id_camera]) if im_p is not None]
                 proj = self.get_projection(id_camera, 0)
                 pix = proj(world_pts)
-                err += numpy.linalg.norm(pix[:,:2] - im_pts, axis=1).sum()
+                err += numpy.linalg.norm(pix - im_pts, axis=1).sum()
             print(err)
 
             return err
