@@ -14,7 +14,7 @@ import collections
 import numpy
 import sklearn.neighbors
 
-from .multi_view_reconstruction import Voxels, integral_image, check_each, get_bounding_box_voxel_projected, split_voxels_in_eight, voxels_is_visible_in_image, project_voxel_centers_on_image
+from .multi_view_reconstruction import Voxels, integral_image, check_each, project_voxels, get_bounding_box_voxel_projected, split_voxels_in_eight, voxels_is_visible_in_image, project_voxel_centers_on_image
 from ..object import VoxelGrid
 
 # ==============================================================================
@@ -113,10 +113,8 @@ def create_groups(image_views, inconsistent):
     for iv in image_views:
         if iv.image_ref is not None:
             height, length = iv.image.shape
-
-            min_xy_max_xy, _ = get_bounding_box_voxel_projected(
-                inconsistent.position, inconsistent.size, iv.projection
-            )
+            voxel_projections = project_voxels(inconsistent.position, inconsistent.size, iv.projection)
+            min_xy_max_xy = get_bounding_box_voxel_projected(voxel_projections)
 
             # add each voxel to a visual cones
             for i, (x_min, y_min, x_max, y_max) in enumerate(min_xy_max_xy):

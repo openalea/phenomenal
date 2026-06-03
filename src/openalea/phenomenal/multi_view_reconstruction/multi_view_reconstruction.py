@@ -20,10 +20,11 @@ from ..object import VoxelGrid, ImageView
 
 Voxels = collections.namedtuple("Voxels", ["position", "size"])
 
+
 # ==============================================================================
+# Image queries
+
 # deprecated numpy-python slow integral (kept as explicit 'doc' of what integral image is for us)
-
-
 def get_integrale_image(img):
     a = numpy.zeros_like(img, dtype=int)
     a[img > 0] = 1
@@ -57,6 +58,133 @@ def find_best_angle(bin_side_images):
             max_angle = angle
 
     return max_angle
+
+
+def image_hits(points, image, projection):
+    """Determine if projection of 3D points are on image and hits foreground
+
+    Args:
+        points: (N, 3) array of x,y,z positions of points
+        image: a binary image
+        projection: a function of (N, 3) array returning (N, 3) u, v, depth array
+
+
+    Returns:
+        boolean array(N,) -> True if projection is on image and hits a pixel > 0
+    """
+    height, width = image.shape
+    N = len(points)
+    mask = numpy.zeros(N, dtype=bool)
+
+    p = projection(points)
+    px, py, depth = p.T
+
+    outside = (
+            (depth <= 0)
+            | (px < 0)
+            | (py < 0)
+            | (px >= width)
+            | (py >= height)
+    )
+
+    idx = numpy.nonzero(~outside)[0]
+
+    if idx.size > 0:
+        pix_x = px[idx].astype(numpy.int32)
+        pix_y = py[idx].astype(numpy.int32)
+        mask[idx] = image[pix_y, pix_x] > 0
+
+    return mask
+
+
+def voxel_fully_in_front(voxel_projections):
+    """Return True for voxels entirely in front of the image.
+
+    Parameters
+    ----------
+    voxel_projections : numpy.ndarray, shape (N, 8, 3) of u, v, depth coordinates
+     of voxel corners projections.
+
+    Returns
+    -------
+    infront : numpy.ndarray, shape (N,)
+        True for voxels whose 8 corners projections lie in front of the image.
+    """
+    return numpy.all(voxel_projections[:, :, 2] > 0, axis=1)
+
+
+def voxel_fully_visible(voxel_projections, image):
+    """Return True for voxels entirely visible on image.
+
+    Parameters
+    ----------
+    voxel_projections : numpy.ndarray, shape (N, 8, 3) of u, v, depth coordinates
+     of voxel corners projections.
+    image: a binary image
+
+    Returns
+    -------
+    numpy.ndarray, shape (N,)
+        True for voxels whose 8 corners projections lie in front of the image and within image bounds.
+    """
+    height, width = image.shape
+    u, v, depth = voxel_projections.reshape(-1, 3).T
+    valid = (
+        (depth > 0) &
+        (u >= 0) &
+        (u < width) &
+        (v >= 0) &
+        (v < height)
+    )
+
+    return valid.reshape(-1, 8).all(axis=1)
+
+
+def image_boxes(boxes, image):
+    """convert boxes to regular-bounded region of image"""
+    height, width = image.shape
+    # Floor + convert once
+    boxes = numpy.floor(boxes).astype(numpy.int32)
+    # Clip to image bounds
+    boxes[:, 0] = numpy.clip(boxes[:, 0], 0, width - 1)
+    boxes[:, 2] = numpy.clip(boxes[:, 2], 0, width - 1)
+    boxes[:, 1] = numpy.clip(boxes[:, 1], 0, height - 1)
+    boxes[:, 3] = numpy.clip(boxes[:, 3], 0, height - 1)
+    return boxes
+
+
+def integral_image_hits(boxes, image_int):
+    """
+    boxes: (N, 4) array → [u_min, v_min, u_max, v_max] (float or int)
+    returns: boolean array (N,) → True if any pixel inside box > 0
+    """
+
+    if len(boxes) == 0:
+        return numpy.zeros(0, dtype=bool)
+
+    boxes = image_boxes(boxes, image_int)
+
+    # Integral image offset trick
+    boxes[:, 0:2] -= 1
+    boxes[boxes < 0] = 0
+
+    x0 = boxes[:, 0]
+    y0 = boxes[:, 1]
+    x1 = boxes[:, 2]
+    y1 = boxes[:, 3]
+
+    # Vectorized integral image query
+    sums = (
+        image_int[y1, x1]
+        + image_int[y0, x0]
+        - image_int[y0, x1]
+        - image_int[y1, x0]
+    )
+
+    return sums > 0
+
+# ==============================================================================
+# voxel operators
 
 
 def get_voxels_corners(voxels_position, voxels_size):
@@ -116,65 +244,6 @@ def get_voxels_corners(voxels_position, voxels_size):
     return corners
 
 
-def get_bounding_box_voxel_projected(voxels_position, voxels_size, projection):
-    """Compute projected bounding boxes of voxels.
-
-    Parameters
-    ----------
-    voxels_position : numpy.ndarray, shape (N, 3)
-        Center position of the voxels.
-
-    voxels_size : float
-        Edge length of the cubic voxels.
-
-    projection : callable
-        Function taking an array of 3D points of shape (M, 3) and returning
-        an array of projected points of shape (M, 3), where each row is
-        (u, v, depth).
-
-    Returns
-    -------
-    bbox : numpy.ndarray, shape (N, 4)
-        Bounding boxes of the projected voxels::
-
-            [[x_min, y_min, x_max, y_max],
-             ...]
-
-    fully_in_front : numpy.ndarray, shape (N,)
-        Boolean array indicating whether all voxel corners are in front of
-        the camera (depth > 0).
-    """
-
-    voxels_corners = get_voxels_corners(voxels_position, voxels_size)
-    n_voxels = voxels_corners.shape[0]
-
-    # Project all corners
-    pt = projection(voxels_corners.reshape(-1, 3))
-
-    # (N*8, 3) -> (N, 8, 3)
-    pt = pt.reshape(n_voxels, 8, 3)
-
-    # All corners are in front of the camera
-    fully_in_front = numpy.all(pt[:, :, 2] > 0, axis=1)
-
-    # Bounding boxes from projected coordinates
-    uv = pt[:, :, :2]
-
-    bbox = numpy.column_stack(
-        (
-            uv[:, :, 0].min(axis=1),
-            uv[:, :, 1].min(axis=1),
-            uv[:, :, 0].max(axis=1),
-            uv[:, :, 1].max(axis=1),
-        )
-    )
-
-    return bbox, fully_in_front
-
-
-# ==============================================================================
-
-
 def split_voxels_in_eight(voxels):
     """Split each voxel in 8 en return the numpy.array position
 
@@ -205,134 +274,72 @@ def split_voxels_in_eight(voxels):
     if len(voxels.position) == 0:
         return Voxels(voxels.position, voxels.size / 2.0)
 
-    r = voxels.size / 4.0
-
-    x_minus = voxels.position[:, 0] - r
-    x_plus = voxels.position[:, 0] + r
-    y_minus = voxels.position[:, 1] - r
-    y_plus = voxels.position[:, 1] + r
-    z_minus = voxels.position[:, 2] - r
-    z_plus = voxels.position[:, 2] + r
-
-    a1 = numpy.column_stack((x_minus, y_minus, z_minus))
-    a2 = numpy.column_stack((x_plus, y_minus, z_minus))
-    a3 = numpy.column_stack((x_minus, y_plus, z_minus))
-    a4 = numpy.column_stack((x_minus, y_minus, z_plus))
-    a5 = numpy.column_stack((x_plus, y_plus, z_minus))
-    a6 = numpy.column_stack((x_plus, y_minus, z_plus))
-    a7 = numpy.column_stack((x_minus, y_plus, z_plus))
-    a8 = numpy.column_stack((x_plus, y_plus, z_plus))
+    child_positions = get_voxels_corners(
+        voxels.position,
+        voxels.size / 2.0,
+    ).reshape(-1, 3)
 
     return Voxels(
-        numpy.concatenate((a1, a2, a3, a4, a5, a6, a7, a8), axis=0),
-        voxels.size / 2.0
+        child_positions,
+        voxels.size / 2.0,
     )
 
 
-# ==============================================================================
-def image_hits(points, image, projection):
-    """Determine if projection of points on image hits foreground
+def project_voxels(voxels_position, voxels_size, projection):
+    """Project corners of voxels according to projection
 
     Args:
-        points: (N, 3) array of x,y,z positions of points
-        image: a binary image
-        projection: a function of (N, 3) array returning (u, v), depth arrays
+        voxels_position : numpy.ndarray, shape (N, 3)
+        Center position of the voxels.
 
+    voxels_size : float
+        Edge length of the cubic voxels.
+
+    projection : callable
+        Function taking an array of 3D points of shape (M, 3) and returning
+        an array of projected points of shape (M, 3), where each row is
+        (u, v, depth).
 
     Returns:
-        boolean array(N,) -> True if projection is on image and hits a pixel > 0
+        numpy.ndarray, shape (N, 8, 3) of u, v, depth coordinates
+        of voxel corners projections.
     """
-    height, width = image.shape
-    N = len(points)
-
-    mask = numpy.zeros(N, dtype=bool)
-
-    uvd= projection(points)
-    px = uvd[:, 0]
-    py = uvd[:, 1]
-    depth = uvd[:, 2]
-
-    outside = (
-            (depth <= 0)
-            | (px < 0)
-            | (py < 0)
-            | (px >= width)
-            | (py >= height)
-    )
-
-    idx = numpy.nonzero(~outside)[0]
-
-    if idx.size > 0:
-        pix_x = px[idx].astype(numpy.int32)
-        pix_y = py[idx].astype(numpy.int32)
-        mask[idx] = image[pix_y, pix_x] > 0
-
-    return mask
+    voxels_corners = get_voxels_corners(voxels_position, voxels_size)
+    # Project all corners
+    pt = projection(voxels_corners.reshape(-1, 3))
+    return pt.reshape(-1, 8, 3)
 
 
-def is_fully_inside(boxes, width, height):
-    """Return True for boxes entirely contained within the image.
+def get_bounding_box_voxel_projected(voxel_projections):
+    """Compute projected bounding boxes of voxels.
 
     Parameters
     ----------
-    boxes : numpy.ndarray, shape (N, 4)
-        Boxes in the form [x_min, x_max, y_min, y_max].
-
-    width : int
-        Image width.
-
-    height : int
-        Image height.
+    voxel_projections:numpy.ndarray, shape (N, 8, 3) of u, v, depth coordinates
+     of voxel corners projections.
 
     Returns
     -------
-    inside : numpy.ndarray, shape (N,)
-        True for boxes whose four corners lie inside the image.
+    bbox : numpy.ndarray, shape (N, 4)
+        Bounding boxes of the projected voxels::
+
+            [[x_min, y_min, x_max, y_max],
+             ...]
     """
 
-    return (
-        (boxes[:, 0] >= 0) &
-        (boxes[:, 2] < width) &
-        (boxes[:, 1] >= 0) &
-        (boxes[:, 3] < height)
+    pt = voxel_projections
+    uv = pt[:, :, :2]
+
+    bbox = numpy.column_stack(
+        (
+            uv[:, :, 0].min(axis=1),
+            uv[:, :, 1].min(axis=1),
+            uv[:, :, 0].max(axis=1),
+            uv[:, :, 1].max(axis=1),
+        )
     )
 
-def integral_image_hits(boxes, image_int, width, height):
-    """
-    boxes: (N, 4) array → [x_min, y_min, x_max, y_max] (float or int)
-    returns: boolean array (N,) → True if any pixel inside box > 0
-    """
-
-    if len(boxes) == 0:
-        return numpy.zeros(0, dtype=bool)
-
-    # Floor + convert once
-    boxes = numpy.floor(boxes).astype(numpy.int32)
-
-    # Clip to image bounds
-    boxes[:, 0] = numpy.clip(boxes[:, 0], 0, width - 1)
-    boxes[:, 2] = numpy.clip(boxes[:, 2], 0, width - 1)
-    boxes[:, 1] = numpy.clip(boxes[:, 1], 0, height - 1)
-    boxes[:, 3] = numpy.clip(boxes[:, 3], 0, height - 1)
-
-    # Integral image offset trick
-    boxes[:, 0:2] -= 1
-    boxes[boxes < 0] = 0
-
-    x0 = boxes[:, 0]
-    y0 = boxes[:, 1]
-    x1 = boxes[:, 2]
-    y1 = boxes[:, 3]
-
-    # Vectorized integral image query
-    sums = (
-        image_int[y1, x1]
-        + image_int[y0, x0]
-        - image_int[y0, x1]
-        - image_int[y1, x0]
-    )
-
-    return sums > 0
+    return bbox
 
 
 def voxels_is_visible_in_image(
@@ -363,35 +370,33 @@ def voxels_is_visible_in_image(
     Returns:
         A boolean array as long as voxels_position
     """
-    height, width = image.shape
-    N = len(voxels_position)
-    if not inclusive:
-        mask = image_hits(voxels_position, image, projection)
-        no_hits = ~mask
-        if numpy.any(no_hits):
-            boxes, fully_in_front = get_bounding_box_voxel_projected(voxels_position[no_hits], voxels_size, projection)
-            not_empty = integral_image_hits(boxes,image_int, width, height)
-            mask[no_hits] = fully_in_front & not_empty
-    else:
-        mask = numpy.ones(N, dtype=bool)
-        boxes, fully_in_front = get_bounding_box_voxel_projected(voxels_position, voxels_size, projection)
-        fully_inside = is_fully_inside(boxes, width, height)
-        fully_visible = fully_in_front & fully_inside
-        if numpy.any(fully_visible):
-             not_empty = integral_image_hits(
-                boxes[fully_visible],
-                image_int,
-                width,
-                height)
-             mask[fully_visible] = not_empty # False is returned for empty, ie when not_empty=False
-    return mask
+    # Initialise with fast check of voxel centers
+    mask = image_hits(voxels_position, image, projection)
+    to_check = ~mask
 
+    if numpy.any(to_check):
+        voxel_projections = project_voxels(voxels_position[to_check], voxels_size, projection)
+
+        if not inclusive:
+            candidate = voxel_fully_in_front(voxel_projections)
+            candidate_mask = numpy.zeros_like(candidate)
+        else:
+            candidate = voxel_fully_visible(voxel_projections, image)
+            candidate_mask = numpy.ones_like(candidate)
+
+        if numpy.any(candidate):
+            boxes = get_bounding_box_voxel_projected(voxel_projections[candidate])
+            candidate_mask[candidate] = integral_image_hits(boxes, image_int)
+
+        mask[to_check] = candidate_mask
+
+    return mask
 
 
 # ==============================================================================
 def reconstruction_grid(center=(0.0, 0.0, 0.0), grid_size=4096, voxel_size=512):
     """
-    Setup a reconstruction grid
+    Set up a reconstruction grid
     Args:
         center: coordinates of the center of the grid
         grid_size: outer edge length of the grid
@@ -598,33 +603,15 @@ def project_voxel_centers_on_image(
     out : numpy.ndarray
         Binary image
     """
-    height, length = shape_image
-    img = numpy.zeros((height, length), dtype=dtype)
-
-    min_xy_max_xy, _ = get_bounding_box_voxel_projected(
-        voxels_position, voxels_size, projection
-    )
-
-    vv = (
-        (min_xy_max_xy[:, 2] < 0)
-        | (min_xy_max_xy[:, 0] >= length)
-        | (min_xy_max_xy[:, 3] < 0)
-        | (min_xy_max_xy[:, 1] >= height)
-    )
-
-    not_vv = numpy.logical_not(vv)
-    min_xy_max_xy = min_xy_max_xy[not_vv]
-
-    min_xy_max_xy = numpy.floor(min_xy_max_xy)
-    min_xy_max_xy[min_xy_max_xy < 0] = 0
-    (min_xy_max_xy[:, 0])[min_xy_max_xy[:, 0] >= length] = length - 1
-    (min_xy_max_xy[:, 1])[min_xy_max_xy[:, 1] >= height] = height - 1
-    (min_xy_max_xy[:, 2])[min_xy_max_xy[:, 2] >= length] = length - 1
-    (min_xy_max_xy[:, 3])[min_xy_max_xy[:, 3] >= height] = height - 1
-    min_xy_max_xy = min_xy_max_xy.astype(int)
-
-    for x_min, y_min, x_max, y_max in min_xy_max_xy:
-        img[y_min : y_max + 1, x_min : x_max + 1] = value
+    height, width = shape_image
+    img = numpy.zeros((height, width), dtype=dtype)
+    voxel_projections = project_voxels(voxels_position, voxels_size, projection)
+    fully_in_front = voxel_fully_in_front(voxel_projections)
+    if numpy.any(fully_in_front):
+        boxes = get_bounding_box_voxel_projected(voxel_projections[fully_in_front])
+        boxes = image_boxes(boxes, img)
+        for x_min, y_min, x_max, y_max in boxes:
+            img[y_min : y_max + 1, x_min : x_max + 1] = value
 
     return img
 
@@ -660,18 +647,17 @@ def project_voxels_position_on_image(
     voxels_position = numpy.array(voxels_position)
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=numpy.uint8)
-
-    voxels_corners = get_voxels_corners(voxels_position, voxels_size)
-    pt = projection(voxels_corners)
-    pt = numpy.reshape(pt, (pt.shape[0] // 8, 8, 2))
-
-    pt[pt < 0] = 0
-    (pt[:, :, 0])[pt[:, :, 0] >= length] = length - 1
-    (pt[:, :, 1])[pt[:, :, 1] >= height] = height - 1
-    pt = numpy.floor(pt).astype(int)
-    for points in pt:
-        hull = scipy.spatial.ConvexHull(points)
-        cv2.fillConvexPoly(img, points[hull.vertices], 255)
+    voxel_projections = project_voxels(voxels_position, voxels_size, projection)
+    fully_in_front = voxel_fully_in_front(voxel_projections)
+    if numpy.any(fully_in_front):
+        pt = voxel_projections
+        pt[pt < 0] = 0
+        (pt[:, :, 0])[pt[:, :, 0] >= length] = length - 1
+        (pt[:, :, 1])[pt[:, :, 1] >= height] = height - 1
+        pt = numpy.floor(pt).astype(int)
+        for points in pt:
+            hull = scipy.spatial.ConvexHull(points)
+            cv2.fillConvexPoly(img, points[hull.vertices], 255)
 
     return img
 
