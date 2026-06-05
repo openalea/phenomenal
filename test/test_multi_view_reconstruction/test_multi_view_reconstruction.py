@@ -60,22 +60,26 @@ def test_get_voxels_corners():
     res = phm_mvr.get_voxels_corners(voxels_position, voxels_size / 2)
     ref = numpy.array(
         [
-            [-4.0, -4.0, -4.0],
-            [4.0, -4.0, -4.0],
-            [-4.0, 4.0, -4.0],
-            [-4.0, -4.0, 4.0],
-            [4.0, 4.0, -4.0],
-            [4.0, -4.0, 4.0],
-            [-4.0, 4.0, 4.0],
-            [4.0, 4.0, 4.0],
-            [0.0, 0.0, 0.0],
-            [8.0, 0.0, 0.0],
-            [0.0, 8.0, 0.0],
-            [0.0, 0.0, 8.0],
-            [8.0, 8.0, 0.0],
-            [8.0, 0.0, 8.0],
-            [0.0, 8.0, 8.0],
-            [8.0, 8.0, 8.0],
+            [
+                [-4.0, -4.0, -4.0],
+                [4.0, -4.0, -4.0],
+                [-4.0, 4.0, -4.0],
+                [-4.0, -4.0, 4.0],
+                [4.0, 4.0, -4.0],
+                [4.0, -4.0, 4.0],
+                [-4.0, 4.0, 4.0],
+                [4.0, 4.0, 4.0]
+            ],
+            [
+                [0.0, 0.0, 0.0],
+                [8.0, 0.0, 0.0],
+                [0.0, 8.0, 0.0],
+                [0.0, 0.0, 8.0],
+                [8.0, 8.0, 0.0],
+                [8.0, 0.0, 8.0],
+                [0.0, 8.0, 8.0],
+                [8.0, 8.0, 8.0]
+            ],
         ]
     )
 
@@ -90,11 +94,11 @@ def test_get_bounding_box_voxel_projected_1():
     voxel_size = 20
 
     def projection(pt):
-        return numpy.column_stack((pt[:, 0], pt[:, 1]))
+        return numpy.column_stack((pt[:, 0], pt[:, 1], pt[:, 2]))
 
-    res = phm_mvr.get_bounding_box_voxel_projected(
-        voxels_position, voxel_size, projection
-    )
+    vp = phm_mvr.project_voxels(voxels_position, voxel_size, projection)
+    res = phm_mvr.get_bounding_box_voxel_projected(vp)
+
     ref = numpy.array([[-10, -10, 10, 10]])
 
     assert numpy.allclose(ref, res)
@@ -103,14 +107,13 @@ def test_get_bounding_box_voxel_projected_1():
 def test_get_bounding_box_voxel_projected_2():
     angle = 0
     calibration = phm_data.load_calibration(data_dir)
-    projection = calibration.get_projection("side", angle)
+    projection = calibration.get_projection("side", angle, depth=True)
 
     voxels_position = numpy.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
     voxels_size = 8
 
-    res = phm_mvr.get_bounding_box_voxel_projected(
-        voxels_position, voxels_size, projection
-    )
+    vp = phm_mvr.project_voxels(voxels_position, voxels_size, projection)
+    res = phm_mvr.get_bounding_box_voxel_projected(vp)
 
     ref = numpy.array(
         [
@@ -126,15 +129,14 @@ def test_get_bounding_box_voxel_projected_2():
 def test_split_and_projection():
     angle = 0
     calibration = phm_data.load_calibration(data_dir)
-    projection = calibration.get_projection("side", angle)
+    projection = calibration.get_projection("side", angle, depth=True)
 
     voxels_position = numpy.array([[0, 0, 0]])
     voxels_size = 64
 
     for i in range(5):
-        res = phm_mvr.get_bounding_box_voxel_projected(
-            voxels_position, voxels_size, projection
-        )
+        vp = phm_mvr.project_voxels(voxels_position, voxels_size, projection)
+        res = phm_mvr.get_bounding_box_voxel_projected(vp)
         res = numpy.floor(res).astype(int)
 
         img = numpy.zeros((3000, 3000))
@@ -176,7 +178,7 @@ def get_image_views_cube_projected():
     shape_image = (2454, 2056)
     image_views = dict()
     for angle in range(0, 360, 30):
-        projection = calibration.get_projection("side", angle)
+        projection = calibration.get_projection("side", angle, depth=True)
 
         img = phm_mvr.project_voxel_centers_on_image(
             voxels_position, voxels_size, shape_image, projection

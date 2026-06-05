@@ -13,7 +13,7 @@ import collections
 import math
 import numpy
 
-from .multi_view_reconstruction import check_each, get_bounding_box_voxel_projected
+from .multi_view_reconstruction import check_each, project_voxels, get_bounding_box_voxel_projected
 from ..object import VoxelOctree
 # ==============================================================================
 # Function for no kep
@@ -69,10 +69,8 @@ def voxel_is_visible_in_image(voxel_center, voxel_size, image, projection, inclu
         return True
 
     # ==========================================================================
-
-    x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
-        voxel_center, voxel_size, projection
-    )
+    vp = project_voxels(voxel_center, voxel_size, projection)
+    x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(vp)
 
     if x_max < 0 or x_min >= length_image or y_max < 0 or y_min >= height_image:
         return inclusive
@@ -106,10 +104,9 @@ def voxel_is_fully_visible_in_image(voxel_center, voxel_size, image, projection)
     height_image, length_image = image.shape
 
     # ==========================================================================
+    vp = project_voxels(voxel_center, voxel_size, projection)
+    x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(vp)
 
-    x_min, x_max, y_min, y_max = get_bounding_box_voxel_projected(
-        voxel_center, voxel_size, projection
-    )
 
     x_min = int(min(max(math.floor(x_min), 0), length_image - 1))
     x_max = int(min(max(math.ceil(x_max), 0), length_image - 1))
