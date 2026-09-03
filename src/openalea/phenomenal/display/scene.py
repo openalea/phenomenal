@@ -146,7 +146,7 @@ class Scene(Display):
         transform.Scale(length, line_width, line_width)
 
         # Transform the polydata
-        transform_pd = vtk.vtkTransformPolyDataFilter()
+        transform_pd = vtk.vtkTransformFilter()
         transform_pd.SetTransform(transform)
         transform_pd.SetInputConnection(arrow_source.GetOutputPort())
 
