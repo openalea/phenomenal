@@ -4,7 +4,7 @@ import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.calibration as phm_calib
 
 from pathlib import Path
-test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path.cwd()
 data_dir = test_subdir.parent / "data" / "plant_1"
 
 def test_detect_corners():
