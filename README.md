@@ -52,7 +52,7 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
     # Solution 2: use an existing env (mostly use conda dependencies)
     mamba activate my_env
     mamba install --only-deps -c openalea3 -c conda-forge openalea.phenomenal
-    mamba install cxx-compiler
+    mamba install cxx-compiler cython
     pip install -e .[doc,test,plot]
 
     # (Optional) Test your installation
