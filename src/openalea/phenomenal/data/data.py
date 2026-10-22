@@ -22,7 +22,7 @@ from openalea.phenomenal.calibration import (
     CalibrationSetup,
     OldCalibration,
 )
-from openalea.phenomenal.mesh import read_ply_to_vertices_faces
+from openalea.phenomenal.mesh import read_ply, from_vtk_poly_data_to_mesh
 from openalea.phenomenal.object import VoxelGrid
 from openalea.phenomenal.image import read_image
 
@@ -331,6 +331,6 @@ def mesh_mccormik_plant(data_dir):
 
     filename = os.path.join(data_dir, "segmentedMesh.ply")
 
-    vertices, faces, colors = read_ply_to_vertices_faces(filename)
+    vertices, faces, colors, _, _ = from_vtk_poly_data_to_mesh(read_ply(filename))
 
     return vertices, faces, colors

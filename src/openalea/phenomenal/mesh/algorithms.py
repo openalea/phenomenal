@@ -11,13 +11,14 @@
 
 import math
 import vtk
+from vtk.util.numpy_support import vtk_to_numpy
 import numpy
 import skimage.measure
 
 from .vtk_transformation import (
     from_numpy_matrix_to_vtk_image_data,
-    from_vtk_poly_data_to_vertices_faces,
-    from_vertices_faces_to_vtk_poly_data,
+    from_vtk_poly_data_to_mesh,
+    from_mesh_to_vtk_poly_data,
     from_vtk_image_data_to_voxels_center,
 )
 
@@ -38,7 +39,7 @@ __all__ = [
 
 def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     """
-    Build a polygonal mesh representation (= list of vertices and faces)
+    Build a polygonal mesh representation
     from a 3d image (= numpy array 3D).
 
     More, some option, is available to smooth the 3D object representation and
@@ -73,13 +74,9 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
 
     Returns
     -------
-    vertices : [(x, y, z), ...]
-        Spatial coordinates for unique mesh vertices.
-
-    faces : [(V1, V2, V3), ...]
-        Define triangular faces via referencing vertex indices from vertices.
-        This algorithm specifically outputs triangles, so each face has exactly
-        three indices
+    vtk.vtkPolyData
+        A polygonal mesh containing the vertices, triangular faces,
+        and optional point and cell RGB colors.
     """
 
     if image_3d.size < 8:
@@ -99,13 +96,11 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     if 0.0 < reduction < 1.0:
         vtk_poly_data = decimation(vtk_poly_data, reduction=reduction, verbose=verbose)
 
-    if vtk_poly_data.GetNumberOfPoints() == 0:
-        return [], []
+    vertices = vtk_to_numpy(vtk_poly_data.GetPoints().GetData())
+    vertices *= image_3d.voxels_size
+    vertices += image_3d.world_coordinate
 
-    vertices, faces, _ = from_vtk_poly_data_to_vertices_faces(vtk_poly_data)
-    vertices = vertices * image_3d.voxels_size + image_3d.world_coordinate
-
-    return vertices, faces
+    return vtk_poly_data
 
 
 def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
@@ -433,7 +428,7 @@ def mesh_surface_area(vertices, faces) -> float:
 
 
 def from_vertices_faces_to_voxels_position(vertices, faces, voxels_size=4):
-    poly_data = from_vertices_faces_to_vtk_poly_data(vertices, faces)
+    poly_data = from_mesh_to_vtk_poly_data(vertices, faces)
     image_data = voxelization(poly_data, voxels_size=voxels_size)
     voxels_position = from_vtk_image_data_to_voxels_center(image_data)
 

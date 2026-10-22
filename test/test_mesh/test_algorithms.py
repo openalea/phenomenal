@@ -63,13 +63,14 @@ def test_meshing():
 
     image_3d = voxel_grid.to_image_3d()
 
-    vertices, faces = phm_mesh.meshing(
+    polydata = phm_mesh.meshing(
         image_3d, smoothing_iteration=2, reduction=0.95, verbose=True
     )
+    vertices, faces, _, _, _ = phm_mesh.from_vtk_poly_data_to_mesh(polydata)
     assert 100 <= len(vertices) <= 500, len(vertices)
     assert 200 <= len(faces) <= 1000, len(faces)
 
-    poly_data = phm_mesh.from_vertices_faces_to_vtk_poly_data(vertices, faces)
+    poly_data = phm_mesh.from_mesh_to_vtk_poly_data(vertices, faces)
     poly_data2 = voxel_grid_to_vtk_poly_data(voxel_grid)
     assert (0.05 * poly_data2.GetNumberOfVerts()) == poly_data.GetNumberOfVerts()
 
@@ -87,12 +88,15 @@ def test_format():
 
     faces = [[0, 1, 2]]
 
+    polydata = phm_mesh.from_mesh_to_vtk_poly_data(vertices, faces)
+
     filename = "test.ply"
 
-    phm_mesh.write_vertices_faces_to_ply_file(filename, vertices, faces)
+    phm_mesh.write_ply(filename, polydata)
 
-    vertices, faces, color = phm_mesh.read_ply_to_vertices_faces(filename)
+    rpolydata = phm_mesh.read_ply(filename)
 
+    rvertices, rfaces, rcolors, _, _ = phm_mesh.from_vtk_poly_data_to_mesh(rpolydata)
+
+    assert len(rvertices) == len(vertices)
     os.remove(filename)
-
-    print(type(color))
