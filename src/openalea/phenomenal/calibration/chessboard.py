@@ -259,7 +259,10 @@ class Chessboard(object):
         corners_2d = dict()
         if id_camera in self.image_points:
             for rotation in self.image_points[id_camera]:
-                corners_2d[rotation] = self.image_points[id_camera][rotation][:, 0, :]
+                if self.image_points[id_camera][rotation].shape[1] == 2:
+                    corners_2d[rotation] = self.image_points[id_camera][rotation][:, :]
+                else:
+                    corners_2d[rotation] = self.image_points[id_camera][rotation][:, 0, :]
 
         return corners_2d
 
