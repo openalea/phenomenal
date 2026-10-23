@@ -11,13 +11,10 @@
 
 import math
 import vtk
-from vtkmodules.util.numpy_support import vtk_to_numpy
-import numpy
 import skimage.measure
 
 
 from .vtk_transformation import (
-    from_numpy_matrix_to_vtk_image_data,
     from_vtk_image_data_to_voxels_center,
 )
 
@@ -83,11 +80,7 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     if image_3d.size < 8:
         raise ValueError("image_3d must have size >= 8")
 
-    image_3d = image_3d.astype(numpy.uint8)
-
-    vtk_image_data = from_numpy_matrix_to_vtk_image_data(image_3d)
-
-    vtk_poly_data = marching_cubes(vtk_image_data, verbose=verbose)
+    vtk_poly_data = marching_cubes(image_3d.vtk_image_data, verbose=verbose)
 
     if smoothing_iteration > 1:
         vtk_poly_data = smoothing(
@@ -96,10 +89,6 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
 
     if 0.0 < reduction < 1.0:
         vtk_poly_data = decimation(vtk_poly_data, reduction=reduction, verbose=verbose)
-
-    vertices = vtk_to_numpy(vtk_poly_data.GetPoints().GetData())
-    vertices *= image_3d.voxels_size
-    vertices += image_3d.world_coordinate
 
     return Mesh(vtk_poly_data)
 

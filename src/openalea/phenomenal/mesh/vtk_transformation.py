@@ -19,7 +19,6 @@ from vtkmodules.util.numpy_support import get_vtk_array_type
 
 __all__ = [
     "from_voxel_centers_to_vtk_image_data",
-    "from_numpy_matrix_to_vtk_image_data",
     "from_vtk_image_data_to_voxels_center",
     "voxel_grid_to_vtk_poly_data",
 ]
@@ -69,48 +68,6 @@ def voxel_grid_to_vtk_poly_data(voxel_grid):
 
     return glyph3_d.GetOutput()
 
-
-def from_numpy_matrix_to_vtk_image_data(data_matrix):
-    """
-    Get a vtkImageData from a matrix.
-
-    Parameters
-    ----------
-    data_matrix: numpy.matrix
-        The data matrix to get image info from.
-
-    Returns
-    -------
-    image_data: vtk.vtkImageData
-        A vtkImageData object with the matrix info.
-    """
-    nx, ny, nz = data_matrix.shape
-
-    image_data = vtk.vtkImageData()
-    image_data.SetDimensions(nx, ny, nz)
-    image_data.SetSpacing(1.0, 1.0, 1.0)
-
-    if vtk.VTK_MAJOR_VERSION < 6:
-        image_data.SetScalarType(
-            get_vtk_array_type(data_matrix.dtype)
-        )
-        image_data.SetNumberOfScalarComponents(1)
-        image_data.AllocateScalars()
-    else:
-        image_data.AllocateScalars(
-            get_vtk_array_type(data_matrix.dtype), 1
-        )
-
-    lx, ly, lz = image_data.GetDimensions()
-
-    for i in range(lx):
-        for j in range(ly):
-            for k in range(lz):
-                image_data.SetScalarComponentFromDouble(
-                    i, j, k, 0, data_matrix[i, j, k]
-                )
-
-    return image_data
 
 
 def from_vtk_image_data_to_voxels_center(image_data, true_value=255, component=0):

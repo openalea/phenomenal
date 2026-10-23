@@ -12,6 +12,9 @@
 import os
 import numpy
 import cv2
+import vtk
+from vtkmodules.util.numpy_support import numpy_to_vtk
+
 # ==============================================================================
 
 
@@ -47,6 +50,31 @@ class Image3D(numpy.ndarray):
     # TRANSFORM
     # ==========================================================================
 
+    @property
+    def vtk_image_data(self):
+        """Return a vtkImageData representation of this image."""
+        image = vtk.vtkImageData()
+
+        nx, ny, nz = self.shape
+        image.SetDimensions(nx, ny, nz)
+
+        if numpy.isscalar(self.voxels_size):
+            spacing = (self.voxels_size,) * 3
+        else:
+            spacing = self.voxels_size
+
+        image.SetSpacing(*spacing)
+        image.SetOrigin(*self.world_coordinate)
+
+        vtk_array = numpy_to_vtk(
+            numpy.ascontiguousarray(self.astype(numpy.uint8)).ravel(order="F"),
+            deep=True,
+        )
+        vtk_array.SetNumberOfComponents(1)
+
+        image.GetPointData().SetScalars(vtk_array)
+
+        return image
     # def to_VoxelPointCloud(self,
     #                        voxels_value=1,
     #                        voxels_size=None,

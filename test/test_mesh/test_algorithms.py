@@ -10,6 +10,7 @@
 #
 # ==============================================================================
 import os
+import numpy as np
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
@@ -70,6 +71,23 @@ def test_meshing():
     n_faces = len(mesh.faces)
     assert 100 <= n_vertices <= 500, n_vertices
     assert 200 <= n_faces <= 1000, n_faces
+
+    bbox_min, bbox_max = voxel_grid.bounding_box()
+
+    bounds = mesh.poly_data.GetBounds()
+    mesh_min = np.array(bounds[::2])
+    mesh_max = np.array(bounds[1::2])
+
+    np.testing.assert_allclose(
+        mesh_min, bbox_min, atol=voxels_size,
+        err_msg="Mesh minimum bounds differ from voxel grid",
+    )
+    np.testing.assert_allclose(
+        mesh_max, bbox_max, atol=voxels_size,
+        err_msg="Mesh maximum bounds differ from voxel grid",
+    )
+
+
 
     poly_data2 = voxel_grid_to_vtk_poly_data(voxel_grid)
     assert (0.05 * poly_data2.GetNumberOfVerts()) == mesh.poly_data.GetNumberOfVerts()
