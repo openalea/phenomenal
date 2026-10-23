@@ -22,8 +22,7 @@ from openalea.phenomenal.calibration import (
     CalibrationSetup,
     OldCalibration,
 )
-from openalea.phenomenal.mesh import read_ply, from_vtk_poly_data_to_mesh
-from openalea.phenomenal.object import VoxelGrid
+from openalea.phenomenal.object import VoxelGrid, Mesh
 from openalea.phenomenal.image import read_image
 
 # ==============================================================================
@@ -313,14 +312,13 @@ def synthetic_plant(data_dir, registration_point=(0, 0, 750)):
 
     """
     filename = os.path.join(data_dir, "synthetic_plant.ply")
-
-    vertices, faces, _ = read_ply_to_vertices_faces(filename)
-    vertices = numpy.array(vertices) * 10 - numpy.array([registration_point])
+    mesh = Mesh.from_ply(filename)
+    vertices = mesh.vertices * 10 - numpy.array([registration_point])
 
     with open(filename.replace("ply", "json"), "r", encoding="UTF8") as infile:
         meta_data = json.load(infile)
 
-    return vertices, faces, meta_data
+    return vertices, mesh.faces, meta_data
 
 
 # ==============================================================================
@@ -331,6 +329,4 @@ def mesh_mccormik_plant(data_dir):
 
     filename = os.path.join(data_dir, "segmentedMesh.ply")
 
-    vertices, faces, colors, _, _ = from_vtk_poly_data_to_mesh(read_ply(filename))
-
-    return vertices, faces, colors
+    return Mesh.from_ply(filename)

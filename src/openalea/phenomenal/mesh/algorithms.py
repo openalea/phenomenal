@@ -11,16 +11,17 @@
 
 import math
 import vtk
-from vtk.util.numpy_support import vtk_to_numpy
+from vtkmodules.util.numpy_support import vtk_to_numpy
 import numpy
 import skimage.measure
 
+
 from .vtk_transformation import (
     from_numpy_matrix_to_vtk_image_data,
-    from_vtk_poly_data_to_mesh,
-    from_mesh_to_vtk_poly_data,
     from_vtk_image_data_to_voxels_center,
 )
+
+from openalea.phenomenal.object import Mesh
 
 # ==============================================================================
 
@@ -31,7 +32,7 @@ __all__ = [
     "decimation",
     "voxelization",
     "mesh_surface_area",
-    "from_vertices_faces_to_voxels_position",
+    "from_mesh_to_voxels_position",
 ]
 
 # ==============================================================================
@@ -100,7 +101,7 @@ def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
     vertices *= image_3d.voxels_size
     vertices += image_3d.world_coordinate
 
-    return vtk_poly_data
+    return Mesh(vtk_poly_data)
 
 
 def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
@@ -427,9 +428,8 @@ def mesh_surface_area(vertices, faces) -> float:
     return skimage.measure.mesh_surface_area(vertices, faces)
 
 
-def from_vertices_faces_to_voxels_position(vertices, faces, voxels_size=4):
-    poly_data = from_mesh_to_vtk_poly_data(vertices, faces)
-    image_data = voxelization(poly_data, voxels_size=voxels_size)
+def from_mesh_to_voxels_position(mesh, voxels_size=4):
+    image_data = voxelization(mesh.poly_data, voxels_size=voxels_size)
     voxels_position = from_vtk_image_data_to_voxels_center(image_data)
 
     return voxels_position

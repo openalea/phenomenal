@@ -44,7 +44,7 @@ def test_mesh_error_2():
 
     try:
         image_3d = phm_obj.VoxelGrid(voxels_position, voxels_size).to_image_3d()
-        _, _ = phm_mesh.meshing(image_3d)
+        mesh = phm_mesh.meshing(image_3d)
 
     except Exception as e:
         assert isinstance(e, ValueError)
@@ -63,18 +63,18 @@ def test_meshing():
 
     image_3d = voxel_grid.to_image_3d()
 
-    polydata = phm_mesh.meshing(
+    mesh = phm_mesh.meshing(
         image_3d, smoothing_iteration=2, reduction=0.95, verbose=True
     )
-    vertices, faces, _, _, _ = phm_mesh.from_vtk_poly_data_to_mesh(polydata)
-    assert 100 <= len(vertices) <= 500, len(vertices)
-    assert 200 <= len(faces) <= 1000, len(faces)
+    n_vertices = len(mesh.vertices)
+    n_faces = len(mesh.faces)
+    assert 100 <= n_vertices <= 500, n_vertices
+    assert 200 <= n_faces <= 1000, n_faces
 
-    poly_data = phm_mesh.from_mesh_to_vtk_poly_data(vertices, faces)
     poly_data2 = voxel_grid_to_vtk_poly_data(voxel_grid)
-    assert (0.05 * poly_data2.GetNumberOfVerts()) == poly_data.GetNumberOfVerts()
+    assert (0.05 * poly_data2.GetNumberOfVerts()) == mesh.poly_data.GetNumberOfVerts()
 
-    vtk_image_data = phm_mesh.voxelization(poly_data, voxels_size=voxels_size)
+    vtk_image_data = phm_mesh.voxelization(mesh.poly_data, voxels_size=voxels_size)
     voxels_position = phm_mesh.from_vtk_image_data_to_voxels_center(vtk_image_data)
     image_data, (_, _, _) = from_voxel_centers_to_vtk_image_data(
         voxels_position, voxels_size
@@ -88,15 +88,13 @@ def test_format():
 
     faces = [[0, 1, 2]]
 
-    polydata = phm_mesh.from_mesh_to_vtk_poly_data(vertices, faces)
+    mesh = phm_obj.Mesh.from_pymesh(vertices, faces)
 
     filename = "test.ply"
 
-    phm_mesh.write_ply(filename, polydata)
+    mesh.write_ply(filename)
 
-    rpolydata = phm_mesh.read_ply(filename)
+    rmesh = phm_obj.Mesh.from_ply(filename)
 
-    rvertices, rfaces, rcolors, _, _ = phm_mesh.from_vtk_poly_data_to_mesh(rpolydata)
-
-    assert len(rvertices) == len(vertices)
+    assert len(rmesh.vertices) == len(mesh.vertices)
     os.remove(filename)

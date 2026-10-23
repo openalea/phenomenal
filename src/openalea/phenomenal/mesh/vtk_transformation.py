@@ -11,17 +11,13 @@
 
 import operator
 import vtk
-import numpy as np
-from vtkmodules.util.numpy_support import numpy_to_vtk, numpy_to_vtkIdTypeArray, vtk_to_numpy, get_vtk_array_type
-from vtkmodules.vtkCommonCore import vtkPoints
-from vtkmodules.vtkCommonDataModel import vtkCellArray, vtkPolyData
+from vtkmodules.util.numpy_support import get_vtk_array_type
+
 
 
 # ==============================================================================
 
 __all__ = [
-    "from_mesh_to_vtk_poly_data",
-    "from_vtk_poly_data_to_mesh",
     "from_voxel_centers_to_vtk_image_data",
     "from_numpy_matrix_to_vtk_image_data",
     "from_vtk_image_data_to_voxels_center",
@@ -72,144 +68,6 @@ def voxel_grid_to_vtk_poly_data(voxel_grid):
     glyph3_d.Update()
 
     return glyph3_d.GetOutput()
-
-
-def from_mesh_to_vtk_poly_data(vertices, faces, vertex_colors=None, face_colors=None, vertex_ids=None, face_ids=None):
-    """Create a vtkPolyData mesh from vertices, triangular faces, and colors.
-
-    Parameters
-    ----------
-    vertices : array-like, shape (N, 3)
-        Vertex coordinates. Accepts a NumPy array or a sequence of
-        three-dimensional coordinate sequences.
-
-    faces : array-like, shape (M, 3)
-        Triangle connectivity. Each row contains three indices into
-        `vertices`. Accepts a NumPy array or a sequence of index sequences.
-
-    vertex_colors : array-like, shape (N, 3), optional
-        RGB color values for each vertex, with integer components in
-        the range [0, 255].
-
-    face_colors : array-like, shape (M, 3), optional
-        RGB color values for each triangle, with integer components in
-        the range [0, 255].
-
-    Returns
-    -------
-    vtk.vtkPolyData
-        A polygonal mesh containing the vertices, triangular faces,
-        and optional point and cell RGB colors.
-    """
-
-    vertices = np.ascontiguousarray(vertices, dtype=np.float64)
-    faces = np.asarray(faces, dtype=np.int64)
-    if vertex_colors is not None and face_colors is not None:
-        raise ValueError(
-            "Specify either vertices_colors or faces_colors, not both"
-        )
-    if vertex_colors is not None:
-        colors = np.ascontiguousarray(vertex_colors, dtype=np.uint8)
-    elif face_colors is not None:
-        colors = np.ascontiguousarray(face_colors, dtype=np.uint8)
-    else:
-        colors = None
-
-    if vertices.ndim != 2 or vertices.shape[1] != 3:
-        raise ValueError("vertices must have shape (N, 3)")
-
-    if faces.ndim != 2 or faces.shape[1] != 3:
-        raise ValueError("faces must have shape (M, 3)")
-
-    if faces.size and (faces.min() < 0 or faces.max() >= len(vertices)):
-        raise ValueError("faces contains vertex indices out of range")
-
-    poly_data = vtk.vtkPolyData()
-
-    # Vertices
-    points = vtk.vtkPoints()
-    points.SetData(numpy_to_vtk(vertices, deep=True))
-    poly_data.SetPoints(points)
-
-    # Triangular faces
-    offsets = np.arange(0, 3 * len(faces) + 1, 3, dtype=np.int64)
-    connectivity = np.ascontiguousarray(faces.ravel(), dtype=np.int64)
-
-    polys = vtk.vtkCellArray()
-    polys.SetData(
-        numpy_to_vtkIdTypeArray(offsets, deep=True),
-        numpy_to_vtkIdTypeArray(connectivity, deep=True),
-    )
-    poly_data.SetPolys(polys)
-
-    # colors
-    if colors is not None:
-        vtk_colors = numpy_to_vtk(colors, deep=True, array_type=vtk.VTK_UNSIGNED_CHAR)
-        vtk_colors.SetNumberOfComponents(3)
-        vtk_colors.SetName("Colors")
-        if vertex_colors is not None:
-            poly_data.GetPointData().SetScalars(vtk_colors)
-        elif face_colors is not None:
-            poly_data.GetCellData().SetScalars(vtk_colors)
-
-    # ids
-    if vertex_ids is not None:
-        vtk_ids = numpy_to_vtk(np.ascontiguousarray(vertex_ids), deep=True)
-        vtk_ids.SetName("vertex_id")
-        poly_data.GetPointData().AddArray(vtk_ids)
-
-    if face_ids is not None:
-        vtk_ids = numpy_to_vtk(np.ascontiguousarray(vertex_ids), deep=True)
-        vtk_ids.SetName("face_id")
-        poly_data.GetCellData().AddArray(vtk_ids)
-
-    return poly_data
-
-
-def from_vtk_poly_data_to_mesh(vtk_poly_data):
-    """
-    Get vertices and faces from a vtkPolyData object
-
-    Parameters
-    ----------
-    vtk_poly_data: vtk.vtkPolyData
-        The vtkPolyData object to get info from
-
-    Returns
-    -------
-    mesh: tuple
-        A tuple containing vertices, faces and colors of the mesh
-    """
-    vertices = vtk_to_numpy(
-        vtk_poly_data.GetPoints().GetData()
-    )
-
-    cell_array = vtk_poly_data.GetPolys()
-    connectivity = vtk_to_numpy(cell_array.GetConnectivityArray())
-    # Reconstruct faces (assuming triangles like your original reshape)
-    faces = connectivity.reshape(-1, 3)
-
-    point_colors = vtk_poly_data.GetPointData().GetScalars()
-    cell_colors = vtk_poly_data.GetCellData().GetScalars()
-
-    colors_array = None
-    if point_colors is not None:
-        colors_array = point_colors
-    elif cell_colors is not None:
-        colors_array = cell_colors
-
-    if colors_array is None:
-        colors = None
-    else:
-        colors = vtk_to_numpy(colors_array)
-
-    point_ids = vtk_poly_data.GetPointData().GetArray("vertex_id")
-    cell_ids = vtk_poly_data.GetCellData().GetArray("face_id")
-
-    vertex_ids = vtk_to_numpy(point_ids) if point_ids is not None else None
-    face_ids = vtk_to_numpy(cell_ids) if cell_ids is not None else None
-
-    return vertices, faces, colors, vertex_ids, face_ids
 
 
 def from_numpy_matrix_to_vtk_image_data(data_matrix):

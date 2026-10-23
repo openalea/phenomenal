@@ -24,13 +24,6 @@ Algorithms
    algorithms.smoothing
    algorithms.decimation
 
-Formats
-=======
-.. autosummary::
-   :toctree: generated/
-
-   formats
-
 
 Routines
 ========
@@ -53,7 +46,6 @@ VTK Transformation
 
 
 from .algorithms import *
-from .formats import *
 from .routines import *
 from .vtk_transformation import *
 # ==============================================================================

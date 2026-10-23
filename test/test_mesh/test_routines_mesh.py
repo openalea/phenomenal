@@ -29,11 +29,12 @@ def test_normals_centers():
 
     image_3d = voxel_grid.to_image_3d()
 
-    vtk_mesh = phm_mesh.meshing(
+    mesh = phm_mesh.meshing(
         image_3d, smoothing_iteration=2, reduction=0.95, verbose=True
     )
 
-    vertices, faces, _, _, _ = phm_mesh.from_vtk_poly_data_to_mesh(vtk_mesh)
+    vertices = mesh.vertices
+    faces = mesh.faces
     normals = phm_mesh.normals(vertices, faces)
     centers = phm_mesh.centers(vertices, faces)
 

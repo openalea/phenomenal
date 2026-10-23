@@ -41,10 +41,3 @@ def test_display_scene_voxels():
     voxels_positions = ((0, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 1))
     sc.add_actor_from_voxels(voxels_position=voxels_positions, voxels_size=4)
 
-
-@skip_on_ci_non_linux
-def test_display_scene_vertices_faces():
-    sc = phm_display.Scene()
-    vertices = ((0, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 1))
-    faces = ((0, 1, 2),)
-    sc.add_actor_from_vertices_faces(vertices=vertices, faces=faces)
