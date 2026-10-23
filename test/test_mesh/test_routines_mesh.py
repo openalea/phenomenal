@@ -33,10 +33,5 @@ def test_normals_centers():
         image_3d, smoothing_iteration=2, reduction=0.95, verbose=True
     )
 
-    vertices = mesh.vertices
-    faces = mesh.faces
-    normals = phm_mesh.normals(vertices, faces)
-    centers = phm_mesh.centers(vertices, faces)
-
-    assert len(normals) == len(faces)
-    assert len(centers) == len(faces)
+    assert len(mesh.normals) == len(mesh.faces)
+    assert len(mesh.centers) == len(mesh.faces)

@@ -55,6 +55,49 @@ class Mesh:
 
         return vtk_to_numpy(data)
 
+    @property
+    def triangles(self):
+        return self.vertices[self.faces]
+
+    @property
+    def triangle_areas(self):
+        vertices = self.vertices
+        faces = self.faces
+
+        a = vertices[faces[:, 0]]
+        b = vertices[faces[:, 1]]
+        c = vertices[faces[:, 2]]
+
+        cross_products = np.cross(b - a, c - a)
+        areas = 0.5 * np.linalg.norm(cross_products, axis=1)
+
+        return areas
+
+    @property
+    def normals(self):
+        """
+        Compute normal of each faces
+        """
+
+        # Fancy indexing to define two vector arrays from triangle vertices
+        actual_vertices = self.triangles
+        a = actual_vertices[:, 0, :] - actual_vertices[:, 1, :]
+        b = actual_vertices[:, 0, :] - actual_vertices[:, 2, :]
+
+        # Find normal vectors for each face via cross product
+        crosses = np.cross(a, b)
+        crosses = crosses / (np.sum(crosses ** 2, axis=1) ** 0.5)[:, np.newaxis]
+
+        return crosses
+    @property
+    def centers(self):
+        """
+        Compute center of each faces
+        """
+        v = self.triangles
+
+        return (v[:, 0, :] + v[:, 1, :] + v[:, 2, :]) / 3.0
+
     @staticmethod
     def from_pymesh(vertices, faces, colors=None, vids=None):
         """Instantiate a Mesh from vertices, triangular faces, colors and vids.
