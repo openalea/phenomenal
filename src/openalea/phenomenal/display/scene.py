@@ -162,16 +162,12 @@ class Scene(Display):
 
 
     @staticmethod
-    def get_actor_from_voxels(voxels_position, voxels_size, color=None):
+    def get_actor_from_voxels(voxels_grid, color=None):
         if color is None:
             color = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
 
-        points = vtk.vtkPoints()
-        for v in voxels_position:
-            points.InsertNextPoint(v[0], v[1], v[2])
-
-        polydata = vtk.vtkPolyData()
-        polydata.SetPoints(points)
+        polydata = voxels_grid.to_vtk_poly_data()
+        voxels_size = voxels_grid.voxels_size
 
         cube_source = vtk.vtkCubeSource()
         cube_source.SetXLength(voxels_size)
@@ -225,18 +221,18 @@ class Scene(Display):
         self.add_actor(actor)
 
 
-    def add_actor_from_voxels(self, voxels_position, voxels_size, color=None):
-        actor = self.get_actor_from_voxels(voxels_position, voxels_size, color=color)
+    def add_actor_from_voxels(self, voxels_grid, color=None):
+        actor = self.get_actor_from_voxels(voxels_grid, color=color)
 
         self.add_actor(actor)
 
     # ==========================================================================
 
-    def add_actors_from_voxels_list(self, voxels_positions, voxels_sizes, colors=None):
+    def add_actors_from_voxels_list(self, voxels_grids, colors=None):
         if colors is None:
-            colors = [None] * len(voxels_sizes)
+            colors = [None] * len(voxels_grids)
 
-        for voxels_position, voxels_size, color in zip(
-            voxels_positions, voxels_sizes, colors
+        for voxels_grid, color in zip(
+            voxels_grids, colors
         ):
-            self.add_actor_from_voxels(voxels_position, voxels_size, color=color)
+            self.add_actor_from_voxels(voxels_grid, color=color)

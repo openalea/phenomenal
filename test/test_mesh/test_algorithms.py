@@ -15,10 +15,6 @@ import numpy as np
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.mesh as phm_mesh
-from openalea.phenomenal.mesh import (
-    voxel_grid_to_vtk_poly_data,
-    from_voxel_centers_to_vtk_image_data,
-)
 
 from pathlib import Path
 test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
@@ -29,8 +25,9 @@ data_dir = test_subdir.parent / "data" / "plant_1"
 def test_mesh_error_1():
     voxels_size = 8
     voxels_position = list()
+    image_3d = phm_obj.VoxelGrid(voxels_position, voxels_size).image_3d
     try:
-        _ = phm_obj.VoxelGrid(voxels_position, voxels_size).to_image_3d()
+        _ = phm_mesh.meshing(image_3d)
 
     except Exception as e:
         assert isinstance(e, ValueError)
@@ -42,10 +39,11 @@ def test_mesh_error_2():
     voxels_size = 1
     voxels_position = list()
     voxels_position.append((0, 0, 0))
+    voxel_grid = phm_obj.VoxelGrid(voxels_position, voxels_size)
+    image_3d = voxel_grid.image_3d
 
     try:
-        image_3d = phm_obj.VoxelGrid(voxels_position, voxels_size).to_image_3d()
-        mesh = phm_mesh.meshing(image_3d)
+        _ = phm_mesh.meshing(image_3d)
 
     except Exception as e:
         assert isinstance(e, ValueError)
@@ -62,7 +60,7 @@ def test_meshing():
         data_dir, voxels_size=voxels_size
     )
 
-    image_3d = voxel_grid.to_image_3d()
+    image_3d = voxel_grid.image_3d
 
     mesh = phm_mesh.meshing(
         image_3d, smoothing_iteration=2, reduction=0.95, verbose=True
@@ -89,16 +87,14 @@ def test_meshing():
 
 
 
-    poly_data2 = voxel_grid_to_vtk_poly_data(voxel_grid)
+    poly_data2 = voxel_grid.to_vtk_poly_data()
     assert (0.05 * poly_data2.GetNumberOfVerts()) == mesh.poly_data.GetNumberOfVerts()
 
     vtk_image_data = phm_mesh.voxelization(mesh.poly_data, voxels_size=voxels_size)
-    voxels_position = phm_mesh.from_vtk_image_data_to_voxels_center(vtk_image_data)
-    image_data, (_, _, _) = from_voxel_centers_to_vtk_image_data(
-        voxels_position, voxels_size
-    )
+    image_2 = phm_obj.Image3D.from_vtk_image(vtk_image_data)
+    voxel_grid2 = phm_obj.VoxelGrid.from_image_3d(image_2)
 
-    assert len(voxels_position) >= 1000
+    assert len(voxel_grid2.voxels_position) >= 1000
 
 
 def test_format():

@@ -40,7 +40,7 @@ def test_simply_working_2():
     assert tuple(vpc.voxels_position[1]) == (1.0, 2.0, 19.0)
     assert len(vpc.voxels_position) == image_3d.size
 
-    im = vpc.to_image_3d()
+    im = phm_obj.Image3D.from_voxel_grid(vpc)
 
     assert im.ndim == 3
     assert im.size == len(vpc.voxels_position)

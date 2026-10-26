@@ -32,14 +32,6 @@ Routines
 
    routines
 
-
-VTK Transformation
-==================
-.. autosummary::
-   :toctree: generated/
-
-   vtk_transformation
-
 """
 
 # ==============================================================================
@@ -47,7 +39,6 @@ VTK Transformation
 
 from .algorithms import *
 from .routines import *
-from .vtk_transformation import *
 # ==============================================================================
 
 __all__ = [s for s in dir() if not s.startswith("_")]
