@@ -25,9 +25,9 @@ data_dir = test_subdir.parent / "data" / "plant_1"
 def test_mesh_error_1():
     voxels_size = 8
     voxels_position = list()
-    image_3d = phm_obj.VoxelGrid(voxels_position, voxels_size).image_3d
+    voxel_grid = phm_obj.VoxelGrid(voxels_position, voxels_size)
     try:
-        _ = phm_mesh.meshing(image_3d)
+        _ = phm_mesh.meshing(voxel_grid)
 
     except Exception as e:
         assert isinstance(e, ValueError)
@@ -40,10 +40,9 @@ def test_mesh_error_2():
     voxels_position = list()
     voxels_position.append((0, 0, 0))
     voxel_grid = phm_obj.VoxelGrid(voxels_position, voxels_size)
-    image_3d = voxel_grid.image_3d
 
     try:
-        _ = phm_mesh.meshing(image_3d)
+        _ = phm_mesh.meshing(voxel_grid)
 
     except Exception as e:
         assert isinstance(e, ValueError)
@@ -60,10 +59,8 @@ def test_meshing():
         data_dir, voxels_size=voxels_size
     )
 
-    image_3d = voxel_grid.image_3d
-
     mesh = phm_mesh.meshing(
-        image_3d, smoothing_iteration=2, reduction=0.95, verbose=True
+        voxel_grid, smoothing_iteration=2, reduction=0.95, verbose=True
     )
     n_vertices = len(mesh.vertices)
     n_faces = len(mesh.faces)
@@ -90,9 +87,8 @@ def test_meshing():
     poly_data2 = voxel_grid.to_vtk_poly_data()
     assert (0.05 * poly_data2.GetNumberOfVerts()) == mesh.poly_data.GetNumberOfVerts()
 
-    vtk_image_data = phm_mesh.voxelization(mesh.poly_data, voxels_size=voxels_size)
-    image_2 = phm_obj.Image3D.from_vtk_image(vtk_image_data)
-    voxel_grid2 = phm_obj.VoxelGrid.from_image_3d(image_2)
+    voxel_grid2 = phm_mesh.voxelization(mesh, voxels_size=voxels_size)
+
 
     assert len(voxel_grid2.voxels_position) >= 1000
 

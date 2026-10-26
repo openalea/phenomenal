@@ -13,7 +13,11 @@ import numpy
 import cv2
 # ==============================================================================
 
-__all__ = ["project_mesh_on_image", "median_color_from_images"]
+__all__ = ["meshing","voxelization","project_mesh_on_image", "median_color_from_images"]
+
+from openalea.phenomenal.mesh import marching_cubes, smoothing, decimation, image_stencil
+from openalea.phenomenal.object import Mesh, VoxelGrid, Image3D
+
 
 # ==============================================================================
 
@@ -109,3 +113,65 @@ def project_mesh_on_image(vertices, faces, shape_image, projection):
         cv2.fillConvexPoly(img, pts, 255)
 
     return img
+
+
+def meshing(voxel_grid, smoothing_iteration=0, reduction=0.0, verbose=False):
+    """
+    Build a polygonal mesh representation
+    from a voxel_grid
+
+    More, some option, is available to smooth the 3D object representation and
+    reduce the number triangle.
+
+    Firstly :
+        A marching cubes algorithm is applied to compute the polygonal mesh.
+
+    Secondly :
+        A smoothing algorithm is applied according the number of iteration
+        given
+
+    Thirdly :
+        A mesh decimation algorithm is applied according the percentage of
+        reduction given.
+
+    Parameters
+    ----------
+
+    voxel_grid : 3a VoxelGrid object
+
+    smoothing_iteration : int, optional
+        Number of iteration for smoothing
+
+    reduction : float, optional
+        Center position of the first original voxel, who will be split.
+        0 and 1
+
+    verbose : bool, optional
+        If True, print for some information of each part of the algorithms
+
+    Returns
+    -------
+     Mesh
+    """
+
+    image_3d = voxel_grid.image_3d
+    if image_3d.size < 8:
+        raise ValueError("image_3d must have size >= 8")
+
+    vtk_poly_data = marching_cubes(image_3d.vtk_image_data, verbose=verbose)
+
+    if smoothing_iteration > 1:
+        vtk_poly_data = smoothing(
+            vtk_poly_data, number_of_iteration=smoothing_iteration, verbose=verbose
+        )
+
+    if 0.0 < reduction < 1.0:
+        vtk_poly_data = decimation(vtk_poly_data, reduction=reduction, verbose=verbose)
+
+    return Mesh(vtk_poly_data)
+
+
+def voxelization(mesh, voxels_size=1):
+    vtk_image = image_stencil(mesh.poly_data, spacing=voxels_size)
+    image_3d = Image3D.from_vtk_image(vtk_image)
+    return VoxelGrid.from_image_3d(image_3d, voxels_size=image_3d.voxels_size[0])

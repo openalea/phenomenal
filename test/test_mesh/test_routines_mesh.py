@@ -27,10 +27,8 @@ def test_normals_centers():
         data_dir, voxels_size=voxels_size
     )
 
-    image_3d = voxel_grid.image_3d
-
     mesh = phm_mesh.meshing(
-        image_3d, smoothing_iteration=2, reduction=0.95, verbose=True
+        voxel_grid, smoothing_iteration=2, reduction=0.95, verbose=True
     )
 
     assert len(mesh.normals) == len(mesh.faces)

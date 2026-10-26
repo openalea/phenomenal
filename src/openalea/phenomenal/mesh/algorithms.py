@@ -13,77 +13,16 @@ import vtk
 from vtkmodules.util.numpy_support import vtk_to_numpy
 import numpy as np
 
-from openalea.phenomenal.object import Mesh
-
 # ==============================================================================
 
 __all__ = [
-    "meshing",
     "marching_cubes",
     "smoothing",
     "decimation",
-    "voxelization"
+    "image_stencil"
 ]
 
 # ==============================================================================
-
-
-def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
-    """
-    Build a polygonal mesh representation
-    from a 3d image (= numpy array 3D).
-
-    More, some option, is available to smooth the 3D object representation and
-    reduce the number triangle.
-
-    Firstly :
-        A marching cubes algorithm is applied to compute the polygonal mesh.
-
-    Secondly :
-        A smoothing algorithm is applied according the number of iteration
-        given
-
-    Thirdly :
-        A mesh decimation algorithm is applied according the percentage of
-        reduction given.
-
-    Parameters
-    ----------
-
-    image_3d : 3D numpy array
-        3D Array with positive values
-
-    smoothing_iteration : int, optional
-        Number of iteration for smoothing
-
-    reduction : float, optional
-        Center position of the first original voxel, who will be split.
-        0 and 1
-
-    verbose : bool, optional
-        If True, print for some information of each part of the algorithms
-
-    Returns
-    -------
-    vtk.vtkPolyData
-        A polygonal mesh containing the vertices, triangular faces,
-        and optional point and cell RGB colors.
-    """
-
-    if image_3d.size < 8:
-        raise ValueError("image_3d must have size >= 8")
-
-    vtk_poly_data = marching_cubes(image_3d.vtk_image_data, verbose=verbose)
-
-    if smoothing_iteration > 1:
-        vtk_poly_data = smoothing(
-            vtk_poly_data, number_of_iteration=smoothing_iteration, verbose=verbose
-        )
-
-    if 0.0 < reduction < 1.0:
-        vtk_poly_data = decimation(vtk_poly_data, reduction=reduction, verbose=verbose)
-
-    return Mesh(vtk_poly_data)
 
 
 def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
@@ -292,15 +231,15 @@ def decimation(vtk_poly_data, reduction=0.95, verbose=False):
     return vtk_poly_decimated
 
 
-def voxelization(vtk_poly_data, voxels_size=1):
+def image_stencil(vtk_poly_data, spacing=1):
     """Voxelize a closed mesh into a vtkImageData.
 
     Parameters
     ----------
     vtk_poly_data : vtk.vtkPolyData
         Input closed surface mesh.
-    voxels_size : float, optional
-        Isotropic voxel size. Defaults to 1.
+    spacing : float or sequence of 3 floats, optional
+        Voxel spacing along the x, y, and z axes. Defaults to 1.
 
     Returns
     -------
@@ -308,25 +247,26 @@ def voxelization(vtk_poly_data, voxels_size=1):
         Binary image with value 255 inside the mesh and 0 outside.
         The origin corresponds to the center of the first voxel.
     """
-    if voxels_size <= 0:
-        raise ValueError("voxels_size must be positive")
-
     if vtk_poly_data is None or vtk_poly_data.GetNumberOfPoints() == 0:
         raise ValueError("vtk_poly_data must contain points")
+
+    spacing = np.asarray(spacing, dtype=float)
+    if spacing.ndim == 0:
+        spacing = np.full(3, spacing.item())
+    if spacing.shape != (3,) or not np.all(np.isfinite(spacing)) or np.any(spacing <= 0):
+        raise ValueError("spacing must be a positive scalar or 3-element sequence")
 
     # Mesh bounds: xmin, xmax, ymin, ymax, zmin, zmax.
     bounds = np.asarray(vtk_poly_data.GetBounds()).reshape(3, 2)
 
-    spacing = (voxels_size,) * 3
-
     # Number of voxels along each axis.
     dimensions = np.ceil(
-        (bounds[:, 1] - bounds[:, 0]) / voxels_size
+        (bounds[:, 1] - bounds[:, 0]) / spacing
     ).astype(int)
     dimensions = np.maximum(dimensions, 1)
 
     # Position of the first voxel center.
-    origin = bounds[:, 0] + voxels_size / 2
+    origin = bounds[:, 0] + spacing / 2
 
     # Initialize the image to 255 without a Python loop.
     white_image = vtk.vtkImageData()
@@ -353,4 +293,5 @@ def voxelization(vtk_poly_data, voxels_size=1):
     image_stencil.Update()
 
     return image_stencil.GetOutput()
+0
 

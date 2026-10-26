@@ -44,7 +44,7 @@ def show_voxel_grid(voxel_grid,
                     color=0x00ff00):
 
     plot = k3d.plot()
-    voxels = voxel_grid.to_image_3d()
+    voxels = voxel_grid.image_3d
     plot += plot_voxel(voxels, color)
     plot.display()
 
