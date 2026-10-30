@@ -58,6 +58,7 @@ dependencies = [
   "orjson",
   "skan",
   "k3d",
+  "dracopy"
 ]
 
 [project.optional-dependencies]

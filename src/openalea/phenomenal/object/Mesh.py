@@ -11,6 +11,9 @@
 import vtk
 import numpy as np
 from vtkmodules.util.numpy_support import numpy_to_vtk, numpy_to_vtkIdTypeArray, vtk_to_numpy
+import DracoPy
+
+
 
 
 class Mesh:
@@ -193,3 +196,19 @@ class Mesh:
         poly_data = ply_reader.GetOutput()
 
         return Mesh(poly_data)
+
+    def to_drc(self, filename):
+        encoded = DracoPy.encode(
+            self.vertices,
+            faces=self.faces,
+            colors=self.colors,
+            generic_attributes={"vids": self.vids})
+
+        with open(filename, "wb") as f:
+            f.write(encoded)
+
+    @staticmethod
+    def from_drc(filename):
+        with open(filename, "rb") as f:
+            decoded = DracoPy.decode(f.read())
+        return Mesh.from_pymesh(decoded.points, decoded.faces, colors=decoded.colors, vids=decoded.get_attribute_by_name("vids"))
