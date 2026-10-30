@@ -2,6 +2,7 @@ import pytest
 import os
 import sys
 import openalea.phenomenal.display as phm_display
+from openalea.phenomenal.object import VoxelGrid
 
 
 skip_on_ci_non_linux = pytest.mark.skipif(
@@ -39,12 +40,6 @@ def test_display_scene_arrow():
 def test_display_scene_voxels():
     sc = phm_display.Scene()
     voxels_positions = ((0, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 1))
-    sc.add_actor_from_voxels(voxels_position=voxels_positions, voxels_size=4)
+    voxels_size = 4
+    sc.add_actor_from_voxels(VoxelGrid(voxels_positions, voxels_size))
 
-
-@skip_on_ci_non_linux
-def test_display_scene_vertices_faces():
-    sc = phm_display.Scene()
-    vertices = ((0, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 1))
-    faces = ((0, 1, 2),)
-    sc.add_actor_from_vertices_faces(vertices=vertices, faces=faces)

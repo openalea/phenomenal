@@ -9,103 +9,20 @@
 # ==============================================================================
 
 
-import math
 import vtk
-import numpy
-import skimage.measure
-
-from .vtk_transformation import (
-    from_numpy_matrix_to_vtk_image_data,
-    from_vtk_poly_data_to_vertices_faces,
-    from_vertices_faces_to_vtk_poly_data,
-    from_vtk_image_data_to_voxels_center,
-)
+from vtkmodules.util.numpy_support import vtk_to_numpy
+import numpy as np
 
 # ==============================================================================
 
 __all__ = [
-    "meshing",
     "marching_cubes",
     "smoothing",
     "decimation",
-    "voxelization",
-    "mesh_surface_area",
-    "from_vertices_faces_to_voxels_position",
+    "image_stencil"
 ]
 
 # ==============================================================================
-
-
-def meshing(image_3d, smoothing_iteration=0, reduction=0.0, verbose=False):
-    """
-    Build a polygonal mesh representation (= list of vertices and faces)
-    from a 3d image (= numpy array 3D).
-
-    More, some option, is available to smooth the 3D object representation and
-    reduce the number triangle.
-
-    Firstly :
-        A marching cubes algorithm is applied to compute the polygonal mesh.
-
-    Secondly :
-        A smoothing algorithm is applied according the number of iteration
-        given
-
-    Thirdly :
-        A mesh decimation algorithm is applied according the percentage of
-        reduction given.
-
-    Parameters
-    ----------
-
-    image_3d : 3D numpy array
-        3D Array with positive values
-
-    smoothing_iteration : int, optional
-        Number of iteration for smoothing
-
-    reduction : float, optional
-        Center position of the first original voxel, who will be split.
-        0 and 1
-
-    verbose : bool, optional
-        If True, print for some information of each part of the algorithms
-
-    Returns
-    -------
-    vertices : [(x, y, z), ...]
-        Spatial coordinates for unique mesh vertices.
-
-    faces : [(V1, V2, V3), ...]
-        Define triangular faces via referencing vertex indices from vertices.
-        This algorithm specifically outputs triangles, so each face has exactly
-        three indices
-    """
-
-    if image_3d.size < 8:
-        raise ValueError("image_3d must have size >= 8")
-
-    image_3d = image_3d.astype(numpy.uint8)
-
-    vtk_image_data = from_numpy_matrix_to_vtk_image_data(image_3d)
-
-    vtk_poly_data = marching_cubes(vtk_image_data, verbose=verbose)
-
-    if smoothing_iteration > 1:
-        vtk_poly_data = smoothing(
-            vtk_poly_data, number_of_iteration=smoothing_iteration, verbose=verbose
-        )
-
-    if 0.0 < reduction < 1.0:
-        vtk_poly_data = decimation(vtk_poly_data, reduction=reduction, verbose=verbose)
-
-    if vtk_poly_data.GetNumberOfPoints() == 0:
-        return [], []
-
-    vertices, faces, _ = from_vtk_poly_data_to_vertices_faces(vtk_poly_data)
-    vertices = vertices * image_3d.voxels_size + image_3d.world_coordinate
-
-    return vertices, faces
 
 
 def marching_cubes(vtk_image_data, iso_value=0.5, verbose=False):
@@ -314,127 +231,67 @@ def decimation(vtk_poly_data, reduction=0.95, verbose=False):
     return vtk_poly_decimated
 
 
-def voxelization(vtk_poly_data, voxels_size=1):
-    """
-    Transform a mesh vtk poly data mesh representation objet to a list of
-    voxels position, according to a voxels size float.
+def image_stencil(vtk_poly_data, spacing=1):
+    """Voxelize a closed mesh into a vtkImageData.
 
     Parameters
     ----------
-    vtk_poly_data : vtkPolyData
-        vtkPolyData is a data object that is a concrete implementation of
-        vtkDataSet. vtkPolyData represents a geometric structure consisting
-        of vertices, lines, polygons, and/or triangle strips.
-        Point and cell attribute values (e.g., scalars, vectors, etc.)
-        also are represented.
-
-    voxels_size : float, optional
-        Size of the voxels
+    vtk_poly_data : vtk.vtkPolyData
+        Input closed surface mesh.
+    spacing : float or sequence of 3 floats, optional
+        Voxel spacing along the x, y, and z axes. Defaults to 1.
 
     Returns
     -------
-    vtk_image_data : vtkImageData
-        Topologically and geometrically regular array of data
-
-        vtkImageData is a data object that is a concrete implementation of
-        vtkDataSet. vtkImageData represents a geometric structure that is a
-        topological and geometrical regular array of points.
-        Examples include volumes (voxel data) and pixmaps
-
+    vtk.vtkImageData
+        Binary image with value 255 inside the mesh and 0 outside.
+        The origin corresponds to the center of the first voxel.
     """
-    # ==========================================================================
-    # Build White Image
+    if vtk_poly_data is None or vtk_poly_data.GetNumberOfPoints() == 0:
+        raise ValueError("vtk_poly_data must contain points")
+
+    spacing = np.asarray(spacing, dtype=float)
+    if spacing.ndim == 0:
+        spacing = np.full(3, spacing.item())
+    if spacing.shape != (3,) or not np.all(np.isfinite(spacing)) or np.any(spacing <= 0):
+        raise ValueError("spacing must be a positive scalar or 3-element sequence")
+
+    # Mesh bounds: xmin, xmax, ymin, ymax, zmin, zmax.
+    bounds = np.asarray(vtk_poly_data.GetBounds()).reshape(3, 2)
+
+    # Number of voxels along each axis.
+    dimensions = np.ceil(
+        (bounds[:, 1] - bounds[:, 0]) / spacing
+    ).astype(int)
+    dimensions = np.maximum(dimensions, 1)
+
+    # Position of the first voxel center.
+    origin = bounds[:, 0] + spacing / 2
+
+    # Initialize the image to 255 without a Python loop.
     white_image = vtk.vtkImageData()
-
-    bounds = [0.0] * 6
-    vtk_poly_data.GetBounds(bounds)
-
-    # desired volume spacing
-    spacing = [voxels_size, voxels_size, voxels_size]
-    white_image.SetSpacing(spacing)
-
-    # ==========================================================================
-    # compute dimensions
-
-    dim = [0] * 3
-    for i in range(3):
-        dim[i] = int(math.ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]))
-
-    white_image.SetDimensions(dim)
-    white_image.SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1)
-
-    origin = [0.0] * 3
-    for i in range(3):
-        origin[i] = bounds[i * 2] + spacing[i] / 2.0
-
-    white_image.SetOrigin(origin)
-
-    # ==========================================================================
-
+    white_image.SetDimensions(*dimensions)
+    white_image.SetSpacing(*spacing)
+    white_image.SetOrigin(*origin)
     white_image.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
 
-    inval = 255
-    outval = 0
+    scalars = vtk_to_numpy(white_image.GetPointData().GetScalars())
+    scalars.fill(255)
 
-    count = white_image.GetNumberOfPoints()
-    for i in range(count):
-        white_image.GetPointData().GetScalars().SetTuple1(i, inval)
+    # Convert the mesh into an image stencil.
+    poly_to_stencil = vtk.vtkPolyDataToImageStencil()
+    poly_to_stencil.SetInputData(vtk_poly_data)
+    poly_to_stencil.SetOutputOrigin(*origin)
+    poly_to_stencil.SetOutputSpacing(*spacing)
+    poly_to_stencil.SetOutputWholeExtent(white_image.GetExtent())
 
-    # ==========================================================================
-    # polygonal data --> image stencil:
+    # Apply the stencil: 0 outside, 255 inside.
+    image_stencil = vtk.vtkImageStencil()
+    image_stencil.SetInputData(white_image)
+    image_stencil.SetStencilConnection(poly_to_stencil.GetOutputPort())
+    image_stencil.SetBackgroundValue(0)
+    image_stencil.Update()
 
-    edges = vtk.vtkFeatureEdges()
-    edges.SetInputData(vtk_poly_data)
-    edges.FeatureEdgesOff()
-    edges.NonManifoldEdgesOn()
-    edges.BoundaryEdgesOn()
-    edges.Update()
+    return image_stencil.GetOutput()
+0
 
-    pol2stenc = vtk.vtkPolyDataToImageStencil()
-    pol2stenc.SetOutputOrigin(origin)
-    pol2stenc.SetInputData(vtk_poly_data)
-    pol2stenc.SetOutputSpacing(spacing)
-    pol2stenc.SetOutputWholeExtent(white_image.GetExtent())
-    pol2stenc.Update()
-
-    vtk.vtkCleanPolyData()
-
-    # ==========================================================================
-    # Cut the corresponding white image and set the background:
-
-    imgstenc = vtk.vtkImageStencil()
-    imgstenc.SetInputData(white_image)
-    imgstenc.SetStencilConnection(pol2stenc.GetOutputPort())
-    imgstenc.ReverseStencilOff()
-    imgstenc.SetBackgroundValue(outval)
-    imgstenc.Update()
-
-    # ==========================================================================
-
-    return imgstenc.GetOutput()
-
-
-def mesh_surface_area(vertices, faces) -> float:
-    """
-    Returns the surface_area of a mesh
-
-    Parameters
-    ----------
-    vertices: list[tuple]
-        The vertices of the mesh.
-    faces: list[tuple]
-        The faces of the mesh
-    Returns
-    -------
-    area: float
-        Surface area of mesh
-    """
-    return skimage.measure.mesh_surface_area(vertices, faces)
-
-
-def from_vertices_faces_to_voxels_position(vertices, faces, voxels_size=4):
-    poly_data = from_vertices_faces_to_vtk_poly_data(vertices, faces)
-    image_data = voxelization(poly_data, voxels_size=voxels_size)
-    voxels_position = from_vtk_image_data_to_voxels_center(image_data)
-
-    return voxels_position

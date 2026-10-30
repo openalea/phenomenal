@@ -24,7 +24,7 @@ def test_simply_working_1():
 
     voxels_size = 2
 
-    im = phm_obj.VoxelGrid(voxels_position, voxels_size).to_image_3d()
+    im = phm_obj.VoxelGrid(voxels_position, voxels_size).image_3d
 
     assert im.ndim == 3
 
@@ -42,10 +42,10 @@ def test_simply_working_2():
     voxels_position = list()
     voxels_position.append((1, 42, 1))
 
-    im = phm_obj.VoxelGrid(voxels_position, voxels_size).to_image_3d()
+    im = phm_obj.VoxelGrid(voxels_position, voxels_size).image_3d
 
     assert im == [[[1]]]
-    assert im.world_coordinate == (1, 42, 1)
+    assert tuple(im.world_coordinate) == (1, 42, 1)
 
     vpc = phm_obj.VoxelGrid.from_image_3d(im)
 

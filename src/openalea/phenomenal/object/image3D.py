@@ -12,6 +12,9 @@
 import os
 import numpy
 import cv2
+import vtk
+from vtkmodules.util.numpy_support import numpy_to_vtk, vtk_to_numpy
+
 # ==============================================================================
 
 
@@ -47,27 +50,80 @@ class Image3D(numpy.ndarray):
     # TRANSFORM
     # ==========================================================================
 
-    # def to_VoxelPointCloud(self,
-    #                        voxels_value=1,
-    #                        voxels_size=None,
-    #                        world_coordinate=None):
-    #
-    #     xx, yy, zz = numpy.where(self >= voxels_value)
-    #
-    #     if voxels_size is None:
-    #         voxels_size = self.voxels_size
-    #
-    #     if world_coordinate is None:
-    #         world_coordinate = self.world_coordinate
-    #
-    #     xxx = world_coordinate[0] + xx * voxels_size
-    #     yyy = world_coordinate[1] + yy * voxels_size
-    #     zzz = world_coordinate[2] + zz * voxels_size
-    #
-    #     voxels_position = zip(xxx, yyy, zzz)
-    #
-    #     return VoxelGrid(voxels_position, voxels_size)
+    @property
+    def vtk_image_data(self):
+        """Return a vtkImageData representation of this image."""
+        image = vtk.vtkImageData()
 
+        nx, ny, nz = self.shape
+        image.SetDimensions(nx, ny, nz)
+
+        if numpy.isscalar(self.voxels_size):
+            spacing = (self.voxels_size,) * 3
+        else:
+            spacing = self.voxels_size
+
+        image.SetSpacing(*spacing)
+        image.SetOrigin(*self.world_coordinate)
+
+        vtk_array = numpy_to_vtk(
+            numpy.ascontiguousarray(self.astype(numpy.uint8)).ravel(order="F"),
+            deep=True,
+        )
+        vtk_array.SetNumberOfComponents(1)
+
+        image.GetPointData().SetScalars(vtk_array)
+
+        return image
+    @staticmethod
+    def from_vtk_image(vtk_image):
+        """Create an Image3D from vtkImageData."""
+        dimensions = vtk_image.GetDimensions()
+
+        vtk_array = vtk_image.GetPointData().GetScalars()
+        if vtk_array is None:
+            raise ValueError("vtkImageData has no point scalars")
+
+        if vtk_array.GetNumberOfComponents() != 1:
+            raise ValueError("Expected a single-component scalar image")
+
+        array = vtk_to_numpy(vtk_array).reshape(dimensions, order="F")
+
+        return Image3D(
+            array,
+            voxels_size=vtk_image.GetSpacing(),
+            world_coordinate=vtk_image.GetOrigin(),
+            dtype=array.dtype,
+            order="F",
+        )
+
+    @staticmethod
+    def from_voxel_grid(voxel_grid):
+        voxels_position = numpy.asarray(voxel_grid.voxels_position)
+        voxels_size = voxel_grid.voxels_size
+
+        if voxels_position.size == 0:
+            return Image3D(
+                numpy.zeros((0, 0, 0), dtype=numpy.uint8),
+                voxels_size=voxels_size,
+                world_coordinate=(0, 0, 0),
+            )
+
+        world_coordinate = voxels_position.min(axis=0)
+
+        indices = numpy.rint(
+            (voxels_position - world_coordinate) / voxels_size
+        ).astype(int)
+
+        shape = indices.max(axis=0) + 1
+        image = numpy.zeros(shape, dtype=numpy.uint8)
+        image[tuple(indices.T)] = 1
+
+        return Image3D(
+            image,
+            voxels_size=voxels_size,
+            world_coordinate=world_coordinate,
+        )
     # ==========================================================================
     # READ / WRITE
     # ==========================================================================

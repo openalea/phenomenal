@@ -15,32 +15,6 @@ from .scene import Scene
 # ==============================================================================
 
 
-def show_mesh(
-    vertices,
-    faces,
-    color=(0.1, 0.8, 0.1),
-    colors=None,
-    windows_size=(600, 800),
-    screenshot_filename=None,
-    screenshot_magnification=10,
-    record_filename=None,
-    record_quality=2,
-    record_rate=25,
-):
-    scene = Scene()
-    actor = scene.get_actor_from_vertices_faces(
-        vertices, faces, color=color, colors=colors
-    )
-    scene.add_actor(actor)
-    scene.show(
-        windows_size=windows_size,
-        screenshot_filename=screenshot_filename,
-        screenshot_magnification=screenshot_magnification,
-        record_filename=record_filename,
-        record_quality=record_quality,
-        record_rate=record_rate,
-    )
-
 
 def show_voxel_grid(
     voxel_grid,
@@ -67,9 +41,9 @@ def show_voxel_grid(
     )
 
 
-def show_vtk_poly_data(
-    vtk_poly_data,
-    color=(0, 1, 0),
+def show_mesh(
+    mesh,
+    color=(0.1, 0.8, 0.1),
     windows_size=(600, 800),
     screenshot_filename=None,
     screenshot_magnification=10,
@@ -78,10 +52,11 @@ def show_vtk_poly_data(
     record_rate=25,
 ):
     mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputData(vtk_poly_data)
+    mapper.SetInputData(mesh.poly_data)
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(color[0], color[1], color[2])
+    if len(mesh.colors) == 0:
+        actor.GetProperty().SetColor(color[0], color[1], color[2])
 
     scene = Scene()
     scene.add_actor(actor)

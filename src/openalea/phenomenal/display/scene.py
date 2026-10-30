@@ -160,67 +160,14 @@ class Scene(Display):
 
         return actor
 
-    @staticmethod
-    def get_actor_from_vertices_faces(vertices, faces, color=None, colors=None):
-        # Setup the colors array
-        vtk_colors = vtk.vtkUnsignedCharArray()
-        vtk_colors.SetNumberOfComponents(3)
-        vtk_colors.SetName("Colors")
-
-        # ======================================================================
-
-        def make_vtk_id_list(it):
-            vil = vtk.vtkIdList()
-            for j in it:
-                vil.InsertNextId(int(j))
-            return vil
-
-        poly_data = vtk.vtkPolyData()
-        points = vtk.vtkPoints()
-        polys = vtk.vtkCellArray()
-
-        # Load the point, cell, and data attributes.
-        for i in range(len(vertices)):
-            points.InsertPoint(i, vertices[i])
-        poly_data.SetPoints(points)
-        del points
-
-        for i in range(len(faces)):
-            polys.InsertNextCell(make_vtk_id_list(faces[i]))
-        poly_data.SetPolys(polys)
-        del polys
-
-        if colors is not None:
-            vtk_colors = vtk.vtkUnsignedCharArray()
-            vtk_colors.SetNumberOfComponents(3)
-            vtk_colors.SetName("Colors")
-            for color in colors:
-                vtk_colors.InsertNextTuple3(color[0], color[1], color[2])
-            poly_data.GetCellData().SetScalars(vtk_colors)
-
-        # ======================================================================
-
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputData(poly_data)
-
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
-        if color is not None and colors is None:
-            actor.GetProperty().SetColor(color[0], color[1], color[2])
-
-        return actor
 
     @staticmethod
-    def get_actor_from_voxels(voxels_position, voxels_size, color=None):
+    def get_actor_from_voxels(voxels_grid, color=None):
         if color is None:
             color = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
 
-        points = vtk.vtkPoints()
-        for v in voxels_position:
-            points.InsertNextPoint(v[0], v[1], v[2])
-
-        polydata = vtk.vtkPolyData()
-        polydata.SetPoints(points)
+        polydata = voxels_grid.to_vtk_poly_data()
+        voxels_size = voxels_grid.voxels_size
 
         cube_source = vtk.vtkCubeSource()
         cube_source.SetXLength(voxels_size)
@@ -273,24 +220,19 @@ class Scene(Display):
 
         self.add_actor(actor)
 
-    def add_actor_from_vertices_faces(self, vertices, faces, color=None, colors=None):
-        actor = self.get_actor_from_vertices_faces(
-            vertices, faces, color=color, colors=colors
-        )
-        self.add_actor(actor)
 
-    def add_actor_from_voxels(self, voxels_position, voxels_size, color=None):
-        actor = self.get_actor_from_voxels(voxels_position, voxels_size, color=color)
+    def add_actor_from_voxels(self, voxels_grid, color=None):
+        actor = self.get_actor_from_voxels(voxels_grid, color=color)
 
         self.add_actor(actor)
 
     # ==========================================================================
 
-    def add_actors_from_voxels_list(self, voxels_positions, voxels_sizes, colors=None):
+    def add_actors_from_voxels_list(self, voxels_grids, colors=None):
         if colors is None:
-            colors = [None] * len(voxels_sizes)
+            colors = [None] * len(voxels_grids)
 
-        for voxels_position, voxels_size, color in zip(
-            voxels_positions, voxels_sizes, colors
+        for voxels_grid, color in zip(
+            voxels_grids, colors
         ):
-            self.add_actor_from_voxels(voxels_position, voxels_size, color=color)
+            self.add_actor_from_voxels(voxels_grid, color=color)
