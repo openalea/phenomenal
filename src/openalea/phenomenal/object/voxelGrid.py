@@ -110,8 +110,13 @@ class VoxelGrid:
     def to_vtk_poly_data(self):
         """Return vtkPolyData containing the voxel centers."""
 
+        voxels_position = self.voxels_position
+        # voxel organs and segments hold their positions as sets
+        if isinstance(voxels_position, (set, frozenset)):
+            voxels_position = list(voxels_position)
+
         voxels_position = numpy.asarray(
-            self.voxels_position, dtype=numpy.float64
+            voxels_position, dtype=numpy.float64
         ).reshape(-1, 3)
 
         vtk_points = vtk.vtkPoints()
@@ -134,6 +139,9 @@ class VoxelGrid:
     ):
         if voxels_size is None:
             voxels_size = image_3d.voxels_size
+
+        if numpy.ndim(voxels_size) != 0:
+            raise ValueError("VoxelGrid requires the same voxels_size on all axes")
 
         if world_coordinate is None:
             world_coordinate = image_3d.world_coordinate

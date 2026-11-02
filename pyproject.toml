@@ -51,6 +51,7 @@ dynamic = ["version", "readme"]
 dependencies = [
   "numpy",
   "scipy",
+  "pillow",
   "scikit-image",
   "scikit-learn",
   "networkx",

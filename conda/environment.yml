@@ -9,6 +9,7 @@ dependencies:
   - pip
   - pandoc
   - cxx-compiler
+  - pandoc
   - opencv
   - matplotlib-base
   - openalea.phenotyping_data

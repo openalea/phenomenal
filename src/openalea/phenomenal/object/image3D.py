@@ -89,9 +89,12 @@ class Image3D(numpy.ndarray):
 
         array = vtk_to_numpy(vtk_array).reshape(dimensions, order="F")
 
+        spacing = vtk_image.GetSpacing()
+        voxels_size = spacing[0] if len(set(spacing)) == 1 else spacing
+
         return Image3D(
             array,
-            voxels_size=vtk_image.GetSpacing(),
+            voxels_size=voxels_size,
             world_coordinate=vtk_image.GetOrigin(),
             dtype=array.dtype,
             order="F",
@@ -145,7 +148,8 @@ class Image3D(numpy.ndarray):
         npz = numpy.load(filename, allow_pickle=False)
 
         image = npz["image"]
-        voxels_size = int(npz["voxels_size"])
+        voxels_size = npz["voxels_size"]
+        voxels_size = voxels_size.item() if voxels_size.ndim == 0 else tuple(voxels_size.tolist())
         world_coordinate = tuple(npz["world_coordinate"])
 
         return Image3D(
