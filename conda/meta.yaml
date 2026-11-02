@@ -31,12 +31,11 @@ requirements:
     {% endfor  %}
 
   build:
-    - pip
     - {{ compiler("cxx") }}
+    - {{ stdlib("c") }}
 
   run:
     - python
-    - opencv <5             #[osx and x86_64]
     {% for dep in deps + conda_deps %}
     - {{ dep }}
     {% endfor %}
