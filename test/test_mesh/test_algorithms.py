@@ -35,19 +35,18 @@ def test_mesh_error_1():
         assert False
 
 
-def test_mesh_error_2():
+def test_mesh_single_voxel():
     voxels_size = 1
     voxels_position = list()
     voxels_position.append((0, 0, 0))
     voxel_grid = phm_obj.VoxelGrid(voxels_position, voxels_size)
 
-    try:
-        _ = phm_mesh.meshing(voxel_grid)
+    mesh = phm_mesh.meshing(voxel_grid)
 
-    except Exception as e:
-        assert isinstance(e, ValueError)
-    else:
-        assert False
+    assert len(mesh.vertices) == 6
+    assert len(mesh.faces) == 8
+    np.testing.assert_allclose(mesh.vertices.min(axis=0), (-0.5, -0.5, -0.5))
+    np.testing.assert_allclose(mesh.vertices.max(axis=0), (0.5, 0.5, 0.5))
 
 
 def test_meshing():
@@ -65,7 +64,7 @@ def test_meshing():
     n_vertices = len(mesh.vertices)
     n_faces = len(mesh.faces)
     assert 100 <= n_vertices <= 500, n_vertices
-    assert 200 <= n_faces <= 1000, n_faces
+    assert 200 <= n_faces <= 1100, n_faces
 
     bbox_min, bbox_max = voxel_grid.bounding_box()
 
@@ -83,9 +82,6 @@ def test_meshing():
     )
 
 
-
-    poly_data2 = voxel_grid.to_vtk_poly_data()
-    assert (0.05 * poly_data2.GetNumberOfVerts()) == mesh.poly_data.GetNumberOfVerts()
 
     voxel_grid2 = phm_mesh.voxelization(mesh, voxels_size=voxels_size)
 

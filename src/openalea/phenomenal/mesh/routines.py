@@ -155,10 +155,17 @@ def meshing(voxel_grid, smoothing_iteration=0, reduction=0.0, verbose=False):
     """
 
     image_3d = voxel_grid.image_3d
-    if image_3d.size < 8:
-        raise ValueError("image_3d must have size >= 8")
+    if image_3d.size == 0:
+        raise ValueError("voxel_grid must contain voxels")
 
-    vtk_poly_data = marching_cubes(image_3d.vtk_image_data, verbose=verbose)
+    # an empty layer around the voxels closes the surface on the image borders
+    padded_image = Image3D(
+        numpy.pad(image_3d, 1),
+        voxels_size=image_3d.voxels_size,
+        world_coordinate=numpy.asarray(image_3d.world_coordinate) - image_3d.voxels_size,
+    )
+
+    vtk_poly_data = marching_cubes(padded_image.vtk_image_data, verbose=verbose)
 
     if smoothing_iteration > 1:
         vtk_poly_data = smoothing(
@@ -174,4 +181,4 @@ def meshing(voxel_grid, smoothing_iteration=0, reduction=0.0, verbose=False):
 def voxelization(mesh, voxels_size=1):
     vtk_image = image_stencil(mesh.poly_data, spacing=voxels_size)
     image_3d = Image3D.from_vtk_image(vtk_image)
-    return VoxelGrid.from_image_3d(image_3d, voxels_size=image_3d.voxels_size[0])
+    return VoxelGrid.from_image_3d(image_3d)

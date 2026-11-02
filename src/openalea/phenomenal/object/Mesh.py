@@ -11,7 +11,7 @@
 import vtk
 import numpy as np
 from vtkmodules.util.numpy_support import numpy_to_vtk, numpy_to_vtkIdTypeArray, vtk_to_numpy
-import DracoPy
+import vtkmodules.util.pickle_support  # registers vtkPolyData for copy and pickle
 
 
 
@@ -23,6 +23,9 @@ class Mesh:
         self.poly_data = poly_data or vtk.vtkPolyData()
 
     def __getattr__(self, name):
+        # copy and pickle probe attributes before __init__ has set poly_data
+        if name == "poly_data" or name.startswith("__"):
+            raise AttributeError(name)
         return getattr(self.poly_data, name)
 
     @property
@@ -37,24 +40,29 @@ class Mesh:
     def faces(self):
         polys = self.GetPolys()
         if polys is None or polys.GetNumberOfCells() == 0:
-            return np.empty((0, 0), dtype=int)
+            return np.empty((0, 3), dtype=int)
         connectivity = vtk_to_numpy(polys.GetConnectivityArray())
         return connectivity.reshape(-1, 3)
 
     @property
     def colors(self):
         data = self.GetPointData().GetScalars()
-        if data is None:
-            return np.empty((0, 3))
+        # other scalars, like marching cubes iso-values, are not colors
+        if (
+            data is None
+            or data.GetDataType() != vtk.VTK_UNSIGNED_CHAR
+            or data.GetNumberOfComponents() not in (3, 4)
+        ):
+            return np.empty((0, 3), dtype=np.uint8)
 
-        return vtk_to_numpy(data)
+        return vtk_to_numpy(data)[:, :3]
 
 
     @property
     def vids(self):
         data = self.GetPointData().GetArray("Vids")
         if data is None:
-            return np.empty((0, 0))
+            return np.empty(0, dtype=int)
 
         return vtk_to_numpy(data)
 
@@ -175,6 +183,8 @@ class Mesh:
         ply_writer.SetFileTypeToASCII()
         ply_writer.SetFileName(filename)
         ply_writer.SetInputData(self.poly_data)
+        if self.colors.size:
+            ply_writer.SetArrayName(self.GetPointData().GetScalars().GetName())
         ply_writer.Write()
 
     @staticmethod
@@ -197,18 +207,55 @@ class Mesh:
 
         return Mesh(poly_data)
 
-    def to_drc(self, filename):
+    def to_drc(self, filename, quantization_bits=14, preserve_order=False):
+        """
+        Write to a Draco file.
+
+        The defaults favour file size: vertices are rounded, and they can be
+        reordered or duplicated when read back. Use quantization_bits=0 and
+        preserve_order=True to get the same vertices and faces, as float32,
+        in a file several times larger.
+
+        Parameters
+        ----------
+        filename: str
+            The name of the file to write to.
+        quantization_bits: int, optional
+            Number of bits per vertex coordinate, 0 to disable rounding.
+        preserve_order: bool, optional
+            If True, keep the order of vertices and faces.
+        """
+        import DracoPy
+
+        colors = self.colors if self.colors.size else None
+        generic_attributes = None
+        vids = self.vids.reshape(-1, 1)
+        if vids.size:
+            # Draco has no signed or 64 bits integer attributes
+            if np.issubdtype(vids.dtype, np.integer):
+                if vids.min() < 0 or vids.max() > np.iinfo(np.uint32).max:
+                    raise ValueError("Integer vids must fit in uint32")
+                vids = vids.astype(np.uint32)
+            generic_attributes = {"vids": vids}
+
         encoded = DracoPy.encode(
             self.vertices,
             faces=self.faces,
-            colors=self.colors,
-            generic_attributes={"vids": self.vids})
+            colors=colors,
+            generic_attributes=generic_attributes,
+            quantization_bits=quantization_bits,
+            preserve_order=preserve_order)
 
         with open(filename, "wb") as f:
             f.write(encoded)
 
     @staticmethod
     def from_drc(filename):
+        import DracoPy
+
         with open(filename, "rb") as f:
             decoded = DracoPy.decode(f.read())
-        return Mesh.from_pymesh(decoded.points, decoded.faces, colors=decoded.colors, vids=decoded.get_attribute_by_name("vids"))
+        vids = decoded.get_attribute_by_name("vids")
+        if vids is not None:
+            vids = vids["data"]
+        return Mesh.from_pymesh(decoded.points, decoded.faces, colors=decoded.colors, vids=vids)
