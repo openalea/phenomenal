@@ -293,5 +293,4 @@ def image_stencil(vtk_poly_data, spacing=1):
     image_stencil.Update()
 
     return image_stencil.GetOutput()
-0
 

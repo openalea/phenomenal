@@ -27,9 +27,7 @@ def show_voxel_grid(
     record_rate=25,
 ):
     scene = Scene()
-    actor = scene.get_actor_from_voxels(
-        voxel_grid.voxels_position, voxel_grid.voxels_size, color=color
-    )
+    actor = scene.get_actor_from_voxels(voxel_grid, color=color)
     scene.add_actor(actor)
     scene.show(
         windows_size=windows_size,
@@ -56,6 +54,8 @@ def show_mesh(
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
     if len(mesh.colors) == 0:
+        # keep the mapper from coloring by non-color scalars
+        mapper.ScalarVisibilityOff()
         actor.GetProperty().SetColor(color[0], color[1], color[2])
 
     scene = Scene()
@@ -77,9 +77,7 @@ def record_voxel_grids(voxel_grids, filename, color=(0, 0.8, 0)):
     scene = Scene()
 
     def func(voxel_grid):
-        scene.add_actor_from_voxels(
-            voxel_grid.voxels_position, voxel_grid.voxels_size, color=color
-        )
+        scene.add_actor_from_voxels(voxel_grid, color=color)
 
     scene.set_camera(elevation=20)
     scene.record_video(filename, voxel_grids, func)

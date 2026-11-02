@@ -20,7 +20,7 @@ Data Structure
    image3D
    imageView
    voxelGrid
-   vtkMesh
+   Mesh
    voxelSegment
    voxelOrgan
    voxelSkeleton

@@ -19,7 +19,6 @@ Algorithms
 .. autosummary::
    :toctree: generated/
 
-   algorithms.meshing
    algorithms.marching_cubes
    algorithms.smoothing
    algorithms.decimation
