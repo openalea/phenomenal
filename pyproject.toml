@@ -64,7 +64,6 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest"]
 doc = [
-  "pandoc",
   "pydata-sphinx-theme",
   "myst-parser",
   "sphinx-favicon",
