@@ -140,6 +140,30 @@ def voxel_fully_visible(voxel_projections, image):
     return valid.reshape(-1, 8).all(axis=1)
 
 
+def voxel_overlaps_image(voxel_projections, image):
+    """Return True for voxels whose projected bounding box overlaps the image.
+
+    Parameters
+    ----------
+    voxel_projections : numpy.ndarray, shape (N, 8, 3) of u, v, depth coordinates
+     of voxel corners projections.
+    image: a binary image
+
+    Returns
+    -------
+    numpy.ndarray, shape (N,)
+        False for voxels whose projected bounding box lies entirely outside image bounds.
+    """
+    height, width = image.shape
+    u, v = voxel_projections[:, :, 0], voxel_projections[:, :, 1]
+    return (
+        (u.max(axis=1) >= 0) &
+        (u.min(axis=1) < width) &
+        (v.max(axis=1) >= 0) &
+        (v.min(axis=1) < height)
+    )
+
+
 def image_boxes(boxes, image):
     """convert boxes to regular-bounded region of image"""
     height, width = image.shape
@@ -378,7 +402,7 @@ def voxels_is_visible_in_image(
         voxel_projections = project_voxels(voxels_position[to_check], voxels_size, projection)
 
         if not inclusive:
-            candidate = voxel_fully_in_front(voxel_projections)
+            candidate = voxel_fully_in_front(voxel_projections) & voxel_overlaps_image(voxel_projections, image)
             candidate_mask = numpy.zeros_like(candidate)
         else:
             candidate = voxel_fully_visible(voxel_projections, image)
@@ -606,9 +630,9 @@ def project_voxel_centers_on_image(
     height, width = shape_image
     img = numpy.zeros((height, width), dtype=dtype)
     voxel_projections = project_voxels(voxels_position, voxels_size, projection)
-    fully_in_front = voxel_fully_in_front(voxel_projections)
-    if numpy.any(fully_in_front):
-        boxes = get_bounding_box_voxel_projected(voxel_projections[fully_in_front])
+    to_paint = voxel_fully_in_front(voxel_projections) & voxel_overlaps_image(voxel_projections, img)
+    if numpy.any(to_paint):
+        boxes = get_bounding_box_voxel_projected(voxel_projections[to_paint])
         boxes = image_boxes(boxes, img)
         for x_min, y_min, x_max, y_max in boxes:
             img[y_min : y_max + 1, x_min : x_max + 1] = value

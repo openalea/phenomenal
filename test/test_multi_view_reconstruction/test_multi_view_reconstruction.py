@@ -12,6 +12,7 @@
 
 
 import numpy
+import pytest
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
@@ -228,6 +229,70 @@ def test_reconstruction_3d_neighbours():
     )
 
     assert len(vg.voxels_position) > 0
+
+
+def _projection_in_front(pts):
+    """Project x, y, z on u, v with every point in front of the camera"""
+    return numpy.asarray(pts, dtype=float).reshape(-1, 3) + [0, 0, 100.0]
+
+
+def _foreground_on_all_borders():
+    image = numpy.zeros((100, 100), dtype=numpy.uint8)
+    image[0, :] = image[-1, :] = image[:, 0] = image[:, -1] = 255
+    return image
+
+
+def _is_visible(position, image, inclusive):
+    return phm_mvr.voxels_is_visible_in_image(
+        numpy.array([position], dtype=float),
+        10,
+        image,
+        phm_mvr.integral_image(image),
+        _projection_in_front,
+        inclusive=inclusive,
+    )[0]
+
+
+OUTSIDE_IMAGE = [(200, 50, 0), (50, 200, 0), (-200, 50, 0), (50, -200, 0)]
+
+
+@pytest.mark.parametrize("position", OUTSIDE_IMAGE)
+def test_voxel_outside_image_is_kept_if_inclusive(position):
+    assert _is_visible(position, _foreground_on_all_borders(), inclusive=True)
+
+
+@pytest.mark.parametrize("position", OUTSIDE_IMAGE)
+def test_voxel_outside_image_is_rejected_if_not_inclusive(position):
+    assert not _is_visible(position, _foreground_on_all_borders(), inclusive=False)
+
+
+def test_voxel_partly_outside_image_uses_its_visible_pixels_if_not_inclusive():
+    image = numpy.zeros((100, 100), dtype=numpy.uint8)
+    assert not _is_visible((99, 50, 0), image, inclusive=False)
+    # away from the center pixel of the voxel, which has its own fast check
+    image[47, 96] = 255
+    assert _is_visible((99, 50, 0), image, inclusive=False)
+
+
+@pytest.mark.parametrize("position", OUTSIDE_IMAGE)
+def test_project_voxel_outside_image_paints_nothing(position):
+    image = phm_mvr.project_voxel_centers_on_image(
+        numpy.array([position], dtype=float), 10, (100, 100), _projection_in_front
+    )
+    assert not image.any()
+
+
+def test_project_voxel_partly_outside_image_paints_its_visible_pixels():
+    image = phm_mvr.project_voxel_centers_on_image(
+        numpy.array([(99, 50, 0)], dtype=float),
+        10,
+        (100, 100),
+        _projection_in_front,
+        value=1,
+    )
+    rows, columns = numpy.nonzero(image)
+    assert (columns.min(), columns.max()) == (94, 99)
+    assert (rows.min(), rows.max()) == (45, 55)
 
 
 if __name__ == "__main__":
