@@ -25,7 +25,6 @@ __all__ = [
     "openalea_phenomenal_display_Display",
     "openalea_phenomenal_display_show_values",
     "openalea_phenomenal_display_Scene",
-    "openalea_phenomenal_display_show_vtk_poly_data",
     "openalea_phenomenal_display_show_chessboard_3d_projection_on_image",
     "openalea_phenomenal_display_show_images",
     "openalea_phenomenal_display_show_skeleton",
@@ -216,20 +215,6 @@ openalea_phenomenal_display_Scene = Factory(
     category="openalea.phenomenal.display",
     nodemodule="openalea.phenomenal.display",
     nodeclass="Scene",
-    inputs=None,
-    outputs=None,
-    widgetmodule=None,
-    widgetclass=None,
-)
-
-
-openalea_phenomenal_display_show_vtk_poly_data = Factory(
-    name="show_vtk_poly_data",
-    authors="Simon Artzet et al. (wralea authors)",
-    description="",
-    category="openalea.phenomenal.display",
-    nodemodule="openalea.phenomenal.display",
-    nodeclass="show_vtk_poly_data",
     inputs=None,
     outputs=None,
     widgetmodule=None,

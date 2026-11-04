@@ -23,7 +23,6 @@ __all__ = [
     "openalea_phenomenal_data_path_raw_images",
     "openalea_phenomenal_data_raw_images",
     "openalea_phenomenal_data_Chessboard",
-    "openalea_phenomenal_data_read_ply_to_vertices_faces",
     "openalea_phenomenal_data_voxel_grid",
     "openalea_phenomenal_data_build_cube",
     "openalea_phenomenal_data_chessboard_images",
@@ -179,20 +178,6 @@ openalea_phenomenal_data_Chessboard = Factory(
     category="openalea.phenomenal.data",
     nodemodule="openalea.phenomenal.data",
     nodeclass="Chessboard",
-    inputs=None,
-    outputs=None,
-    widgetmodule=None,
-    widgetclass=None,
-)
-
-
-openalea_phenomenal_data_read_ply_to_vertices_faces = Factory(
-    name="read_ply_to_vertices_faces",
-    authors="Simon Artzet et al. (wralea authors)",
-    description="",
-    category="openalea.phenomenal.data",
-    nodemodule="openalea.phenomenal.data",
-    nodeclass="read_ply_to_vertices_faces",
     inputs=None,
     outputs=None,
     widgetmodule=None,

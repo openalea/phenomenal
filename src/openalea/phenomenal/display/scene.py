@@ -9,8 +9,10 @@
 # ==============================================================================
 
 
+import numpy
 import vtk
 import random
+from vtkmodules.util.numpy_support import numpy_to_vtk, numpy_to_vtkIdTypeArray
 
 from .display import Display
 # ==============================================================================
@@ -146,7 +148,7 @@ class Scene(Display):
         transform.Scale(length, line_width, line_width)
 
         # Transform the polydata
-        transform_pd = vtk.vtkTransformPolyDataFilter()
+        transform_pd = vtk.vtkTransformFilter()
         transform_pd.SetTransform(transform)
         transform_pd.SetInputConnection(arrow_source.GetOutputPort())
 
@@ -160,67 +162,14 @@ class Scene(Display):
 
         return actor
 
-    @staticmethod
-    def get_actor_from_vertices_faces(vertices, faces, color=None, colors=None):
-        # Setup the colors array
-        vtk_colors = vtk.vtkUnsignedCharArray()
-        vtk_colors.SetNumberOfComponents(3)
-        vtk_colors.SetName("Colors")
-
-        # ======================================================================
-
-        def make_vtk_id_list(it):
-            vil = vtk.vtkIdList()
-            for j in it:
-                vil.InsertNextId(int(j))
-            return vil
-
-        poly_data = vtk.vtkPolyData()
-        points = vtk.vtkPoints()
-        polys = vtk.vtkCellArray()
-
-        # Load the point, cell, and data attributes.
-        for i in range(len(vertices)):
-            points.InsertPoint(i, vertices[i])
-        poly_data.SetPoints(points)
-        del points
-
-        for i in range(len(faces)):
-            polys.InsertNextCell(make_vtk_id_list(faces[i]))
-        poly_data.SetPolys(polys)
-        del polys
-
-        if colors is not None:
-            vtk_colors = vtk.vtkUnsignedCharArray()
-            vtk_colors.SetNumberOfComponents(3)
-            vtk_colors.SetName("Colors")
-            for color in colors:
-                vtk_colors.InsertNextTuple3(color[0], color[1], color[2])
-            poly_data.GetCellData().SetScalars(vtk_colors)
-
-        # ======================================================================
-
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputData(poly_data)
-
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
-        if color is not None and colors is None:
-            actor.GetProperty().SetColor(color[0], color[1], color[2])
-
-        return actor
 
     @staticmethod
-    def get_actor_from_voxels(voxels_position, voxels_size, color=None):
+    def get_actor_from_voxels(voxels_grid, color=None):
         if color is None:
             color = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
 
-        points = vtk.vtkPoints()
-        for v in voxels_position:
-            points.InsertNextPoint(v[0], v[1], v[2])
-
-        polydata = vtk.vtkPolyData()
-        polydata.SetPoints(points)
+        polydata = voxels_grid.to_vtk_poly_data()
+        voxels_size = voxels_grid.voxels_size
 
         cube_source = vtk.vtkCubeSource()
         cube_source.SetXLength(voxels_size)
@@ -244,6 +193,70 @@ class Scene(Display):
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         actor.GetProperty().SetColor(color[0], color[1], color[2])
+
+        return actor
+
+    @staticmethod
+    def get_actor_from_polylines(polylines, colors=(1, 0, 0), radius=2, sides=8):
+        """Get an actor drawing polylines as tubes.
+
+        Parameters
+        ----------
+        polylines : sequence of array-like, each of shape (M, 3)
+            The points of each polyline.
+        colors : array-like, shape (3,) or (N, 3), optional
+            RGB values in the range [0, 1]: one color for all the polylines, or
+            one color per polyline.
+        radius : float, optional
+            The radius of the tubes.
+        sides : int, optional
+            The number of sides of the tubes.
+
+        Returns
+        -------
+        vtk.vtkActor
+        """
+        polylines = [numpy.asarray(p, dtype=float).reshape(-1, 3) for p in polylines]
+        colors = numpy.broadcast_to(colors, (len(polylines), 3))
+
+        points = vtk.vtkPoints()
+        points.SetData(
+            numpy_to_vtk(numpy.concatenate([numpy.empty((0, 3)), *polylines]), deep=True)
+        )
+
+        sizes = [len(polyline) for polyline in polylines]
+        offsets = numpy.concatenate([[0], numpy.cumsum(sizes, dtype=numpy.int64)])
+        lines = vtk.vtkCellArray()
+        lines.SetData(
+            numpy_to_vtkIdTypeArray(offsets.astype(numpy.int64), deep=True),
+            numpy_to_vtkIdTypeArray(numpy.arange(offsets[-1], dtype=numpy.int64), deep=True),
+        )
+
+        vtk_colors = numpy_to_vtk(
+            numpy.rint(numpy.multiply(colors, 255)).astype(numpy.uint8),
+            deep=True,
+            array_type=vtk.VTK_UNSIGNED_CHAR,
+        )
+        vtk_colors.SetName("Colors")
+
+        polydata = vtk.vtkPolyData()
+        polydata.SetPoints(points)
+        polydata.SetLines(lines)
+        polydata.GetCellData().SetScalars(vtk_colors)
+
+        tube = vtk.vtkTubeFilter()
+        tube.SetInputData(polydata)
+        tube.SetRadius(radius)
+        tube.SetNumberOfSides(sides)
+        tube.CappingOn()
+        tube.Update()
+
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(tube.GetOutputPort())
+        mapper.SetScalarModeToUseCellData()
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
 
         return actor
 
@@ -273,24 +286,26 @@ class Scene(Display):
 
         self.add_actor(actor)
 
-    def add_actor_from_vertices_faces(self, vertices, faces, color=None, colors=None):
-        actor = self.get_actor_from_vertices_faces(
-            vertices, faces, color=color, colors=colors
-        )
+
+    def add_actor_from_voxels(self, voxels_grid, color=None):
+        actor = self.get_actor_from_voxels(voxels_grid, color=color)
+
         self.add_actor(actor)
 
-    def add_actor_from_voxels(self, voxels_position, voxels_size, color=None):
-        actor = self.get_actor_from_voxels(voxels_position, voxels_size, color=color)
+    def add_actor_from_polylines(self, polylines, colors=(1, 0, 0), radius=2, sides=8):
+        actor = self.get_actor_from_polylines(
+            polylines, colors=colors, radius=radius, sides=sides
+        )
 
         self.add_actor(actor)
 
     # ==========================================================================
 
-    def add_actors_from_voxels_list(self, voxels_positions, voxels_sizes, colors=None):
+    def add_actors_from_voxels_list(self, voxels_grids, colors=None):
         if colors is None:
-            colors = [None] * len(voxels_sizes)
+            colors = [None] * len(voxels_grids)
 
-        for voxels_position, voxels_size, color in zip(
-            voxels_positions, voxels_sizes, colors
+        for voxels_grid, color in zip(
+            voxels_grids, colors
         ):
-            self.add_actor_from_voxels(voxels_position, voxels_size, color=color)
+            self.add_actor_from_voxels(voxels_grid, color=color)

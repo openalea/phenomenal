@@ -51,6 +51,7 @@ dynamic = ["version", "readme"]
 dependencies = [
   "numpy",
   "scipy",
+  "pillow",
   "scikit-image",
   "scikit-learn",
   "networkx",
@@ -58,12 +59,12 @@ dependencies = [
   "orjson",
   "skan",
   "k3d",
+  "dracopy"
 ]
 
 [project.optional-dependencies]
 test = ["pytest"]
 doc = [
-  "pandoc",
   "pydata-sphinx-theme",
   "myst-parser",
   "sphinx-favicon",

@@ -1,7 +1,10 @@
 import os
+import numpy as np
 import pytest
+from vtkmodules.util.numpy_support import vtk_to_numpy
 
 import openalea.phenomenal.object.voxelSegmentation as phm_seg
+from openalea.phenomenal.display import Scene
 from openalea.phenomenal.tracking.display import plot_polylines
 
 from openalea.phenomenal.tracking.phenomenal_coupling import phm_to_phenotrack_input
@@ -102,10 +105,30 @@ def test_tracking_growing(time_series):
     assert [len(o) == len(s.leaves) for o, s in zip(output, trackedplant.snapshots)]
 
 
-def test_display(time_series):
+def displayed_colors(monkeypatch, polylines, ranks):
+    """Plot without opening a window, and return the actor and its RGB colors."""
+    actors = []
+    monkeypatch.setattr(Scene, "show", lambda self, **kwargs: None)
+    monkeypatch.setattr(Scene, "add_actor", lambda self, actor: actors.append(actor))
+    plot_polylines(polylines, ranks)
+
+    output = actors[0].GetMapper().GetInput()
+    return output, vtk_to_numpy(output.GetCellData().GetScalars())
+
+
+def test_display(time_series, monkeypatch):
     phm_segs, timestamps = time_series
     phenotrack_segs, checks_stem = phm_to_phenotrack_input(phm_segs, timestamps)
     for seg in phenotrack_segs:
-        print(seg)
-        print(seg["polylines_sequence"])
-        plot_polylines(seg["polylines_sequence"], ranks=[0])
+        polylines = seg["polylines_sequence"]
+        output, colors = displayed_colors(monkeypatch, polylines, [0] * len(polylines))
+        assert output.GetNumberOfPoints() > 0
+        np.testing.assert_array_equal(np.unique(colors, axis=0), [[90, 90, 90]])
+
+
+def test_display_colors_by_rank(monkeypatch):
+    polylines = [[(0, 0, 0), (10, 0, 0)], [(0, 10, 0), (10, 10, 0)], [(0, 20, 0), (10, 20, 0)]]
+    _, colors = displayed_colors(monkeypatch, polylines, [1, 2, -1])
+    np.testing.assert_array_equal(
+        np.unique(colors, axis=0), [[0, 255, 0], [90, 90, 90], [255, 0, 0]]
+    )
