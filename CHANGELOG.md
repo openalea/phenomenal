@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 * `Scene.get_actor_from_polylines`, `Scene.add_actor_from_polylines` and `show_polylines` to display polylines with VTK.
+* `read_pointcloud` to load the point positions of a text file.
 
 ### Changed
 * `tracking.display.plot_polylines` uses VTK instead of PlantGL, and blocks until its window is closed.
