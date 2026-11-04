@@ -610,8 +610,8 @@ class OldCalibrationCamera(object):
 
         def projection(pts):
             x, y, z = numpy.array(pts).T
-            x = - x * math.cos(angle) - y * math.sin(angle)
-            y = - x * math.sin(angle) + y * math.cos(angle)
+            x, y = (- x * math.cos(angle) - y * math.sin(angle),
+                    - x * math.sin(angle) + y * math.cos(angle))
 
             origin = numpy.column_stack((x, y, z))
 
