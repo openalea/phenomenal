@@ -10,7 +10,6 @@
 
 import collections
 import cv2
-import scipy.spatial
 import numpy
 
 from ..object import VoxelGrid, ImageView
@@ -60,6 +59,25 @@ def find_best_angle(bin_side_images):
     return max_angle
 
 
+def checked_projection(pts, projection):
+    """Project points, checking that projection provides the depth required to filter voxels behind camera
+
+    Args:
+        pts: (N, 3) array of x,y,z positions of points
+        projection: a function of (N, 3) array returning (N, 3) u, v, depth array
+
+    Returns:
+        (N, 3) array of u, v, depth coordinates
+    """
+    projected = numpy.asarray(projection(pts))
+    if projected.ndim != 2 or projected.shape[1] != 3:
+        raise ValueError(
+            "projection should return u, v, depth coordinates, but returned an array of shape "
+            f"{projected.shape}. Use get_projection(..., depth=True) to get a projection with depth."
+        )
+    return projected
+
+
 def image_hits(points, image, projection):
     """Determine if projection of 3D points are on image and hits foreground
 
@@ -76,7 +94,7 @@ def image_hits(points, image, projection):
     N = len(points)
     mask = numpy.zeros(N, dtype=bool)
 
-    p = projection(points)
+    p = checked_projection(points, projection)
     px, py, depth = p.T
 
     outside = (
@@ -330,7 +348,7 @@ def project_voxels(voxels_position, voxels_size, projection):
     """
     voxels_corners = get_voxels_corners(voxels_position, voxels_size)
     # Project all corners
-    pt = projection(voxels_corners.reshape(-1, 3))
+    pt = checked_projection(voxels_corners.reshape(-1, 3), projection)
     return pt.reshape(-1, 8, 3)
 
 
@@ -367,7 +385,7 @@ def get_bounding_box_voxel_projected(voxel_projections):
 
 
 def voxels_is_visible_in_image(
-    voxels_position, voxels_size, image, image_int, projection, inclusive=True):
+    voxels_position, voxels_size, image, projection, inclusive=True, image_int=None):
     """
     Return a numpy array containing True if the voxels are fully in front of the camera and contains at least
     one foreground pixel. If inclusive = True (default), return also True for voxels that are undetermined,
@@ -389,11 +407,14 @@ def voxels_is_visible_in_image(
 
     inclusive: the boolean value returned for voxels partly of totally projected out of the image
 
-    image_int: Integral image of the binary image
+    image_int: Integral image of the binary image, computed from image if None (default)
 
     Returns:
         A boolean array as long as voxels_position
     """
+    if image_int is None:
+        image_int = integral_image(image)
+
     # Initialise with fast check of voxel centers
     mask = image_hits(voxels_position, image, projection)
     to_check = ~mask
@@ -482,7 +503,7 @@ def filter_voxels(voxels, image_views, error_tolerance=0, clear_outside=True):
     return voxels
 
 
-def tolerant_reconstruction(image_views, voxels_size=4, error_tolerance=0, clear_outside=None, start=None):
+def tolerant_reconstruction(image_views, voxels_size=4, error_tolerance=0, clear_outside=True, start=None):
 
     if start is None:
         voxels = reconstruction_grid()
@@ -500,7 +521,7 @@ def tolerant_reconstruction(image_views, voxels_size=4, error_tolerance=0, clear
     return voxels
 
 
-def multi_tolerant_reconstruction(image_views, voxels_size=4, max_tolerance=0, clear_outside=None, start=None):
+def multi_tolerant_reconstruction(image_views, voxels_size=4, max_tolerance=0, clear_outside=True, start=None):
     voxels = tolerant_reconstruction(image_views, voxels_size=voxels_size, error_tolerance=0, clear_outside=clear_outside,
                                      start=start)
     not_reconstructed = {}
@@ -672,16 +693,16 @@ def project_voxels_position_on_image(
     height, length = shape_image
     img = numpy.zeros((height, length), dtype=numpy.uint8)
     voxel_projections = project_voxels(voxels_position, voxels_size, projection)
-    fully_in_front = voxel_fully_in_front(voxel_projections)
-    if numpy.any(fully_in_front):
-        pt = voxel_projections
+    to_paint = voxel_fully_in_front(voxel_projections) & voxel_overlaps_image(voxel_projections, img)
+    if numpy.any(to_paint):
+        pt = voxel_projections[to_paint, :, :2]
         pt[pt < 0] = 0
         (pt[:, :, 0])[pt[:, :, 0] >= length] = length - 1
         (pt[:, :, 1])[pt[:, :, 1] >= height] = height - 1
-        pt = numpy.floor(pt).astype(int)
+        pt = numpy.floor(pt).astype(numpy.int32)
         for points in pt:
-            hull = scipy.spatial.ConvexHull(points)
-            cv2.fillConvexPoly(img, points[hull.vertices], 255)
+            # corners clipped on image border may be aligned, which cv2.convexHull supports
+            cv2.fillConvexPoly(img, cv2.convexHull(points), 255)
 
     return img
 
