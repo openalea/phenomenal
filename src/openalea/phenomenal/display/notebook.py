@@ -129,24 +129,9 @@ def show_segmentation(voxel_segmentation, size=2.0):
     plot.display()
 
 
-def show_synthetic_plant(
-    vertices, faces, meta_data=None, size=0.5, color=0x00ff00):
-    plot = k3d.plot()
-    plot += k3d.mesh(vertices.astype(np.float32), indices=faces.astype(np.uint32), color=color)
-
-    if meta_data is not None:
-        ranks = meta_data["leaf_order"]
-        polylines = {
-            n: list(map(np.array, list(zip(*meta_data["leaf_polylines"][i]))))
-            for i, n in enumerate(ranks)
-        }
-
-        voxels = set()
-        for leaf_order in polylines:
-            x, y, z, r = polylines[leaf_order]
-            polyline = np.array(list(zip(x, y, z))) * 10 - np.array([0, 0, 750])
-
-            plot+= plot_points(polyline, size=size, color=0xff0000)
-            voxels = voxels.union(set(map(tuple, list(polyline))))
-
-    plot.display()
+def show_polylines(polylines, plot=None, size=0.5, color=0xff0000):
+    if not plot:
+        plot = k3d.plot()
+    for polyline in polylines.values():
+        plot+= plot_points(polyline, size=size, color=color)
+    return plot

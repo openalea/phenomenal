@@ -295,7 +295,7 @@ def tutorial_data_binarization_mask(data_dir):
 # ==============================================================================
 
 
-def synthetic_plant(data_dir, registration_point=(0, 0, 750)):
+def synthetic_plant(data_dir, scale=10, registration_point=(0, 0, 750)):
     """According to name_dir return the mesh plant and skeleton of the
      synthetic plant.
 
@@ -304,8 +304,10 @@ def synthetic_plant(data_dir, registration_point=(0, 0, 750)):
     name_dir : str
         Name of the synthetic plant directory
 
+    scale : conversion factor to mm
+
     registration_point: 3-tuple, optional
-        Position of the pot in the scene
+        Position of the pot in the scene (mm)
     Returns
     -------
         out : vertices, faces, meta_data
@@ -313,12 +315,39 @@ def synthetic_plant(data_dir, registration_point=(0, 0, 750)):
     """
     filename = os.path.join(data_dir, "synthetic_plant.ply")
     mesh = Mesh.from_ply(filename)
-    vertices = mesh.vertices * 10 - numpy.array([registration_point])
+    mesh.vertices = mesh.vertices * scale - numpy.array([registration_point])
 
     with open(filename.replace("ply", "json"), "r", encoding="UTF8") as infile:
         meta_data = json.load(infile)
 
-    return vertices, mesh.faces, meta_data
+    polylines = {'stem': None, 'leaf': {}}
+    widths = {'stem': None, 'leaf': {}}
+    if meta_data is not None:
+        def remove_duplicate(poly, width):
+            index, d = list(), dict()
+            for i, item in enumerate(map(tuple, list(poly))):
+                if item not in d:
+                    index.append(i)
+                    d[item] = True
+            return poly[index], width[index]
+
+        x, y, z, r = zip(*meta_data["stem"])
+        polyline = numpy.array(list(zip(x, y, z))) * scale - numpy.array([registration_point])
+        r = numpy.array(r) * scale
+        polylines['stem'], widths['stem'] = remove_duplicate(polyline, r)
+
+        ranks = meta_data["leaf_order"]
+        leaves = {
+            n: list(map(numpy.array, list(zip(*meta_data["leaf_polylines"][i]))))
+            for i, n in enumerate(ranks)
+        }
+        for leaf_order in leaves:
+            x, y, z, r = leaves[leaf_order]
+            polyline = numpy.array(list(zip(x, y, z))) * scale - numpy.array([0, 0, 750])
+            r = numpy.array(r) * scale
+            polylines['leaf'][leaf_order], widths['leaf'][leaf_order] = remove_duplicate(polyline, r)
+
+    return mesh, polylines, widths
 
 
 # ==============================================================================
