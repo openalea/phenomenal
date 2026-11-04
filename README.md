@@ -22,12 +22,12 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
 
 ##### Create a new environment with phenomenal installed in there :
 
-    mamba create -n phm -c conda-forge -c openalea3 openalea.phenomenal matplotlib
+    mamba create -n phm -c openalea3 -c conda-forge openalea.phenomenal
     mamba activate phm
 
 ##### In an existing environment :
 
-    mamba install -c conda-forge -c openalea3 openalea.phenomenal matplotlib
+    mamba install -c openalea3 -c conda-forge openalea.phenomenal
 
 ##### (Optional) Test your installation :
 
@@ -40,6 +40,7 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
 #### Editable mode install
 
     # (windows only) install VisualStudio Build Tools
+    # (macos only) install Xcode Command Line Tools
 
     # Clone phenomenal
     git clone https://github.com/openalea/phenomenal.git
@@ -52,8 +53,8 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
     # Solution 2: use an existing env (mostly use conda dependencies)
     mamba activate my_env
     mamba install --only-deps -c openalea3 -c conda-forge openalea.phenomenal
-    mamba install cxx-compiler cython
-    pip install -e .[doc,test,plot]
+    mamba install cxx-compiler
+    pip install -e .[doc,test]
 
     # (Optional) Test your installation
     cd test; pytest
@@ -121,4 +122,3 @@ Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic
         year={2022},
         publisher={Springer}
     }
-```

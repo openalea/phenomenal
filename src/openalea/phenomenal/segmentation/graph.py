@@ -146,7 +146,7 @@ def _create_graph_with_sklearn(voxels_position, voxels_size):
     """
     vpc = VoxelGrid(voxels_position, voxels_size)
 
-    image = vpc.to_image_3d()
+    image = vpc.image_3d
 
     sparse_matrix = sklearn.feature_extraction.image.img_to_graph(image)
 

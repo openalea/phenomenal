@@ -19,17 +19,9 @@ Algorithms
 .. autosummary::
    :toctree: generated/
 
-   algorithms.meshing
    algorithms.marching_cubes
    algorithms.smoothing
    algorithms.decimation
-
-Formats
-=======
-.. autosummary::
-   :toctree: generated/
-
-   formats
 
 
 Routines
@@ -39,23 +31,13 @@ Routines
 
    routines
 
-
-VTK Transformation
-==================
-.. autosummary::
-   :toctree: generated/
-
-   vtk_transformation
-
 """
 
 # ==============================================================================
 
 
 from .algorithms import *
-from .formats import *
 from .routines import *
-from .vtk_transformation import *
 # ==============================================================================
 
 __all__ = [s for s in dir() if not s.startswith("_")]

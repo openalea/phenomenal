@@ -223,7 +223,7 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
     -------
     base_stem_position : 3-tuple
     """
-    image_3d = VoxelGrid(voxels_position, voxels_size).to_image_3d()
+    image_3d = VoxelGrid(voxels_position, voxels_size).image_3d
 
     x = int(round(0 - image_3d.world_coordinate[0] / image_3d.voxels_size))
     y = int(round(0 - image_3d.world_coordinate[1] / image_3d.voxels_size))

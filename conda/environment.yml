@@ -5,7 +5,8 @@ channels:
   - openalea3
   - conda-forge
 dependencies:
-  - python
+  # highest version built by CI
+  - python=3.14
   - pip
   - pandoc
   - cxx-compiler

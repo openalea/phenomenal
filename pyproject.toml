@@ -51,6 +51,7 @@ dynamic = ["version", "readme"]
 dependencies = [
   "numpy",
   "scipy",
+  "pillow",
   "scikit-image",
   "scikit-learn",
   "networkx",
@@ -58,6 +59,7 @@ dependencies = [
   "orjson",
   "skan",
   "k3d",
+  "dracopy"
 ]
 
 [project.optional-dependencies]
