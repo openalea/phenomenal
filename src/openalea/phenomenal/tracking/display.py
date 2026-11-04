@@ -1,13 +1,6 @@
-""" " 3D visualisation using PlantGL, and color palette for leaf ranks"""
+"""3D visualisation using VTK, and color palette for leaf ranks"""
 
-# %gui qt
 import numpy as np
-
-has_pgl_display = True
-try:
-    from openalea.plantgl import all as pgl
-except ImportError:
-    has_pgl_display = False
 
 # colors used to visualize leaf ranks
 PALETTE = [
@@ -36,23 +29,18 @@ PALETTE = np.array(3 * PALETTE + [[255, 255, 255]])
 
 
 def plot_polylines(polylines, ranks):
-    shapes = []
-    if not has_pgl_display:
-        print("plantgl not available, cannot plot")
-        return
+    """Display polylines colored by leaf rank, until the window is closed.
 
-    for polyline, rank in zip(polylines, ranks):
-        col_r, col_g, col_b = PALETTE[rank - 1] if rank > 0 else [90, 90, 90]
-        col = pgl.Material(pgl.Color3(int(col_r), int(col_g), int(col_b)))
+    Parameters
+    ----------
+    polylines : sequence of array-like, each of shape (M, 3)
+        The points of each polyline.
+    ranks : sequence of int
+        The rank of each polyline, or a single rank for all of them. Ranks
+        below 1 mean an unknown rank, and are displayed in grey.
+    """
+    # the display package needs matplotlib, which PALETTE users may not have
+    from ..display import show_polylines
 
-        r = 0  # 10 * np.random.random()
-        for k in range(len(polyline) - 1):
-            pos1 = np.array(polyline[k]) + np.array([0, 0, r])
-            pos2 = np.array(polyline[k + 1]) + np.array([0, 0, r])
-            cyl = pgl.Extrusion(pgl.Polyline([pos1, pos2]), pgl.Polyline2D.Circle(2, 8))
-            cyl.solid = True
-            cyl = pgl.Shape(cyl, col)
-            shapes.append(cyl)
-
-    scene = pgl.Scene(shapes)
-    pgl.Viewer.display(scene)
+    colors = [PALETTE[rank - 1] if rank > 0 else [90, 90, 90] for rank in ranks]
+    show_polylines(polylines, colors=np.array(colors).reshape(-1, 3) / 255)
