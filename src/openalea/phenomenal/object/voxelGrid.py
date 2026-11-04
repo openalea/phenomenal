@@ -21,6 +21,24 @@ from .image3D import Image3D
 # ==============================================================================
 
 
+def read_pointcloud(filename, usecols=(0, 1, 2)):
+    """Read point positions from a text file with one point per line.
+
+    Parameters
+    ----------
+    filename : str
+        The name of the file to read.
+    usecols : tuple of int, optional
+        The columns holding x, y and z. Other columns, like colors, are ignored.
+
+    Returns
+    -------
+    numpy.ndarray, shape (N, 3)
+        The position of the points.
+    """
+    return numpy.loadtxt(filename, usecols=usecols, ndmin=2)
+
+
 class NumpyEncoder(json.JSONEncoder):
     """Special json encoder for numpy types"""
 
@@ -222,14 +240,7 @@ class VoxelGrid:
 
     @staticmethod
     def read_from_xyz(filename, voxels_size):
-        voxels_position = []
-        with open(filename, "r", encoding="UTF8") as f:
-            for line in f:
-                values = [float(v) for v in line.split()[:3]]
-                voxels_position.append(tuple(values))
-        f.close()
-
-        return VoxelGrid(voxels_position, voxels_size)
+        return VoxelGrid(read_pointcloud(filename), voxels_size)
 
     def write_to_csv(self, filename, header=None):
         if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):
