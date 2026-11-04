@@ -210,6 +210,53 @@ def test_missing_attribute():
         _ = Mesh().not_a_vtk_method
 
 
+def test_set_vertices():
+    mesh = Mesh.from_pymesh(VERTICES, FACES, colors=COLORS, vids=VIDS)
+    areas = mesh.triangle_areas.copy()
+    new_vertices = VERTICES * 2
+
+    mesh.vertices = new_vertices
+
+    np.testing.assert_array_equal(mesh.vertices, VERTICES * 2)
+    np.testing.assert_allclose(mesh.triangle_areas, areas * 4)
+    assert mesh.GetBounds() == (0, 2, 0, 2, 0, 2)
+    np.testing.assert_array_equal(mesh.faces, FACES)
+    np.testing.assert_array_equal(mesh.colors, COLORS)
+    np.testing.assert_array_equal(mesh.vids, VIDS)
+
+    # the mesh keeps its own copy of the data
+    new_vertices[0] = 100
+    np.testing.assert_array_equal(mesh.vertices, VERTICES * 2)
+
+
+def test_set_vertices_from_sequence():
+    mesh = Mesh.from_pymesh(VERTICES, FACES)
+    mesh.vertices = (VERTICES + 1).tolist()
+    np.testing.assert_array_equal(mesh.vertices, VERTICES + 1)
+
+
+def test_set_vertices_on_empty_mesh():
+    mesh = Mesh()
+    mesh.vertices = VERTICES
+    np.testing.assert_array_equal(mesh.vertices, VERTICES)
+
+
+@pytest.mark.parametrize(
+    "vertices",
+    [
+        VERTICES[:-1],  # fewer vertices than the faces and point data index
+        np.vstack([VERTICES, VERTICES]),
+        VERTICES[:, :2],
+        VERTICES[0],
+    ],
+)
+def test_set_vertices_rejects_bad_shape(vertices):
+    mesh = Mesh.from_pymesh(VERTICES, FACES)
+    with pytest.raises(ValueError):
+        mesh.vertices = vertices
+    np.testing.assert_array_equal(mesh.vertices, VERTICES)
+
+
 def test_voxelization_scalar_size():
     grid = voxelization(meshing(sphere_grid()), voxels_size=4)
     assert np.isscalar(grid.voxels_size)

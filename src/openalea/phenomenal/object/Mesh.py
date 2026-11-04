@@ -36,6 +36,20 @@ class Mesh:
 
         return vtk_to_numpy(points.GetData())
 
+    @vertices.setter
+    def vertices(self, vertices):
+        vertices = np.ascontiguousarray(vertices, dtype=np.float64)
+        if vertices.ndim != 2 or vertices.shape[1] != 3:
+            raise ValueError(f"Expected vertices of shape (N, 3), got {vertices.shape}")
+        # faces and point data index the existing vertices
+        n_points = self.GetNumberOfPoints()
+        if n_points and len(vertices) != n_points:
+            raise ValueError(f"Expected {n_points} vertices, got {len(vertices)}")
+
+        points = vtk.vtkPoints()
+        points.SetData(numpy_to_vtk(vertices, deep=True))
+        self.SetPoints(points)
+
     @property
     def faces(self):
         polys = self.GetPolys()
