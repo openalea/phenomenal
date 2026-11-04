@@ -409,10 +409,10 @@ class Calibration(object):
     def frame_lines(self, view, angle, frame='native', l=100, w=10, at = (0, 0, 0)):
         base_axis = numpy.array(((1, 0, 0), (0, 1, 0), (0, 0, 1)))
         p = self.get_projection(view, angle, frame)
-        origin = tuple(numpy.array(p(at)).astype(int))
+        origin = tuple(numpy.array(p(at)).astype(int).ravel())
         lines = []
         for axe in base_axis:
-            end = tuple(numpy.array(p(numpy.array(at) + l * axe)).astype(int))
+            end = tuple(numpy.array(p(numpy.array(at) + l * axe)).astype(int).ravel())
             col = tuple([int(x) for x in axe * 255])
             lines.append((origin, end, col, w))
         return lines
