@@ -175,7 +175,7 @@ def get_side_image_projection_list(bin_images, calibrations):
     side_image_projection = list()
     id_camera = "side"
     for angle in bin_images["side"]:
-        projection = calibrations[id_camera].get_projection(angle)
+        projection = calibrations[id_camera].get_projection(angle, depth=True)
         image = bin_images[id_camera][angle]
         side_image_projection.append((image, projection))
 
@@ -190,7 +190,7 @@ def get_image_views(bin_images, calibrations, with_ref_view=True):
     image_views = list()
     for id_camera in bin_images:
         for angle in bin_images[id_camera]:
-            projection = calibrations[id_camera].get_projection(angle)
+            projection = calibrations[id_camera].get_projection(angle, depth=True)
 
             image_ref = None
             if id_camera == "side" and angle in refs_angle_list:

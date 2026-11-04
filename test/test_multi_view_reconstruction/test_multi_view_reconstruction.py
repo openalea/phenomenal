@@ -12,6 +12,7 @@
 
 
 import numpy
+import pytest
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
@@ -60,22 +61,26 @@ def test_get_voxels_corners():
     res = phm_mvr.get_voxels_corners(voxels_position, voxels_size / 2)
     ref = numpy.array(
         [
-            [-4.0, -4.0, -4.0],
-            [4.0, -4.0, -4.0],
-            [-4.0, 4.0, -4.0],
-            [-4.0, -4.0, 4.0],
-            [4.0, 4.0, -4.0],
-            [4.0, -4.0, 4.0],
-            [-4.0, 4.0, 4.0],
-            [4.0, 4.0, 4.0],
-            [0.0, 0.0, 0.0],
-            [8.0, 0.0, 0.0],
-            [0.0, 8.0, 0.0],
-            [0.0, 0.0, 8.0],
-            [8.0, 8.0, 0.0],
-            [8.0, 0.0, 8.0],
-            [0.0, 8.0, 8.0],
-            [8.0, 8.0, 8.0],
+            [
+                [-4.0, -4.0, -4.0],
+                [4.0, -4.0, -4.0],
+                [-4.0, 4.0, -4.0],
+                [-4.0, -4.0, 4.0],
+                [4.0, 4.0, -4.0],
+                [4.0, -4.0, 4.0],
+                [-4.0, 4.0, 4.0],
+                [4.0, 4.0, 4.0]
+            ],
+            [
+                [0.0, 0.0, 0.0],
+                [8.0, 0.0, 0.0],
+                [0.0, 8.0, 0.0],
+                [0.0, 0.0, 8.0],
+                [8.0, 8.0, 0.0],
+                [8.0, 0.0, 8.0],
+                [0.0, 8.0, 8.0],
+                [8.0, 8.0, 8.0]
+            ],
         ]
     )
 
@@ -90,11 +95,11 @@ def test_get_bounding_box_voxel_projected_1():
     voxel_size = 20
 
     def projection(pt):
-        return numpy.column_stack((pt[:, 0], pt[:, 1]))
+        return numpy.column_stack((pt[:, 0], pt[:, 1], pt[:, 2]))
 
-    res = phm_mvr.get_bounding_box_voxel_projected(
-        voxels_position, voxel_size, projection
-    )
+    vp = phm_mvr.project_voxels(voxels_position, voxel_size, projection)
+    res = phm_mvr.get_bounding_box_voxel_projected(vp)
+
     ref = numpy.array([[-10, -10, 10, 10]])
 
     assert numpy.allclose(ref, res)
@@ -103,14 +108,13 @@ def test_get_bounding_box_voxel_projected_1():
 def test_get_bounding_box_voxel_projected_2():
     angle = 0
     calibration = phm_data.load_calibration(data_dir)
-    projection = calibration.get_projection("side", angle)
+    projection = calibration.get_projection("side", angle, depth=True)
 
     voxels_position = numpy.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
     voxels_size = 8
 
-    res = phm_mvr.get_bounding_box_voxel_projected(
-        voxels_position, voxels_size, projection
-    )
+    vp = phm_mvr.project_voxels(voxels_position, voxels_size, projection)
+    res = phm_mvr.get_bounding_box_voxel_projected(vp)
 
     ref = numpy.array(
         [
@@ -126,15 +130,14 @@ def test_get_bounding_box_voxel_projected_2():
 def test_split_and_projection():
     angle = 0
     calibration = phm_data.load_calibration(data_dir)
-    projection = calibration.get_projection("side", angle)
+    projection = calibration.get_projection("side", angle, depth=True)
 
     voxels_position = numpy.array([[0, 0, 0]])
     voxels_size = 64
 
     for i in range(5):
-        res = phm_mvr.get_bounding_box_voxel_projected(
-            voxels_position, voxels_size, projection
-        )
+        vp = phm_mvr.project_voxels(voxels_position, voxels_size, projection)
+        res = phm_mvr.get_bounding_box_voxel_projected(vp)
         res = numpy.floor(res).astype(int)
 
         img = numpy.zeros((3000, 3000))
@@ -176,7 +179,7 @@ def get_image_views_cube_projected():
     shape_image = (2454, 2056)
     image_views = dict()
     for angle in range(0, 360, 30):
-        projection = calibration.get_projection("side", angle)
+        projection = calibration.get_projection("side", angle, depth=True)
 
         img = phm_mvr.project_voxel_centers_on_image(
             voxels_position, voxels_size, shape_image, projection
@@ -226,6 +229,143 @@ def test_reconstruction_3d_neighbours():
     )
 
     assert len(vg.voxels_position) > 0
+
+
+def _projection_in_front(pts):
+    """Project x, y, z on u, v with every point in front of the camera"""
+    return numpy.asarray(pts, dtype=float).reshape(-1, 3) + [0, 0, 100.0]
+
+
+def _foreground_on_all_borders():
+    image = numpy.zeros((100, 100), dtype=numpy.uint8)
+    image[0, :] = image[-1, :] = image[:, 0] = image[:, -1] = 255
+    return image
+
+
+def _is_visible(position, image, inclusive):
+    return phm_mvr.voxels_is_visible_in_image(
+        numpy.array([position], dtype=float),
+        10,
+        image,
+        _projection_in_front,
+        inclusive=inclusive,
+        image_int=phm_mvr.integral_image(image),
+    )[0]
+
+
+OUTSIDE_IMAGE = [(200, 50, 0), (50, 200, 0), (-200, 50, 0), (50, -200, 0)]
+
+
+@pytest.mark.parametrize("position", OUTSIDE_IMAGE)
+def test_voxel_outside_image_is_kept_if_inclusive(position):
+    assert _is_visible(position, _foreground_on_all_borders(), inclusive=True)
+
+
+@pytest.mark.parametrize("position", OUTSIDE_IMAGE)
+def test_voxel_outside_image_is_rejected_if_not_inclusive(position):
+    assert not _is_visible(position, _foreground_on_all_borders(), inclusive=False)
+
+
+def test_voxel_partly_outside_image_uses_its_visible_pixels_if_not_inclusive():
+    image = numpy.zeros((100, 100), dtype=numpy.uint8)
+    assert not _is_visible((99, 50, 0), image, inclusive=False)
+    # away from the center pixel of the voxel, which has its own fast check
+    image[47, 96] = 255
+    assert _is_visible((99, 50, 0), image, inclusive=False)
+
+
+@pytest.mark.parametrize("position", OUTSIDE_IMAGE)
+def test_project_voxel_outside_image_paints_nothing(position):
+    image = phm_mvr.project_voxel_centers_on_image(
+        numpy.array([position], dtype=float), 10, (100, 100), _projection_in_front
+    )
+    assert not image.any()
+
+
+def test_project_voxel_partly_outside_image_paints_its_visible_pixels():
+    image = phm_mvr.project_voxel_centers_on_image(
+        numpy.array([(99, 50, 0)], dtype=float),
+        10,
+        (100, 100),
+        _projection_in_front,
+        value=1,
+    )
+    rows, columns = numpy.nonzero(image)
+    assert (columns.min(), columns.max()) == (94, 99)
+    assert (rows.min(), rows.max()) == (45, 55)
+
+
+def _projection_without_depth(pts):
+    return numpy.asarray(pts, dtype=float).reshape(-1, 3)[:, :2]
+
+
+@pytest.mark.parametrize("nb_voxels", [1, 2, 3, 6])
+def test_project_voxels_rejects_projection_without_depth(nb_voxels):
+    # 3 voxels are the case that could silently be reshaped to the expected shape
+    positions = numpy.zeros((nb_voxels, 3))
+    with pytest.raises(ValueError, match="depth"):
+        phm_mvr.project_voxels(positions, 10, _projection_without_depth)
+
+
+def test_voxels_is_visible_rejects_projection_without_depth():
+    image = numpy.zeros((100, 100), dtype=numpy.uint8)
+    with pytest.raises(ValueError, match="depth"):
+        phm_mvr.voxels_is_visible_in_image(
+            numpy.zeros((1, 3)), 10, image, _projection_without_depth
+        )
+
+
+def test_voxels_is_visible_positional_call_and_default_integral():
+    image = numpy.zeros((100, 100), dtype=numpy.uint8)
+    # away from the center pixel of the voxel, which has its own fast check
+    image[47, 53] = 255
+    position = numpy.array([(50, 50, 0)], dtype=float)
+    assert phm_mvr.voxels_is_visible_in_image(
+        position, 10, image, _projection_in_front, False
+    )[0]
+    assert phm_mvr.voxels_is_visible_in_image(
+        position, 10, image, _projection_in_front, False,
+        image_int=phm_mvr.integral_image(image),
+    )[0]
+
+
+def _project_positions(positions):
+    return phm_mvr.project_voxels_position_on_image(
+        numpy.array(positions, dtype=float), 10, (100, 100), _projection_in_front
+    )
+
+
+def test_project_voxels_position_paints_voxel():
+    rows, columns = numpy.nonzero(_project_positions([(50, 50, 0)]))
+    assert (columns.min(), columns.max()) == (45, 55)
+    assert (rows.min(), rows.max()) == (45, 55)
+
+
+def test_project_voxels_position_skips_voxel_behind_camera():
+    image = _project_positions([(20, 20, 0), (70, 70, -200)])
+    assert image[20, 20] > 0
+    assert image[70, 70] == 0
+
+
+@pytest.mark.parametrize("position", OUTSIDE_IMAGE)
+def test_project_voxels_position_outside_image_paints_nothing(position):
+    assert not _project_positions([position]).any()
+
+
+def test_project_voxels_position_visible_on_a_single_row():
+    # all corners are clipped onto the same line: not a valid 2D hull
+    rows, _ = numpy.nonzero(_project_positions([(50, -5, 0)]))
+    assert rows.min() == rows.max() == 0
+
+
+@pytest.mark.parametrize(
+    "reconstruction",
+    [phm_mvr.tolerant_reconstruction, phm_mvr.multi_tolerant_reconstruction],
+)
+def test_tolerant_reconstructions_default_clear_outside(reconstruction):
+    image = numpy.full((100, 100), 255, dtype=numpy.uint8)
+    views = {"view": phm_obj.ImageView(image, _projection_in_front)}
+    assert reconstruction(views, voxels_size=256) is not None
 
 
 if __name__ == "__main__":
