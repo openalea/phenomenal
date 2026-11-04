@@ -70,6 +70,33 @@ def show_mesh(
     )
 
 
+def show_polylines(
+    polylines,
+    colors=(1, 0, 0),
+    radius=2,
+    sides=8,
+    windows_size=(600, 800),
+    screenshot_filename=None,
+    screenshot_magnification=10,
+    record_filename=None,
+    record_quality=2,
+    record_rate=25,
+):
+    scene = Scene()
+    actor = scene.get_actor_from_polylines(
+        polylines, colors=colors, radius=radius, sides=sides
+    )
+    scene.add_actor(actor)
+    scene.show(
+        windows_size=windows_size,
+        screenshot_filename=screenshot_filename,
+        screenshot_magnification=screenshot_magnification,
+        record_filename=record_filename,
+        record_quality=record_quality,
+        record_rate=record_rate,
+    )
+
+
 # ==============================================================================
 
 
