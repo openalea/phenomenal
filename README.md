@@ -46,15 +46,17 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal    
 
-    # Solution 1: Build env from scratch (mostly use pip dependencies)
-    mamba env create -f conda/environment.yml
+    # Solution 1: Build env from scratch
+    mamba create -n phenomenal_dev -f conda/dev_env.yml -f conda/run_deps.yml -f conda/doc_deps.yml
     mamba activate phenomenal_dev
+    pip install -e . --no-build-isolation
 
-    # Solution 2: use an existing env (mostly use conda dependencies)
-    mamba activate my_env
-    mamba install --only-deps -c openalea3 -c conda-forge openalea.phenomenal
-    mamba install cxx-compiler
-    pip install -e .[doc,test]
+    # Solution 2: use an existing env (keeps its Python version)
+    conda activate my_env
+    conda env update -f conda/dev_env.yml
+    conda env update -f conda/run_deps.yml
+    conda env update -f conda/doc_deps.yml
+    pip install -e . --no-build-isolation
 
     # (Optional) Test your installation
     cd test; pytest

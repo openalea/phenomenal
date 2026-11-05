@@ -1,0 +1,20 @@
+# Runtime dependencies: read by conda/meta.yaml and added to the development
+# environment (see conda/dev_env.yml). Python is declared by those files.
+channels:
+  - openalea3
+  - conda-forge
+dependencies:
+  - numpy
+  - scipy
+  - pillow
+  - scikit-image
+  - scikit-learn
+  - networkx
+  - vtk
+  - orjson
+  - skan
+  - k3d
+  - dracopy
+  - opencv
+  - matplotlib-base
+  - openalea.phenotyping_data
