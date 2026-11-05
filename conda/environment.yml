@@ -5,15 +5,12 @@
 #   mamba create -n phenomenal_dev -f conda/environment.yml -f conda/run_deps.yml -f conda/doc_deps.yml
 #   mamba activate phenomenal_dev
 #   pip install -e . --no-build-isolation
-name: phenomenal_dev
 channels:
-  - openalea3/label/dev
-  - openalea3/label/rc
   - openalea3
   - conda-forge
 dependencies:
-  # highest version built by CI
-  - python=3.14
+  # upper limit: without it, the win-64 solve stalls on Python versions the run deps lack
+  - python<3.15
   - pip
   # build
   - cxx-compiler
@@ -21,7 +18,8 @@ dependencies:
   - setuptools-scm
   - cython
   # the Windows scikit-image 0.26.0 package ships a broken pythran folder that crashes
-  # Cython; a real pythran replaces it. Remove once conda-forge fixes that package.
+  # Cython; a real pythran replaces it. Remove once conda-forge fixes that package:
+  # https://github.com/conda-forge/scikit-image-feedstock/issues/130
   - pythran
   # test
   - pytest

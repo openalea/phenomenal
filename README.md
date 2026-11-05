@@ -51,10 +51,11 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
     mamba activate phenomenal_dev
     pip install -e . --no-build-isolation
 
-    # Solution 2: use an existing env
-    mamba activate my_env
-    mamba install -c openalea3 -c conda-forge -f conda/run_deps.yml -f conda/doc_deps.yml
-    mamba install -c conda-forge cxx-compiler setuptools setuptools-scm cython pythran pytest
+    # Solution 2: use an existing env (keeps its Python version)
+    conda activate my_env
+    conda env update -f conda/environment.yml
+    conda env update -f conda/run_deps.yml
+    conda env update -f conda/doc_deps.yml
     pip install -e . --no-build-isolation
 
     # (Optional) Test your installation

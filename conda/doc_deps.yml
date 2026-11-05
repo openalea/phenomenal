@@ -1,0 +1,17 @@
+# Documentation tools: added to the Read the Docs environment (see .readthedocs.yml)
+# and to the development environment (see conda/environment.yml).
+channels:
+  - openalea3
+  - conda-forge
+dependencies:
+  - sphinx
+  - pandoc
+  - pydata-sphinx-theme
+  - myst-parser
+  - sphinx-favicon
+  - sphinx-copybutton
+  - nbsphinx
+  - ipykernel
+  - ipython_genutils
+  # imported by the example notebooks
+  - pandas
