@@ -4,10 +4,7 @@
 {% set version = environ.get('SETUPTOOLS_SCM_PRETEND_VERSION', "0.0.0.dev") %}
 {% set license = pyproject.get('project').get('license') %}
 {% set home = pyproject.get('project', {}).get('urls', {}).get('Homepage', '') %}
-{% set build_deps = pyproject.get("build-system", {}).get("requires", []) %}
-{% set deps = pyproject.get('project', {}).get('dependencies', []) %}
-{% set conda_deps = pyproject.get('tool', {}).get('conda', {}).get('environment', {}).get('dependencies',[]) %}
-{% set test_deps = pyproject.get('project', {}).get('optional-dependencies', {}).get('test',[]) %}
+{% set run_deps = load_file_data('run_deps.yml', from_recipe_dir=True).get('dependencies') %}
 
 
 package:
@@ -26,9 +23,10 @@ requirements:
   host:
     - python
     - pip
-    {% for dep in build_deps %}
-    - {{ dep }}
-    {% endfor  %}
+    - setuptools
+    - setuptools-scm
+    - numpy
+    - cython
 
   build:
     - {{ compiler("cxx") }}
@@ -36,7 +34,7 @@ requirements:
 
   run:
     - python
-    {% for dep in deps + conda_deps %}
+    {% for dep in run_deps %}
     - {{ dep }}
     {% endfor %}
 

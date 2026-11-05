@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `read_pointcloud` to load the point positions of a text file.
 
 ### Changed
+* Dependencies are declared in `conda/` (`run_deps.yml`, `doc_deps.yml`, `meta.yaml`, `environment.yml`) instead of `pyproject.toml`, which no longer has runtime dependencies or extras. Read the Docs now documents the published package.
 * `tracking.display.plot_polylines` uses VTK instead of PlantGL, and blocks until its window is closed.
 
 ### Fixed
