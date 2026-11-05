@@ -1,5 +1,5 @@
 # Dependencies are declared in conda/: run_deps.yml (runtime), doc_deps.yml (documentation),
-# meta.yaml (package build) and environment.yml (development). Install a checkout with
+# meta.yaml (package build) and dev_env.yml (development). Install a checkout with
 # `pip install -e . --no-build-isolation` from the development environment.
 # `requires` only lets an isolated pip build compile the package, which then has no
 # declared runtime dependencies.

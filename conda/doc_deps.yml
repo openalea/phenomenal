@@ -1,5 +1,5 @@
 # Documentation tools: added to the Read the Docs environment (see .readthedocs.yml)
-# and to the development environment (see conda/environment.yml).
+# and to the development environment (see conda/dev_env.yml).
 channels:
   - openalea3
   - conda-forge
