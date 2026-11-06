@@ -118,14 +118,43 @@ def create_graph(voxels_position, voxels_size):
         ]
     )
 
-    arr_vs = numpy.array(voxels_position)
     distances = numpy.linalg.norm(neighbors, axis=1)
+    if len(voxels_position) == 0:
+        return graph
 
-    for i, pt in enumerate(voxels_position):
-        neighbors_position = list(map(tuple, neighbors + arr_vs[i]))
-        for j, pos in enumerate(neighbors_position):
-            if graph.has_node(pos):
-                graph.add_edge(pt, pos, weight=distances[j])
+    # Find the neighbors with integer cell indices of the voxels in the grid,
+    # then keep the pairs where position + neighbor offset is exactly the
+    # neighbor position, as with graph.has_node(position + offset)
+    arr_vs = numpy.array(voxels_position, dtype=float)
+    cells = numpy.rint((arr_vs - arr_vs.min(axis=0)) / vs).astype(numpy.int64) + 1
+    offsets = numpy.rint(neighbors / vs).astype(numpy.int64)
+    dims = cells.max(axis=0) + 2
+    keys = numpy.ravel_multi_index(cells.T, dims)
+    order = numpy.argsort(keys, kind="stable")
+    sorted_keys = keys[order]
+    neighbors_keys = numpy.ravel_multi_index(
+        (cells[:, None, :] + offsets).transpose(2, 0, 1), dims
+    )
+    found = numpy.searchsorted(sorted_keys, neighbors_keys).clip(max=len(keys) - 1)
+    is_neighbor = sorted_keys[found] == neighbors_keys
+    # sorted by voxel, then by neighbor: the order of the edges in the loop
+    # graph.add_edge(position, position + offset) over voxels and offsets
+    index_voxel, index_offset = numpy.nonzero(is_neighbor)
+    index_neighbor = order[found[index_voxel, index_offset]]
+    exact = numpy.all(
+        arr_vs[index_voxel] + neighbors[index_offset] == arr_vs[index_neighbor],
+        axis=1,
+    )
+    index_voxel = index_voxel[exact].tolist()
+    index_offset = index_offset[exact]
+    index_neighbor = index_neighbor[exact].tolist()
+    graph.add_weighted_edges_from(
+        zip(
+            (voxels_position[i] for i in index_voxel),
+            (voxels_position[i] for i in index_neighbor),
+            distances[index_offset],
+        )
+    )
 
     return graph
 
