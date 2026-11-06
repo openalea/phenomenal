@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * `tracking.display.plot_polylines` uses VTK instead of PlantGL, and blocks until its window is closed.
+* `segment_reduction` is written in NumPy and uses less memory. The package has no more compiled code, and does not need a compiler to build.
+* `skeletonize` is faster (about 25 to 45% on the test plants), with the same results.
 
 ### Fixed
 * `Display.screenshot`, and the `screenshot_filename` option of the `show_*` functions, with recent VTK versions.

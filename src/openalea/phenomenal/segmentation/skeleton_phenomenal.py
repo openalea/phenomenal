@@ -16,9 +16,8 @@ try:
 except ImportError:
     import networkx
 
-import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
 
-from ..multi_view_reconstruction import project_voxel_centers_on_image
+from ..multi_view_reconstruction import get_bounding_box_voxel_projected
 from .plane_interception import (
     intercept_points_along_path_with_planes,
     intercept_points_along_polyline_with_ball,
@@ -27,6 +26,55 @@ from ..object import VoxelSkeleton, VoxelGrid, VoxelSegment
 
 
 # ==============================================================================
+
+
+def _project_voxels_on_pixels(voxels_position, voxels_size, shape_image, projection):
+    """
+    Give the pixels covered by the voxels projected on an image, as flat indices.
+
+    Covers the same pixels as `project_voxel_centers_on_image`, without allocating an
+    image of the full size.
+
+    Parameters
+    ----------
+    voxels_position : numpy.ndarray
+        Voxels center position [[x, y, z], ...]
+    voxels_size : float
+        Diameter size of the voxels
+    shape_image : 2-tuple
+        Height and width of the image
+    projection : function ((x, y, z)) -> (x, y)
+        Function of projection
+
+    Returns
+    -------
+    out : numpy.ndarray
+        Sorted indices of the pixels in the flattened image
+    """
+    height, length = shape_image
+    boxes = get_bounding_box_voxel_projected(voxels_position, voxels_size, projection)
+    outside = (
+        (boxes[:, 2] < 0)
+        | (boxes[:, 0] >= length)
+        | (boxes[:, 3] < 0)
+        | (boxes[:, 1] >= height)
+    )
+    boxes = numpy.floor(boxes[~outside])
+    if len(boxes) == 0:
+        return numpy.empty(0, dtype=numpy.intp)
+
+    boxes[:, [0, 2]] = numpy.clip(boxes[:, [0, 2]], 0, length - 1)
+    boxes[:, [1, 3]] = numpy.clip(boxes[:, [1, 3]], 0, height - 1)
+    boxes = boxes.astype(int)
+
+    x_origin, y_origin = boxes[:, :2].min(axis=0)
+    x_end, y_end = boxes[:, 2:].max(axis=0)
+    crop = numpy.zeros((y_end - y_origin + 1, x_end - x_origin + 1), dtype=bool)
+    for x_min, y_min, x_max, y_max in boxes - [x_origin, y_origin, x_origin, y_origin]:
+        crop[y_min : y_max + 1, x_min : x_max + 1] = True
+
+    rows, columns = numpy.nonzero(crop)
+    return (rows + y_origin) * length + columns + x_origin
 
 
 def segment_reduction(
@@ -38,6 +86,9 @@ def segment_reduction(
     the images are not cover by the projection of the other segments in
     number required_visible. Segments are not cover if their remaining
     projected pixel are superior to nb_min_pixel.
+
+    Segments are processed from the shortest to the longest polyline, and a removed
+    segment no longer covers the following ones.
 
     Parameters
     ----------
@@ -51,98 +102,41 @@ def segment_reduction(
     -------
 
     """
-    # ==========================================================================
+    segments = sorted(voxel_skeleton.segments, key=lambda vs: len(vs.polyline))
 
-    # Order
-    orderer_voxel_segments = sorted(
-        voxel_skeleton.segments, key=lambda vs: len(vs.polyline)
-    )
-
-    # ==========================================================================
-    # import time
-    # start = time.time()
-
-    # ==========================================================================
-
-    # tips = dict()
-    len_segments = len(orderer_voxel_segments)
-    len_images = len(image_projection)
-    list_array = [None] * len_segments * len_images
-    for i, vs in enumerate(orderer_voxel_segments):
-        for j, (image, projection) in enumerate(image_projection):
-            vp = numpy.array(list(vs.voxels_position))
-            list_array[i * len_images + j] = project_voxel_centers_on_image(
-                vp,
-                voxel_skeleton.voxels_size,
-                image.shape,
-                projection,
-                dtype=numpy.int32,
-                value=1,
-            )
-
-            # vp = numpy.array([vs.polyline[-1]])
-            # tips[(i, j)] = openalea.phenomenal.multi_view_reconstruction. \
-            #     project_voxel_centers_on_image(
-            #     vp,
-            #     voxel_skeleton.voxels_size,
-            #     iv.image.shape,
-            #     iv.projection)
-
-    # print("time processing , project_voxel_centers_on_image : {}".format(
-    #     time.time() - start))
-    # ==========================================================================
-    # start = time.time()
-
-    list_negative_image = []
-    for j, (image, projection) in enumerate(image_projection):
-        negative_image = image.copy().astype(numpy.int32)
-        negative_image[negative_image > 0] = 2
-        negative_image[negative_image == 0] = 1
-        negative_image[negative_image == 2] = 0
-        list_negative_image.append(negative_image)
-
-        list_array.append(negative_image)
-
-    # print("time processing , negative_image : {}".format(time.time() - start))
-    # ==========================================================================
-    # start = time.time()
-
-    is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
-
-    c_skeleton.skeletonize(
-        list_array, is_removed, len_segments, len_images, nb_min_pixel, required_visible
-    )
-
-    segments = [
-        orderer_voxel_segments[i] for i in range(len_segments) if is_removed[i] == 0
+    # Number of objects covering each pixel of each image: the background, then the
+    # projection of each remaining segment.
+    coverages = [
+        (image.astype(numpy.int32) == 0).astype(numpy.int32).ravel()
+        for image, _ in image_projection
     ]
-    # print("time processing , C code covered : {}".format(time.time() - start))
-    return VoxelSkeleton(segments, voxel_skeleton.voxels_size)
+    segments_pixels = []
+    for segment in segments:
+        voxels_position = numpy.array(list(segment.voxels_position))
+        pixels = [
+            _project_voxels_on_pixels(
+                voxels_position, voxel_skeleton.voxels_size, image.shape, projection
+            )
+            for image, projection in image_projection
+        ]
+        for coverage, pixels_in_image in zip(coverages, pixels):
+            coverage[pixels_in_image] += 1
+        segments_pixels.append(pixels)
 
-    # ==========================================================================
-    # is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
-    #
-    # for i in range(len_segments):
-    #     weight = 0
-    #     for j in range(len(image_projection)):
-    #         im = list_array[i * len_images + j] - list_negative_image[j]
-    #         for k in range(len_segments):
-    #             if k != i and not is_removed[k]:
-    #                 im -= list_array[k * len_images + j]
-    #
-    #         if numpy.count_nonzero(im > 0) >= nb_min_pixel:
-    #             weight += 1
-    #
-    #         if weight >= required_visible:
-    #             break
-    #
-    #     if weight < required_visible:
-    #         is_removed[i] = True
-    #
-    # print("time processing , covered : {}".format(time.time() - start))
-    # segments = [orderer_voxel_segments[i] for i in range(len_segments) if
-    #             not is_removed[i]]
-    # return VoxelSkeleton(segments, voxel_skeleton.voxels_size)
+    kept_segments = []
+    for segment, pixels in zip(segments, segments_pixels):
+        nb_visible = sum(
+            numpy.count_nonzero(coverage[pixels_in_image] == 1)
+            >= max(nb_min_pixel, 1)
+            for coverage, pixels_in_image in zip(coverages, pixels)
+        )
+        if nb_visible < required_visible:
+            for coverage, pixels_in_image in zip(coverages, pixels):
+                coverage[pixels_in_image] -= 1
+        else:
+            kept_segments.append(segment)
+
+    return VoxelSkeleton(kept_segments, voxel_skeleton.voxels_size)
 
 
 # ==============================================================================

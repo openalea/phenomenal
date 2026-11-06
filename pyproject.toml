@@ -2,8 +2,6 @@
 requires = [
   "setuptools",
   "setuptools-scm",
-  "numpy",
-  "cython",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -15,15 +13,6 @@ include-package-data = false # force explicit declaration of data (disable autom
 
 # enable dynamic version based on git tags
 [tool.setuptools_scm]
-
-
-[[tool.setuptools.ext-modules]]
-  name= "openalea.phenomenal.segmentation._c_skeleton"
-  sources = [
-    "src/openalea/phenomenal/segmentation/src/skeleton.pyx",
-    "src/openalea/phenomenal/segmentation/src/skel.cpp"
-  ]
-  language = "c++"
 
 
 [project]

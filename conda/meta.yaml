@@ -30,10 +30,6 @@ requirements:
     - {{ dep }}
     {% endfor  %}
 
-  build:
-    - {{ compiler("cxx") }}
-    - {{ stdlib("c") }}
-
   run:
     - python
     {% for dep in deps + conda_deps %}
