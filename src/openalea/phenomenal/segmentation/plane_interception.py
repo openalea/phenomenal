@@ -12,10 +12,6 @@
 import math
 import numpy
 
-try:
-    import nx_cugraph as networkx
-except ImportError:
-    import networkx
 import scipy
 # ==============================================================================
 
@@ -94,16 +90,22 @@ def connected_points_with_point(points, points_graph, src_point):
         Return the connected points with src_point, based on points graph
         connection.
     """
-    # Compute connected component in points in the ball
-    subgraph = points_graph.subgraph(points)
-    connected_components = networkx.connected_components(subgraph)
-    # Set points in ball by the connected points group with the current
-    # point of the path
-    for connected_points in connected_components:
-        if src_point in connected_points:
-            return connected_points
+    # Walk the graph from src_point, staying inside points: only the
+    # component containing src_point is needed, not all of them
+    points = set(points)
+    if src_point not in points or src_point not in points_graph:
+        return [src_point]
 
-    return [src_point]
+    adjacency = points_graph.adj
+    connected_points = {src_point}
+    stack = [src_point]
+    while stack:
+        for neighbor in adjacency[stack.pop()]:
+            if neighbor in points and neighbor not in connected_points:
+                connected_points.add(neighbor)
+                stack.append(neighbor)
+
+    return connected_points
 
 
 def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
@@ -200,6 +202,63 @@ def intercept_points_from_src_point_with_plane_equation(
         closest_voxel = closest_voxel[index]
 
     return closest_voxel
+
+
+def _walk_points_near_plane(
+    points_set,
+    points_graph,
+    src_point,
+    plane_equation,
+    distance_from_plane,
+    distance_from_src_point,
+):
+    """Points connected to src_point in points_graph, among the points that
+    intercept_points_from_src_point_with_plane_equation would select.
+
+    Same result as that function followed by connected_points_with_point,
+    but only the points reached from src_point are tested, instead of all
+    the points. The distances are computed with the same operations, in the
+    same order, as in the numpy version, to select exactly the same points.
+    """
+    a, b, c, d = plane_equation
+    norm = math.sqrt(a**2 + b**2 + c**2)
+    if numpy.ndim(distance_from_src_point) > 0:
+        # (1000,) on the first point of the polyline
+        (distance_from_src_point,) = distance_from_src_point
+    if distance_from_src_point is None:
+        distance_from_src_point = math.inf
+    xs, ys, zs = src_point
+    tested = {}
+
+    def is_selected(point):
+        x, y, z = point
+        if not abs(x * a + y * b + z * c - d) / norm < distance_from_plane:
+            return False
+        dx, dy, dz = x - xs, y - ys, z - zs
+        return math.sqrt(dx * dx + dy * dy + dz * dz) < distance_from_src_point
+
+    if (
+        src_point not in points_set
+        or src_point not in points_graph
+        or not is_selected(src_point)
+    ):
+        return [src_point]
+
+    adjacency = points_graph.adj
+    connected_points = {src_point}
+    stack = [src_point]
+    while stack:
+        for neighbor in adjacency[stack.pop()]:
+            if neighbor in connected_points or neighbor not in points_set:
+                continue
+            selected = tested.get(neighbor)
+            if selected is None:
+                selected = tested[neighbor] = is_selected(neighbor)
+            if selected:
+                connected_points.add(neighbor)
+                stack.append(neighbor)
+
+    return connected_points
 
 
 def compute_plane_equation(orientation_vector, src_point):
@@ -313,6 +372,7 @@ def intercept_points_along_path_with_planes(
     intercepted_points = [None] * length_polyline
     planes_equation = [None] * length_polyline
     distance_from_src_point = (1000,)
+    points_set = None
     for i in range(length_polyline - 1, -1, -1):
         point = tuple(polyline[i])
 
@@ -341,6 +401,20 @@ def intercept_points_along_path_with_planes(
             distance_from_src_point = fix_distance_from_src_point
 
         # ======================================================================
+
+        if points_graph is not None and not without_connection:
+            if points_set is None:
+                points_set = set(map(tuple, points))
+            intercepted_points[i] = _walk_points_near_plane(
+                points_set,
+                points_graph,
+                point,
+                plane_equation,
+                distance_from_plane,
+                distance_from_src_point,
+            )
+            planes_equation[i] = plane_equation
+            continue
 
         pts = intercept_points_from_src_point_with_plane_equation(
             points, point, plane_equation, distance_from_plane, distance_from_src_point

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * `tracking.display.plot_polylines` uses VTK instead of PlantGL, and blocks until its window is closed.
 * `segment_reduction` is written in NumPy and uses less memory. The package has no more compiled code, and does not need a compiler to build.
+* `skeletonize` is 1.5 to 4 times faster (more on bigger grids), with the same results: along each path, it walks the graph from the path point and tests only the voxels it reaches, instead of testing all the voxels then computing all the connected components.
 * `graph_from_voxel_grid` builds the same graph about 2 times faster.
 
 ### Fixed
