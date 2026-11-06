@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `skeletonize` is 1.5 to 4 times faster (more on bigger grids), with the same results: along each path, it walks the graph from the path point and tests only the voxels it reaches, instead of testing all the voxels then computing all the connected components.
 * `graph_from_voxel_grid` builds the same graph about 2 times faster.
 
+### Removed
+* GPU acceleration with `nx_cugraph`, and the `gpu` pip extra: the slow steps no longer call NetworkX algorithms.
+
 ### Fixed
 * `Display.screenshot`, and the `screenshot_filename` option of the `show_*` functions, with recent VTK versions.
 

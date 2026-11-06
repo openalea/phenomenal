@@ -11,10 +11,7 @@
 
 import numpy
 
-try:
-    import nx_cugraph as networkx
-except ImportError:
-    import networkx
+import networkx
 
 
 from ..multi_view_reconstruction import get_bounding_box_voxel_projected

@@ -9,10 +9,7 @@
 # ==============================================================================
 
 
-try:
-    import nx_cugraph as networkx
-except ImportError:
-    import networkx
+import networkx
 import numpy
 import sklearn.feature_extraction.image
 import sklearn.neighbors

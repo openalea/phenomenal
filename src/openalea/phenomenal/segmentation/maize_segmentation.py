@@ -11,10 +11,7 @@ from __future__ import print_function, division, absolute_import
 
 import numpy
 
-try:
-    import nx_cugraph as networkx
-except ImportError:
-    import networkx
+import networkx
 
 from .maize_stem_detection import stem_detection
 from ..object import VoxelOrgan, VoxelSegment, VoxelSegmentation
