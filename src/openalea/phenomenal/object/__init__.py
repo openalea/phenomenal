@@ -20,6 +20,7 @@ Data Structure
    image3D
    imageView
    voxelGrid
+   voxelGraph
    Mesh
    voxelSegment
    voxelOrgan
@@ -34,6 +35,7 @@ from .imageView import *
 from .image3D import Image3D
 from .voxelOctree import VoxelOctree
 from .voxelGrid import VoxelGrid, bind_grids, read_pointcloud
+from .voxelGraph import VoxelGraph
 from .Mesh import Mesh
 from .voxelSegment import VoxelSegment
 from .voxelSkeleton import VoxelSkeleton

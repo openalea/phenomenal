@@ -63,7 +63,7 @@ def test_graph_1():
         assert graph.has_node(position)
 
     length = networkx.dijkstra_path_length(
-        graph, source=(0, 0, 0), target=(2, 2, 2), weight="weight"
+        graph.to_networkx(), source=(0, 0, 0), target=(2, 2, 2), weight="weight"
     )
 
     ll = numpy.linalg.norm(numpy.array((0, 0, 0)) - numpy.array((2, 2, 2)))

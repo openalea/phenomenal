@@ -11,10 +11,10 @@ from __future__ import print_function, division, absolute_import
 
 import numpy
 
-import networkx
 
 from .maize_stem_detection import stem_detection
 from ..object import VoxelOrgan, VoxelSegment, VoxelSegmentation
+from .graph import as_voxel_graph
 # ==============================================================================
 
 
@@ -44,13 +44,13 @@ def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
 def _merge(graph, voxels, remaining_voxels, percentage=50):
     voxels_neighbors = []
     for node in voxels:
-        voxels_neighbors += graph[node].keys()
+        voxels_neighbors += graph.neighbors(node)
     voxels_neighbors = set(voxels_neighbors) - voxels
 
     subgraph = graph.subgraph(remaining_voxels)
 
     connected_components = []
-    for voxel_group in networkx.connected_components(subgraph):
+    for voxel_group in subgraph.connected_components():
         nb = len(voxel_group.intersection(voxels_neighbors))
 
         if nb * 100 / len(voxel_group) >= percentage:
@@ -101,6 +101,7 @@ def get_highest_segment(segments, n_candidates=1):
 
 def detect_stem_tip(voxel_skeleton, graph, n_candidates):
     voxels_size = voxel_skeleton.voxels_size
+    graph = as_voxel_graph(graph, voxels_size)
     highest_voxel_segment = get_highest_segment(
         voxel_skeleton.segments, n_candidates=n_candidates
     )
@@ -121,7 +122,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1, stem_
     Parameters
     ----------
     voxel_skeleton : openalea.phenomenal.object.VoxelSkeleton
-    graph : networkx.Graph
+    graph : VoxelGraph or networkx.Graph
 
     stem_segment : If None, stem_segment is computed according stem_strategy.
     stem_segment is VoxelSegment object depict the polyline where the plant stem is included. 
@@ -136,6 +137,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1, stem_
     """
 
     voxels_size = voxel_skeleton.voxels_size
+    graph = as_voxel_graph(graph, voxels_size)
 
     # ==========================================================================
     # Select the more highest segment on the skeleton
@@ -164,7 +166,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1, stem_
     for vs in voxel_skeleton.segments:
         leaf_voxel = None
         subgraph = graph.subgraph(vs.voxels_position - stem_voxel)
-        for voxel_group in networkx.connected_components(subgraph):
+        for voxel_group in subgraph.connected_components():
             if vs.polyline[-1] in voxel_group:
                 leaf_voxel = voxel_group
         vs.leaf_voxel = leaf_voxel
@@ -258,7 +260,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1, stem_
                 continue
 
             nodes = vo_1.voxels_position().intersection(vo_2.voxels_position())
-            v = networkx.number_connected_components(graph.subgraph(nodes))
+            v = graph.subgraph(nodes).number_connected_components()
             if v > 1:
                 vo_1.sub_label = "connected"
 
