@@ -9,7 +9,6 @@ dependencies:
   - python=3.14
   - pip
   - pandoc
-  - cxx-compiler
   - opencv
   - matplotlib-base
   - openalea.phenotyping_data

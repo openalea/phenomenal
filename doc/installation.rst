@@ -39,9 +39,6 @@ Editable mode install
 
 .. code-block:: bash
 
-    # (windows only) install VisualStudio Build Tools
-    # (macos only) install Xcode Command Line Tools
-
     # Clone phenomenal
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal
@@ -53,7 +50,6 @@ Editable mode install
     # Solution 2: use an existing env (mostly use conda dependencies)
     mamba activate my_env
     mamba install --only-deps -c openalea3 -c conda-forge openalea.phenomenal
-    mamba install cxx-compiler
     pip install -e .[doc,test]
 
     # (Optional) Test your installation
