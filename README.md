@@ -39,9 +39,6 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
 
 #### Editable mode install
 
-    # (windows only) install VisualStudio Build Tools
-    # (macos only) install Xcode Command Line Tools
-
     # Clone phenomenal
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal    

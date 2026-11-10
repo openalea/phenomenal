@@ -39,9 +39,6 @@ Editable mode install
 
 .. code-block:: bash
 
-    # (windows only) install VisualStudio Build Tools
-    # (macos only) install Xcode Command Line Tools
-
     # Clone phenomenal
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal
