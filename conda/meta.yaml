@@ -17,7 +17,7 @@ source:
 build:
   number: 0
   script:
-    - {{ PYTHON }} -m pip install . --no-build-isolation -vv
+    - {{ PYTHON }} -m pip install . -vv
 
 requirements:
   host:
@@ -25,12 +25,6 @@ requirements:
     - pip
     - setuptools
     - setuptools-scm
-    - numpy
-    - cython
-
-  build:
-    - {{ compiler("cxx") }}
-    - {{ stdlib("c") }}
 
   run:
     - python

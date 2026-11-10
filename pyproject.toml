@@ -1,14 +1,12 @@
 # Dependencies are declared in conda/: run_deps.yml (runtime), doc_deps.yml (documentation),
 # meta.yaml (package build) and dev_env.yml (development). Install a checkout with
-# `pip install -e . --no-build-isolation` from the development environment.
+# `pip install -e . ` from the development environment.
 # `requires` only lets an isolated pip build compile the package, which then has no
 # declared runtime dependencies.
 [build-system]
 requires = [
   "setuptools",
   "setuptools-scm",
-  "numpy",
-  "cython",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -20,16 +18,6 @@ include-package-data = false # force explicit declaration of data (disable autom
 
 # enable dynamic version based on git tags
 [tool.setuptools_scm]
-
-
-[[tool.setuptools.ext-modules]]
-  name= "openalea.phenomenal.segmentation._c_skeleton"
-  sources = [
-    "src/openalea/phenomenal/segmentation/src/skeleton.pyx",
-    "src/openalea/phenomenal/segmentation/src/skel.cpp"
-  ]
-  language = "c++"
-
 
 [project]
 name = "openalea.phenomenal"

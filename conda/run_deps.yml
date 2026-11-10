@@ -17,4 +17,3 @@ dependencies:
   - dracopy
   - opencv
   - matplotlib-base
-  - openalea.phenotyping_data
