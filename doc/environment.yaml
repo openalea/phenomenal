@@ -1,6 +1,6 @@
 # Read the Docs environment: the latest published package, dev and rc builds included.
 # Sphinx documents and runs the installed openalea.phenomenal, not the checkout. .readthedocs.yml then adds
-# conda/doc_deps.yml; the package comes first so that it decides the Python version.
+# doc/doc_deps.yml; the package comes first so that it decides the Python version.
 channels:
   - openalea3/label/dev
   - openalea3/label/rc

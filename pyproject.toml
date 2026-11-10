@@ -1,6 +1,7 @@
-# Dependencies are declared in conda/: run_deps.yml (runtime), doc_deps.yml (documentation),
-# meta.yaml (package build) and dev_env.yml (development). Install a checkout with
-# `pip install -e . ` from the development environment.
+# Dependencies are declared with conda: conda/run_deps.yml (runtime), conda/meta.yaml
+# (package build), doc/doc_deps.yml (documentation) and environment.yaml (development).
+# Install a checkout with `pip install -e . --no-deps --no-build-isolation` from the
+# development environment, as for the compiled OpenAlea packages.
 # `requires` only lets an isolated pip build compile the package, which then has no
 # declared runtime dependencies.
 [build-system]

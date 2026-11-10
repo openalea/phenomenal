@@ -1,8 +1,8 @@
 # Development environment: tools to build and test phenomenal from a checkout.
 # Runtime and documentation dependencies are in conda/run_deps.yml and
-# conda/doc_deps.yml, and the package itself is installed separately:
+# doc/doc_deps.yml, and the package itself is installed separately:
 #
-#   mamba create -n phenomenal_dev -f conda/dev_env.yml -f conda/run_deps.yml -f conda/doc_deps.yml
+#   mamba create -n phenomenal_dev -f environment.yaml -f conda/run_deps.yml -f doc/doc_deps.yml
 #   mamba activate phenomenal_dev
 #   pip install -e .
 channels:

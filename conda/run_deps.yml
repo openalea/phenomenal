@@ -1,5 +1,5 @@
 # Runtime dependencies: read by conda/meta.yaml and added to the development
-# environment (see conda/dev_env.yml). Python is declared by those files.
+# environment (see environment.yaml). Python is declared by those files.
 channels:
   - openalea3
   - conda-forge

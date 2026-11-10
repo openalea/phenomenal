@@ -44,16 +44,14 @@ Editable mode install
     cd phenomenal
 
     # Solution 1: Build env from scratch
-    mamba create -n phenomenal_dev -f conda/dev_env.yml -f conda/run_deps.yml -f conda/doc_deps.yml
+    mamba create -n phenomenal_dev -f environment.yaml -f conda/run_deps.yml -f doc/doc_deps.yml
     mamba activate phenomenal_dev
-    pip install -e . --no-build-isolation
+    pip install -e . --no-deps --no-build-isolation
 
     # Solution 2: use an existing env (keeps its Python version)
-    conda activate my_env
-    conda env update -f conda/dev_env.yml
-    conda env update -f conda/run_deps.yml
-    conda env update -f conda/doc_deps.yml
-    pip install -e . --no-build-isolation
+    mamba install -n my_env -f environment.yaml -f conda/run_deps.yml -f doc/doc_deps.yml
+    mamba activate my_env
+    pip install -e . --no-deps --no-build-isolation
 
     # (Optional) Test your installation
     cd test; pytest
