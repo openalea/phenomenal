@@ -4,6 +4,8 @@
 {% set version = environ.get('SETUPTOOLS_SCM_PRETEND_VERSION', "0.0.0.dev") %}
 {% set license = pyproject.get('project').get('license') %}
 {% set home = pyproject.get('project', {}).get('urls', {}).get('Homepage', '') %}
+{# conda-build runs pip without build isolation, so the build backend must be in host #}
+{% set build_deps = pyproject.get('build-system', {}).get('requires', []) %}
 {% set run_deps = load_file_data('run_deps.yml', from_recipe_dir=True).get('dependencies') %}
 {# python_min comes from conda-forge-pinning (used by CI); the default is for a local build
    without it. Conda is the reference for the Python version (pyproject.toml has none). #}
@@ -28,6 +30,9 @@ requirements:
   host:
     - python
     - pip
+    {% for dep in build_deps %}
+    - {{ dep }}
+    {% endfor %}
 
   run:
     # noarch: lower bound only; host and test follow the Python version of each CI job
