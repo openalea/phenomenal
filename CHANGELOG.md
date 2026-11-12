@@ -13,7 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * A `depth` option on `get_projection`, to get (u, v, depth) coordinates.
 
 ### Changed
+* Runtime and documentation dependencies are declared with conda (`conda/run_deps.yml`, `doc/doc_deps.yml`) instead of `pyproject.toml`, which no longer has runtime dependencies or extras. Read the Docs now documents the published package, and the installation instructions are only in `README.md`. Binder installs the notebook data and pandas instead of ipyvolume.
 * `tracking.display.plot_polylines` uses VTK instead of PlantGL, and blocks until its window is closed.
+* `segment_reduction` is written in NumPy and uses less memory. The package has no more compiled code, and does not need a compiler to build.
 * Multi-view reconstruction filters voxels behind the camera plane, and needs projections with depth: use `get_projection(..., depth=True)`, as `as_image_views` does. Projections without depth raise a `ValueError`.
 * `voxels_is_visible_in_image`: `inclusive` now defaults to `True`.
 * `get_bounding_box_voxel_projected` takes projected voxel corners (see `project_voxels`), and `integral_image_hits` no longer takes the image size.

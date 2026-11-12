@@ -5,7 +5,10 @@ channels:
   - openalea3
   - conda-forge
 
+# Latest published package, dev and rc builds included, plus what the notebooks of
+# doc/examples import (sample data and pandas). Binder provides Jupyter itself.
 dependencies:
   - openalea.phenomenal
-  - ipyvolume
+  - openalea.phenotyping_data
+  - pandas
 
