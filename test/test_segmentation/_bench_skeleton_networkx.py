@@ -9,14 +9,29 @@
 # ==============================================================================
 """Benchmark graph_from_voxel_grid and skeletonize, networkx graph API.
 
-Works with the code before the skeleton speed-ups (master 55d1769 and
-earlier), where graph_from_voxel_grid returns a networkx graph. Saves each
-skeleton, so that another version of the code can be compared to it. Run
-from the repository root:
+For the code where graph_from_voxel_grid returns a networkx.Graph: master up
+to 8e4c266 (November 2026) and the releases up to 1.9.5. The script stays in
+this checkout and imports the old phenomenal. Saves each skeleton, so that
+_bench_skeleton.py (VoxelGraph code) can compare its skeletons with them.
 
-    python test/test_segmentation/_bench_skeleton_v0.py
-    python test/test_segmentation/_bench_skeleton_v0.py grid.csv 8 4 --save ref
-    python test/test_segmentation/_bench_skeleton_v0.py grid.csv 8 4 --compare ref
+To run it on master 8e4c266, check that commit out in a separate folder and
+put its src first on the python path (networkx must be installed, as skan
+already requires it). From the root of this checkout:
+
+    git worktree add ../phenomenal_networkx 8e4c266
+    PYTHONPATH=../phenomenal_networkx/src python test/test_segmentation/_bench_skeleton_networkx.py grid.csv 8 4 --save ref
+    python test/test_segmentation/_bench_skeleton.py grid.csv 8 4 --compare ref
+    git worktree remove ../phenomenal_networkx
+
+In the Anaconda Prompt (cmd), set the path on its own line, and clear it
+before running _bench_skeleton.py:
+
+    set PYTHONPATH=../phenomenal_networkx/src
+    python test/test_segmentation/_bench_skeleton_networkx.py grid.csv 8 4 --save ref
+    set PYTHONPATH=
+    python test/test_segmentation/_bench_skeleton.py grid.csv 8 4 --compare ref
+
+The first line each script prints says which phenomenal it imports.
 
 With no file, uses the voxel grids of test/data/plant_1 (32 and 16 mm).
 With a voxel grid file (.csv, .npz, .json), the grid is merged into
@@ -104,6 +119,7 @@ def main():
     parser.add_argument("--compare", help="directory of the reference skeletons")
     args = parser.parse_args()
     options = dict(save=args.save, reference=args.compare)
+    print("phenomenal from", Path(phm_seg.__file__).parents[1])
     if args.file is None:
         for size in (32, 16):
             voxel_grid = phm_data.voxel_grid(Path("test/data/plant_1"), size)
