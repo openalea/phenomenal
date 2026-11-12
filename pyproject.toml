@@ -1,3 +1,6 @@
+# All dependencies are declared with conda: conda/run_deps.yml (runtime, read by
+# conda/meta.yaml) and doc/doc_deps.yml (documentation, notebooks); developers add the
+# test and notebook tools with conda (see README.md). pip only installs the package itself.
 [build-system]
 requires = [
   "setuptools",
@@ -13,7 +16,6 @@ include-package-data = false # force explicit declaration of data (disable autom
 
 # enable dynamic version based on git tags
 [tool.setuptools_scm]
-
 
 [project]
 name = "openalea.phenomenal"
@@ -37,51 +39,10 @@ classifiers = [
 license = "CECILL-C"
 license-files = ["LICEN[CS]E*"]
 dynamic = ["version", "readme"]
+
 dependencies = [
-  "numpy",
-  "scipy",
-  "pillow",
-  "scikit-image",
-  "scikit-learn",
-  "networkx",
-  "vtk",
-  "orjson",
-  "skan",
-  "k3d",
-  "dracopy"
+  # runtime dependencies are handled by conda, see conda/run_deps.yml
 ]
-
-[project.optional-dependencies]
-test = ["pytest"]
-doc = [
-  "pydata-sphinx-theme",
-  "myst-parser",
-  "sphinx-favicon",
-  "ipykernel",
-  "sphinx-copybutton",
-  "ipython_genutils",
-  "nbsphinx",
-]
-notebook = [
-  "notebook",
-  ]
-gpu = [
-  "nx-cugraph-cu12"
-]
-
-# not used yet by pip, but by meta.yaml
-[tool.conda.environment]
-channels = [
-  "openalea3",
-  "conda-forge",
-]
-# deps not available in pip with conda name
-dependencies = [
-  "opencv",
-  "matplotlib-base",
-  "openalea.phenotyping_data"  # for notebooks data
-]
-
 
 [project.urls]
 Homepage = "https://openalea.readthedocs.io/"

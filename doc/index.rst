@@ -10,7 +10,6 @@ Welcome to openalea.phenomenal's documentation!
    :maxdepth: 2
 
    Home <self>
-   installation
    usage
    authors
    api
