@@ -43,6 +43,27 @@ license = "CECILL-C"
 license-files = ["LICEN[CS]E*"]
 dynamic = ["version", "readme"]
 
+dependencies = [
+  # run dependencies are handled by conda, see /conda/run_deps.yml
+]
+
+[project.optional-dependencies]
+# doc dependencies are handled by conda, see doc/doc-deps.yml
+test = ["pytest"]
+devel = [
+  "ipython",
+  "notebook",
+  "pandas",
+  #not available on pypy, to be installed manually (see README.md)
+  #openalea.phenotyping_data
+  ]
+all = [
+  "pytest",
+  "ipython",
+  "notebook",
+]
+
+
 [project.urls]
 Homepage = "https://openalea.readthedocs.io/"
 "Bug Tracker" = "https://github.com/openalea/phenomenal/issues"
