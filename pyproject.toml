@@ -1,9 +1,6 @@
-# Dependencies are declared with conda: conda/run_deps.yml (runtime), conda/meta.yaml
-# (package build), doc/doc_deps.yml (documentation) and environment.yaml (development).
-# Install a checkout with `pip install -e . --no-deps --no-build-isolation` from the
-# development environment, as for the compiled OpenAlea packages.
-# `requires` only lets an isolated pip build compile the package, which then has no
-# declared runtime dependencies.
+# All dependencies are declared with conda: conda/run_deps.yml (runtime, read by
+# conda/meta.yaml) and doc/doc_deps.yml (documentation, notebooks); developers add the
+# test and notebook tools with conda (see README.md). pip only installs the package itself.
 [build-system]
 requires = [
   "setuptools",
@@ -44,25 +41,8 @@ license-files = ["LICEN[CS]E*"]
 dynamic = ["version", "readme"]
 
 dependencies = [
-  # run dependencies are handled by conda, see /conda/run_deps.yml
+  # runtime dependencies are handled by conda, see conda/run_deps.yml
 ]
-
-[project.optional-dependencies]
-# doc dependencies are handled by conda, see doc/doc-deps.yml
-test = ["pytest"]
-devel = [
-  "ipython",
-  "notebook",
-  "pandas",
-  #not available on pypy, to be installed manually (see README.md)
-  #openalea.phenotyping_data
-  ]
-all = [
-  "pytest",
-  "ipython",
-  "notebook",
-]
-
 
 [project.urls]
 Homepage = "https://openalea.readthedocs.io/"

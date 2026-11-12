@@ -50,26 +50,23 @@ git clone https://github.com/openalea/phenomenal.git
 cd phenomenal   
 ```
 
+All dependencies, including the notebook data and test tools, come from conda; pip
+only installs phenomenal itself.
+
 #### Install in develop mode in a new environment
 
 ```bash
-mamba create -n phenomenal_dev -f conda/run_deps.yml -f doc/doc_deps.yml
+mamba create -n phenomenal_dev -f conda/run_deps.yml -f doc/doc_deps.yml pytest notebook
 mamba activate phenomenal_dev
-pip install -e ".[all]"
+pip install -e .
 ```
 
 #### (or) Install in develop mode in an existing environment
 
 ```bash
-mamba install -n my_env -f conda/run_deps.yml -f doc/doc_deps.yml
+mamba install -n my_env -f conda/run_deps.yml -f doc/doc_deps.yml pytest notebook
 mamba activate my_env
-pip install -e ".[all]"
-```
-
-#### Install optional dependencies (recommended, especially to play notebooks)
-
-```bash
-mamba install -c openalea3 openalea.phenotyping_data
+pip install -e .
 ```
 
 
