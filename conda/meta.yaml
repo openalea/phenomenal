@@ -4,10 +4,12 @@
 {% set version = environ.get('SETUPTOOLS_SCM_PRETEND_VERSION', "0.0.0.dev") %}
 {% set license = pyproject.get('project').get('license') %}
 {% set home = pyproject.get('project', {}).get('urls', {}).get('Homepage', '') %}
-{% set build_deps = pyproject.get("build-system", {}).get("requires", []) %}
-{% set deps = pyproject.get('project', {}).get('dependencies', []) %}
-{% set conda_deps = pyproject.get('tool', {}).get('conda', {}).get('environment', {}).get('dependencies',[]) %}
-{% set test_deps = pyproject.get('project', {}).get('optional-dependencies', {}).get('test',[]) %}
+{# conda-build runs pip without build isolation, so the build backend must be in host #}
+{% set build_deps = pyproject.get('build-system', {}).get('requires', []) %}
+{% set run_deps = load_file_data('run_deps.yml', from_recipe_dir=True).get('dependencies') %}
+{# python_min comes from conda-forge-pinning (used by CI); the default is for a local build
+   without it. Conda is the reference for the Python version (pyproject.toml has none). #}
+{% set python_min = python_min | default('3.11') %}
 
 
 package:
@@ -18,9 +20,11 @@ source:
   path: ..
 
 build:
+  # pure Python: built once, installable with any Python version
+  noarch: python
   number: 0
   script:
-    - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
+    - {{ PYTHON }} -m pip install . --no-deps -vv
 
 requirements:
   host:
@@ -28,11 +32,12 @@ requirements:
     - pip
     {% for dep in build_deps %}
     - {{ dep }}
-    {% endfor  %}
+    {% endfor %}
 
   run:
-    - python
-    {% for dep in deps + conda_deps %}
+    # noarch: lower bound only; host and test follow the Python version of each CI job
+    - python >={{ python_min }}
+    {% for dep in run_deps %}
     - {{ dep }}
     {% endfor %}
 
@@ -49,7 +54,6 @@ test:
     - openalea.phenomenal.object
     - openalea.phenomenal.segmentation
     - openalea.phenomenal.tracking
-    - openalea.phenotyping_data
   requires:
     - pytest
   source_files:

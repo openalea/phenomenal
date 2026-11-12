@@ -1,0 +1,21 @@
+# Runtime dependencies: read by conda/meta.yaml (dependencies only, not channels) and
+# used to create the development environment (see README.md). Python is declared in meta.yaml.
+channels:
+  - openalea3/label/dev
+  - openalea3/label/rc
+  - openalea3
+  - conda-forge
+dependencies:
+  - numpy
+  - scipy
+  - pillow
+  - scikit-image
+  - scikit-learn
+  - networkx
+  - vtk
+  - orjson
+  - skan
+  - k3d
+  - dracopy
+  - opencv
+  - matplotlib-base

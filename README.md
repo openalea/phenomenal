@@ -20,40 +20,63 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
 
 #### User
 
-##### Create a new environment with phenomenal installed in there :
+##### Create a new environment with phenomenal :
 
-    mamba create -n phm -c openalea3 -c conda-forge openalea.phenomenal
-    mamba activate phm
+```bash
+mamba create -n phm -c openalea3 -c conda-forge openalea.phenomenal
+mamba activate phm
+```
 
-##### In an existing environment :
+##### (or) Add phenomenal to an existing environment :
 
-    mamba install -c openalea3 -c conda-forge openalea.phenomenal
+```bash
+mamba activate myenv
+mamba install -c openalea3 -c conda-forge openalea.phenomenal
+```
 
-##### (Optional) Test your installation :
+#### Install optional dependencies (recommended, especially to play notebooks)
 
-    mamba install -c conda-forge pytest
-    git clone https://github.com/openalea/phenomenal.git
-    cd phenomenal/test; pytest
+```bash
+mamba install -c openalea3 -c conda-forge openalea.phenotyping_data pandas ipython notebook
+```
+
 
 ### Developers
 
-#### Editable mode install
+#### Clone phenomenal
 
-    # Clone phenomenal
-    git clone https://github.com/openalea/phenomenal.git
-    cd phenomenal    
+```bash
+git clone https://github.com/openalea/phenomenal.git
+cd phenomenal   
+```
 
-    # Solution 1: Build env from scratch (mostly use pip dependencies)
-    mamba env create -f conda/environment.yml
-    mamba activate phenomenal_dev
+All dependencies, including the notebook data and test tools, come from conda; pip
+only installs phenomenal itself.
 
-    # Solution 2: use an existing env (mostly use conda dependencies)
-    mamba activate my_env
-    mamba install --only-deps -c openalea3 -c conda-forge openalea.phenomenal
-    pip install -e .[doc,test]
+#### Install in develop mode in a new environment
 
-    # (Optional) Test your installation
-    cd test; pytest
+```bash
+mamba create -n phenomenal_dev -f conda/run_deps.yml -f doc/doc_deps.yml pytest notebook
+mamba activate phenomenal_dev
+pip install -e .
+```
+
+#### (or) Install in develop mode in an existing environment
+
+```bash
+mamba install -n my_env -f conda/run_deps.yml -f doc/doc_deps.yml pytest notebook
+mamba activate my_env
+pip install -e .
+```
+
+
+#### (Optional) Test your installation
+
+```bash
+cd test
+pytest 
+```
+
 
 
 ### Usage :

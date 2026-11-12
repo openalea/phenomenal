@@ -4,9 +4,12 @@ build:
   os: "ubuntu-24.04"
   tools:
     python: "miniconda-latest"
+  jobs:
+    post_create_environment:
+      - conda env update --name $CONDA_DEFAULT_ENV --file doc/doc_deps.yml
 
 conda:
-  environment: conda/environment.yml
+  environment: doc/environment.yaml
 
 sphinx:
   # Path to your Sphinx configuration file.

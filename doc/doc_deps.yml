@@ -1,0 +1,20 @@
+# Documentation tools: added to the Read the Docs environment (see .readthedocs.yml)
+# and used to create the development environment (see README.md).
+channels:
+  - openalea3/label/dev
+  - openalea3/label/rc
+  - openalea3
+  - conda-forge
+dependencies:
+  - sphinx
+  - pandoc
+  - pydata-sphinx-theme
+  - myst-parser
+  - sphinx-favicon
+  - sphinx-copybutton
+  - nbsphinx
+  - ipykernel
+  - ipython_genutils
+  # imported by the example notebooks
+  - openalea.phenotyping_data
+  - pandas
