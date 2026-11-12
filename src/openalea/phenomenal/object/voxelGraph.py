@@ -98,34 +98,6 @@ class VoxelGraph:
         )
         return cls(positions, voxels_size, matrix)
 
-    @classmethod
-    def from_networkx(cls, graph, voxels_size):
-        """VoxelGraph of a networkx graph whose nodes are positions."""
-        nodes = list(graph.nodes())
-        index = {node: i for i, node in enumerate(nodes)}
-        rows, cols, weights = [], [], []
-        for u, v, w in graph.edges(data="weight", default=1.0):
-            rows += [index[u], index[v]]
-            cols += [index[v], index[u]]
-            weights += [w, w]
-        n = len(nodes)
-        matrix = scipy.sparse.coo_array((weights, (rows, cols)), shape=(n, n))
-        return cls(numpy.array(nodes, dtype=float).reshape(-1, 3), voxels_size, matrix)
-
-    def to_networkx(self):
-        """networkx.Graph with the same nodes (3-tuples) and weighted edges."""
-        import networkx
-
-        graph = networkx.Graph()
-        nodes = self.nodes()
-        graph.add_nodes_from(nodes)
-        upper = scipy.sparse.triu(self.matrix, format="coo")
-        graph.add_weighted_edges_from(
-            (nodes[i], nodes[j], w)
-            for i, j, w in zip(upper.row.tolist(), upper.col.tolist(), upper.data.tolist())
-        )
-        return graph
-
     def add_edges(self, index_1, index_2, weights):
         """Add (or replace) the edges between nodes index_1[k] and index_2[k]."""
         n = self.number_of_nodes()

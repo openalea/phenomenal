@@ -9,12 +9,11 @@
 # ==============================================================================
 """Benchmark the graph and skeletonize steps, VoxelGraph (scipy) API.
 
-Same use and same skeleton files as _bench_skeleton_v0.py (networkx API,
-code before the VoxelGraph class), so that both versions can be compared:
+Same use and same skeleton files as _bench_skeleton_networkx.py (networkx
+API, code before the VoxelGraph class), so that both versions can be compared;
+see that script to run it on the old code:
 
-    # with the old code
-    python test/test_segmentation/_bench_skeleton_v0.py grid.csv 8 4 --save ref
-    # with the new code
+    PYTHONPATH=../phenomenal_networkx/src python test/test_segmentation/_bench_skeleton_networkx.py grid.csv 8 4 --save ref
     python test/test_segmentation/_bench_skeleton.py grid.csv 8 4 --compare ref
 
 Times each step: create_graph, connect_all_node_with_nearest_neighbors and
@@ -35,7 +34,7 @@ import openalea.phenomenal.object as phm_obj
 import openalea.phenomenal.segmentation as phm_seg
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _bench_skeleton_v0 import coarser, skeleton_data  # noqa: E402
+from _bench_skeleton_networkx import coarser, skeleton_data  # noqa: E402
 
 
 def compare(reference, current, voxels_size):
@@ -103,6 +102,7 @@ def main():
     parser.add_argument("--compare", help="directory of the reference skeletons")
     args = parser.parse_args()
     options = dict(save=args.save, reference=args.compare)
+    print("phenomenal from", Path(phm_seg.__file__).parents[1])
     if args.file is None:
         for size in (32, 16):
             voxel_grid = phm_data.voxel_grid(Path("test/data/plant_1"), size)

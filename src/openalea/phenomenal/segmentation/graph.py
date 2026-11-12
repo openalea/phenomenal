@@ -15,25 +15,6 @@ from ..object import VoxelGraph
 # ==============================================================================
 
 
-def as_voxel_graph(graph, voxels_size):
-    """Return graph as a VoxelGraph, converting a networkx graph.
-
-    Parameters
-    ----------
-    graph : VoxelGraph or networkx.Graph
-        Graph whose nodes are voxel center positions
-    voxels_size : float
-        Size of the voxels
-
-    Returns
-    -------
-    graph : VoxelGraph
-    """
-    if isinstance(graph, VoxelGraph):
-        return graph
-    return VoxelGraph.from_networkx(graph, voxels_size)
-
-
 def connect_all_node_with_nearest_neighbors(graph):
     """Connect all the nodes in the graph together
 
@@ -94,7 +75,6 @@ def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
     Returns
     -------
     graph : VoxelGraph
-        Use graph.to_networkx() to get a networkx.Graph.
     """
     voxels_position = numpy.asarray(list(voxel_grid.voxels_position), dtype=float)
     graph = create_graph(voxels_position, voxel_grid.voxels_size)

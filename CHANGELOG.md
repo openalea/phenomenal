@@ -16,11 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Runtime and documentation dependencies are declared with conda (`conda/run_deps.yml`, `doc/doc_deps.yml`) instead of `pyproject.toml`, which no longer has runtime dependencies or extras. Read the Docs now documents the published package, and the installation instructions are only in `README.md`. Binder installs the notebook data and pandas instead of ipyvolume.
 * `tracking.display.plot_polylines` uses VTK instead of PlantGL, and blocks until its window is closed.
 * `segment_reduction` is written in NumPy and uses less memory. The package has no more compiled code, and does not need a compiler to build.
-* `graph_from_voxel_grid` and `create_graph` return a `VoxelGraph` instead of a `networkx.Graph`, and are about 10 times faster. `skeletonize`, `maize_segmentation` and the other functions taking a graph still accept a `networkx.Graph`; `VoxelGraph.to_networkx()` converts a `VoxelGraph`.
+* `graph_from_voxel_grid` and `create_graph` return a `VoxelGraph` instead of a `networkx.Graph`, and are about 10 times faster. `skeletonize`, `maize_segmentation` and the other functions taking a graph need a `VoxelGraph`: they no longer accept a `networkx.Graph`.
 * `skeletonize` is 3 to 14 times faster (more on bigger grids: 14 times on a 2 mm grid of 500,000 voxels). Along each path, it walks the graph from the path point and tests only the voxels it reaches, and the shortest paths are computed with SciPy. When several shortest paths have the same length, SciPy may choose another one than NetworkX, so the skeletons differ slightly from the previous versions.
 
 ### Removed
-* GPU acceleration with `nx_cugraph`, and the `gpu` pip extra: the slow steps no longer call NetworkX algorithms.
+* NetworkX is no longer a dependency of phenomenal (skan still installs it).
+* GPU acceleration with `nx_cugraph`, and its installation instructions: the slow steps no longer call NetworkX algorithms.
+* The deprecated module `segmentation._skeleton_octree`, which no longer worked.
 
 ### Fixed
 * `Display.screenshot`, and the `screenshot_filename` option of the `show_*` functions, with recent VTK versions.

@@ -11,8 +11,8 @@
 # ==============================================================================
 
 
-import networkx
 import numpy
+import scipy.sparse.csgraph
 import time
 
 import openalea.phenomenal.object as phm_obj
@@ -62,9 +62,10 @@ def test_graph_1():
     for position in voxels_position:
         assert graph.has_node(position)
 
-    length = networkx.dijkstra_path_length(
-        graph.to_networkx(), source=(0, 0, 0), target=(2, 2, 2), weight="weight"
+    distances = scipy.sparse.csgraph.dijkstra(
+        graph.matrix, directed=False, indices=graph.index((0, 0, 0))
     )
+    length = distances[graph.index((2, 2, 2))]
 
     ll = numpy.linalg.norm(numpy.array((0, 0, 0)) - numpy.array((2, 2, 2)))
 

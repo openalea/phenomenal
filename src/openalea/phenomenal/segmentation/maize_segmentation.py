@@ -14,7 +14,6 @@ import numpy
 
 from .maize_stem_detection import stem_detection
 from ..object import VoxelOrgan, VoxelSegment, VoxelSegmentation
-from .graph import as_voxel_graph
 # ==============================================================================
 
 
@@ -101,7 +100,6 @@ def get_highest_segment(segments, n_candidates=1):
 
 def detect_stem_tip(voxel_skeleton, graph, n_candidates):
     voxels_size = voxel_skeleton.voxels_size
-    graph = as_voxel_graph(graph, voxels_size)
     highest_voxel_segment = get_highest_segment(
         voxel_skeleton.segments, n_candidates=n_candidates
     )
@@ -122,7 +120,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1, stem_
     Parameters
     ----------
     voxel_skeleton : openalea.phenomenal.object.VoxelSkeleton
-    graph : VoxelGraph or networkx.Graph
+    graph : VoxelGraph
 
     stem_segment : If None, stem_segment is computed according stem_strategy.
     stem_segment is VoxelSegment object depict the polyline where the plant stem is included. 
@@ -137,7 +135,6 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1, stem_
     """
 
     voxels_size = voxel_skeleton.voxels_size
-    graph = as_voxel_graph(graph, voxels_size)
 
     # ==========================================================================
     # Select the more highest segment on the skeleton

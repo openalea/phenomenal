@@ -19,7 +19,6 @@ from .plane_interception import (
     intercept_points_along_polyline_with_ball,
 )
 from ..object import VoxelSkeleton, VoxelGrid, VoxelSegment
-from .graph import as_voxel_graph
 
 
 # ==============================================================================
@@ -231,7 +230,7 @@ def compute_all_shorted_path(graph, voxels_size, neighbor_size=45, src_node=None
 
     Parameters
     ----------
-    graph : VoxelGraph or networkx.Graph
+    graph : VoxelGraph
         Graph of 3d voxel center point position
 
     voxels_size : int
@@ -249,7 +248,6 @@ def compute_all_shorted_path(graph, voxels_size, neighbor_size=45, src_node=None
         For each reachable node position, the list of the node positions of
         the shortest path from the base.
     """
-    graph = as_voxel_graph(graph, voxels_size)
     source = _source_index(graph, voxels_size, neighbor_size, src_node)
     predecessors, lengths = graph.shortest_paths_tree(source)
     nodes = graph.nodes()
@@ -285,9 +283,9 @@ def skeletonize(
     ----------
     voxel_grid : VoxelGrid
 
-    graph : VoxelGraph or networkx.Graph
+    graph : VoxelGraph
 
-    subgraph: VoxelGraph or networkx.graph, optional
+    subgraph: VoxelGraph, optional
         If not None, perform the computation of the shorted paths on the
         subgraph and remove voxels
 
@@ -324,10 +322,8 @@ def skeletonize(
     if ball_radius is None:
         ball_radius = voxels_size * 4
 
-    graph = as_voxel_graph(graph, voxels_size)
     if subgraph is None:
         subgraph = graph
-    subgraph = as_voxel_graph(subgraph, voxels_size)
 
     source = _source_index(subgraph, voxels_size, neighbor_size, src_node)
     predecessors, lengths = subgraph.shortest_paths_tree(source)

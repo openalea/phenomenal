@@ -12,8 +12,6 @@
 import math
 import numpy
 
-from ..object import VoxelGraph
-
 import scipy
 # ==============================================================================
 
@@ -70,12 +68,6 @@ def max_distance_from_point_to_points(points, src_point):
     return 0
 
 
-def _as_voxel_graph(graph):
-    if isinstance(graph, VoxelGraph):
-        return graph
-    return VoxelGraph.from_networkx(graph, None)
-
-
 def _allowed_nodes(graph, points):
     """Boolean array over the graph nodes: True for the nodes at points."""
     if points is graph.voxels_position:
@@ -110,7 +102,7 @@ def connected_points_with_point(points, points_graph, src_point):
         Points positions x, y, z
     src_point: numpy.ndarray
         Point position x, y, z
-    points_graph: VoxelGraph or networkx.Graph
+    points_graph: VoxelGraph
         The point graph
 
     Returns
@@ -119,7 +111,7 @@ def connected_points_with_point(points, points_graph, src_point):
         Return the connected points with src_point, based on points graph
         connection.
     """
-    graph = _as_voxel_graph(points_graph)
+    graph = points_graph
     src_point = tuple(map(float, src_point))
     if len(points) == 0:
         return [src_point]
@@ -333,7 +325,7 @@ def intercept_points_along_path_with_planes(
         The size of the search window.
     distance_from_plane: int
         The maximum distance from the plane.
-    points_graph: VoxelGraph or networkx.Graph
+    points_graph: VoxelGraph
         The point graph.
     without_connection: bool
         Whether the graph as connection or not.
@@ -387,7 +379,7 @@ def intercept_points_along_path_with_planes(
             # the points connected to point among the intercepted points:
             # walk the graph from point, testing only the points reached
             if graph is None:
-                graph = _as_voxel_graph(points_graph)
+                graph = points_graph
                 allowed = _allowed_nodes(graph, points)
             accept = _plane_test(
                 point, plane_equation, distance_from_plane, distance_from_src_point
@@ -452,7 +444,7 @@ def intercept_points_along_polyline_with_ball(points, graph, polyline, ball_radi
         Array of points
     polyline: numpy.ndarray
         Array of points
-    graph: VoxelGraph or networkx.Graph
+    graph: VoxelGraph
         Graph of the points
     ball_radius: float
         The radius of the ball in mm
@@ -462,7 +454,6 @@ def intercept_points_along_polyline_with_ball(points, graph, polyline, ball_radi
     intercepted_points: list
         list of points intercepted by the ball [[(x, y, z), ...], ...].
     """
-    graph = _as_voxel_graph(graph)
     allowed = _allowed_nodes(graph, points)
     intercepted_points = []
     for point in polyline:

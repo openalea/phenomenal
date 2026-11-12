@@ -9,7 +9,6 @@
 # ==============================================================================
 import math
 
-import networkx
 import numpy
 
 from openalea.phenomenal.object import VoxelGraph
@@ -27,19 +26,6 @@ def test_neighbors_and_weights():
     i, j = graph.index((1, 1, 0)), graph.index((2, 2, 1))
     assert math.isclose(graph.matrix[i, j], math.sqrt(3))
     assert (0, 0, 0) in graph and (5, 5, 5) not in graph
-
-
-def test_networkx_round_trip():
-    graph = VoxelGraph.from_voxels_position(POSITIONS, 1)
-    nx_graph = graph.to_networkx()
-    assert set(nx_graph.nodes()) == set(POSITIONS)
-    back = VoxelGraph.from_networkx(nx_graph, 1)
-    assert set(back.nodes()) == set(POSITIONS)
-    assert back.number_of_edges() == graph.number_of_edges()
-    assert math.isclose(
-        networkx.dijkstra_path_length(nx_graph, (0, 0, 0), (2, 2, 1)),
-        math.sqrt(2) + math.sqrt(3),
-    )
 
 
 def test_components_and_connection():
