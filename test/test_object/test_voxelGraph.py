@@ -10,48 +10,53 @@
 import math
 
 import numpy
+import scipy.sparse
 
 from openalea.phenomenal.object import VoxelGraph
 # ==============================================================================
 
-# two groups of voxels, 3 voxels apart
-POSITIONS = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (2, 2, 1), (6, 2, 1), (6, 3, 1)]
+# a path of 3 nodes, and an isolated node
+POSITIONS = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (5, 5, 5)]
 
 
-def test_neighbors_and_weights():
-    graph = VoxelGraph.from_voxels_position(POSITIONS, 1)
-    assert graph.number_of_nodes() == 6
-    assert graph.number_of_edges() == 5
-    assert sorted(graph.neighbors((1, 1, 0))) == [(0, 0, 0), (1, 0, 0), (2, 2, 1)]
-    i, j = graph.index((1, 1, 0)), graph.index((2, 2, 1))
-    assert math.isclose(graph.matrix[i, j], math.sqrt(3))
-    assert (0, 0, 0) in graph and (5, 5, 5) not in graph
+def _graph():
+    rows, cols, weights = [0, 1], [1, 2], [1.0, 1.0]
+    matrix = scipy.sparse.coo_array(
+        (weights + weights, (rows + cols, cols + rows)), shape=(4, 4)
+    )
+    return VoxelGraph(POSITIONS, 1, matrix)
 
 
-def test_components_and_connection():
-    graph = VoxelGraph.from_voxels_position(POSITIONS, 1)
-    components = sorted(graph.connected_components(), key=len)
-    assert components == [{(6, 2, 1), (6, 3, 1)}, {(0, 0, 0), (1, 0, 0), (1, 1, 0), (2, 2, 1)}]
-    sub = graph.subgraph([(0, 0, 0), (1, 0, 0), (6, 2, 1)])
-    assert sub.number_connected_components() == 2
-    graph.connect_components()
-    assert graph.number_connected_components() == 1
-    i, j = graph.index((2, 2, 1)), graph.index((6, 2, 1))
-    assert math.isclose(graph.matrix[i, j], 4)
+def test_nodes():
+    graph = _graph()
+    assert graph.number_of_nodes() == len(graph) == 4
+    assert graph.number_of_edges() == 2
+    assert graph.nodes() == [tuple(map(float, p)) for p in POSITIONS]
+    assert (1, 0, 0) in graph and (2, 2, 2) not in graph
+    assert graph.index((1, 1, 0)) == 2
+    assert graph.indices([(1, 1, 0), (2, 2, 2)]).tolist() == [2, -1]
+    assert graph.positions([0, 3]) == {(0, 0, 0), (5, 5, 5)}
 
 
-def test_shortest_paths_and_walk():
-    graph = VoxelGraph.from_voxels_position(POSITIONS, 1).connect_components()
-    source = graph.index((0, 0, 0))
-    predecessors, lengths = graph.shortest_paths_tree(source)
-    end = graph.index((6, 3, 1))
-    path = [graph.nodes()[i] for i in graph.path(predecessors, end)]
-    assert path == [(0, 0, 0), (1, 1, 0), (2, 2, 1), (6, 2, 1), (6, 3, 1)]
-    assert lengths[end] == 5
-    # walk through the nodes with x < 3
-    walked = graph.walk(source, lambda p: p[:, 0] < 3)
-    assert graph.positions(walked) == {(0, 0, 0), (1, 0, 0), (1, 1, 0), (2, 2, 1)}
-    allowed = numpy.ones(graph.number_of_nodes(), dtype=bool)
-    allowed[graph.index((1, 1, 0))] = False
-    walked = graph.walk(source, lambda p: p[:, 0] < 3, allowed)
-    assert graph.positions(walked) == {(0, 0, 0), (1, 0, 0)}
+def test_neighbors_and_subgraph():
+    graph = _graph()
+    assert sorted(graph.neighbors((1, 0, 0))) == [(0, 0, 0), (1, 1, 0)]
+    assert graph.neighbors((5, 5, 5)) == []
+    sub = graph.subgraph([(1, 0, 0), (1, 1, 0), (5, 5, 5)])
+    assert sub.number_of_nodes() == 3
+    assert sub.number_of_edges() == 1
+
+
+def test_add_edges():
+    graph = _graph()
+    graph.add_edges([2, 0], [3, 1], numpy.array([7.0, 2.0]))
+    assert graph.number_of_edges() == 3
+    assert math.isclose(graph.matrix[2, 3], 7) and math.isclose(graph.matrix[3, 2], 7)
+    # an existing edge is replaced, not summed
+    assert math.isclose(graph.matrix[0, 1], 2)
+
+
+def test_empty_graph():
+    graph = VoxelGraph(numpy.empty((0, 3)), 1)
+    assert graph.number_of_nodes() == 0
+    assert graph.number_of_edges() == 0

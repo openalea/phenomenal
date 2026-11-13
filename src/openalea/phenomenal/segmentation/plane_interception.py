@@ -13,6 +13,8 @@ import math
 import numpy
 
 import scipy
+
+from .graph import walk
 # ==============================================================================
 
 
@@ -78,15 +80,16 @@ def _allowed_nodes(graph, points):
     return allowed
 
 
-def _walk_from_point(graph, src_point, accept, allowed):
+def _walk_from_point(graph, src_point, accept, allowed, seen=None):
     """Positions connected to src_point through accepted and allowed nodes,
-    or [src_point] if src_point itself is not accepted or allowed."""
+    or [src_point] if src_point itself is not accepted or allowed.
+    seen: working memory for walk, shared by repeated calls."""
     if src_point not in graph:
         return [src_point]
     source = graph.index(src_point)
     if not allowed[source] or not accept(graph.voxels_position[[source]])[0]:
         return [src_point]
-    return graph.positions(graph.walk(source, accept, allowed))
+    return graph.positions(walk(graph, source, accept, allowed, seen))
 
 
 def connected_points_with_point(points, points_graph, src_point):
@@ -381,10 +384,13 @@ def intercept_points_along_path_with_planes(
             if graph is None:
                 graph = points_graph
                 allowed = _allowed_nodes(graph, points)
+                seen = numpy.zeros(graph.number_of_nodes(), dtype=bool)
             accept = _plane_test(
                 point, plane_equation, distance_from_plane, distance_from_src_point
             )
-            intercepted_points[i] = _walk_from_point(graph, point, accept, allowed)
+            intercepted_points[i] = _walk_from_point(
+                graph, point, accept, allowed, seen
+            )
             planes_equation[i] = plane_equation
             continue
 
@@ -455,6 +461,7 @@ def intercept_points_along_polyline_with_ball(points, graph, polyline, ball_radi
         list of points intercepted by the ball [[(x, y, z), ...], ...].
     """
     allowed = _allowed_nodes(graph, points)
+    seen = numpy.zeros(graph.number_of_nodes(), dtype=bool)
     intercepted_points = []
     for point in polyline:
         center = numpy.asarray(point, dtype=float)
@@ -464,7 +471,7 @@ def intercept_points_along_polyline_with_ball(points, graph, polyline, ball_radi
             return numpy.linalg.norm(positions - center, axis=1) < ball_radius
 
         intercepted_points.append(
-            _walk_from_point(graph, tuple(map(float, point)), accept, allowed)
+            _walk_from_point(graph, tuple(map(float, point)), accept, allowed, seen)
         )
 
     return intercepted_points

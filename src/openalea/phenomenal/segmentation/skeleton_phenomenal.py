@@ -14,6 +14,7 @@ import numpy
 
 
 from ..multi_view_reconstruction import get_bounding_box_voxel_projected
+from .graph import path, shortest_paths_tree
 from .plane_interception import (
     intercept_points_along_path_with_planes,
     intercept_points_along_polyline_with_ball,
@@ -249,7 +250,7 @@ def compute_all_shorted_path(graph, voxels_size, neighbor_size=45, src_node=None
         the shortest path from the base.
     """
     source = _source_index(graph, voxels_size, neighbor_size, src_node)
-    predecessors, lengths = graph.shortest_paths_tree(source)
+    predecessors, lengths = shortest_paths_tree(graph, source)
     nodes = graph.nodes()
     paths = {}
     for i in numpy.argsort(lengths, kind="stable").tolist():
@@ -326,7 +327,7 @@ def skeletonize(
         subgraph = graph
 
     source = _source_index(subgraph, voxels_size, neighbor_size, src_node)
-    predecessors, lengths = subgraph.shortest_paths_tree(source)
+    predecessors, lengths = shortest_paths_tree(subgraph, source)
 
     # ==========================================================================
     # Voxels to cover, among the nodes of subgraph with a path from the source
@@ -346,7 +347,7 @@ def skeletonize(
         # the longest shortest path ending in the remaining voxels
         candidates = numpy.flatnonzero(remaining)
         end = int(candidates[numpy.argmax(lengths[candidates])])
-        polyline = [nodes[i] for i in subgraph.path(predecessors, end)]
+        polyline = [nodes[i] for i in path(predecessors, end)]
 
         if mode == "ball":
             intercept_points = intercept_points_along_polyline_with_ball(

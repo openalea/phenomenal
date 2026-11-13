@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `Scene.get_actor_from_polylines`, `Scene.add_actor_from_polylines` and `show_polylines` to display polylines with VTK.
 * `read_pointcloud` to load the point positions of a text file.
 * `VoxelGraph` in `openalea.phenomenal.object`: graph of voxel centers, stored as a SciPy sparse matrix.
+* Graph algorithms on a `VoxelGraph` in `segmentation.graph`: `connected_components`, `number_connected_components`, `shortest_paths_tree`, `path` and `walk`.
 
 ### Changed
 * Runtime and documentation dependencies are declared with conda (`conda/run_deps.yml`, `doc/doc_deps.yml`) instead of `pyproject.toml`, which no longer has runtime dependencies or extras. Read the Docs now documents the published package, and the installation instructions are only in `README.md`. Binder installs the notebook data and pandas instead of ipyvolume.
