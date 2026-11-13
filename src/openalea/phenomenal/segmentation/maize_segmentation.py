@@ -11,11 +11,8 @@ from __future__ import print_function, division, absolute_import
 
 import numpy
 
-try:
-    import nx_cugraph as networkx
-except ImportError:
-    import networkx
 
+from .graph import connected_components, number_connected_components
 from .maize_stem_detection import stem_detection
 from ..object import VoxelOrgan, VoxelSegment, VoxelSegmentation
 # ==============================================================================
@@ -47,21 +44,21 @@ def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
 def _merge(graph, voxels, remaining_voxels, percentage=50):
     voxels_neighbors = []
     for node in voxels:
-        voxels_neighbors += graph[node].keys()
+        voxels_neighbors += graph.neighbors(node)
     voxels_neighbors = set(voxels_neighbors) - voxels
 
     subgraph = graph.subgraph(remaining_voxels)
 
-    connected_components = []
-    for voxel_group in networkx.connected_components(subgraph):
+    other_components = []
+    for voxel_group in connected_components(subgraph):
         nb = len(voxel_group.intersection(voxels_neighbors))
 
         if nb * 100 / len(voxel_group) >= percentage:
             voxels = voxels.union(voxel_group)
         else:
-            connected_components.append(voxel_group)
+            other_components.append(voxel_group)
 
-    return voxels, voxels_neighbors, connected_components
+    return voxels, voxels_neighbors, other_components
 
 
 # ==============================================================================
@@ -124,7 +121,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1, stem_
     Parameters
     ----------
     voxel_skeleton : openalea.phenomenal.object.VoxelSkeleton
-    graph : networkx.Graph
+    graph : VoxelGraph
 
     stem_segment : If None, stem_segment is computed according stem_strategy.
     stem_segment is VoxelSegment object depict the polyline where the plant stem is included. 
@@ -167,7 +164,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1, stem_
     for vs in voxel_skeleton.segments:
         leaf_voxel = None
         subgraph = graph.subgraph(vs.voxels_position - stem_voxel)
-        for voxel_group in networkx.connected_components(subgraph):
+        for voxel_group in connected_components(subgraph):
             if vs.polyline[-1] in voxel_group:
                 leaf_voxel = voxel_group
         vs.leaf_voxel = leaf_voxel
@@ -261,7 +258,7 @@ def maize_segmentation(voxel_skeleton, graph, z_stem=None, n_candidates=1, stem_
                 continue
 
             nodes = vo_1.voxels_position().intersection(vo_2.voxels_position())
-            v = networkx.number_connected_components(graph.subgraph(nodes))
+            v = number_connected_components(graph.subgraph(nodes))
             if v > 1:
                 vo_1.sub_label = "connected"
 

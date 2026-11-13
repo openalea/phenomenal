@@ -21,7 +21,6 @@ Skeletonization
 
     graph
     image_3d_routines
-    _skeleton_octree
     skeleton_phenomenal
     skeleton_thinning
 

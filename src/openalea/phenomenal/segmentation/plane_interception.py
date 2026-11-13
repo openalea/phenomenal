@@ -12,11 +12,9 @@
 import math
 import numpy
 
-try:
-    import nx_cugraph as networkx
-except ImportError:
-    import networkx
 import scipy
+
+from .graph import walk
 # ==============================================================================
 
 
@@ -72,6 +70,28 @@ def max_distance_from_point_to_points(points, src_point):
     return 0
 
 
+def _allowed_nodes(graph, points):
+    """Boolean array over the graph nodes: True for the nodes at points."""
+    if points is graph.voxels_position:
+        return numpy.ones(graph.number_of_nodes(), dtype=bool)
+    allowed = numpy.zeros(graph.number_of_nodes(), dtype=bool)
+    index = graph.indices(points)
+    allowed[index[index >= 0]] = True
+    return allowed
+
+
+def _walk_from_point(graph, src_point, accept, allowed, seen=None):
+    """Positions connected to src_point through accepted and allowed nodes,
+    or [src_point] if src_point itself is not accepted or allowed.
+    seen: working memory for walk, shared by repeated calls."""
+    if src_point not in graph:
+        return [src_point]
+    source = graph.index(src_point)
+    if not allowed[source] or not accept(graph.voxels_position[[source]])[0]:
+        return [src_point]
+    return graph.positions(walk(graph, source, accept, allowed, seen))
+
+
 def connected_points_with_point(points, points_graph, src_point):
     """
     Return the connected points with src_point, based on points graph
@@ -85,25 +105,23 @@ def connected_points_with_point(points, points_graph, src_point):
         Points positions x, y, z
     src_point: numpy.ndarray
         Point position x, y, z
-    points_graph: networkx.graph
+    points_graph: VoxelGraph
         The point graph
 
     Returns
     -------
-    connected_points: list
+    connected_points: set
         Return the connected points with src_point, based on points graph
         connection.
     """
-    # Compute connected component in points in the ball
-    subgraph = points_graph.subgraph(points)
-    connected_components = networkx.connected_components(subgraph)
-    # Set points in ball by the connected points group with the current
-    # point of the path
-    for connected_points in connected_components:
-        if src_point in connected_points:
-            return connected_points
-
-    return [src_point]
+    graph = points_graph
+    src_point = tuple(map(float, src_point))
+    if len(points) == 0:
+        return [src_point]
+    allowed = _allowed_nodes(graph, numpy.asarray(list(points), dtype=float))
+    return _walk_from_point(
+        graph, src_point, lambda p: numpy.ones(len(p), dtype=bool), allowed
+    )
 
 
 def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
@@ -202,6 +220,23 @@ def intercept_points_from_src_point_with_plane_equation(
     return closest_voxel
 
 
+def _plane_test(src_point, plane_equation, distance_from_plane, distance_from_src_point):
+    """Function selecting the positions as
+    intercept_points_from_src_point_with_plane_equation, same operations."""
+    a, b, c, d = plane_equation
+    norm = math.sqrt(a**2 + b**2 + c**2)
+    src = numpy.asarray(src_point, dtype=float)
+
+    def accept(points):
+        res = abs(points[:, 0] * a + points[:, 1] * b + points[:, 2] * c - d) / norm
+        selected = res < distance_from_plane
+        if distance_from_src_point is not None:
+            selected &= numpy.linalg.norm(points - src, axis=1) < distance_from_src_point
+        return selected
+
+    return accept
+
+
 def compute_plane_equation(orientation_vector, src_point):
     """
     Computation of plane equation
@@ -293,7 +328,7 @@ def intercept_points_along_path_with_planes(
         The size of the search window.
     distance_from_plane: int
         The maximum distance from the plane.
-    points_graph: networkx.graph
+    points_graph: VoxelGraph
         The point graph.
     without_connection: bool
         Whether the graph as connection or not.
@@ -313,8 +348,9 @@ def intercept_points_along_path_with_planes(
     intercepted_points = [None] * length_polyline
     planes_equation = [None] * length_polyline
     distance_from_src_point = (1000,)
+    graph = allowed = None
     for i in range(length_polyline - 1, -1, -1):
-        point = tuple(polyline[i])
+        point = tuple(map(float, polyline[i]))
 
         # ======================================================================
 
@@ -341,6 +377,22 @@ def intercept_points_along_path_with_planes(
             distance_from_src_point = fix_distance_from_src_point
 
         # ======================================================================
+
+        if points_graph is not None and not without_connection:
+            # the points connected to point among the intercepted points:
+            # walk the graph from point, testing only the points reached
+            if graph is None:
+                graph = points_graph
+                allowed = _allowed_nodes(graph, points)
+                seen = numpy.zeros(graph.number_of_nodes(), dtype=bool)
+            accept = _plane_test(
+                point, plane_equation, distance_from_plane, distance_from_src_point
+            )
+            intercepted_points[i] = _walk_from_point(
+                graph, point, accept, allowed, seen
+            )
+            planes_equation[i] = plane_equation
+            continue
 
         pts = intercept_points_from_src_point_with_plane_equation(
             points, point, plane_equation, distance_from_plane, distance_from_src_point
@@ -398,7 +450,7 @@ def intercept_points_along_polyline_with_ball(points, graph, polyline, ball_radi
         Array of points
     polyline: numpy.ndarray
         Array of points
-    graph: networkx.graph
+    graph: VoxelGraph
         Graph of the points
     ball_radius: float
         The radius of the ball in mm
@@ -408,16 +460,18 @@ def intercept_points_along_polyline_with_ball(points, graph, polyline, ball_radi
     intercepted_points: list
         list of points intercepted by the ball [[(x, y, z), ...], ...].
     """
+    allowed = _allowed_nodes(graph, points)
+    seen = numpy.zeros(graph.number_of_nodes(), dtype=bool)
     intercepted_points = []
     for point in polyline:
-        points_in_ball = intercept_points_with_ball(points, point, ball_radius)
+        center = numpy.asarray(point, dtype=float)
 
-        points_in_ball = list(map(tuple, points_in_ball))
+        def accept(positions):
+            # same test as intercept_points_with_ball
+            return numpy.linalg.norm(positions - center, axis=1) < ball_radius
 
-        points_in_ball = connected_points_with_point(
-            points_in_ball, graph, tuple(point)
+        intercepted_points.append(
+            _walk_from_point(graph, tuple(map(float, point)), accept, allowed, seen)
         )
-
-        intercepted_points.append(points_in_ball)
 
     return intercepted_points

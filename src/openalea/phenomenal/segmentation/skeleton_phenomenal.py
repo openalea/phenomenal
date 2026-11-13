@@ -11,13 +11,10 @@
 
 import numpy
 
-try:
-    import nx_cugraph as networkx
-except ImportError:
-    import networkx
 
 
 from ..multi_view_reconstruction import get_bounding_box_voxel_projected
+from .graph import path, shortest_paths_tree
 from .plane_interception import (
     intercept_points_along_path_with_planes,
     intercept_points_along_polyline_with_ball,
@@ -142,59 +139,6 @@ def segment_reduction(
 # ==============================================================================
 
 
-def _get_longest_shortest_path_in_nodes(nodes, paths):
-    leaf_skeleton_path = None
-    longest_length = 0
-    for node in nodes:
-        p = paths[node]
-
-        if len(p) > longest_length:
-            longest_length = len(p)
-            leaf_skeleton_path = p
-
-    return leaf_skeleton_path
-
-
-def _segment_path(
-    voxels,
-    array_voxels,
-    skeleton_path,
-    graph,
-    voxels_size=4,
-    mode="plane",
-    plane_width=4,
-    ball_radius=10,
-):
-    # ==========================================================================
-    # Get the longest shorted path of voxels
-    polyline = _get_longest_shortest_path_in_nodes(voxels, skeleton_path)
-
-    # ==========================================================================
-
-    if polyline:
-        if mode == "ball":
-            intercept_points = intercept_points_along_polyline_with_ball(
-                array_voxels, graph, polyline, ball_radius=ball_radius
-            )
-        else:
-            intercept_points, _ = intercept_points_along_path_with_planes(
-                array_voxels,
-                polyline,
-                distance_from_plane=plane_width,
-                points_graph=graph,
-                voxels_size=voxels_size,
-            )
-
-        voxels_position = set().union(*intercept_points)
-
-        segment = VoxelSegment(polyline, voxels_position, intercept_points)
-
-        remain = set(voxels).difference(segment.voxels_position)
-
-        return segment, remain
-    return None, None
-
-
 def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
     """Function to find the base stem position of the plant from the voxels
     center positions list.
@@ -266,39 +210,55 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
     return base_stem_position
 
 
+def _source_index(graph, voxels_size, neighbor_size=45, src_node=None):
+    """Index of src_node in graph, or of the base of the plant if None.
+
+    If the position is not a node, the closest node is used."""
+    if src_node is None:
+        src_node = find_base_stem_position(
+            graph.voxels_position, voxels_size, neighbor_size=neighbor_size
+        )
+    src_node = tuple(map(float, src_node))
+    if src_node in graph:
+        return graph.index(src_node)
+    distances = numpy.linalg.norm(graph.voxels_position - src_node, axis=1)
+    return int(numpy.argmin(distances))
+
+
 def compute_all_shorted_path(graph, voxels_size, neighbor_size=45, src_node=None):
     """Compute all the shorted path from the base position of the graph
     position.
 
     Parameters
     ----------
-    graph : networkx.Graph
+    graph : VoxelGraph
         Graph of 3d voxel center point position
 
     voxels_size : int
         Voxels diameter size
 
+    neighbor_size : int, optional
+        Radius size in mm to search the base stem position, if src_node is None
+
+    src_node : 3-tuple, optional
+        Start position of the paths. By default, the base of the stem.
+
     Returns
     -------
     all_shorted_path_to_stem_base : dict
-        List of all the shorted path of the graph from the base
+        For each reachable node position, the list of the node positions of
+        the shortest path from the base.
     """
-    # ==========================================================================
-    # Get the high points in the matrix and the supposed base plant points
-    if src_node is None:
-        x_stem, y_stem, z_stem = find_base_stem_position(
-        graph.nodes(), voxels_size, neighbor_size=neighbor_size
-        )
-        src_node = (x_stem, y_stem, z_stem)
-
-    # ==========================================================================
-    # Compute the shorted path
-
-    all_shorted_path_to_stem_base = networkx.single_source_dijkstra_path(
-        graph, src_node, weight="weight"
-    )
-
-    return all_shorted_path_to_stem_base
+    source = _source_index(graph, voxels_size, neighbor_size, src_node)
+    predecessors, lengths = shortest_paths_tree(graph, source)
+    nodes = graph.nodes()
+    paths = {}
+    for i in numpy.argsort(lengths, kind="stable").tolist():
+        if lengths[i] == 0:
+            continue
+        p = predecessors[i]
+        paths[nodes[i]] = paths[nodes[p]] + [nodes[i]] if p >= 0 else [nodes[i]]
+    return paths
 
 
 def skeletonize(
@@ -314,15 +274,25 @@ def skeletonize(
 ):
     """Compute phenomenal skeletonization on the voxel_grid based on the graph.
 
+    The longest of the shortest paths from the base of the plant to the
+    remaining voxels is a segment polyline. The voxels around the polyline
+    (intercepted by planes orthogonal to the polyline, or by balls) are the
+    segment voxels, and are removed from the remaining voxels. Repeat until
+    no voxels remain.
+
     Parameters
     ----------
     voxel_grid : VoxelGrid
 
-    graph : networkx.Graph
+    graph : VoxelGraph
 
-    subgraph: networkx.graph, optional
+    subgraph: VoxelGraph, optional
         If not None, perform the computation of the shorted paths on the
         subgraph and remove voxels
+
+    voxels_position_remain : iterable of 3-tuple, optional
+        Voxels to cover with segments. By default, all the nodes of subgraph
+        (or of graph).
 
     mode : str, optional
         Mode for intercept point along the paths. Two mode available, "ball"
@@ -336,45 +306,67 @@ def skeletonize(
         Size in mm of the radius of the ball. By default, or if None is equal
         to the voxel_size * 4 of the voxel_grid
 
+    neighbor_size : int, optional
+        Radius size in mm to search the base stem position, if src_node is None
+
+    src_node : 3-tuple, optional
+        Start position of the paths. By default, the base of the stem.
+
     Returns
     -------
     voxel_skeleton : VoxelSkeleton
     """
+    voxels_size = voxel_grid.voxels_size
     if plane_width is None:
-        plane_width = voxel_grid.voxels_size * 2
+        plane_width = voxels_size * 2
 
     if ball_radius is None:
-        ball_radius = voxel_grid.voxels_size * 4
+        ball_radius = voxels_size * 4
 
     if subgraph is None:
         subgraph = graph
 
-    voxels_size = voxel_grid.voxels_size
-    all_shorted_path_to_stem_base = compute_all_shorted_path(
-        subgraph, voxels_size, neighbor_size=neighbor_size,
-        src_node=src_node
-    )
+    source = _source_index(subgraph, voxels_size, neighbor_size, src_node)
+    predecessors, lengths = shortest_paths_tree(subgraph, source)
 
     # ==========================================================================
+    # Voxels to cover, among the nodes of subgraph with a path from the source
     if voxels_position_remain is None:
-        voxels_position_remain = subgraph.nodes()
+        remaining = numpy.ones(subgraph.number_of_nodes(), dtype=bool)
+    else:
+        remaining = numpy.zeros(subgraph.number_of_nodes(), dtype=bool)
+        index = subgraph.indices(list(voxels_position_remain))
+        remaining[index[index >= 0]] = True
+    remaining &= lengths > 0
+    nodes = subgraph.nodes()
 
-    np_arr_all_graph_voxels_plant = numpy.array(graph.nodes())
     # ==========================================================================
 
     segments = []
-    while len(voxels_position_remain) != 0:
-        (voxel_segment, voxels_position_remain) = _segment_path(
-            voxels_position_remain,
-            np_arr_all_graph_voxels_plant,
-            all_shorted_path_to_stem_base,
-            graph,
-            voxels_size=voxels_size,
-            mode=mode,
-            plane_width=plane_width,
-            ball_radius=ball_radius,
-        )
+    while remaining.any():
+        # the longest shortest path ending in the remaining voxels
+        candidates = numpy.flatnonzero(remaining)
+        end = int(candidates[numpy.argmax(lengths[candidates])])
+        polyline = [nodes[i] for i in path(predecessors, end)]
 
-        segments.append(voxel_segment)
+        if mode == "ball":
+            intercept_points = intercept_points_along_polyline_with_ball(
+                graph.voxels_position, graph, polyline, ball_radius=ball_radius
+            )
+        else:
+            intercept_points, _ = intercept_points_along_path_with_planes(
+                graph.voxels_position,
+                polyline,
+                distance_from_plane=plane_width,
+                points_graph=graph,
+                voxels_size=voxels_size,
+            )
+
+        voxels_position = set().union(*intercept_points)
+        segments.append(VoxelSegment(polyline, voxels_position, intercept_points))
+
+        index = subgraph.indices(list(voxels_position))
+        remaining[index[index >= 0]] = False
+        remaining[end] = False
 
     return VoxelSkeleton(segments, voxels_size)
