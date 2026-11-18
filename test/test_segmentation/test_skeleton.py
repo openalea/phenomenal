@@ -42,7 +42,7 @@ def test_running():
 
     image_projection = list()
     for angle in [0, 120, 270]:
-        projection = calibration.get_projection("side", angle)
+        projection = calibration.get_projection("side", angle, depth=True)
         image_projection.append((bin_images["side"][angle], projection))
 
     voxel_skeleton = phm_seg.segment_reduction(
@@ -57,7 +57,7 @@ def test_project_voxels_on_pixels_covers_same_pixels_as_image():
     voxels_position = numpy.array(list(voxel_grid.voxels_position))
 
     for angle in [0, 120, 270]:
-        projection = calibration.get_projection("side", angle)
+        projection = calibration.get_projection("side", angle, depth=True)
         shape = bin_images["side"][angle].shape
         # the smaller shape crops the projection: some voxels are out of the image
         for image_shape in [shape, (shape[0] // 2, shape[1] // 2)]:
@@ -75,7 +75,17 @@ def test_project_voxels_on_pixels_out_of_image():
         numpy.array([[0.0, 0.0, 0.0]]),
         1,
         (10, 10),
-        lambda corners: corners[:, :2] + 100,
+        lambda corners: numpy.column_stack((corners[:, :2] + 100, numpy.ones(len(corners)))),
+    )
+    assert len(pixels) == 0
+
+
+def test_project_voxels_on_pixels_behind_camera():
+    def projection(corners):
+        return numpy.column_stack((corners[:, :2], -numpy.ones(len(corners))))
+
+    pixels = _project_voxels_on_pixels(
+        numpy.array([[5.0, 5.0, 0.0]]), 1, (10, 10), projection
     )
     assert len(pixels) == 0
 
@@ -87,7 +97,8 @@ class _Segment:
 
 
 def _project_on_x_y(corners):
-    return corners[:, :2]
+    """Project on x, y, all points 1 unit in front of the camera."""
+    return numpy.column_stack((corners[:, :2], numpy.ones(len(corners))))
 
 
 def test_segment_reduction_removes_covered_segments():

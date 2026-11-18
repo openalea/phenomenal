@@ -53,7 +53,7 @@ def test_image_frame():
     i_down = i_origin + [0, 1]
 
     # test one point call
-    uo, vo = CalibrationCamera.pixel_coordinates(w_origin, w, h, fx, fy)
+    uo, vo = CalibrationCamera.pixel_coordinates(w_origin, w, h, fx, fy).T
     assert (uo, vo) == (w / 2, h / 2)
 
     # test array call
@@ -111,7 +111,7 @@ def test_side_camera_frame():
 
     # test one point call
     pixel = p(pts[0])
-    numpy.testing.assert_allclose(pixel, pix[0])
+    numpy.testing.assert_allclose(pixel[0], pix[0])
 
 
 def test_top_camera_frame():

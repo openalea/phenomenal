@@ -15,6 +15,10 @@ import numpy
 import openalea.phenomenal.calibration as phm_calib
 
 import openalea.phenomenal.data as phm_data
+
+from pathlib import Path
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+data_dir = test_subdir.parent / "data" / "plant_1"
 # ==============================================================================
 
 lemnatec2 = {
@@ -66,6 +70,32 @@ lemnatec2 = {
         }
     }
 }
+
+
+def test_depth():
+    origin = [0, 0, 0]
+    calibration = phm_calib.Calibration.from_dict(lemnatec2)
+    p = calibration.get_projection('side', 0)
+    u,v = p(origin).T
+    assert u > 0
+    assert v > 0
+    p = calibration.get_projection('side', 0, depth=True)
+    u,v,depth = p(origin).T
+    assert u > 0
+    assert v > 0
+    assert depth > 0
+    # OldCalibration
+    calibration = phm_data.load_calibration(data_dir)
+    p = calibration.get_projection('side', 0)
+    u,v = p(origin).T
+    assert u > 0
+    assert v > 0
+    p = calibration.get_projection('side', 0, depth=True)
+    u,v,depth = p(origin).T
+    assert u > 0
+    assert v > 0
+    assert depth > 0
+
 
 def test_calibration_working():
 

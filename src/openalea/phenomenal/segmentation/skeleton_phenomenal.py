@@ -17,7 +17,13 @@ except ImportError:
     import networkx
 
 
-from ..multi_view_reconstruction import get_bounding_box_voxel_projected
+from ..multi_view_reconstruction import (
+    get_bounding_box_voxel_projected,
+    image_boxes,
+    project_voxels,
+    voxel_fully_in_front,
+    voxel_overlaps_image,
+)
 from .plane_interception import (
     intercept_points_along_path_with_planes,
     intercept_points_along_polyline_with_ball,
@@ -32,8 +38,9 @@ def _project_voxels_on_pixels(voxels_position, voxels_size, shape_image, project
     """
     Give the pixels covered by the voxels projected on an image, as flat indices.
 
-    Covers the same pixels as `project_voxel_centers_on_image`, without allocating an
-    image of the full size.
+    Covers the same pixels as `project_voxel_centers_on_image`, without filling an
+    image of the full size: voxels are drawn if they are entirely in front of the
+    camera and overlap the image.
 
     Parameters
     ----------
@@ -43,8 +50,9 @@ def _project_voxels_on_pixels(voxels_position, voxels_size, shape_image, project
         Diameter size of the voxels
     shape_image : 2-tuple
         Height and width of the image
-    projection : function ((x, y, z)) -> (x, y)
-        Function of projection
+    projection : callable
+        Projection of an (M, 3) array of points to an (M, 3) array of u, v, depth
+        coordinates, as given by `get_projection(..., depth=True)`
 
     Returns
     -------
@@ -52,20 +60,16 @@ def _project_voxels_on_pixels(voxels_position, voxels_size, shape_image, project
         Sorted indices of the pixels in the flattened image
     """
     height, length = shape_image
-    boxes = get_bounding_box_voxel_projected(voxels_position, voxels_size, projection)
-    outside = (
-        (boxes[:, 2] < 0)
-        | (boxes[:, 0] >= length)
-        | (boxes[:, 3] < 0)
-        | (boxes[:, 1] >= height)
+    # the helpers below only read the shape of the image: no memory is filled
+    image = numpy.empty(shape_image, dtype=bool)
+    voxel_projections = project_voxels(voxels_position, voxels_size, projection)
+    drawn = voxel_fully_in_front(voxel_projections) & voxel_overlaps_image(
+        voxel_projections, image
     )
-    boxes = numpy.floor(boxes[~outside])
-    if len(boxes) == 0:
+    if not numpy.any(drawn):
         return numpy.empty(0, dtype=numpy.intp)
-
-    boxes[:, [0, 2]] = numpy.clip(boxes[:, [0, 2]], 0, length - 1)
-    boxes[:, [1, 3]] = numpy.clip(boxes[:, [1, 3]], 0, height - 1)
-    boxes = boxes.astype(int)
+    boxes = get_bounding_box_voxel_projected(voxel_projections[drawn])
+    boxes = image_boxes(boxes, image)
 
     x_origin, y_origin = boxes[:, :2].min(axis=0)
     x_end, y_end = boxes[:, 2:].max(axis=0)
@@ -94,6 +98,7 @@ def segment_reduction(
     ----------
     voxel_skeleton : VoxelSkeleton
     image_projection : list of tuple (image, projection)
+        Projections with depth, as given by `get_projection(..., depth=True)`
     required_visible : int, optional
         Number of required  not_covered segment to kept it.
     nb_min_pixel : int, optional
