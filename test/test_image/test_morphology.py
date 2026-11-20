@@ -211,6 +211,35 @@ def test_erode_dilate_2():
     assert image_cleaning.ndim == 2
 
 
+def _masked_images():
+    """A black image with one white pixel and a white 5x5 square, and a mask
+    covering the left half of the image"""
+    image = numpy.zeros((25, 25), dtype=numpy.uint8)
+    image[3, 20] = 255  # outside the mask, must be kept
+    image[10:15, 2:7] = 255  # inside the mask
+    mask = numpy.zeros((25, 25), dtype=numpy.uint8)
+    mask[:, :12] = 255
+    return image, mask
+
+
+def test_morphology_mask_keeps_black_background():
+    # uint8 arithmetic must saturate: numpy would wrap around (0 - 255 = 1, 0 - 1 = 255)
+    image = numpy.zeros((25, 25), dtype=numpy.uint8)
+    for value in (1, 255):
+        mask = numpy.full((25, 25), value, dtype=numpy.uint8)
+        for func in (phm_img.erode_dilate, phm_img.dilate_erode, phm_img.close):
+            assert not func(image, mask=mask).any(), func.__name__
+
+
+def test_morphology_mask_keeps_image_outside_mask():
+    image, mask = _masked_images()
+    for func in (phm_img.erode_dilate, phm_img.dilate_erode):
+        out = func(image, mask=mask)
+        assert out[3, 20] == 255, func.__name__
+        assert out[:, 12:].sum() == 255, func.__name__
+        assert out.max() == 255, func.__name__
+
+
 if __name__ == "__main__":
     for func_name in dir():
         if func_name.startswith("test_"):

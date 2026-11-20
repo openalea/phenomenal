@@ -89,7 +89,7 @@ def routine_side_binarization(image, mean_img):
     hsv_max = (129, 254, 141)
 
     # Convert image on HSV representation
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     # Threshold the image with HSV min and max value
     binary_hsv_image = phm_img.threshold_hsv(hsv_image, hsv_min, hsv_max, maks[0])
 
@@ -114,7 +114,7 @@ def routine_top_binarization(image):
     iterations = 5
 
     # Convert image on HSV representation
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     # Apply a median blur on the image
     hsv_image = cv2.medianBlur(hsv_image, ksize=median_blur_size)
 
