@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 import os
 import sys
-from PIL import Image
 from vtkmodules.util.numpy_support import vtk_to_numpy
 import openalea.phenomenal.display as phm_display
+from openalea.phenomenal.image import read_image
 from openalea.phenomenal.object import VoxelGrid
 
 POLYLINES = [[(0, 0, 0), (10, 0, 0), (10, 10, 0)], [(0, 0, 20), (0, 0, 30)]]
@@ -21,9 +21,8 @@ def test_screenshot_magnification(tmp_path):
     for magnification in (1, 2):
         filename = tmp_path / f"scene_{magnification}.png"
         scene.screenshot(str(filename), magnification=magnification)
-        with Image.open(filename) as image:
-            sizes.append(image.size)
-            pixels = np.asarray(image.convert("RGB"))
+        pixels = read_image(filename, "RGB")
+        sizes.append((pixels.shape[1], pixels.shape[0]))
 
     assert sizes[1] == (2 * sizes[0][0], 2 * sizes[0][1])
     # white background, and the polylines in red

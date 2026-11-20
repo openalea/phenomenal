@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * Runtime and documentation dependencies are declared with conda (`conda/run_deps.yml`, `doc/doc_deps.yml`) instead of `pyproject.toml`, which no longer has runtime dependencies or extras. Read the Docs now documents the published package, and the installation instructions are only in `README.md`. Binder installs the notebook data and pandas instead of ipyvolume.
 * `tracking.display.plot_polylines` uses VTK instead of PlantGL, and blocks until its window is closed.
+* `read_image`, `write_image`, `show_image` and `show_images` use OpenCV and Matplotlib instead of PIL, and Pillow is no longer a direct dependency. Images are still RGB (or grayscale), and `read_image` keeps its `'RGB'` and `'L'` flags; without a flag it now returns a NumPy array instead of a PIL image, and it raises an error for an unknown flag or an unreadable file. Non-ASCII paths are supported.
 * `segment_reduction` is written in NumPy and uses less memory. The package has no more compiled code, and does not need a compiler to build.
 * Multi-view reconstruction filters voxels behind the camera plane, and needs projections with depth: use `get_projection(..., depth=True)`, as `as_image_views` does. Projections without depth raise a `ValueError`.
 * `voxels_is_visible_in_image`: `inclusive` now defaults to `True`.
