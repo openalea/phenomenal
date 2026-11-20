@@ -87,7 +87,7 @@ class Display:
 
         window_to_image_filter = vtk.vtkWindowToImageFilter()
         window_to_image_filter.SetInput(render_window)
-        window_to_image_filter.SetMagnification(magnification)
+        window_to_image_filter.SetScale(magnification)
         window_to_image_filter.Update()
 
         writer = vtk.vtkPNGWriter()

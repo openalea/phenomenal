@@ -31,3 +31,17 @@ def test_read_write():
 
         assert src_vg.voxels_size == dist_vg.voxels_size
         assert (src_vg.voxels_position == dist_vg.voxels_position).all()
+
+
+def test_read_pointcloud_ignores_other_columns(tmp_path):
+    filename = tmp_path / "cloud.pts"
+    filename.write_text("1.5 2 3 115 115 59\n4 5 6.5 111 116 53\n")
+    numpy.testing.assert_array_equal(
+        phm_obj.read_pointcloud(filename), [[1.5, 2, 3], [4, 5, 6.5]]
+    )
+
+
+def test_read_pointcloud_single_point(tmp_path):
+    filename = tmp_path / "cloud.xyz"
+    filename.write_text("1 2 3\n")
+    numpy.testing.assert_array_equal(phm_obj.read_pointcloud(filename), [[1, 2, 3]])

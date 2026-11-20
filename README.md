@@ -1,5 +1,5 @@
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1436634.svg)](https://doi.org/10.5281/zenodo.1436634)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18391755.svg)](https://doi.org/10.5281/zenodo.18391755)
 [![Licence](https://anaconda.org/openalea/openalea.phenomenal/badges/license.svg)](https://cecill.info/licences/Licence_CeCILL_V1.1-US.txt)
 [![Platform](https://anaconda.org/openalea3/openalea.phenomenal/badges/platforms.svg)](https://anaconda.org/openalea3/openalea.phenomenal)
 [![Last version](https://anaconda.org/openalea3/openalea.phenomenal/badges/version.svg)](https://anaconda.org/OpenAlea3/openalea.phenomenal/files)
@@ -20,43 +20,63 @@ Virtual env manager : [miniforge/mamba](https://github.com/conda-forge/miniforge
 
 #### User
 
-##### Create a new environment with phenomenal installed in there :
+##### Create a new environment with phenomenal :
 
-    mamba create -n phm -c conda-forge -c openalea3 openalea.phenomenal matplotlib
-    mamba activate phm
+```bash
+mamba create -n phm -c openalea3 -c conda-forge openalea.phenomenal
+mamba activate phm
+```
 
-##### In an existing environment :
+##### (or) Add phenomenal to an existing environment :
 
-    mamba install -c conda-forge -c openalea3 openalea.phenomenal matplotlib
+```bash
+mamba activate myenv
+mamba install -c openalea3 -c conda-forge openalea.phenomenal
+```
 
-##### (Optional) Test your installation :
+#### Install optional dependencies (recommended, especially to play notebooks)
 
-    mamba install -c conda-forge pytest
-    git clone https://github.com/openalea/phenomenal.git
-    cd phenomenal/test; pytest
+```bash
+mamba install -c openalea3 -c conda-forge openalea.phenotyping_data pandas ipython notebook
+```
+
 
 ### Developers
 
-#### Editable mode install
+#### Clone phenomenal
 
-    # (windows only) install VisualStudio Build Tools
+```bash
+git clone https://github.com/openalea/phenomenal.git
+cd phenomenal   
+```
 
-    # Clone phenomenal
-    git clone https://github.com/openalea/phenomenal.git
-    cd phenomenal    
+All dependencies, including the notebook data and test tools, come from conda; pip
+only installs phenomenal itself.
 
-    # Solution 1: Build env from scratch (mostly use pip dependencies)
-    mamba env create -f conda/environment.yml
-    mamba activate phenomenal_dev
+#### Install in develop mode in a new environment
 
-    # Solution 2: use an existing env (mostly use conda dependencies)
-    mamba activate my_env
-    mamba install --only-deps -c openalea3 -c conda-forge openalea.phenomenal
-    mamba install cxx-compiler
-    pip install -e .[doc,test,plot]
+```bash
+mamba create -n phenomenal_dev -f conda/run_deps.yml -f doc/doc_deps.yml pytest notebook
+mamba activate phenomenal_dev
+pip install -e .
+```
 
-    # (Optional) Test your installation
-    cd test; pytest
+#### (or) Install in develop mode in an existing environment
+
+```bash
+mamba install -n my_env -f conda/run_deps.yml -f doc/doc_deps.yml pytest notebook
+mamba activate my_env
+pip install -e .
+```
+
+
+#### (Optional) Test your installation
+
+```bash
+cd test
+pytest 
+```
+
 
 
 ### GPU version:
@@ -110,16 +130,14 @@ If you find our work useful in your research, please consider citing:
 If you use PhenoTrack3D in your research, cite:
 
 Daviet, B., Fernandez, R., Cabrera-Bosquet, L. et al. PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time. Plant Methods 18, 130 (2022). [https://doi.org/10.1186/s13007-022-00961-4](https://doi.org/10.1186/s13007-022-00961-4)
-    
-```latex
-@article {daviet22,
-	title={PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
-	author={Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c{c}} and Pradal, Christophe and Fournier, Christian},
-	journal={Plant Methods},
-	volume={18},
-	number={1},
-	pages={1--14},
-	year={2022},
-	publisher={Springer}
-}
-```
+
+    @article {daviet22,
+        title={PhenoTrack3D: an automatic high-throughput phenotyping pipeline to track maize organs over time},
+        author={Daviet, Benoit and Fernandez, Romain and Cabrera-Bosquet, Lloren{\c{c}} and Pradal, Christophe and Fournier, Christian},
+        journal={Plant Methods},
+        volume={18},
+        number={1},
+        pages={1--14},
+        year={2022},
+        publisher={Springer}
+    }

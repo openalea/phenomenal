@@ -12,6 +12,7 @@
 import numpy
 
 from ._order_color_map import order_color_map
+from openalea.phenomenal.object import VoxelGrid
 from .scene import Scene
 # ==============================================================================
 
@@ -39,8 +40,7 @@ def get_actors_from_voxel_organ(voxel_organ, voxels_size, plot_number=True):
 
     actors.append(
         Scene.get_actor_from_voxels(
-            voxel_organ.voxels_position(),
-            voxels_size,
+            VoxelGrid(voxel_organ.voxels_position(), voxels_size),
             color=get_color(voxel_organ.label, voxel_organ.info),
         )
     )
@@ -111,7 +111,7 @@ def get_actors_from_segmentation_stem_mode(vmsi):
 
         actors.append(
             Scene.get_actor_from_voxels(
-                vo.voxels_position(), vmsi.voxels_size, color=color
+                VoxelGrid(vo.voxels_position(), vmsi.voxels_size), color=color
             )
         )
 
@@ -123,13 +123,13 @@ def get_actors_from_segmentation_skeleton_mode(vmsi, order=None):
     for vo in vmsi.get_leafs():
         actors.append(
             Scene.get_actor_from_voxels(
-                vo.voxels_position(), vmsi.voxels_size * 0.25, color=(0, 1, 0)
+                VoxelGrid(vo.voxels_position(), vmsi.voxels_size * 0.25), color=(0, 1, 0)
             )
         )
 
         polyline = vo.get_longest_segment().polyline
         actors.append(
-            Scene.get_actor_from_voxels(polyline, vmsi.voxels_size * 1, color=(1, 0, 0))
+            Scene.get_actor_from_voxels(VoxelGrid(polyline, vmsi.voxels_size * 1), color=(1, 0, 0))
         )
 
         actors.append(
@@ -146,7 +146,7 @@ def get_actors_from_segmentation_skeleton_mode(vmsi, order=None):
                     vs = vo.get_highest_polyline()
                     actors.append(
                         Scene.get_actor_from_voxels(
-                            vs.polyline, vmsi.voxels_size * 1.5, color=(0, 0, 1)
+                            VoxelGrid(vs.polyline, vmsi.voxels_size * 1.5), color=(0, 0, 1)
                         )
                     )
 
@@ -159,8 +159,7 @@ def get_actors_from_segmentation_split_mode(vmsi):
     vo_stem = vmsi.get_stem()
     actors.append(
         Scene.get_actor_from_voxels(
-            vo_stem.voxels_position(),
-            vmsi.voxels_size,
+            VoxelGrid(vo_stem.voxels_position(), vmsi.voxels_size),
             color=get_color(vo_stem.label, vo_stem.info),
         )
     )
@@ -200,8 +199,7 @@ def get_actors_from_segmentation_split_mode(vmsi):
 
             actors.append(
                 Scene.get_actor_from_voxels(
-                    voxels_position + vm,
-                    vmsi.voxels_size,
+                    VoxelGrid(voxels_position + vm, vmsi.voxels_size),
                     color=get_color(vo.label, vo.info),
                 )
             )

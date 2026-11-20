@@ -9,6 +9,7 @@
 # ==============================================================================
 
 
+from openalea.phenomenal.object import VoxelGrid
 from .scene import Scene
 # ==============================================================================
 
@@ -29,8 +30,7 @@ def get_actors_from_skeleton(
         if color_segment is not None and color_segment == i:
             actors.append(
                 Scene.get_actor_from_voxels(
-                    vs.voxels_position,
-                    voxel_skeleton.voxels_size * 0.50,
+                    VoxelGrid(vs.voxels_position, voxel_skeleton.voxels_size * 0.50),
                     color=(0, 0, 1),
                 )
             )
@@ -38,15 +38,14 @@ def get_actors_from_skeleton(
         elif with_voxel:
             actors.append(
                 Scene.get_actor_from_voxels(
-                    vs.voxels_position,
-                    voxel_skeleton.voxels_size * 0.15,
+                    VoxelGrid(vs.voxels_position, voxel_skeleton.voxels_size * 0.15),
                     color=voxel_color,
                 )
             )
 
         actors.append(
             Scene.get_actor_from_voxels(
-                vs.polyline, voxel_skeleton.voxels_size * 1.5, color=skeleton_color
+                VoxelGrid(vs.polyline, voxel_skeleton.voxels_size * 1.5), color=skeleton_color
             )
         )
 

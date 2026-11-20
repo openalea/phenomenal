@@ -11,9 +11,12 @@
 # ==============================================================================
 
 
+import cv2
 import numpy
 
 import openalea.phenomenal.data as phm_data
+from openalea.phenomenal.calibration import Calibration
+from openalea.phenomenal.calibration.object import OldCalibrationCamera
 
 from pathlib import Path
 test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
@@ -116,6 +119,33 @@ def test_projection():
 
     for pt_2d in result:
         assert tuple(pt_2d) == (1337.425449561377, 1070.8621710384346)
+
+
+def test_old_calibration_camera_turntable_rotation():
+    class IdentityFrame:
+        @staticmethod
+        def local_point(pts):
+            return pts
+
+    camera = OldCalibrationCamera()
+    camera._angle_factor = 1
+    camera.get_camera_frame = IdentityFrame
+    camera.pixel_coordinates = lambda pts, *args, **kwargs: pts
+
+    result = camera.get_projection(90)(numpy.array([[1.0, 2.0, 3.0]]))
+
+    assert numpy.allclose(result, [[-2.0, -1.0, 3.0]])
+
+
+def test_frame_lines_can_be_drawn():
+    calibration = Calibration.load(test_subdir.parent / "data" / "tracking" / "calibration.json")
+    image = numpy.zeros((2448, 2448, 3), dtype=numpy.uint8)
+
+    for origin, end, color, width in calibration.frame_lines("side", 0):
+        assert len(origin) == len(end) == 2
+        cv2.line(image, origin, end, color, width)
+
+    assert image.any()
 
 
 if __name__ == "__main__":

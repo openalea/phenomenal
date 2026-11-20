@@ -157,7 +157,7 @@ def as_image_views(images_iterator, calibration):
     im_views = dict()
     for id_camera, angle, image in images_iterator:
         name = f'{id_camera}_{angle}'
-        projection = calibration.get_projection(id_camera, angle)
+        projection = calibration.get_projection(id_camera, angle, depth=True)
         im_views[name] = ImageView(
             image,
             projection

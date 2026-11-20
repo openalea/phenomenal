@@ -10,15 +10,33 @@
 
 
 import os
-import re
 import json
 import csv
 import numpy
-
+import vtk
+from vtkmodules.util.numpy_support import numpy_to_vtk
 from .image3D import Image3D
 
 
 # ==============================================================================
+
+
+def read_pointcloud(filename, usecols=(0, 1, 2)):
+    """Read point positions from a text file with one point per line.
+
+    Parameters
+    ----------
+    filename : str
+        The name of the file to read.
+    usecols : tuple of int, optional
+        The columns holding x, y and z. Other columns, like colors, are ignored.
+
+    Returns
+    -------
+    numpy.ndarray, shape (N, 3)
+        The position of the points.
+    """
+    return numpy.loadtxt(filename, usecols=usecols, ndmin=2)
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -105,55 +123,50 @@ class VoxelGrid:
         return len(self._voxels_position)
 
     # ==========================================================================
-    # SHOW
-    # ==========================================================================
-
-    def show(self):
-        raise NotImplementedError
-
-    # ==========================================================================
     # TRANSFORM
     # ==========================================================================
+    def to_vtk_poly_data(self):
+        """Return vtkPolyData containing the voxel centers."""
 
-    def to_image_3d(self):
-        (x_min, y_min, z_min), (x_max, y_max, z_max) = self.bounding_box()
+        voxels_position = self.voxels_position
+        # voxel organs and segments hold their positions as sets
+        if isinstance(voxels_position, (set, frozenset)):
+            voxels_position = list(voxels_position)
 
-        len_x = int((x_max - x_min) / self.voxels_size + 1)
-        len_y = int((y_max - y_min) / self.voxels_size + 1)
-        len_z = int((z_max - z_min) / self.voxels_size + 1)
+        voxels_position = numpy.asarray(
+            voxels_position, dtype=numpy.float64
+        ).reshape(-1, 3)
 
-        image_3d = Image3D.zeros(
-            (len_x, len_y, len_z),
-            dtype=bool,
-            voxels_size=self.voxels_size,
-            world_coordinate=(x_min, y_min, z_min),
+        vtk_points = vtk.vtkPoints()
+        vtk_points.SetData(
+            numpy_to_vtk(voxels_position, deep=True)
         )
 
-        bound_min = numpy.array((x_min, y_min, z_min))
-        vs_pos = numpy.array(self.voxels_position)
+        polydata = vtk.vtkPolyData()
+        polydata.SetPoints(vtk_points)
 
-        r = ((vs_pos - bound_min) / self.voxels_size).astype(int)
-        image_3d[r[:, 0], r[:, 1], r[:, 2]] = 1
+        return polydata
 
-        return image_3d
+    @property
+    def image_3d(self):
+        return Image3D.from_voxel_grid(self)
 
     @staticmethod
     def from_image_3d(
         image_3d, voxels_value=1, voxels_size=None, world_coordinate=None
     ):
-        xx, yy, zz = numpy.where(image_3d >= voxels_value)
-
         if voxels_size is None:
             voxels_size = image_3d.voxels_size
+
+        if numpy.ndim(voxels_size) != 0:
+            raise ValueError("VoxelGrid requires the same voxels_size on all axes")
 
         if world_coordinate is None:
             world_coordinate = image_3d.world_coordinate
 
-        xxx = world_coordinate[0] + xx * voxels_size
-        yyy = world_coordinate[1] + yy * voxels_size
-        zzz = world_coordinate[2] + zz * voxels_size
+        indices = numpy.argwhere(image_3d >= voxels_value)
 
-        voxels_position = numpy.column_stack((xxx, yyy, zzz))
+        voxels_position = indices * voxels_size + world_coordinate
 
         return VoxelGrid(voxels_position, voxels_size)
 
@@ -191,8 +204,7 @@ class VoxelGrid:
         raise ValueError("No extension")
 
     def write_to_npz(self, filename):
-        image_3d = self.to_image_3d()
-        image_3d.write_to_npz(filename)
+        self.image_3d.write_to_npz(filename)
 
     @staticmethod
     def read_from_npz(filename):
@@ -228,14 +240,7 @@ class VoxelGrid:
 
     @staticmethod
     def read_from_xyz(filename, voxels_size):
-        voxels_position = []
-        with open(filename, "r", encoding="UTF8") as f:
-            for line in f:
-                values = [float(v) for v in line.split()[:3]]
-                voxels_position.append(tuple(values))
-        f.close()
-
-        return VoxelGrid(voxels_position, voxels_size)
+        return VoxelGrid(read_pointcloud(filename), voxels_size)
 
     def write_to_csv(self, filename, header=None):
         if os.path.dirname(filename) and not os.path.exists(os.path.dirname(filename)):

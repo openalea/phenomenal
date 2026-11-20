@@ -1,17 +1,17 @@
-from PIL import Image
-import numpy as np
+from pathlib import Path
 
-from openalea.phenomenal.tracking.leaf_extension import (
-    skeleton_branches,
-    compute_extension,
-    leaf_extension,
-)
+import numpy as np
+from PIL import Image
 
 import openalea.phenomenal.object.voxelSegmentation as phm_seg
 from openalea.phenomenal.calibration import Calibration
+from openalea.phenomenal.tracking.leaf_extension import (
+    compute_extension,
+    leaf_extension,
+    skeleton_branches,
+)
 
-from pathlib import Path
-test_subdir = Path(__file__).parent if '__file__' in globals() else Path(".").resolve()
+test_subdir = Path(__file__).parent if '__file__' in globals() else Path.cwd()
 data_dir = test_subdir.parent / "data" / "tracking"
 
 
@@ -41,7 +41,7 @@ def test_extension():
     )
 
     assert set(ext_factors.keys()) == set(range(len(polylines2)))
-    assert all([v >= 1.0 for v in [v for v in ext_factors.values() if v is not None]])
+    assert all(v >= 1.0 for v in [v for v in ext_factors.values() if v is not None])
 
 
 def test_full_leaf_extension_phenomenal():
@@ -49,14 +49,14 @@ def test_full_leaf_extension_phenomenal():
 
     binaries = {
         angle: np.asarray(
-            Image.open(data_dir /"binaries" / "{}.png".format(angle)).convert("L")
+            Image.open(data_dir /"binaries" / f"{angle}.png").convert("L")
         )
         for angle in angles
     }
 
     seg = phm_seg.VoxelSegmentation.read_from_json_gz(data_dir / "segmentation.gz")
 
-    assert all(["pm_length_extended" not in leaf.info for leaf in seg.get_leafs()])
+    assert all("pm_length_extended" not in leaf.info for leaf in seg.get_leafs())
 
     calibration = Calibration.load(data_dir / "calibration.json")
     projections = {
@@ -68,7 +68,7 @@ def test_full_leaf_extension_phenomenal():
 
     new_seg = leaf_extension(phm_seg=seg, binaries=binaries, projections=projections)
 
-    assert all(["pm_length_extended" in leaf.info for leaf in seg.get_leafs()])
+    assert all("pm_length_extended" in leaf.info for leaf in seg.get_leafs())
 
     old_lengths = [
         leaf.info["pm_length_with_speudo_stem"]

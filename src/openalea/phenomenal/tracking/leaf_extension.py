@@ -98,7 +98,7 @@ def compute_extension(
 
     """
 
-    res = dict.fromkeys(range(len(polylines_phm)), [])
+    res = {key: [] for key in range(len(polylines_phm))}
 
     for pl_sk in polylines_sk:
         b_selected = 0
