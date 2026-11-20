@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * Runtime and documentation dependencies are declared with conda (`conda/run_deps.yml`, `doc/doc_deps.yml`) instead of `pyproject.toml`, which no longer has runtime dependencies or extras. Read the Docs now documents the published package, and the installation instructions are only in `README.md`. Binder installs the notebook data and pandas instead of ipyvolume.
 * `tracking.display.plot_polylines` uses VTK instead of PlantGL, and blocks until its window is closed.
+* `read_image`, `write_image`, `show_image` and `show_images` use OpenCV and Matplotlib instead of PIL, and Pillow is no longer a direct dependency. Images are still RGB (or grayscale), and `read_image` keeps its `'RGB'` and `'L'` flags; without a flag it now returns a NumPy array instead of a PIL image, and it raises an error for an unknown flag or an unreadable file. Non-ASCII paths are supported.
 * `segment_reduction` is written in NumPy and uses less memory. The package has no more compiled code, and does not need a compiler to build.
 * Multi-view reconstruction filters voxels behind the camera plane, and needs projections with depth: use `get_projection(..., depth=True)`, as `as_image_views` does. Projections without depth raise a `ValueError`.
 * `voxels_is_visible_in_image`: `inclusive` now defaults to `True`.
@@ -24,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `Display.screenshot`, and the `screenshot_filename` option of the `show_*` functions, with recent VTK versions.
 * `tolerant_reconstruction` and `multi_tolerant_reconstruction` crashed with their default `clear_outside`, which is now `True`.
 * `project_voxels_position_on_image` crashed on voxels whose visible part is a single line of pixels.
+* `erode_dilate`, `dilate_erode` and `close` with a `mask` turned the background outside the mask white: since 1.10.0 they used NumPy arithmetic, which wraps around on `uint8` images (0 - 1 = 255). They use OpenCV again, with saturated arithmetic and the original `kernel_shape` meaning and defaults.
+* `phenoarch_side_binarization` converts its RGB image to HSV with OpenCV (`cv2.COLOR_RGB2HSV`), so that the hue is in [0, 180] like `hsv_min` and `hsv_max`: since 1.10.0 it used PIL, whose hue is in [0, 255]. The median filter is `cv2.medianBlur` again, and the two binary images are added with saturation (no more 254 values).
+* The Binarization tutorial and the PhenoArch wralea routines converted the RGB images of `read_image`/`data` to HSV as if they were BGR (`cv2.COLOR_BGR2HSV`, swapping red and blue); they use `cv2.COLOR_RGB2HSV`. On the tutorial images this changes the binarizations by less than 1%.
 
 ## [1.9.5]
 ### Added

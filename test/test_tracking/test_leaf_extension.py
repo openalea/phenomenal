@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from openalea.phenomenal.image import read_image
 
 import openalea.phenomenal.object.voxelSegmentation as phm_seg
 from openalea.phenomenal.calibration import Calibration
@@ -16,7 +16,7 @@ data_dir = test_subdir.parent / "data" / "tracking"
 
 
 def test_skan_skeleton():
-    binary = np.asarray(Image.open(data_dir / "binaries" / "90.png").convert("L"))
+    binary = read_image(data_dir / "binaries" / "90.png", "L")
 
     sk1 = skeleton_branches(image=binary, min_length=0.0)
     sk2 = skeleton_branches(image=binary, min_length=30)
@@ -48,9 +48,7 @@ def test_full_leaf_extension_phenomenal():
     angles = [a * 30 for a in range(12)]
 
     binaries = {
-        angle: np.asarray(
-            Image.open(data_dir /"binaries" / f"{angle}.png").convert("L")
-        )
+        angle: read_image(data_dir / "binaries" / f"{angle}.png", "L")
         for angle in angles
     }
 

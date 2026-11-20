@@ -16,9 +16,8 @@ Routines functions to binarize images
 # ==============================================================================
 
 
+import cv2
 import numpy
-from PIL import Image
-from skimage.filters import median
 
 from .threshold import threshold_hsv, threshold_meanshift
 
@@ -84,16 +83,43 @@ def phenoarch_side_binarization(
     mask_mean_shift=None,
     mask_hsv=None,
 ):
-    hsv_image = numpy.asarray(Image.fromarray(image).convert("HSV"))
+    """
+    Binarize a side view image of the PhenoArch platform, combining an HSV
+    threshold and a mean shift threshold (difference with a mean image).
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        RGB image (uint8, 3-D array), as returned by `read_image` and the
+        `data` module. Convert images read with OpenCV (BGR) first.
+    mean_image : numpy.ndarray
+        Mean image of the same shape, see `mean_image`.
+    threshold : float, optional
+        Threshold of the mean shift, see `threshold_meanshift`.
+    dark_background : bool, optional
+        Whether the plant is lighter than the background.
+    hsv_min, hsv_max : tuple of int, optional
+        Bounds of the HSV threshold, in OpenCV units (hue in [0, 180],
+        saturation and value in [0, 255]).
+    mask_mean_shift, mask_hsv : numpy.ndarray, optional
+        2-D masks of the regions where each threshold applies.
+
+    Returns
+    -------
+    numpy.ndarray
+        Binary image (0 or 255).
+    """
+    # OpenCV HSV (hue in [0, 180], the units of hsv_min and hsv_max) of the RGB
+    # image; PIL would give a hue in [0, 255]
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     binary_hsv_image = threshold_hsv(hsv_image, hsv_min, hsv_max, mask_hsv)
 
     binary_mean_shift_image = threshold_meanshift(
         image, mean_image, threshold, dark_background, mask_mean_shift
     )
 
-    result = numpy.add(binary_hsv_image, binary_mean_shift_image)
-    kernel = numpy.ones((3, 3), dtype=numpy.uint8)
-
-    result = median(result, kernel)
+    # saturated uint8 addition (cv2): numpy would give 254 where both are 255
+    result = cv2.add(binary_hsv_image, binary_mean_shift_image)
+    result = cv2.medianBlur(result, 3)
 
     return result

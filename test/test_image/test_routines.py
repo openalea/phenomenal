@@ -118,3 +118,16 @@ def test_mean_image_3():
     assert (image == 0.1).all()
     assert image.ndim == 3
     assert image.shape == (25, 25, 3)
+
+
+def test_phenoarch_side_binarization_hsv_convention():
+    # RGB image, hsv_min/hsv_max in OpenCV units (hue in [0, 180]); the default
+    # hue range is [30, 150]. Blue (hue 120) is kept: read as BGR it would be
+    # red, and with PIL its hue would be 170. Red (hue 0) is rejected.
+    # The mean image equals the image, so the mean shift threshold selects nothing.
+    for rgb, expected in (((10, 10, 120), 255), ((120, 10, 10), 0)):
+        image = numpy.zeros((25, 25, 3), dtype=numpy.uint8)
+        image[:, :] = rgb
+        binary = phm_img.phenoarch_side_binarization(image, image.copy())
+        assert binary.dtype == numpy.uint8
+        assert (binary == expected).all(), rgb
